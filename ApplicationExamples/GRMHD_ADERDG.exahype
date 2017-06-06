@@ -27,8 +27,8 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 27.0, 27.0, 3.0
-    offset                         = -13.5, -13.5, -1.5
+    width                          = 27.0, 27.0, 9.0
+    offset                         = -13.5, -13.5, -4.5
     end-time                       = 2.1
   end computational-domain
   
@@ -40,7 +40,7 @@ exahype-project GRMHD
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:10}
+    configure                = {hotspot,fair,ranks_per_node:1}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -64,20 +64,20 @@ exahype-project GRMHD
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    plot vtk::Legendre::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
       repeat    = 0.000666667
       output    = ./vtk-output/conserved
-      select    = x:0.0,y:0.0
+      select    = z:0.0
     end plot
 
-    plot vtk::Legendre::vertices::ascii IntegralsWriter
-      variables const = 0
+    plot hdf5::Cartesian::vertices ConservedWriter
+      variables const = 19
       time = 0.0
-      repeat = 0.00066667
-      output = ./global-integrals
-      select    = x:0.0,y:0.0
+      repeat = 0.00001
+      output = ./hdf5-output/conserved
+      select = z:0.0,y:0.0
     end plot
 
     plot user::defined SphereIntegrals
@@ -87,6 +87,8 @@ exahype-project GRMHD
       output = ./global-sphere-integrals
       select    = x:0.0,y:0.0
     end plot
+
+
   end solver
 
 

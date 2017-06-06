@@ -16,13 +16,15 @@
 
 tarch::logging::Log DIM::DIMSolver_ADERDG::_log( "DIM::DIMSolver_ADERDG" );
 
-bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
+bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(
+  const double* const solution,
+  const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+  const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+  const double t, const double dt) const {
   // True == NoLimiter, False == Limiter
-  const ReadOnlyVariables qmin(QMin);
+  const ReadOnlyVariables qmin(observablesMin);
 
 // Limiter based on the center of the cell
-
-/*
 const double rad = 0.25;
 
 // points
@@ -48,16 +50,16 @@ else
 {
   return true; 
 }
-*/
-if(tarch::la::norm2(center)<0.32 && 
-tarch::la::norm2(center)>0.2 )
-{
-  return false;
-}
-else
-{
-  return true; 
-}
+
+//if(tarch::la::norm2(center)<0.32 &&
+//tarch::la::norm2(center)>0.2 )
+//{
+//  return false;
+//}
+//else
+//{
+//  return true;
+//}
 
 /*
 // Physical admissibility criteria done in C++
@@ -146,11 +148,7 @@ void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::eigenvalues(const d
 }
 
 
-void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* const Q,double** F) {
-  // Dimensions             = 2
-  // Number of variables    = 14 + #parameters
-  
-  // @todo Please implement/augment if required
+void __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* const Q,double** F) {
   F[0][ 0] = 0.0;
   F[0][ 1] = 0.0;
   F[0][ 2] = 0.0;
@@ -181,7 +179,6 @@ void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* 
   F[1][12] = 0.0;
   F[1][13] = 0.0;
 }
-
 
 void DIM::DIMSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
   const double * const fluxIn,const double* const stateIn,

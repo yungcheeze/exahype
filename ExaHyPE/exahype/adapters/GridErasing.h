@@ -18,7 +18,7 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/DropIncomingMPIMessages.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/GridErasing.h"
 
 
@@ -39,10 +39,10 @@ namespace exahype {
  */
 class exahype::adapters::GridErasing {
   private:
-    typedef mappings::DropIncomingMPIMessages Mapping0;
+    typedef mappings::Merging Mapping0;
     typedef mappings::GridErasing Mapping1;
 
-     Mapping0  _map2DropIncomingMPIMessages;
+     Mapping0  _map2Merging;
      Mapping1  _map2GridErasing;
 
 

@@ -189,7 +189,6 @@ void exahype::Parser::invalidate() {
   _interpretationErrorOccured = true;
 }
 
-
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
   assertion(isValid());
@@ -312,13 +311,6 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   result(2) = atof(token.c_str());
 #endif
   return result;
-}
-
-tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getBoundingBoxSize()
-    const {
-  tarch::la::Vector<DIMENSIONS, double> domainSize = getDomainSize();
-  double longestH = tarch::la::max(domainSize);
-  return tarch::la::Vector<DIMENSIONS, double>(longestH);
 }
 
 tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
@@ -502,20 +494,30 @@ double exahype::Parser::getTimestepBatchFactor() const {
   return result;
 }
 
+
+bool exahype::Parser::hasOptimisationSegment() const {
+  std::string token = getTokenAfter("optimisation");
+  return token.compare(_noTokenFound)!=0;
+}
+
+
 bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
-  std::string token =
+  if (hasOptimisationSegment()) {
+    std::string token =
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
-  logDebug("getSkipReductionInBatchedTimeSteps()",
+    logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
-  if (token.compare("on") != 0 && token.compare("off") != 0) {
-    logError("getSkipReductionInBatchedTimeSteps()",
+    if (token.compare("on") != 0 && token.compare("off") != 0) {
+      logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
              "optimisation segment and has to be either on or off: "
                  << token);
-    _interpretationErrorOccured = true;
-  }
+      _interpretationErrorOccured = true;
+    }
 
-  return token.compare("on") == 0;
+    return token.compare("on") == 0;
+  }
+  else return false;
 }
 
 
@@ -690,13 +692,35 @@ double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
       getTokenAfter("solver", solverNumber + 1, "maximum-mesh-size", 1, 0);
   result = atof(token.c_str());
   if (tarch::la::smallerEquals(result, 0.0)) {
-    logError("getMaximumMeshSize()",
+    logError("getMaximumMeshSize(int)",
              "'" << getIdentifier(solverNumber)
                  << "': 'maximum-mesh-size': Value must be greater than zero.");
     _interpretationErrorOccured = true;
   }
 
   logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
+  return result;
+}
+
+double exahype::Parser::getMaximumMeshDepth(int solverNumber) const {
+  std::string token;
+  int result;
+
+  token = getTokenAfter("solver", solverNumber + 1, "maximum-mesh-depth", 1, 0);
+
+  if (token==_noTokenFound) {
+    return 0;
+  }
+
+  result = std::atoi(token.c_str());
+  if (tarch::la::smaller(result, 0)) {
+    logError("getMaximumMeshDepth(int)",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'maximum-mesh-depth': Value must be greater than or equal to zero.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getMaximumMeshDepth()", "found maximum mesh size " << result);
   return result;
 }
 
@@ -745,13 +769,47 @@ double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   result = atof(token.c_str());
 
   if (result < 0) {
-    logError("getParameters()",
+    logError("getDMPDifferenceScaling()",
              "'" << getIdentifier(solverNumber)
                  << "': 'dmp-difference-scaling': Value must not be negative.");
     _interpretationErrorOccured = true;
   }
 
   logInfo("getDMPDifferenceScaling()", "found dmp-difference-scaling " << result);
+  return result;
+}
+
+int exahype::Parser::getDMPObservables(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-observables", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getDMPObservables()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-observables': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getDMPObservables()", "found dmp-observables " << result);
+  return result;
+}
+
+int exahype::Parser::getStepsTillCured(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getStepsTillCured()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'steps-till-cured': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getStepsTillCured()", "found steps-till-cured " << result);
   return result;
 }
 

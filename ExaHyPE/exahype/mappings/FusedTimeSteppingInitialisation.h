@@ -57,6 +57,16 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
   static tarch::logging::Log _log;
 
   /**
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
+   */
+  exahype::State _localState;
+
+  /**
    * Sets the corrector time stamp and step size to the
    * predictor values. Adds the predictor time step
    * size on the predictor time stamp.

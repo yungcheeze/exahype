@@ -81,11 +81,34 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * Otherwise the face might be on the
    * boundary of the domain or outside of
    * the domain.
+   *
+   * <h3>Problems with previous implementation</h3>
+   * The previous implementation which did not
+   * take the bounding box into account (given below)
+   * did not work correctly if the computational domain
+   * was anisotropic and we performed adaptive refinement.
+   * Then, fine grid cells might suddenly get neighbours and thus
+   * their vertices are not outside anymore.
+   *
+   * \code{.cpp}
+   * const int orientation = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
+   * const int direction   = (faceIndex-orientation)/2; // The normal direction: 0: x, 1: y, 1: z.
+   *
+   * dfor2(v) // Loop over vertices.
+   * if (v(direction) == orientation &&
+   *   verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
+   *   return true;
+   * }
+   * enddforx // v
+   * return false;
+   * \endcode
    */
   static bool isFaceInside(
       const int faceIndex,
-      exahype::Vertex* const verticesAroundCell,
-      const peano::grid::VertexEnumerator& verticesEnumerator);
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
 
   /**
    * TODO(Dominic): Revise this docu.
@@ -120,7 +143,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      cellDescription.setRiemannSolvePerformed(faceIndex,false);
+      cellDescription.setNeighbourMergePerformed(faceIndex,false);
 
       #ifdef Parallel
       int listingsOfRemoteRank =
@@ -135,19 +158,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     }
   }
 
-  template <class CellDescription>
-  static void determineInsideAndOutsideFaces(
-      CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
-      // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
-      // where no vertices are given. [Solved] - We send out the cellDescriptions from
-      // the ADERDG/FV cell descr. heaps.
-      cellDescription.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
-    }
-  }
+  static std::bitset<DIMENSIONS_TIMES_TWO> determineInsideAndOutsideFaces(
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
 
   #ifdef Parallel
   /**

@@ -10,7 +10,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  *
- * \author Dominic E. Charrier, Tobias Weinzierl, Fabian Güra
+ * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra
  **/
 
 #ifndef _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
@@ -50,12 +50,36 @@ public:
 
   static bool SpawnCompressionAsBackgroundThread;
 
+  /**
+   * The maximum helper status.
+   * This value is assigned to cell descriptions
+   * of type Cell.
+   */
+  static int MaximumHelperStatus;
+  /**
+   * The minimum helper status a cell description
+   * must have for it allocating boundary data.
+   */
+  static int MinimumHelperStatusForAllocatingBoundaryData;
+
+  /**
+   * The maximum augmentation status.
+   * This value is assigned to cell descriptions
+   * of type Ancestor.
+   */
+  static int MaximumAugmentationStatus;
+  /**
+   * The minimum helper status a cell description
+   * of type Cell must have for it to refine
+   * and add child cells of type Descendant to
+   * the grid.
+   */
+  static int MinimumAugmentationStatusForAugmentation;
+
   #ifdef Asserts
   static double PipedUncompressedBytes;
   static double PipedCompressedBytes;
   #endif
-
-  typedef exahype::DataHeap DataHeap;
 
   /**
    * Rank-local heap that stores ADERDGCellDescription instances.
@@ -73,6 +97,55 @@ private:
    * Log device.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _previousMinCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of all
+   * cell descriptions in the previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the minCorrectorTimeStepSize during a rollback.
+   */
+  double _previousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _minCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of
+   * all cell descriptions.
+   */
+  double _minCorrectorTimeStepSize;
+
+  /**
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
+
+  /**
+   * Minimum predictor time step size of
+   * all cell descriptions.
+   */
+  double _minPredictorTimeStepSize;
+
+  /**
+   * Minimum next predictor time step size of
+   * all cell descriptions.
+   */
+  double _minNextPredictorTimeStepSize;
+
+  /**
+   * A flag that is used to track if the
+   * CFL condition of a solver was violated.
+   */
+  bool _stabilityConditionWasViolated;
 
   /**
    * The number of unknowns/basis functions associated with each face of an
@@ -127,47 +200,13 @@ private:
   const int _dataPointsPerCell;
 
   /**
-   * Minimum corrector time stamp of all cell descriptions.
-   */
-  double _previousMinCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of all
-   * cell descriptions in the previous iteration.
+   * !!! LimitingADERDGSolver functionality !!!
    *
-   * This time step size is necessary for the fused time stepping + limiting
-   * to reconstruct the minCorrectorTimeStepSize during a rollback.
+   * The number of observables
+   * the discrete maximum principle
+   * is applied to.
    */
-  double _previousMinCorrectorTimeStepSize;
-
-  /**
-   * Minimum corrector time stamp of all cell descriptions.
-   */
-  double _minCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of
-   * all cell descriptions.
-   */
-  double _minCorrectorTimeStepSize;
-
-  /**
-   * Minimum predictor time stamp of all cell descriptions.
-   * Always equal or larger than the minimum corrector time stamp.
-   */
-  double _minPredictorTimeStamp;
-
-  /**
-   * Minimum predictor time step size of
-   * all cell descriptions.
-   */
-  double _minPredictorTimeStepSize;
-
-  /**
-   * Minimum next predictor time step size of
-   * all cell descriptions.
-   */
-  double _minNextPredictorTimeStepSize;
+  const int _DMPObservables;
 
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
@@ -214,17 +253,9 @@ private:
       CellDescription& pFine);
 
   /**
-   * Check if cell descriptions of type Ancestor or Descendant need to hold
-   * data or not based on virtual refinement criterion.
-   * Then, allocate the necessary memory or deallocate the unnecessary memory.
-   */
-  void ensureOnlyNecessaryMemoryIsAllocated(
-      CellDescription& fineGridCellDescription,
-      const exahype::solvers::Solver::AugmentationControl& augmentationControl,
-      const bool onMasterWorkerBoundary);
-
-  /**
    * TODO(Dominic): Add docu.
+   *
+   * \note Not thread-safe!
    */
   bool markForAugmentation(
       CellDescription& pFine,
@@ -253,10 +284,19 @@ private:
    * to check if we need to reset the deaugmenting request.
    *
    * TODO(Dominic): Make template function as soon as verified.
+   *
+   * \note Not thread-safe!
    */
   void vetoErasingOrDeaugmentingChildrenRequest(
       CellDescription& coarseGridCellDescription,
       const int fineGridCellDescriptionsIndex);
+
+  /**
+   * Fills the solution and previous solution arrays
+   * with zeros.
+   */
+  void prepareVolumeDataRestriction(
+      CellDescription& cellDescription) const;
 
   /*
    * Starts of finish collective operations from a
@@ -336,6 +376,8 @@ private:
    *
    * Further sets the refinement event on a coarse grid Cell to Refining
    * if the first new Cell was initialised on the fine grid.
+   *
+   * \note This operations is not thread-safe
    */
   void addNewCellIfRefinementRequested(
       exahype::Cell& fineGridCell,
@@ -343,7 +385,8 @@ private:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
       CellDescription& coarseGridCellDescription,
-      const int coarseGridCellDescriptionsIndex);
+      const int coarseGridCellDescriptionsIndex,
+      const bool initialGrid);
 
   /**
    * Prolongates Volume data from a parent cell description to
@@ -354,13 +397,24 @@ private:
    * Further copy the corrector and predictor time stamp and
    * time step sizes.
    *
-   * \note This method makes only sense for virtual shells
-   * in the current AMR concept.
+   * We prolongate both, the current and the previous
+   * solution to the newly created fine grid cell description.
+   * This especially important for the LimitingADERDGSolver.
+   * Here, the cell descriptions of with LimiterStatus
+   * NeighbourOfNeighbourOfTroubledCell need to communicate layers of
+   * the previous solution to the neighbour.
+   *
+   * Furthermore, set the limiterStatus to the value of the
+   * coarse grid cell description.
+   * Set the value of the mergedLimiterStatus elements to Troubled
+   * in case the coarse grid cell descriptions' values are Troubled.
+   * Otherwise, set it to Ok.
    */
   void prolongateVolumeData(
       CellDescription&       fineGridCellDescription,
       const CellDescription& coarseGridCellDescription,
-      const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex);
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+      const bool initialGrid);
 
   /**
    * Restricts Volume data from \p cellDescription to
@@ -481,21 +535,6 @@ private:
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
 
-  /**
-   * Checks if no unnecessary memory is allocated for the cell description.
-   * If this is not the case, it deallocates the unnecessarily allocated memory.
-   *
-   * This operation is thread safe as we serialise it.
-   */
-  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-  /**
-   * Checks if all the necessary memory is allocated for the cell description.
-   * If this is not the case, it allocates the necessary
-   * memory for the cell description.
-   */
-  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
-
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.
@@ -553,20 +592,6 @@ private:
   static void resetDataHeapIndices(
       const int cellDescriptionsIndex,
       const int parentIndex);
-
-  /**
-   * Checks if the parent index of a fine grid cell description
-   * was set to RemoteAdjacencyIndex during a previous forking event.
-   *
-   * If so, check if there exists a coarse grid cell description
-   * which must have been also received during a previous fork event.
-   * If so, update the parent index of the fine grid cell description
-   * with the coarse grid cell descriptions index.
-   */
-  void ensureConsistencyOfParentIndex(
-      CellDescription& cellDescription,
-      const int coarseGridCellDescriptionsIndex,
-      const int solverNumber);
 
 #endif
   /**
@@ -631,53 +656,171 @@ private:
   };
 
 public:
+
   /**
-   * Returns the ADERDGCellDescription.
+   * Push a new cell description to the back
+   * of the heap vector at \p cellDescriptionsIndex.
+   *
+   * \param TODO docu
+   */
+  static void addNewCellDescription(
+      const int cellDescriptionsIndex,
+      const int                                      solverNumber,
+      const exahype::records::ADERDGCellDescription::Type cellType,
+      const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
+      const int                                     level,
+      const int                                     parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>&  cellOffset);
+
+  /**
+   * Returns the ADERDGCellDescription heap vector
+   * at address \p cellDescriptionsIndex.
    */
   static Heap::HeapEntries& getCellDescriptions(
-      const int cellDescriptionsIndex) {
-    assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-    return Heap::getInstance().getData(cellDescriptionsIndex);
-  }
+      const int cellDescriptionsIndex);
 
   /**
-   * Returns the ADERDGCellDescription.
+   * Returns the ADERDGCellDescription with index \p element
+   * in the heap vector at address \p cellDescriptionsIndex.
    */
   static CellDescription& getCellDescription(
       const int cellDescriptionsIndex,
-      const int element) {
-    assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
-    assertion2(element>=0,cellDescriptionsIndex,element);
-    assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
-
-    return Heap::getInstance().getData(cellDescriptionsIndex)[element];
-  }
+      const int element);
 
   /**
-   * Returns if a ADERDGCellDescription type holds face data.
+   * \return true if a ADERDG cell description holds face data.
    */
-  static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
-    return cellDescriptionType==CellDescription::Cell       ||
-        cellDescriptionType==CellDescription::Ancestor   ||
-        cellDescriptionType==CellDescription::Descendant;
-  }
+  static bool holdsFaceData(const CellDescription& cellDescription);
+
+  void updateHelperStatus(
+        exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  int determineHelperStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void resetFacewiseHelperStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void updateAugmentationStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  int determineAugmentationStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void resetFacewiseAugmentationStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * \note a LimiterStatus enum for the given integer.
+   *
+   * \note It makes only sense to use this method if a corresponding
+   * celldescriptions is at the finest level of the mesh.
+   */
+  static CellDescription::LimiterStatus toLimiterStatusEnum(const int limiterStatusAsInt);
+
+  /**
+   * Determine a new limiter status for the given direction based on the neighbour's
+   * limiter status and the cell's reduced limiter status.
+   *
+   * Computes the new limiter status \f$ L_\rm{new} \f$ per direction
+   * according to:
+   *
+   * \f[
+   *  L_\rm{new} = \begin{cases}
+   *  T & L = T \\
+   *  \max \left( 0, \max \left( L, L_\rm{neighbour} \right) -1 \right) & \rm{else}
+   *   \end{cases}
+   * \f]
+   *
+   * with \f$ L \f$, \f$ L_\rm{neighbour} \f$, denoting the current limiter status
+   * of the cell and the neighbour, respectively, and \f$  T  \f$ indicates the status
+   * of a troubled cell.
+   */
+  void mergeWithLimiterStatus(
+      CellDescription& cellDescription,
+      const int faceIndex,
+      const int neighbourLimiterStatus) const;
+
+  /**
+   * Determine a unified limiter status of a cell description.
+   *
+   * <h2>Determining the unified value</h2>
+   * If all of the merged limiter status fields
+   * are set to Troubled, the limiter status is Troubled.
+   * (There is either all or none of the statuses set to Troubled.)
+   *
+   * Otherwise, if at least one of the merged statuses is set to NeighbourOfTroubledCell,
+   * the status is set to NeighbourOfTroubledCell.
+   *
+   * Otherwise, if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
+   * the status is set to NeighbourIsNeighbourOfTroubledCell.
+   *
+   * \note The ADERDGSolver needs to know about the limiter status during mesh initialisation and
+   * refinement operations.
+   */
+  static int determineLimiterStatus(CellDescription& cellDescription);
+
+  /**
+   * Overwrites the facewise limiter status with
+   * the limiter status.
+   */
+  static void overwriteFacewiseLimiterStatus(
+      CellDescription& cellDescription);
+
+  /**
+   * Overwrites the facewise limiter status values at the
+   * boundary with the cellwise limiter status value
+   * (cellDescription.getLimiterStatus()).
+   */
+  static void resetFacewiseLimiterStatus(CellDescription& cellDescription);
+
+  /**
+   * TODO(Dominic): Can later be replaced
+   * by ADERDGSolver::mergeNeighboursMetadata function.
+   */
+  void mergeNeighboursLimiterStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
 
   /**
    * Construct an ADERDGSolver.
    *
-   * \param identifier             An identifier for this solver.
-   * \param numberOfVariables      the number of variables.
-   * \param numberOfParameters     the number of material parameters.
-   * \param nodesPerCoordinateAxis The 1D basis size, i.e., the order + 1.
-   * \param maximumMeshSize        The maximum mesh size. From hereon, adaptive mesh refinement is used.
-   * \param timeStepping           the timestepping mode.
-   * \param profiler               a profiler.
+   * \param identifier               An identifier for this solver.
+   * \param numberOfVariables        the number of variables.
+   * \param numberOfParameters       the number of material parameters.
+   * \param DOFPerCoordinateAxis     The 1D basis size, i.e. the order + 1.
+   * \param maximumMeshSize          The maximum mesh size. From hereon, adaptive mesh refinement is used.
+   * \param maximumAdaptiveMeshDepth The maximum depth of the adaptive mesh.
+   * \param int DMPObservables       The number of discrete maximum principle observables. Has only
+   *                                 a meaning in the context of limiting. Should be set to a value<=0
+   *                                 if a pure ADER-DG solver is used.
+   * \param timeStepping             the timestepping mode.
+   * \param profiler                 a profiler.
    */
   ADERDGSolver(
       const std::string& identifier,
-      int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-      double maximumMeshSize,
+      int numberOfVariables, int numberOfParameters, int DOFPerCoordinateAxis,
+      double maximumMeshSize, int maximumAdaptiveMeshDepth,
+      int DMPObservables,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -764,6 +907,43 @@ public:
   int getSpaceTimeDataPerCell() const;
 
   /**
+   * !!! LimitingADERDGSolver functionality !!!
+   *
+   * The number of observables
+   * the discrete maximum principle
+   * is applied to.
+   */
+  int getDMPObservables() const;
+
+  /**
+   * Check if cell descriptions of type Ancestor or Descendant need to hold
+   * data or not based on virtual refinement criterion.
+   * Then, allocate the necessary memory or deallocate the unnecessary memory.
+   */
+  void ensureOnlyNecessaryMemoryIsAllocated(
+      CellDescription& fineGridCellDescription,
+      const exahype::solvers::Solver::AugmentationControl& augmentationControl,
+      const bool onMasterWorkerBoundary);
+
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   *
+   * \note This operation is thread safe as we serialise it.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   *
+   * \note This operation is thread safe as we serialise it.
+   */
+  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
+
+
+  /**
    * Getter for the size of the array allocated that can be overriden
    * to change the allocated size independently of the solver parameters.
    * For example to add padding forthe optimised kernel
@@ -844,7 +1024,7 @@ public:
                              double**  tempStateSizedSquareMatrices,
                              const double dt,
                              const int normalNonZero,
-			     bool isBoundaryFace) = 0;
+                             bool isBoundaryFace) = 0;
 
   /**
    * Return the normal fluxes (or fluctuations) and state variables at the boundary.
@@ -1091,9 +1271,28 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax,
-                                      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
-                                      const double t, const double dt) const = 0;
+  virtual bool isPhysicallyAdmissible(
+      const double* const solution,
+      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+      const double t, const double dt) const = 0;
+
+  /**
+   * Maps the solution values Q to
+   * the discrete maximum principle observables.
+   *
+   * As we can observe all state variables,
+   * we interpret an 'observable' here as
+   * 'worthy to be observed'.
+   *
+   *\param[inout] observables The mapped observables.
+   *\param[in]                numberOfObservables The number of observables.
+   *\param[in]    Q           The state variables.
+   */
+  virtual void mapDiscreteMaximumPrincipleObservables(
+    double* observables,
+    const int numberOfObservables,
+    const double* const Q) const = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time
@@ -1216,6 +1415,13 @@ public:
    * and the argument handed in. The routine is used in
    * TimeStepComputation to determine the subsequent time step size.
    *
+   * <h1>Globalfixed timestepping</h1>
+   * In case of global fixed timestepping,
+   * we rely on the initial condition
+   * _predictorTimeStamp==_correctorTimeStamp
+   * to detect the first time step size
+   * computation.
+   *
    * <h1>Thread-safety</h1>
    *
    * This operation is not thread safe.
@@ -1249,42 +1455,38 @@ public:
   void setPreviousMinCorrectorTimeStepSize(double value);
   double getPreviousMinCorrectorTimeStepSize() const;
 
-  double getMinTimeStamp() const override {
-    return getMinCorrectorTimeStamp();
-  }
+  double getMinTimeStamp() const override;
 
-  double getMinTimeStepSize() const override {
-    return getMinCorrectorTimeStepSize();
-  }
+  double getMinTimeStepSize() const override;
 
-  double getMinNextTimeStepSize() const override {
-    return getMinNextPredictorTimeStepSize();
-  }
+  double getMinNextTimeStepSize() const override;
 
-  void updateMinNextTimeStepSize( double value ) override {
-    updateMinNextPredictorTimeStepSize(value);
-  }
+  void updateMinNextTimeStepSize( double value ) override;
 
-  void initSolverTimeStepData(double value) override {
-    setPreviousMinCorrectorTimeStepSize(0.0);
-    setMinCorrectorTimeStepSize(0.0);
-    setMinPredictorTimeStepSize(0.0);
+  void initFusedSolverTimeStepSizes();
 
-    setPreviousMinCorrectorTimeStamp(value);
-    setMinCorrectorTimeStamp(value);
-    setMinPredictorTimeStamp(value);
-  }
+  /**
+   * Set if the CFL condition was violated
+   * (by the last fused time step).
+   */
+  void setStabilityConditionWasViolated(bool state);
 
-  void initFusedSolverTimeStepSizes() {
-    setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
-    setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
-    setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
-  }
+  /**
+   * \return true if the CFL condition was violated
+   * (by the last fused time step).
+   */
+  bool getStabilityConditionWasViolated() const;
 
-  bool isValidCellDescriptionIndex(
-      const int cellDescriptionsIndex) const override {
-    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
-  }
+  void initSolver(
+      const double timeStamp,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
+
+  bool isSending(const exahype::records::State::AlgorithmSection& section) const override;
+
+  bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
+
+  bool isValidCellDescriptionIndex(const int cellDescriptionsIndex) const override;
 
   int tryGetElement(
       const int cellDescriptionsIndex,
@@ -1297,23 +1499,49 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
+  /**
+   * Checks if the parent index of a fine grid cell description
+   * was set to RemoteAdjacencyIndex during a previous forking event.
+   *
+   * If so, check if there exists a coarse grid cell description
+   * which must have been also received during a previous fork event.
+   * If so, update the parent index of the fine grid cell description
+   * with the coarse grid cell descriptions index.
+   */
+  void ensureConsistencyOfParentIndex(
+      CellDescription& cellDescription,
+      const int coarseGridCellDescriptionsIndex,
+      const int solverNumber);
+
+  bool markForRefinement(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
+      const int solverNumber) override;
+
   bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
       const int solverNumber) override;
 
   bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
@@ -1327,9 +1555,9 @@ public:
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
@@ -1486,10 +1714,6 @@ public:
    * we should use the adjusted FVM solution as reference solution.
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
-   *
-   * TODO(Dominic): A rollback is of course not possible if we have adjusted the solution
-   * values. In this case, we should use the adjusted FVM solution as reference.
-   * A similar issue occurs if we impose the initial conditions.
    */
   void rollbackSolution(
       const int cellDescriptionsIndex,
@@ -1513,7 +1737,13 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
-  void restrictData(
+  void restrictToNextParent(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) override;
+
+  void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
       const int parentCellDescriptionsIndex,
@@ -1521,13 +1751,44 @@ public:
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
   ///////////////////////////////////
-  // PARENT<->CHILD
-  ///////////////////////////////////
-  // TODO(Dominic): Extract prolongation and restriction operations.
-
-  ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  // helper status
+  void mergeWithHelperStatus(
+      CellDescription& cellDescription,
+      const int direction,
+      const int otherHelperStatus) const;
+
+  void mergeNeighboursHelperStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
+  // augmentation status
+  void mergeWithAugmentationStatus(
+      CellDescription& cellDescription,
+      const int direction,
+      const int otherAugmentationStatus) const;
+
+  void mergeNeighboursAugmentationStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
+  void mergeNeighboursMetadata(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -1628,10 +1889,17 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
-  void mergeWithNeighbourMetadata(
-      const int neighbourTypeAsInt,
+  void appendNeighbourCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int solverNumber) override;
+
+  void mergeWithNeighbourMetadata(
+      const MetadataHeap::HeapEntries&          neighbourMetadata,
+      const tarch::la::Vector<DIMENSIONS, int>& src,
+      const tarch::la::Vector<DIMENSIONS, int>& dest,
+      const int                                 cellDescriptionsIndex,
+      const int                                 element) override;
 
   void sendDataToNeighbour(
       const int                                    toRank,
@@ -1651,7 +1919,7 @@ public:
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
-      const int                                    neighbourTypeAsInt,
+      const MetadataHeap::HeapEntries&             neighbourMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1662,9 +1930,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
-  /**
-   * Drop solver data from neighbour rank.
-   */
   void dropNeighbourData(
       const int                                    fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1708,10 +1973,31 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
+  /**
+   * Compiles a message for the master.
+   *
+   * Capacity of the message vector can be modified
+   * in case the calling function wants to push additional
+   * entries to the back of the vector.
+   *
+   * \see LimitingADERDGSolver::sendDataToMaster
+   */
+  DataHeap::HeapEntries
+  compileMessageForMaster(const int capacity=4) const;
+
   void sendDataToMaster(
       const int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
+
+  /**
+   * Read a message from a worker
+   * and adjust solver fields.
+   *
+   * \see LimitingADERDGSolver::mergeWithWorkerData
+   */
+  void mergeWithWorkerData(
+      const DataHeap::HeapEntries& message);
 
   void mergeWithWorkerData(
       const int workerRank,
@@ -1732,7 +2018,7 @@ public:
 
   void mergeWithWorkerData(
       const int                                     workerRank,
-      const int                                     workerTypeAsInt,
+      const MetadataHeap::HeapEntries&              workerMetadata,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -1746,11 +2032,40 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void appendMasterWorkerCommunicationMetadata(
+      MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
+  void mergeWithMasterWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) override;
+
+  /**
+   * Compiles a message for a worker.
+   *
+   * Capacity of the message vector can be modified
+   * in case the calling function wants to push additional
+   * entries to the back of the vector.
+   *
+   * \see LimitingADERDGSolver::sendDataToWorker
+   */
+  DataHeap::HeapEntries
+  compileMessageForWorker(const int capacity=7) const;
 
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
+
+  /**
+   * Read a message from the master
+   * and adjust solver fields.
+   *
+   * \see LimitingADERDGSolver::mergeWithMasterData
+   */
+  void mergeWithMasterData(const DataHeap::HeapEntries& message);
 
   void mergeWithMasterData(
       const                                        int masterRank,
@@ -1771,7 +2086,7 @@ public:
 
   void mergeWithMasterData(
       const int                                    masterRank,
-      const int                                    masterTypeAsInt,
+      const MetadataHeap::HeapEntries&             masterMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,

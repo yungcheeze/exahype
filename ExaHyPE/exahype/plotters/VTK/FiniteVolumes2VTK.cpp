@@ -415,7 +415,7 @@ void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
 
       // We do no smearing, so we only take into account the 2 nearest neighbours.
       const int neighbourCellsPerAxis = 2;
-      const int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
+      // const int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
         std::fill_n(vertexValue, _solverUnknowns, 0.0);
 	    int neighbourCells = 0; // actual neighbour cells taken into account
 	      dfor(icells, neighbourCellsPerAxis) {

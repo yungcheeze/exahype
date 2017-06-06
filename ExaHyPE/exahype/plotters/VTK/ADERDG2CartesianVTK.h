@@ -32,6 +32,8 @@ namespace exahype {
     class ADERDG2CartesianVerticesVTUBinary;
     class ADERDG2CartesianCellsVTUAscii;
     class ADERDG2CartesianCellsVTUBinary;
+
+    class Slicer; // external forward decl, #include exahype/plotters/slicing/Slicer.h
   }
 }
 
@@ -67,8 +69,8 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
   double _time;
 
 
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
+  exahype::plotters::Slicer *slicer;
+  static tarch::logging::Log _log;
 
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;

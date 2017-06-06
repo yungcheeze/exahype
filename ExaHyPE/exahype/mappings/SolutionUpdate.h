@@ -65,6 +65,16 @@ private:
   static tarch::logging::Log _log;
 
   /**
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
+   */
+   exahype::State _localState;
+
+  /**
    * A bunch of temporary variables for performing a solution
    * update.
    */
@@ -130,7 +140,12 @@ private:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Prepares the temporary variables.
+   * Prepares the temporary variables and copies
+   * the state.
+   *
+   * Resets the next mesh update request flag to false and
+   * the next limiter domain change to Regular
+   * using the "setNext..." methods.
    */
   void beginIteration(exahype::State& solverState);
 

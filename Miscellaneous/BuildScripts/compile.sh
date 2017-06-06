@@ -86,9 +86,9 @@ export DISTRIBUTEDMEM=${DISTRIBUTEDMEM:=$DEFAULT_DISTRIBUTEDMEM}
 export MODE=${MODE:=$DEFAULT_MODE}
 
 # you can amend on this
-export TBB_INC=/usr/include/tbb
-MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
-export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
+#  export TBB_INC=/usr/include/tbb
+#  MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
+#  export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
 
 #echo -e " COMPILER=$COMPILER"
 #echo -e " SHAREDMEM=$SHAREDMEM"
@@ -111,7 +111,7 @@ else
 	#rm $APPDIRNAME/$APPNAME/Makefile
 	#could also delete KernelCalls.cpp, $APPNAME_generated.cpp, etc.
 
-	verbose java -jar Toolkit/dist/ExaHyPE.jar  --not-interactive $APPDIRNAME/$APPNAME.exahype || { >&2 echo "Failure when running the toolkit"; exit -1; }
+	verbose java -jar Toolkit/dist/ExaHyPE.jar  --not-interactive $APPDIRNAME/$SPECFILE || { >&2 echo "Failure when running the toolkit"; exit -1; }
 fi
 
 cd -
@@ -182,6 +182,12 @@ done
 #		verbose gfortran $FORTFLAGS -c $fmodule
 #	fi
 #done
+
+# Force GCC to colour output even in the redirected output.
+if [[ $COMPILER == "GNU" ]]; then
+	gcc_force_color_output="-fdiagnostics-color=always"
+	export PROJECT_CFLAGS="${PROJECT_CFLAGS} $gcc_force_color_output"
+fi
 
 set -o pipefail # fail if make fails
 

@@ -20,14 +20,14 @@
 
 #include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
 
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
+  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{SolverConstructorArgumentExtension}}) {
   init(cmdlineargs);
 }
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
   exahype::solvers::FiniteVolumesSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,PatchSize,
-                                        GhostLayerWidth,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+                                        GhostLayerWidth,maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
 void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {

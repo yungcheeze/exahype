@@ -88,6 +88,38 @@ private:
   #endif
 
 public:
+
+  enum class RefinementMode {
+    /**
+     * This is refinement based on the refinement criterion.
+     *
+     * A-priori means here that we do refine before the
+     * solution update is performed.
+     */
+    APriori,
+    /**
+     * This is refinement based on the limiter status.
+     * It does only apply for the LimitingADERDGSolver.
+     *
+     * A-posteriori means here that we might refine troubled cells
+     * (and their next two neighbours)
+     * after the solution update was performed.
+     */
+    APosteriori,
+
+    /**
+     * This is refinement based on the user's refinement criterion
+     * and the limiter's physical admissibility detection
+     * applied to the initial condition.
+     *
+     * It can be understood as a mix of A-priori and A-posteriori
+     * refinement.
+     */
+    Initial
+  };
+
+  static RefinementMode Mode;
+
   #ifdef Parallel
   /**
    * This variable is unset in MeshRefinement::beginIteration(...) in the first iteration
@@ -103,11 +135,26 @@ public:
   peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
 
   /**
-   * Switched off
+   * We merge the limite status between neighbouring cells.
+   * We thus avoid fine grid races.
    */
   peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+
+  /**
+   * Traverse the cells in serial. Might
+   * be relaxed when all semaphores are in place.
+   */
   peano::MappingSpecification enterCellSpecification(int level) const;
+
+  /**
+   * Traverse the cells in serial. Might
+   * be relaxed when all semaphores are in place.
+   */
   peano::MappingSpecification leaveCellSpecification(int level) const;
+
+  /**
+   * Switched off
+   */
   peano::MappingSpecification ascendSpecification(int level) const;
   peano::MappingSpecification descendSpecification(int level) const;
 
@@ -161,6 +208,31 @@ public:
    *
    * Further update the gridUpdateRequested flag
    * of each solver.
+   *
+   * Further synchronise the time stepping of the patches
+   * with the solver and zero the time step sizes.
+   *
+   * TODO(Dominic): Update the docu
+   *
+   * We distinguish among three different refinement modes:
+   *
+   * RefinementMode | Action
+   * ---------------|------------------------------
+   * Initial        | In this refinement mode, we evaluate the user's refinement criterion
+   *                | as well as the limiter's physical admissibility detection (PAD) criterion
+   *                | if a LimitingADERDGSolver is employed.
+   *                | [LimitingADERDGSolver] We aggressively refine all cells that do not satisfy the PAD down
+   *                | to the finest level specified by the user for a solver.
+   *                | The user's refinement criterion is used
+   *                | to resolve other features of the solution more accurately.
+   * APriori        | Refine the mesh according to the user's refinement criterion
+   *                | after a solution update has been performed.
+   * APosteriori    | [LimitingADERDGSolver] Ensure that cells which have been newly marked as Troubled
+   *                | and their next two neighbours always reside on the finest level of the grid.
+   *
+   * Open Issues:
+   * * TODO(Dominic): The refinement criteria have to consider the maximum depth of the adaptive mesh (supplied by the user)
+   * * TODO(Dominic): We have to merge the LimiterStatusSpreading with the mesh refinement
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -206,6 +278,8 @@ public:
    *
    * For each solver, reset the grid update requested flag
    * to false.
+   *
+   * Further zero the time step sizes of the solver.
    *
    * <h2>MPI</h2>
    * Finish the previous synchronous sends and

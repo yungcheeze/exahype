@@ -85,17 +85,20 @@ void MHD::MHDSolver_ADERDG::eigenvalues(const double* const Q, const int normalN
   pdeeigenvalues_(lambda, Q, nv);
 }
 
-bool MHD::MHDSolver_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
-  return (t < 1e-10);
+exahype::solvers::ADERDGSolver::AdjustSolutionValue MHD::MHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &centre, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) const {
+  if (t < 1e-10) {
+    return AdjustSolutionValue::PointWisely;
+  }
+  return AdjustSolutionValue::No;
 }
 
-void MHD::MHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void MHD::MHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     idfunc(x, Q);
   }
 }
 
-void MHD::MHDSolver_ADERDG::algebraicSource(const double* const Q, double* S) {
+void MHD::MHDSolver_ADERDG::algebraicSource(const double* const Q,double* S) {
   pdesource_(S, Q);
 }
 
@@ -111,41 +114,31 @@ void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t,
   bcfunc(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
 }
 
-void MHD::MHDSolver_ADERDG::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
-  constexpr int nVar = 9;
-  std::memset(BgradQ, 0, nVar * sizeof(double));
+
+// only evaluated in Limiting context
+void MHD::MHDSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
+    double* observables,
+    const int numberOfObservables,
+    const double* const Q) const {
+  assertion(numberOfObservables==2);
+  observables[0] = Q[0];
+  observables[1] = Q[4];
 }
 
-void MHD::MHDSolver_ADERDG::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
-  constexpr int nVar = 9;
-  std::memset(Bn, 0, nVar * nVar * sizeof(double));
-}
 
-
-bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
-  if (QMin[0] < 0.0) return false;
-  if (QMin[4] < 0.0) return false;
-
-  for (int i=0; i<5; ++i) {
-    if (!std::isfinite(QMin[i])) return false;
-    if (!std::isfinite(QMax[i])) return false;
-  }
+// only evaluated in Limiting context
+bool MHD::MHDSolver_ADERDG::isPhysicallyAdmissible(
+    const double* const solution,
+    const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+    const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const double t, const double dt) const {
+  if (observablesMin[0] < 0.0) return false;
+  if (observablesMin[1] < 0.0) return false;
 
   return true;
 }
 
 bool MHD::MHDSolver_ADERDG::useAlgebraicSource() const {return true;}
-
-bool MHD::MHDSolver_ADERDG::useNonConservativeProduct() const {return true;}
-
-bool MHD::MHDSolver_ADERDG::useCoefficientMatrix() const {return true;}
-
-bool MHD::MHDSolver_ADERDG::usePointSource() const {
-  return false;
-}
-
-void MHD::MHDSolver_ADERDG::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  // do nothing
-}
+bool MHD::MHDSolver_ADERDG::useConservativeFlux() const {return true;}
 
 

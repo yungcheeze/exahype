@@ -27,25 +27,26 @@ exahype-project  Euler
   log-file  = bla.log
 
   computational-domain
-    dimension const                = 2
-    width                    = 1.0, 1.0
+    dimension const          = 2
+    width                    = 1.0, 0.33
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:4}
+    configure                = {hotspot,fair,ranks_per_node:10}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
   
+
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
@@ -57,25 +58,43 @@ exahype-project  Euler
     spawn-double-compression-as-background-thread = off
   end optimisation
 
+
   solver Limiting-ADER-DG LimitingADERDG
-    variables const         = rho:1,j:3,E:1
-    order const             = 3
-    maximum-mesh-size = 0.04
-    time-stepping     = global
-    kernel const            = generic::fluxes::nonlinear
-    language const          = C
-    limiter-kernel const    = generic::godunov 
-    limiter-language const  = C
-    dmp-relaxation-parameter = 1e-2
-    dmp-difference-scaling = 1e-3
+    variables const          = rho:1,j:3,E:1
+    order const              = 3
+    maximum-mesh-size        = 0.2
+    maximum-mesh-depth       = 2
+    time-stepping            = global
+    kernel const             = generic::fluxes::nonlinear
+    language const           = C
+    limiter-kernel const     = generic::godunov
+    limiter-language const   = C
+    dmp-observables          = 2
+    dmp-relaxation-parameter = 1e-4
+    dmp-difference-scaling   = 1e-3
+    steps-till-cured         = 2
+
+    plot vtu::Cartesian::vertices::ascii VTUPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 0.1e-4
+      output    = ./dg
+    end plot
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
       time      = 0.0
-      repeat    = 0.000001
-      output    = ./limitingaderg-dg
-      select    = x:0.0,y:0.0
+      repeat    = 0.1e-4
+      output    = ./dg
     end plot
+    
+    plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 0.1e-4
+      output    = ./fv
+    end plot
+    
   end solver
 
 end exahype-project

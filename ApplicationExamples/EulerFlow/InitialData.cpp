@@ -138,7 +138,7 @@ void MovingGauss(const double* const x, double* Q, double t = 0.0) {
  * surpresses this solution and rho=1, p=1, E=p/(gamma-1) is the resolut on the
  * whole grid. I am not sure why this happens, it seems to be an error.
  **/
-void DiffusingGauss(const double* const x, double* Q, double /*t*/) {
+void DiffusingGauss(const double* const x, double* Q, double t) {
   using namespace tarch::la;
   typedef Vector<DIMENSIONS,double> vecNd;
 

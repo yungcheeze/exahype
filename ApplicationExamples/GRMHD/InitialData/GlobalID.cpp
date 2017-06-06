@@ -10,5 +10,6 @@ void prepare_id() {
 		return;
 	}
 	//id = new fortranid();
-	id = new pizzatov();
+	//id = new pizzatov();
+	id = new rnsid();
 }

@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * @author Dominic E. Charrier, Tobias Weinzierl
  **/
 
 #ifndef _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
@@ -32,10 +34,7 @@ class FiniteVolumesSolver;
 
 
 /**
- * Abstract base class for any 1st order finite volume solver. It does not make
- * sense to use this operation for higher order finite volume solvers as those
- * require additional data structures (and for ncp, e.g., also the
- * non-conservative product).
+ * Abstract base class for one-step Finite Volumes solvers.
  */
 class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver, public exahype::solvers::UserFiniteVolumesSolverInterface {
 public:
@@ -58,35 +57,6 @@ private:
   static tarch::logging::Log _log;
 
   /**
-   * Total number of volume averages and ghost values in a patch.
-   * This number does include ghost values.
-   */
-  int _dataPerPatch;
-
-  /**
-   * Width of the ghost layer used for
-   * reconstruction and Riemann solves.
-   */
-  int _ghostLayerWidth;
-
-  /**
-   * Total number of ghost values surrounding a patch.
-   */
-  int _ghostDataPerPatch;
-
-  /**
-   * Total number of volume averages per face of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchFace;
-
-  /**
-   * Total number of volume averages per boundary of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchBoundary;
-
-  /**
    * Minimum time step size of all patches
    * in the previous iteration.
    */
@@ -107,6 +77,35 @@ private:
    * the next iteration.
    */
   double _minNextTimeStepSize;
+
+  /**
+   * Width of the ghost layer used for
+   * reconstruction and Riemann solves.
+   */
+  int _ghostLayerWidth;
+
+  /**
+   * Total number of volume averages and ghost values in a patch.
+   * This number does include ghost values.
+   */
+  int _dataPerPatch;
+
+  /**
+   * Total number of ghost values surrounding a patch.
+   */
+  int _ghostDataPerPatch;
+
+  /**
+   * Total number of volume averages per face of the patch.
+   * This number does not include ghost values.
+   */
+  int _dataPerPatchFace;
+
+  /**
+   * Total number of volume averages per boundary of the patch.
+   * This number does not include ghost values.
+   */
+  int _dataPerPatchBoundary;
 
   /**
    * Synchonises the cell description time stamps
@@ -187,28 +186,21 @@ public:
    }
 
    /**
-    * Checks if no unnecessary memory is allocated for the cell description.
-    * If this is not the case, it deallocates the unnecessarily allocated memory.
+    * Push a new cell description to the back
+    * of the heap vector at \p cellDescriptionsIndex.
+    *
+    * \param TODO docu
     */
-   void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+   static void addNewCellDescription(
+       const int cellDescriptionsIndex,
+       const int solverNumber,
+       const CellDescription::Type cellType,
+       const CellDescription::RefinementEvent refinementEvent,
+       const int level,
+       const int parentIndex,
+       const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+       const tarch::la::Vector<DIMENSIONS, double>&  cellOffset);
 
-   /**
-    * Checks if all the necessary memory is allocated for the cell description.
-    * If this is not the case, it allocates the necessary
-    * memory for the cell description.
-    */
-   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-   /**
-    * Initialise cell description of type Cell.
-    * Initialise the refinement event with None.
-    */
-   void addNewCell(
-       exahype::Cell& fineGridCell,
-       exahype::Vertex* const fineGridVertices,
-       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-       const int coarseGridCellDescriptionsIndex,
-       const int solverNumber);
 
    /**
     * Returns if a ADERDGCellDescription type holds face data.
@@ -221,7 +213,7 @@ public:
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
       int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
-      double maximumMeshSize,
+      double maximumMeshSize, int maximumAdaptiveMeshDepth,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -361,8 +353,6 @@ public:
       const double dt) = 0;
 
 
-
-
   /**
    * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
    * within the time interval [t,t+dt].
@@ -476,7 +466,14 @@ public:
     _previousMinTimeStepSize = value;
   }
 
-  void initSolverTimeStepData(double value) override;
+  void initSolver(
+      const double timeStamp,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
+
+  bool isSending(const exahype::records::State::AlgorithmSection& section) const override;
+
+  bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,
@@ -512,23 +509,60 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
+  /**
+   * Initialise cell description of type Cell.
+   * Initialise the refinement event with None.
+   */
+  void addNewCell(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int coarseGridCellDescriptionsIndex,
+      const int solverNumber);
+
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   */
+  void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+
+  bool markForRefinement(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
+      const int solverNumber) override;
+
   bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
       const int solverNumber) override;
 
   bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
@@ -542,9 +576,9 @@ public:
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
@@ -621,7 +655,13 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
-  void restrictData(
+  void restrictToNextParent(
+        const int fineGridCellDescriptionsIndex,
+        const int fineGridElement,
+        const int coarseGridCellDescriptionsIndex,
+        const int coarseGridElement) override;
+
+  void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
       const int parentCellDescriptionsIndex,
@@ -632,6 +672,14 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeNeighboursMetadata(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -657,6 +705,22 @@ public:
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
 #ifdef Parallel
+  ///////////////////////////////////
+  // MASTER<=>WORKER
+  ///////////////////////////////////
+  void appendMasterWorkerCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
+  void mergeWithMasterWorkerMetadata(
+        const MetadataHeap::HeapEntries& receivedMetadata,
+        const int                        cellDescriptionsIndex,
+        const int                        element) override;
+
+  ///////////////////////////////////
+  // FORK OR JOIN
+  ///////////////////////////////////
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -711,10 +775,17 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void appendNeighbourCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
   void mergeWithNeighbourMetadata(
-        const int neighbourTypeAsInt,
-        const int cellDescriptionsIndex,
-        const int element) override;
+      const exahype::MetadataHeap::HeapEntries& metadata,
+      const tarch::la::Vector<DIMENSIONS, int>& src,
+      const tarch::la::Vector<DIMENSIONS, int>& dest,
+      const int cellDescriptionsIndex,
+      const int element) override;
 
   void sendDataToNeighbour(
       const int                                     toRank,
@@ -734,7 +805,7 @@ public:
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
-      const int                                    neighbourTypeAsInt,
+      const MetadataHeap::HeapEntries&             neighbourMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -808,7 +879,7 @@ public:
 
   void mergeWithWorkerData(
       const int                                    workerRank,
-      const int                                    workerTypeAsInt,
+      const exahype::MetadataHeap::HeapEntries&    workerMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -846,7 +917,7 @@ public:
 
   void mergeWithMasterData(
       const int                                     masterRank,
-      const int                                     masterTypeAsInt,
+      const exahype::MetadataHeap::HeapEntries&     masterMetadata,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,

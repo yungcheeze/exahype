@@ -13,6 +13,11 @@
 
 #include "{{AbstractSolver}}.h"
 
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
 {{ProfilerInclude}}
 {{ParserInclude}}
 
@@ -28,7 +33,7 @@ private:
      */
     static tarch::logging::Log _log;
   public:
-    {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
+    {{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
     /**
      * Initialise the solver.

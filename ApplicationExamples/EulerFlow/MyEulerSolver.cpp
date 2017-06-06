@@ -65,7 +65,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   if(id == "outflow") {
   }
 
-//  idfunc = MovingGauss2D; TODO(Dominic): Use this function for the dyn amr test.
+//   idfunc = MovingGauss; //  TODO(Dominic): Use this function for the dyn amr test.
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -118,7 +118,8 @@ void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     // pass the time for exact initial data as t is not exactly 0.
-    idfunc(x, Q, t);
+//    idfunc(x, Q, 0.0);
+    DiffusingGauss(x,Q,t);
   }
 }
 
@@ -127,6 +128,10 @@ Euler::MyEulerSolver::refinementCriterion(
     const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
+//  if (t>1e-6)
+//    return exahype::solvers::Solver::RefinementControl::Keep;
+
+
 //  double largestRho  = -std::numeric_limits<double>::max();
 //  double smallestRho =  std::numeric_limits<double>::max();
 //
@@ -140,11 +145,7 @@ Euler::MyEulerSolver::refinementCriterion(
 //
 ////  if ((largestRho-smallestRho)/largestRho > 0.9e-1) { // This doesn't work with the erasing
 //  if (largestRho > 0.65) {
-//    if (dx[0] > getMaximumMeshSize()/9.) {
-//      return exahype::solvers::Solver::RefinementControl::Refine;
-//    } else {
-//      return exahype::solvers::Solver::RefinementControl::Keep;
-//    }
+//    return exahype::solvers::Solver::RefinementControl::Refine;
 //  }
 //
 //  if (dx[0] < getMaximumMeshSize()/3.)
@@ -161,12 +162,12 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   // Number of variables    = 5 (#unknowns + #parameters)
 
     // Compute boundary state.
-    idfunc(x, stateOut, t);
-  //stateOut[0] = stateIn[0];
-  //stateOut[1] = stateIn[1];
-  //stateOut[2] = stateIn[2];
-  //stateOut[3] = stateIn[3];
-  //stateOut[4] = stateIn[4];
+//  DiffusingGauss(x, stateOut, t);
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
 
     // Compute flux and
     // extract normal flux in a lazy fashion.

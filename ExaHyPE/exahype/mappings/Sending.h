@@ -107,14 +107,14 @@ public:
  *
  * \note Not thread-safe.
  */
-static void sendSolverDataToNeighbour(
+void sendSolverDataToNeighbour(
     const int                                    toRank,
     const tarch::la::Vector<DIMENSIONS,int>&     src,
     const tarch::la::Vector<DIMENSIONS,int>&     dest,
     const int                                    srcCellDescriptionIndex,
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level);
+    const int                                    level) const;
 
 /**
  * Loop over all the solvers and check
@@ -123,12 +123,12 @@ static void sendSolverDataToNeighbour(
  *
  * \note Not thread-safe.
  */
-static void sendEmptySolverDataToNeighbour(
+void sendEmptySolverDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS,int>&      src,
     const tarch::la::Vector<DIMENSIONS,int>&      dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level);
+    const int                                     level) const;
 #endif
 
  public:

@@ -81,8 +81,9 @@ tarch::logging::Log exahype::mappings::Merging::_log(
 exahype::mappings::Merging::Merging()
   #ifdef Debug
   :
-  _interiorFaceMerges(0),
-  _boundaryFaceMerges(0)
+  _remoteBoundaryFaceMerges(0)
+  ,_interiorFaceMerges(0)
+  ,_boundaryFaceMerges(0)
   #endif
 {
   // do nothing
@@ -96,6 +97,7 @@ exahype::mappings::Merging::~Merging() {
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState)
   #ifdef Debug
+  ,_remoteBoundaryFaceMerges(0)
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
   #endif
@@ -112,7 +114,10 @@ void exahype::mappings::Merging::beginIteration(
 
   _localState = solverState;
 
-  logDebug("beginIteration(State)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
+  logDebug("beginIteration(State)",
+      "MergeMode="<<exahype::records::State::toString(_localState.getMergeMode())<<
+      ", SendMode="<<exahype::records::State::toString(_localState.getSendMode())<<
+      ", AlgorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
 
   #ifdef Parallel
   if (_localState.getMergeMode()!=exahype::records::State::MergeMode::MergeNothing) {
@@ -129,6 +134,7 @@ void exahype::mappings::Merging::beginIteration(
   #endif
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
+  _remoteBoundaryFaceMerges = 0;
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;
   #endif
@@ -143,9 +149,11 @@ void exahype::mappings::Merging::endIteration(
   exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
-  logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
-  logInfo("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
+  logDebug("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
+  logDebug("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
   #endif
+
+  logDebug("endIteration(state)","remoteBoundaryFaceMerges: " << _remoteBoundaryFaceMerges);
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
 }
@@ -170,22 +178,23 @@ void exahype::mappings::Merging::touchVertexFirstTime(
           auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
               parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined7);
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
-            const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
-            const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
-            const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-            const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-            if (element2>=0 && element1>=0) {
-              solver->mergeNeighbours(
-                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-                  _temporaryVariables._tempFaceUnknowns[solverNumber],
-                  _temporaryVariables._tempStateSizedVectors[solverNumber],
-                  _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+              const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+              const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+              const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+              if (element2>=0 && element1>=0) {
+                solver->mergeNeighbours(
+                    cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                    _temporaryVariables._tempFaceUnknowns[solverNumber],
+                    _temporaryVariables._tempStateSizedVectors[solverNumber],
+                    _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+              }
+              #ifdef Debug // TODO(Dominic):
+              _interiorFaceMerges++;
+              #endif
             }
-
-            #ifdef Debug // TODO(Dominic)
-            _interiorFaceMerges++;
-            #endif
           endpfor
           grainSize.parallelSectionHasTerminated();
 
@@ -195,35 +204,37 @@ void exahype::mappings::Merging::touchVertexFirstTime(
           auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
               parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined8);
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
-            const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
-            const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
-            int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-            int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-            assertion4((element1==exahype::solvers::Solver::NotFound &&
-                        element2==exahype::solvers::Solver::NotFound)
-                       || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
-                       || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
-                       cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+              const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+              int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+              int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+              assertion4((element1==exahype::solvers::Solver::NotFound &&
+                          element2==exahype::solvers::Solver::NotFound)
+                         || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+                         || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
+                         cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
 
-            if (element1 >= 0) {
-              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-                                            _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                            _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+              if (element1 >= 0) {
+                solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
+                                              _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                              _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                              _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
-              #ifdef Debug
-              _boundaryFaceMerges++;
-              #endif
-            }
-            if (element2 >= 0){
-              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-                                            _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                            _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
-              #ifdef Debug
-              _boundaryFaceMerges++;
-              #endif
+                #ifdef Debug
+                _boundaryFaceMerges++;
+                #endif
+              }
+              if (element2 >= 0){
+                solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
+                                              _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                              _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                              _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                #ifdef Debug
+                _boundaryFaceMerges++;
+                #endif
+              }
             }
           endpfor
           grainSize.parallelSectionHasTerminated();
@@ -253,9 +264,13 @@ void exahype::mappings::Merging::mergeWithNeighbour(
     return;
   }
   
-  if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-    // logInfo("mergeWithNeighbour(...)","hasToMerge");
+  if (
+      _localState.getMergeMode()==exahype::records::State::MergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::DropFaceData ||
+      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndDropFaceData
+  ) {
+    // logDebug("mergeWithNeighbour(...)","hasToMerge");
 
     dfor2(myDest)
       dfor2(mySrc)
@@ -266,27 +281,37 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");
+          // logDebug("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
-          int receivedMetadataIndex = MetadataHeap::getInstance().
-              createData(0,exahype::solvers::RegisteredSolvers.size());
-          MetadataHeap::getInstance().receiveData(
-              receivedMetadataIndex,
-              fromRank, fineGridX, level,
-              peano::heap::MessageType::NeighbourCommunication);
-          exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-          assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+          const int receivedMetadataIndex =
+          exahype::receiveNeighbourCommunicationMetadata(
+              fromRank, fineGridX, level);
+          exahype::MetadataHeap::HeapEntries& receivedMetadata =
+              MetadataHeap::getInstance().getData(receivedMetadataIndex);
+          assertion(receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
+            // logDebug("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
 
-            mergeWithNeighbourData(
-                fromRank,
-                vertex.getCellDescriptionsIndex()[srcScalar],
-                vertex.getCellDescriptionsIndex()[destScalar],
-                src,dest,
-                fineGridX,level,
-                receivedMetadata);
+            if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
+                _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+              mergeWithNeighbourData(
+                  fromRank,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  src,dest,
+                  fineGridX,level,
+                  receivedMetadata);
+            } else { // _localState.getMergeMode()==exahype::records::State::DropFaceData ||
+                     // _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndDropFaceData
+              dropNeighbourData(
+                  fromRank,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  src,dest,
+                  fineGridX,level,
+                  receivedMetadata);
+            }
 
             vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
             vertex.setMergePerformed(src,dest,true);
@@ -318,31 +343,41 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
         const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      const int offset = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
+      if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+        const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
+        assertion1(element>=0,element);
 
-    if (receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
-      const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
-      assertion1(element>=0,element);
+        exahype::MetadataHeap::HeapEntries metadataPortion(
+            receivedMetadata.begin()+offset,
+            receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
-      logDebug(
-          "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
-          fromRank << " at vertex x=" << x << ", level=" << level <<
-          ", src=" << src << ", dest=" << dest);
+        logDebug(
+            "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
+            fromRank << " at vertex x=" << x << ", level=" << level <<
+            ", src=" << src << ", dest=" << dest);
 
-      solver->mergeWithNeighbourData(
-          fromRank,receivedMetadata[solverNumber].getU(),
-          destCellDescriptionIndex,element,src,dest,
-          _temporaryVariables._tempFaceUnknowns[solverNumber],
-          _temporaryVariables._tempStateSizedVectors[solverNumber],
-          _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
-          x,level);
-    } else {
-      logDebug(
+        solver->mergeWithNeighbourData(
+            fromRank,
+            metadataPortion,
+            destCellDescriptionIndex,element,src,dest,
+            _temporaryVariables._tempFaceUnknowns[solverNumber],
+            _temporaryVariables._tempStateSizedVectors[solverNumber],
+            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
+            x,level);
+      } else {
+        logDebug(
             "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
             fromRank << " at vertex x=" << x << ", level=" << level <<
             ", src=" << src << ", dest=" << dest);
 
-      solver->dropNeighbourData(
-          fromRank,src,dest,x,level);
+        solver->dropNeighbourData(
+            fromRank,src,dest,x,level);
+      }
+      #ifdef Debug
+      _remoteBoundaryFaceMerges++;
+      #endif
     }
   }
 }
@@ -356,16 +391,20 @@ void exahype::mappings::Merging::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int level,
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-  assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
-
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
-    logDebug(
-        "dropNeighbourData(...)", "drop data from " <<
-        fromRank << " at vertex x=" << x << ", level=" << level <<
-        ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber);
-
     auto* solver = solvers::RegisteredSolvers[solverNumber];
-    solver->dropNeighbourData(fromRank,src,dest,x,level);
+
+    logDebug("dropNeighbourData(...)", "drop data from rank" <<
+             fromRank << " at vertex x=" << x << ", level=" << level <<
+             ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber <<
+             ", algorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
+
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      solver->dropNeighbourData(fromRank,src,dest,x,level);
+      #ifdef Debug
+      _remoteBoundaryFaceMerges++;
+      #endif
+    }
   }
 }
 
@@ -383,7 +422,8 @@ bool exahype::mappings::Merging::prepareSendToWorker(
   logDebug("prepareSendToWorker(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData) {
     // Send global solver data
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
       solver->sendDataToWorker(
@@ -403,39 +443,40 @@ bool exahype::mappings::Merging::prepareSendToWorker(
 
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
-      && fineGridCell.isInside()) {
+      && fineGridCell.isInside()) { // TODO(Dominic): Geometry
+    exahype::sendMasterWorkerCommunicationMetadata( // TODO(Dominic): Always send. Check again
+        worker,fineGridCell.getCellDescriptionsIndex(),
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+
     if (fineGridCell.isInitialised()) {
-      exahype::Vertex::sendEncodedMetadata(
-          worker,fineGridCell.getCellDescriptionsIndex(),
-          peano::heap::MessageType::MasterWorkerCommunication,
-          fineGridVerticesEnumerator.getCellCenter(),
-          fineGridVerticesEnumerator.getLevel());
-
-      int solverNumber=0;
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-        if (element!=exahype::solvers::Solver::NotFound) {
-              solver->sendDataToWorker(
-                  worker,
-                  fineGridCell.getCellDescriptionsIndex(),element,
-                  fineGridVerticesEnumerator.getCellCenter(),
-                  fineGridVerticesEnumerator.getLevel());
-        } else {
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->isComputing(_localState.getAlgorithmSection())) {
+          const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+          if (element!=exahype::solvers::Solver::NotFound) {
+            solver->sendDataToWorker(
+                worker,
+                fineGridCell.getCellDescriptionsIndex(),element,
+                fineGridVerticesEnumerator.getCellCenter(),
+                fineGridVerticesEnumerator.getLevel());
+          } else {
+            solver->sendEmptyDataToWorker(
+                worker,
+                fineGridVerticesEnumerator.getCellCenter(),
+                fineGridVerticesEnumerator.getLevel());
+          }
+        }
+      }
+    } else {
+      // TODO(Dominic): Probably not necessary if cell is not initialised.
+      for (auto* solver : exahype::solvers::RegisteredSolvers) {
+        if (solver->isComputing(_localState.getAlgorithmSection())) {
           solver->sendEmptyDataToWorker(
               worker,
               fineGridVerticesEnumerator.getCellCenter(),
               fineGridVerticesEnumerator.getLevel());
         }
-
-        ++solverNumber;
-      }
-    } else {
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        solver->sendEmptyDataToWorker(
-            worker,
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getLevel());
       }
     } // else do nothing
   }
@@ -454,7 +495,8 @@ void exahype::mappings::Merging::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData) {
     // Receive global solver data from master
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
       solver->mergeWithMasterData(
@@ -473,55 +515,60 @@ void exahype::mappings::Merging::receiveDataFromMaster(
   }
 
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
-      && receivedCell.isInside()) {
+       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
+      &&
+      receivedCell.isInside()) {  // TODO(Dominic): Geometry
     if (receivedCell.isInitialised()) {
-      int receivedMetadataIndex = MetadataHeap::getInstance().createData(
-          0,exahype::solvers::RegisteredSolvers.size());
-      MetadataHeap::getInstance().receiveData(
-          receivedMetadataIndex,
+      const int receivedMetadataIndex =
+          exahype::receiveMasterWorkerCommunicationMetadata(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           receivedVerticesEnumerator.getCellCenter(),
-          receivedVerticesEnumerator.getLevel(),
-          peano::heap::MessageType::MasterWorkerCommunication);
+          receivedVerticesEnumerator.getLevel());
       MetadataHeap::HeapEntries& receivedMetadata =
-                MetadataHeap::getInstance().getData(receivedMetadataIndex);
+          MetadataHeap::getInstance().getData(receivedMetadataIndex);
 
-      int solverNumber=0;
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->isComputing(_localState.getAlgorithmSection())) {
+          const int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
+          const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
+          if (element!=exahype::solvers::Solver::NotFound &&
+              receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
 
-        if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
-          solver->mergeWithMasterData(
-                    tarch::parallel::NodePool::getInstance().getMasterRank(),
-                    receivedMetadata[solverNumber].getU(),
-                    receivedCell.getCellDescriptionsIndex(),element,
-                    receivedVerticesEnumerator.getCellCenter(),
-                    receivedVerticesEnumerator.getLevel());
-        } else {
-          solver->dropMasterData(
-              tarch::parallel::NodePool::getInstance().getMasterRank(),
-              receivedVerticesEnumerator.getCellCenter(),
-              receivedVerticesEnumerator.getLevel());
+            exahype::MetadataHeap::HeapEntries metadataPortion(
+                receivedMetadata.begin()+offset,
+                receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
+
+            solver->mergeWithMasterData(
+                tarch::parallel::NodePool::getInstance().getMasterRank(),
+                metadataPortion,
+                receivedCell.getCellDescriptionsIndex(),element,
+                receivedVerticesEnumerator.getCellCenter(),
+                receivedVerticesEnumerator.getLevel());
+          } else {
+            solver->dropMasterData(
+                tarch::parallel::NodePool::getInstance().getMasterRank(),
+                receivedVerticesEnumerator.getCellCenter(),
+                receivedVerticesEnumerator.getLevel());
+          }
         }
-
-        ++solverNumber;
       }
       MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
 
     } else {
-      exahype::Vertex::dropMetadata(
+      exahype::dropMetadata(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           peano::heap::MessageType::MasterWorkerCommunication,
           receivedVerticesEnumerator.getCellCenter(),
           receivedVerticesEnumerator.getLevel());
 
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        solver->dropMasterData(
-            tarch::parallel::NodePool::getInstance().getMasterRank(),
-            receivedVerticesEnumerator.getCellCenter(),
-            receivedVerticesEnumerator.getLevel());
+        if (solver->isComputing(_localState.getAlgorithmSection())) {
+          solver->dropMasterData(
+              tarch::parallel::NodePool::getInstance().getMasterRank(),
+              receivedVerticesEnumerator.getCellCenter(),
+              receivedVerticesEnumerator.getLevel());
+        }
       }
     } // else do nothing
   }
@@ -627,15 +674,14 @@ void exahype::mappings::Merging::enterCell(
   // Does not need to merge time step data if face data is merged also since we merge then anyway
   // in touchVertexFirstTime()
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData) {
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->isComputing(_localState.getAlgorithmSection())) {
+        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+        }
       }
-
-      ++solverNumber;
     }
   }
 }

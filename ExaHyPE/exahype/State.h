@@ -70,6 +70,8 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
  public:
   static bool FuseADERDGPhases;
 
+  static double WeightForPredictionRerun;
+
   /**
    * Default Constructor
    *
@@ -98,6 +100,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void merge(const State& anotherState);
   ///@}
 
+  void setAlgorithmSection(const records::State::AlgorithmSection& section);
+
+  /**
+   * Return the algorithm section the runner is currently in.
+   */
+  records::State::AlgorithmSection getAlgorithmSection() const;
+
   /**
    * Return the merge mode that is currently active.
    */
@@ -118,6 +127,12 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToADERDGTimeStepContext();
 
+  /**
+   * In a serial version, running the predictor is the same for optimistic time
+   * stepping and the non-fused algorithm. In the MPI case however a rerun in
+   * optimistic time stepping has to remove all old MPI messages from the queues
+   * and re-send the updated boundary values, so it is slightly different
+   */
   void switchToPredictionRerunContext();
 
   void switchToNeighbourDataMergingContext();
@@ -128,7 +143,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToTimeStepSizeComputationContext();
 
-  void switchToPreAMRContext();
+  void switchToUpdateMeshContext();
 
   void switchToPostAMRContext();
 
@@ -154,11 +169,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToRecomputeSolutionAndTimeStepSizeComputationContext();
 
-  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
+  void switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
 
-  void setStabilityConditionOfOneSolverWasViolated(bool state) ;
-
-  bool stabilityConditionOfOneSolverWasViolated() const;
+  void switchToNeighbourDataDroppingContext();
 
   void setReinitTimeStepData(bool state);
 
@@ -171,9 +184,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    */
   static bool fuseADERDGPhases();
 
-  void setTimeStepSizeWeightForPredictionRerun(double value);
-
-  double getTimeStepSizeWeightForPredictionRerun() const;
+  static double getTimeStepSizeWeightForPredictionRerun();
 
   /**
    * Has to be called after the iteration!

@@ -33,7 +33,7 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
      */
     static tarch::logging::Log _log;
   public:
-    DIMSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    DIMSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.
@@ -109,16 +109,7 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
-   /**
-     * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
-     * use the ADER-DG kernels for nonlinear PDEs. If you use 
-     * the kernels for linear PDEs, it is a tensor with dimensions
-     * Dim x NumberOfVariables.
-     * 
-     */
-    void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
     
-    void matrixb(const double* const Q,const int d,double* Bn);     
     /**
      * Evaluate the refinement criterion within a cell.
      *
@@ -135,12 +126,17 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
-    virtual bool useNonConservativeProduct() const {return true;}
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    // DIMSolver specific settings
+    bool isPhysicallyAdmissible(
+      const double* const solution,
+      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+      const double t, const double dt) const override;
+
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
-
-bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const override;
-
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    bool useNonConservativeProduct() const override {return true;}
+    bool useConservativeFlux()       const override {return true;} // Does not work properly
 };
 
 #endif // __DIMSolver_ADERDG_CLASS_HEADER__
