@@ -24,8 +24,7 @@ export I_MPI_FABRICS="shm:dapl"
 
 nodes=1
 tasksPerNode=1
-let coresPerTask=24/tasksPerNode # ham7
-#let coresPerTask=24/tasksPerNode # ham6
+coresPerTask=1
 let procsPerNode=tasksPerNode*coresPerTask
 let tasks=nodes*tasksPerNode
 

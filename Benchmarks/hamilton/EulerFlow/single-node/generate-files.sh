@@ -55,13 +55,10 @@ do
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
 
-  sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript
-  
-  # Create spec file  
-  spec=EulerFlow-$io.exahype
-  prefix=EulerFlow-$io-p$order-$mesh-t1-c$coresPerTask
-  newSpec=$prefix'.exahype'
-  cp $spec $newSpec
+  sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
+  sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
+
+  sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript 
 
   # Create spec file
   spec=EulerFlow-$io.exahype
