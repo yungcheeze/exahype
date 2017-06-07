@@ -10,6 +10,8 @@
 
 #include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
 
+#include "BoundaryConditions.h"
+
 
 const double excision_radius = 1.0;
 constexpr int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
@@ -19,8 +21,26 @@ constexpr int nDim = DIMENSIONS;
 
 tarch::logging::Log GRMHD::GRMHDSolver_ADERDG::_log("GRMHDSolver_ADERDG");
 
+typedef ADERDGBoundaryConditions<GRMHD::GRMHDSolver_ADERDG> ADERDG_BC;
+ADERDG_BC* abc;
+
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   prepare_id();
+  abc = new ADERDG_BC(this);
+
+  // face indices: 0 x=xmin 1 x=xmax, 2 y=ymin 3 y=ymax 4 z=zmin 5 z=zmax
+  // corresponding 0-left, 1-right, 2-front, 3-back, 4-bottom, 5-top
+  abc->left = abc->parseFromString("exact");
+  abc->right = abc->parseFromString("exact");
+  abc->front = abc->parseFromString("exact");
+  abc->back = abc->parseFromString("exact");
+  abc->bottom = abc->parseFromString("exact");
+  abc->top = abc->parseFromString("exact");
+  
+  if(!abc->allFacesDefined()) {
+	logError("boundaryValues", "Some Boundary faces are not defined");
+	std::abort();
+  }
 }
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue  __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
@@ -58,63 +78,14 @@ void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::algebraicSource(
 
 
 void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
-  const double * const fluxIn,const double* const stateIn,
-  double *fluxOut,double* stateOut) {
-	double Qgp[nVar], F[nDim][nVar];
-
-	std::memset(stateOut, 0, nVar * sizeof(double));
-	std::memset(fluxOut, 0, nVar * sizeof(double));
-  
-	// Reflection BC at lower faces
-	// face indices: 0 x=xmin 1 x=xmax, 2 y=ymin 3 y=ymax 4 z=zmin 5 z=zmax
-	// corresponding 0-left, 1-right, 2-front, 3-back, 4-bottom, 5-top
-	constexpr int EXAHYPE_FACE_LEFT = 0;
-	constexpr int EXAHYPE_FACE_RIGHT = 1;
-	constexpr int EXAHYPE_FACE_FRONT = 2;
-	constexpr int EXAHYPE_FACE_BACK = 3;
-	constexpr int EXAHYPE_FACE_BOTTOM = 4;
-	constexpr int EXAHYPE_FACE_TOP = 5;
+  const double * const fluxIn,const double* const stateIn, double *fluxOut,double* stateOut) {
+	 // for debugging, to make sure BC are set correctly
+	double snan = std::numeric_limits<double>::signaling_NaN();
+	double weird_number = -1.234567;
+	std::memset(stateOut, snan, nVar * sizeof(double));
+	std::memset(fluxOut,  snan, nVar * sizeof(double));
 	
-	switch(faceIndex) {
-		case EXAHYPE_FACE_LEFT:
-		case EXAHYPE_FACE_FRONT:
-		case EXAHYPE_FACE_BOTTOM:
-
-		// Reflection BC
-		for(int m=0; m<nVar; m++) {
-			stateOut[m] = stateIn[m];
-			fluxOut[m] = -fluxIn[m];
-		}
-		
-		break;
-		
-		case EXAHYPE_FACE_RIGHT:
-		case EXAHYPE_FACE_BACK:
-		case EXAHYPE_FACE_TOP:
-
-		// Should probably use:
-		//    stateOut = vacuum
-		//    fluxOut = fluxIn
-		// Use for the time being: Exact time integrated BC
-		for(int i=0; i < basisSize; i++)  { // i == time
-			const double weight = kernels::gaussLegendreWeights[order][i];
-			const double xi = kernels::gaussLegendreNodes[order][i];
-			double ti = t + xi * dt;
-
-			id->Interpolate(x, ti, Qgp);
-			pdeflux_(F[0], F[1], (nDim==3)?F[2]:nullptr, Qgp);
-			
-			for(int m=0; m < nVar; m++) {
-				stateOut[m] += weight * Qgp[m];
-				fluxOut[m] += weight * F[d][m];
-			}
-		}
-		break;
-		
-		default:
-			logError("boundaryValues", "faceIndex not supported");
-			std::abort();
-	}
+	abc->apply(ADERDG_BOUNDARY_CALL);
 }
 
 

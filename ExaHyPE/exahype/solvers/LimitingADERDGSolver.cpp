@@ -2258,7 +2258,6 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                     level) {
   _solver->sendDataToMaster(
       masterRank,cellDescriptionsIndex,element,x,level);
-
   // limiter is only active on the finest mesh level
 }
 

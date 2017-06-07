@@ -441,6 +441,14 @@ private:
   void prepareFaceDataOfAncestor(CellDescription& cellDescription);
 
   /**
+   * Restrict the obse
+   */
+  void restrictObservablesMinAndMax(
+      const CellDescription& cellDescription,
+      const CellDescription& parentCellDescription,
+      const int faceIndex) const;
+
+  /**
    * Determine if the cell description of type
    * Descendant is on the cell boundary of its parent
    * of type Cell or Descendant with at least one of
@@ -450,6 +458,15 @@ private:
   void prolongateFaceDataToDescendant(
       CellDescription& cellDescription,
       SubcellPosition& SubcellPosition);
+
+  /**
+   * Copies the parent cell descriptions observables'
+   * minimum and maximum down to the Descendant.
+   */
+  void prolongateObservablesMinAndMax(
+      const CellDescription& cellDescription,
+      const CellDescription& cellDescriptionParent,
+      const int faceIndex) const;
 
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
@@ -1838,6 +1855,14 @@ public:
       const peano::heap::MessageType&              messageType,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
+
+  /**
+   * Erase all cell descriptions of type \p Cell.
+   *
+   * TODO(Dominic): It might be possible to delete all cell
+   * descriptions. Discuss with Tobias.
+   */
+  static void eraseCellDescriptions(const int cellDescriptionsIndex);
 
   /**
    * Sends an empty message to the rank \p toRank.
