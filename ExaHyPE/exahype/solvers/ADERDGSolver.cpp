@@ -3739,6 +3739,8 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
+  // TODO(Dominic): Add sends of min and max
+
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
       cellDescription.getType()==CellDescription::Ancestor
@@ -3773,6 +3775,8 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                     level){
   logDebug("mergeWithWorkerData(...)","merge with worker data from rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
+
+  // TODO(Dominic): Add merges of min and max
 
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
@@ -3983,6 +3987,8 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
+  // TODO(Dominic): Add sends of min and max
+
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
       cellDescription.getType()==CellDescription::Descendant &&
@@ -4033,6 +4039,8 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Add merges of min and max
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
