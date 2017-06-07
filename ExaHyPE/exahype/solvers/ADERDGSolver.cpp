@@ -18,6 +18,8 @@
 #include <limits>
 #include <iomanip>
 
+#include <algorithm>
+
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
 #include "exahype/VertexOperations.h"
@@ -2257,6 +2259,15 @@ void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& 
   for(int i=0; i<getBndFluxTotalSize(); ++i) {
     assertion2(tarch::la::equals(F[i],0.0),i,F[i]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+
+  // observables min and max
+  const int numberOfObservables = getDMPObservables();
+  if (numberOfObservables>0) {
+    std::fill_n(DataHeap::getInstance().getData(cellDescription.getSolutionMin()).begin(),
+        numberOfObservables*DIMENSIONS_TIMES_TWO, std::numeric_limits<double>::max());
+    std::fill_n(DataHeap::getInstance().getData(cellDescription.getSolutionMax()).begin(),
+        numberOfObservables*DIMENSIONS_TIMES_TWO, -std::numeric_limits<double>::max()); // !!! Be aware of the "-"
+  }
 }
 
 void exahype::solvers::ADERDGSolver::prolongateFaceDataToDescendant(
@@ -2287,12 +2298,13 @@ void exahype::solvers::ADERDGSolver::prolongateFaceDataToDescendant(
       const int numberOfFaceDof = getBndFaceSize();
       const int numberOfFluxDof = getBndFluxSize();
 
+      // Q
       assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()),cellDescription.toString());
       double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
       const double* lQhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
-
+      // flux
       double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
           (faceIndex * numberOfFluxDof);
       const double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
@@ -2301,7 +2313,32 @@ void exahype::solvers::ADERDGSolver::prolongateFaceDataToDescendant(
       faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,
                                lFhbndCoarse, levelCoarse, levelFine,
                                exahype::amr::getSubfaceIndex(subcellPosition.subcellIndex,d));
+
+
+      prolongateObservablesMinAndMax(cellDescription,cellDescriptionParent,faceIndex);
     }
+  }
+}
+
+void exahype::solvers::ADERDGSolver::prolongateObservablesMinAndMax(
+    const CellDescription& cellDescription,
+    const CellDescription& cellDescriptionParent,
+    const int faceIndex) const {
+  const int numberOfObservables = getDMPObservables();
+  if (numberOfObservables>0) {
+    // fine
+    double* minFine = DataHeap::getInstance().getData(cellDescription.getSolutionMin()).data() +
+        (faceIndex * numberOfObservables);
+    double* maxFine = DataHeap::getInstance().getData(cellDescription.getSolutionMax()).data() +
+        (faceIndex * numberOfObservables);
+    // coarse
+    const double* minCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getSolutionMin()).data() +
+        (faceIndex * numberOfObservables);
+    const double* maxCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getSolutionMax()).data() +
+        (faceIndex * numberOfObservables);
+
+    std::copy_n( minCoarse,numberOfObservables, minFine );
+    std::copy_n( maxCoarse,numberOfObservables, maxFine );
   }
 }
 
@@ -2399,6 +2436,32 @@ void exahype::solvers::ADERDGSolver::restrictToTopMostParent(
       faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,
                               levelCoarse, levelFine,
                               exahype::amr::getSubfaceIndex(subcellIndex,d));
+
+      restrictObservablesMinAndMax(parentCellDescription,cellDescription,faceIndex);
+    }
+  }
+}
+
+void exahype::solvers::ADERDGSolver::restrictObservablesMinAndMax(
+    const CellDescription& cellDescription,
+    const CellDescription& parentCellDescription,
+    const int faceIndex) const {
+  const int numberOfObservables = getDMPObservables();
+  if (numberOfObservables>0) {
+    // fine
+    double* minFine = DataHeap::getInstance().getData(cellDescription.getSolutionMin()).data() +
+        (faceIndex * numberOfObservables);
+    double* maxFine = DataHeap::getInstance().getData(cellDescription.getSolutionMax()).data() +
+        (faceIndex * numberOfObservables);
+    // coarse
+    double* minCoarse = DataHeap::getInstance().getData(parentCellDescription.getSolutionMin()).data() +
+        (faceIndex * numberOfObservables);
+    double* maxCoarse = DataHeap::getInstance().getData(parentCellDescription.getSolutionMax()).data() +
+        (faceIndex * numberOfObservables);
+
+    for (int i=0; i<numberOfObservables; i++) {
+      *(minCoarse+i) = std::min( *(minFine+i), *(minCoarse+i) );
+      *(maxCoarse+i) = std::max( *(maxFine+i), *(maxCoarse+i) );
     }
   }
 }
@@ -2697,6 +2760,8 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   //  mergeNeighboursHelperStatus     (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
   //  mergeNeighboursAugmentationStatus(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 }
+
+
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     CellDescription& pLeft,
@@ -3181,13 +3246,13 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
-  CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  if (cellDescription.getType()==CellDescription::Cell) {
+    double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-  if (p.getType()==CellDescription::Cell) {
-    double* solution = DataHeap::getInstance().getData(p.getSolution()).data();
-
-    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)",""
+        "solution of solver " << cellDescription.getSolverNumber() << " sent to rank "<<toRank<<
              ", cell: "<< x << ", level: " << level);
 
     DataHeap::getInstance().sendData(
@@ -3674,6 +3739,8 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
+  // TODO(Dominic): Add sends of min and max
+
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
       cellDescription.getType()==CellDescription::Ancestor
@@ -3708,6 +3775,8 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                     level){
   logDebug("mergeWithWorkerData(...)","merge with worker data from rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
+
+  // TODO(Dominic): Add merges of min and max
 
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
@@ -3918,6 +3987,8 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
+  // TODO(Dominic): Add sends of min and max
+
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
       cellDescription.getType()==CellDescription::Descendant &&
@@ -3968,6 +4039,8 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Add merges of min and max
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
