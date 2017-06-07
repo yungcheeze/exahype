@@ -761,6 +761,26 @@ void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
   }
 }
 
+void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
+    const int cellDescriptionsIndex) {
+  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
+
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    const int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      auto& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+      if (cellDescription.getType()==CellDescription::Type::Cell) {
+        cellDescription.setType(CellDescription::Type::Erased);
+        static_cast<FiniteVolumesSolver*>(solver)->ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      }
+
+      Heap::getInstance().getData(cellDescriptionsIndex).erase(
+          Heap::getInstance().getData(cellDescriptionsIndex).begin()+element);
+    }
+  }
+}
+
 void exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(
     const int                                     toRank,
     const peano::heap::MessageType&               messageType,

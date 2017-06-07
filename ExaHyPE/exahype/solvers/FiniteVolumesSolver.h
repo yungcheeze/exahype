@@ -721,6 +721,10 @@ public:
   ///////////////////////////////////
   // FORK OR JOIN
   ///////////////////////////////////
+  /**
+   * Send all ADER-DG cell descriptions to rank
+   * \p toRank.
+   */
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -728,6 +732,18 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
+  /**
+   * Erase all cell descriptions of type \p Cell.
+   *
+   * TODO(Dominic): It might be possible to delete all cell
+   * descriptions. Discuss with Tobias.
+   */
+  static void eraseCellDescriptions(const int cellDescriptionsIndex);
+
+  /**
+   * Send an empty message to rank
+   * \p toRank.
+   */
   static void sendEmptyCellDescriptions(
       const int                                     toRank,
       const peano::heap::MessageType&               messageType,
