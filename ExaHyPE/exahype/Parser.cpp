@@ -392,6 +392,28 @@ int exahype::Parser::getMPITimeOut() const {
   return result;
 }
 
+bool exahype::Parser::getMPIMasterWorkerCommunication() const {
+  std::string token =
+      getTokenAfter("distributed-memory", "master-worker-communication");
+  if (token.compare(_noTokenFound) != 0) {
+    logInfo("getMPIMasterWorkerCommunication()",
+             "found master-worker-communication " << token);
+    return token.compare("on") == 0;
+  }
+  return true;
+}
+
+bool exahype::Parser::getMPINeighbourCommunication() const {
+  std::string token =
+      getTokenAfter("distributed-memory", "neighbour-communication");
+  if (token.compare(_noTokenFound) != 0) {
+    logInfo("getMPINeighbourCommunication()",
+             "found neighbour-communication " << token);
+    return token.compare("on") == 0;
+  }
+  return true;
+}
+
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
     const {
   std::string token = getTokenAfter("shared-memory", "identifier");

@@ -466,6 +466,8 @@ int exahype::runners::Runner::run() {
                 "You might need to add the 'optimisation' environment.");
       abort();
     }
+    exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
+    exahype::State::EnableNeighbourCommunication    = _parser.getMPINeighbourCommunication();
 
     // must be after repository creation
     initDistributedMemoryConfiguration();
@@ -1026,6 +1028,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    */
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToADERDGTimeStepContext();
+
   if (numberOfStepsToRun==0) {
     repository.switchToPlotAndADERDGTimeStep();
     repository.iterate();
