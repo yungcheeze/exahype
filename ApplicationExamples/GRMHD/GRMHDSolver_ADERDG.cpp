@@ -79,9 +79,12 @@ void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::algebraicSource(
 
 void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
   const double * const fluxIn,const double* const stateIn, double *fluxOut,double* stateOut) {
-	std::memset(stateOut, -1.23456, nVar * sizeof(double)); // signaling weird numbers
-	std::memset(fluxOut,  -1.23456, nVar * sizeof(double));
-  
+	 // for debugging, to make sure BC are set correctly
+	double snan = std::numeric_limits<double>::signaling_NaN();
+	double weird_number = -1.234567;
+	std::memset(stateOut, snan, nVar * sizeof(double));
+	std::memset(fluxOut,  snan, nVar * sizeof(double));
+	
 	abc->apply(ADERDG_BOUNDARY_CALL);
 }
 
