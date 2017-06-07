@@ -2989,7 +2989,6 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
             <CellDescription,Heap>(cellDescription);
 
         if (subcellPosition.parentElement!=NotFound) {
-
           cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
 
           auto* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
@@ -3036,6 +3035,26 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
                                  toRank,x,level,messageType);
   } else {
     sendEmptyCellDescriptions(toRank,messageType,x,level);
+  }
+}
+
+void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
+    const int cellDescriptionsIndex) {
+  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
+
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    const int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      auto& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+      if (cellDescription.getType()==CellDescription::Type::Cell) {
+        cellDescription.setType(CellDescription::Type::Erased);
+        static_cast<ADERDGSolver*>(solver)->ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      }
+
+      Heap::getInstance().getData(cellDescriptionsIndex).erase(
+          Heap::getInstance().getData(cellDescriptionsIndex).begin()+element);
+    }
   }
 }
 

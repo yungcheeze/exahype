@@ -1857,6 +1857,14 @@ public:
       const int                                    level);
 
   /**
+   * Erase all cell descriptions of type \p Cell.
+   *
+   * TODO(Dominic): It might be possible to delete all cell
+   * descriptions. Discuss with Tobias.
+   */
+  static void eraseCellDescriptions(const int cellDescriptionsIndex);
+
+  /**
    * Sends an empty message to the rank \p toRank.
    */
   static void sendEmptyCellDescriptions(
