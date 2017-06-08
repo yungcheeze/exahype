@@ -465,9 +465,6 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
   const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
-  logInfo("createRepository(...)",
-          "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size "<<
-          coarsestUserMeshSize);
   tarch::la::Vector<DIMENSIONS,double> shrunkBoundingBoxOffset = determineShrunkDomainOffset(
       boundingBoxOffset,_boundingBoxSize,_domainOffset,_domainSize);
   if (!tarch::la::equals(_domainOffset,shrunkBoundingBoxOffset)) {
@@ -479,9 +476,12 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
         shrunkBoundingBoxOffset,_boundingBoxSize,_domainOffset,_domainSize);
   if (!tarch::la::equals(_domainSize,shrunkBoundingBoxSize)) {
     logInfo("createRepository(...)",
-        "shrink domain artificially to " << shrunkBoundingBoxSize << " from "
+        "shrink domain size artificially to " << shrunkBoundingBoxSize << " from "
         << _domainSize << " due to bounding box scaling or since non-cubic domain was specified");
   }
+  logInfo("createRepository(...)",
+      "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size and (shrunk) domain size"<<
+      coarsestUserMeshSize);
 
   logInfo(
       "createRepository(...)",
