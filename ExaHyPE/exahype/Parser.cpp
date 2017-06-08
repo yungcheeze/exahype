@@ -20,6 +20,7 @@
 #include <string.h>
 #include <string>
 #include <regex>
+#include <cstdlib> // getenv, exit
 
 #include "tarch/la/ScalarOperations.h"
 
@@ -33,11 +34,7 @@ double exahype::Parser::getValueFromPropertyString(
     const std::string& parameterString, const std::string& key) {
   std::size_t startIndex = parameterString.find(key);
   startIndex = parameterString.find(":", startIndex);
-  std::size_t endIndexBracket = parameterString.find("}", startIndex + 1);
-  std::size_t endIndexComma = parameterString.find(",", startIndex + 1);
-
-  std::size_t endIndex =
-      endIndexBracket < endIndexComma ? endIndexBracket : endIndexComma;
+  std::size_t endIndex = parameterString.find_first_of("}, \n\r", startIndex + 1);
 
   std::string substring =
       parameterString.substr(startIndex + 1, endIndex - startIndex - 1);
@@ -173,10 +170,12 @@ void exahype::Parser::readFile(const std::string& filename) {
   checkValidity();
 
   //  For debugging purposes
-  //  std::cout << "_tokenStream=" << std::endl;
-  //  for (std::string str : _tokenStream) {
-  //    std::cout << "["<<str<<"]" << std::endl;
-  //  }
+  if(std::getenv("EXAHYPE_VERBOSE_PARSER")) { // runtime debugging
+	std::cout << "Parser _tokenStream=" << std::endl;
+	for (std::string str : _tokenStream) {
+		std::cout << "["<<str<<"]" << std::endl;
+	}
+  }
   //  std::string configuration = getMPIConfiguration();
   //  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
   //  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
@@ -1065,7 +1064,7 @@ exahype::Parser::ParserView::ParserView(Parser& parser,
 std::string exahype::Parser::ParserView::getValue(
     const std::string inputString, const std::string& key) const {
   assertion(_parser.isValid());
-
+  
   if (inputString.substr(0, 1) != "{") return "";
   std::size_t currentIndex = 1;
   bool nextTokenIsSearchedValue = false;
@@ -1097,6 +1096,8 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
 
+  // TODO: We don't start constant lists etc. with an { any more.
+  // at least sometimes.
   if (inputString.substr(0, 1) != "{") return false;
   std::size_t currentIndex = 1;
   bool nextTokenIsValue = false;
