@@ -189,23 +189,6 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     snapshotFileName << _filename
                      << "-" << _fileCounter;
 
-/*
-    switch (_plotterType) {
-      case PlotterType::BinaryVTK:
-        break;
-      case PlotterType::ASCIIVTK:
-        break;
-      case PlotterType::BinaryVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-      case PlotterType::ASCIIVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-    }
-*/
-
     const bool hasBeenSuccessful =
       _writer->writeToFile(snapshotFileName.str());
     if (!hasBeenSuccessful) {
@@ -213,15 +196,15 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     }
   }
 
-  if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
-  if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
+  if (_vertexDataWriter!=nullptr)           delete _vertexDataWriter;
+  if (_cellDataWriter!=nullptr)             delete _cellDataWriter;
   if (_vertexTimeStampDataWriter!=nullptr)  delete _vertexTimeStampDataWriter;
   if (_cellTimeStampDataWriter!=nullptr)    delete _cellTimeStampDataWriter;
   if (_writer!=nullptr)                     delete _writer;
 
-  _vertexDataWriter    = nullptr;
-  _cellDataWriter      = nullptr;
-  _writer              = nullptr;
+  _vertexDataWriter          = nullptr;
+  _cellDataWriter            = nullptr;
+  _writer                    = nullptr;
   _vertexTimeStampDataWriter = nullptr;
   _cellTimeStampDataWriter   = nullptr;
 }
