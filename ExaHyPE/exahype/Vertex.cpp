@@ -95,12 +95,12 @@ bool exahype::Vertex::hasToMergeNeighbours(
       assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2),
           cellDescriptionsIndex2);
 
-      const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
-      assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-      const int faceIndex1 = 2 * normalOfExchangedFace +
-          (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0);
-      const int faceIndex2 = 2 * normalOfExchangedFace +
-          (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0);
+      const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
+      const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+      const int orientation2 = 1-orientation1;
+
+      const int faceIndex1 = 2*direction+orientation1;
+      const int faceIndex2 = 2*direction+orientation2;
 
       // Here, we check all cell descriptions.
       // ADERDG
@@ -148,10 +148,11 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
     const int cellDescriptionsIndex2 =
         _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
-    const bool validIndexNextToBoundaryOrRemoteIndex =
+    const bool validIndexNextToInvalidIndex =
         (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
             &&
-            (cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+            (cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
+            ||cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
             #if !defined(PeriodBC)
             || cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex
             #endif
@@ -159,19 +160,20 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
             ||
             (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)
                 &&
-                (cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+                (cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
+                || cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
                 #if !defined(PeriodBC)
                 || cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex
                 #endif
                 ));
 
-    if (validIndexNextToBoundaryOrRemoteIndex) {
-      const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
-      assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-      const int faceIndex1 = 2 * normalOfExchangedFace +
-          (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
-      const int faceIndex2 = 2 * normalOfExchangedFace +
-          (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+    if (validIndexNextToInvalidIndex) {
+      const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
+      const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+      const int orientation2 = 1-orientation1;
+
+      const int faceIndex1 = 2*direction+orientation1;
+      const int faceIndex2 = 2*direction+orientation2;
 
       // ADER-DG
       if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
@@ -230,12 +232,12 @@ void exahype::Vertex::setMergePerformed(
   const int cellDescriptionsIndex2 =
       _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex1 = 2 * normalOfExchangedFace +
-      (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
-  const int faceIndex2 = 2 * normalOfExchangedFace +
-      (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+  const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
+  const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+  const int orientation2 = 1-orientation1;
+
+  const int faceIndex1 = 2*direction+orientation1;
+  const int faceIndex2 = 2*direction+orientation2;
 
 //  std::cout << ">>Set: pos1=" << pos1.toString() << ", pos2=" << pos2.toString() <<
 //            ", faceIndex1=" << faceIndex1 << ", faceIndex2=" << faceIndex2 << std::endl;

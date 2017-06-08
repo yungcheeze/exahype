@@ -45,75 +45,25 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
 }
 
 std::bitset<DIMENSIONS_TIMES_TWO> exahype::Cell::determineInsideAndOutsideFaces(
-      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
+        const exahype::Vertex* const verticesAroundCell,
+        const peano::grid::VertexEnumerator& verticesEnumerator) {
   std::bitset<DIMENSIONS_TIMES_TWO> isInside;
 
   for (int direction=0; direction<DIMENSIONS; direction++) {
     for (int orientation=0; orientation<2; orientation++) {
+      std::bitset<DIMENSIONS_TIMES_TWO> isInside;
       const int faceIndex = 2*direction+orientation;
-
       isInside[faceIndex]=true;
-      if (orientation==0) {
-        const double x = // constant face coordinate shifted by a 0.1 dx tolerance
-            cellOffset(direction)
-            -0.1*cellSize(direction);
-        const double xDomain =
-            domainOffset(direction);
 
-        if (x<xDomain) {
-          isInside[faceIndex]=false;
+      dfor2(v) // Loop over vertices.
+        if (v(direction) == orientation) {
+          isInside &= verticesAroundCell[ verticesEnumerator(v) ].isInside();
         }
-      } else { // orientation==1
-        const double x = // constant face coordinate shifted by a 0.1 dx tolerance
-            cellOffset(direction)
-            +1.1*cellSize(direction);
-        const double xDomain =
-            domainOffset(direction)+domainSize(direction);
-
-        if (x>xDomain) {
-          isInside[faceIndex]=false;
-        }
-      }
+      enddforx // v
     }
   }
+
   return isInside;
-}
-
-bool exahype::Cell::isFaceInside(
-    const int faceIndex,
-    const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
-    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-    const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
-  const int orientation = faceIndex % 2;             // orientation of normal
-  const int direction   = (faceIndex-orientation)/2; // normal direction: 0: x, 1: y, 1: z.
-
-  double cellMin   = cellOffset(direction);
-  double cellMax   = cellOffset(direction)+cellSize(direction);
-  double tol       = cellSize(direction)*0.1; // smaller than cellSize(direction) is theoretically sufficient
-
-  double domainMin = domainOffset(direction);
-  double domainMax = domainOffset(direction)+domainSize(direction);
-
-  std::cout <<
-      "face="<<faceIndex <<
-      ",domainMin="<<domainMin <<
-      ",domainMax="<<domainMax <<
-      ",cellMin="<<cellMin <<
-      ",cellMax="<<cellMax << std::endl;
-
-  if (orientation==0 &&
-      cellMin-tol < domainMin) {
-    return false;
-  }
-  if (orientation==1 &&
-      cellMax+tol > domainMax) {
-    return false;
-  }
-  return true;
 }
 
 #ifdef Parallel
