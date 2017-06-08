@@ -122,6 +122,8 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   /**
    * Determine inside and outside faces of a cell.
+   * A face is considered inside if at least
+   * one of its vertices is inside.
    *
    * <h2>Issues with AMR</h2>
    * Use this function only for cells

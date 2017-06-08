@@ -51,13 +51,14 @@ std::bitset<DIMENSIONS_TIMES_TWO> exahype::Cell::determineInsideAndOutsideFaces(
 
   for (int direction=0; direction<DIMENSIONS; direction++) {
     for (int orientation=0; orientation<2; orientation++) {
-      std::bitset<DIMENSIONS_TIMES_TWO> isInside;
       const int faceIndex = 2*direction+orientation;
-      isInside[faceIndex]=true;
+      isInside[faceIndex]=false;
 
       dfor2(v) // Loop over vertices.
         if (v(direction) == orientation) {
-          isInside &= verticesAroundCell[ verticesEnumerator(v) ].isInside();
+          isInside[faceIndex] =
+              isInside[faceIndex] ||
+              verticesAroundCell[ verticesEnumerator(v) ].isInside();
         }
       enddforx // v
     }
