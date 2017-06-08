@@ -66,6 +66,7 @@ exahype-project GRMHD
     time-stepping                  = global
     kernel const                   = generic::musclhancock
     language const                 = C
+    constants  = foo:bar,blo:dez
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19

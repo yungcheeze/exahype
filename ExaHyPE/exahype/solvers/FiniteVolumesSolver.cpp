@@ -304,8 +304,7 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
   fineGridCellDescription.setIsInside(
       exahype::Cell::determineInsideAndOutsideFaces(
-          fineGridCellDescription.getOffset(),fineGridCellDescription.getSize(),
-          _domainOffset,_domainSize));
+          fineGridVertices,fineGridVerticesEnumerator));
 }
 
 void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(

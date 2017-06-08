@@ -26,10 +26,33 @@ FV_BC* fvbc;
 // enable nan tracker
 #include <fenv.h>
 
-void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
+void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView constants) {
   // try NaN catcher
   feenableexcept(FE_INVALID | FE_OVERFLOW);  // Enable all floating point exceptions but FE_INEXACT
-	
+
+  // Just copy and pasted from GRMHDSolver_ADERDG
+  // Todo: Move this to specfile once we have working constants.
+  std::string id_alfenwave = "AlfenWave";
+  std::string bc_alfenwave = "left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact";
+
+  std::string id_RNSID = "RNSID";
+  std::string bc_RNSID_octant = "left:refl,right:exact,bottom:refl,top:exact,front:refl,back:exact";
+
+  std::string tid = id_alfenwave;
+  std::string tbc = bc_alfenwave;
+
+  if(!prepare_id(tid)) {
+	  logError("prepare_id", "Could not setup Initial Data '" << tid << "', probably misspelled.");
+	  std::abort();
+  }
+
+  fvbc = new FV_BC(this);
+  if(!fvbc->setFromSpecFile<StringMapView>(StringMapView(tbc))) {
+	logError("boundaryValues", "Some Boundary faces are missing in Specfile. Need: left,right,top,bottom,front,back. Got:" << tbc);
+	std::abort();
+  }
+  
+  /*
   prepare_id();
   
   fvbc = new FV_BC(this);
@@ -47,6 +70,7 @@ void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
 	logError("boundaryValues", "Some Boundary faces are not defined");
 	std::abort();
   }
+  */
 
 }
 
