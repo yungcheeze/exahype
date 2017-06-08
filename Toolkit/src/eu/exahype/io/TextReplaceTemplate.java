@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import eu.exahype.io.TextReplaceLanguage.Rewriter;
 import eu.exahype.io.TextReplaceLanguage.TemplateGrammarException;
 
@@ -70,6 +73,12 @@ public class TextReplaceTemplate extends SourceTemplate  {
   }
 
   public String toString() {
+    // check if there are any {{ brackets }} left over
+    Matcher m = Pattern.compile("\\{\\{[a-zA-z-_0-9]+\\}\\}").matcher(tpl);
+    if(m.find()) {
+        throw new RuntimeException("There is a leftover variable '"+m.group()+"' which has not yet been replaced in template: "+tpl);
+    }
+  
     // Here we could insert the evaluateConditionals(...) call:
     // tpl = evaluateConditionals(tpl);
     return tpl;
