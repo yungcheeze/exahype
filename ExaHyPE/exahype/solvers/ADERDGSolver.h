@@ -359,6 +359,9 @@ private:
    *
    * Further sets the refinement event on a coarse grid Descendant to Augmenting
    * if the first new Descendant was initialised on the fine grid.
+   *
+   * Additionally, copies the information if a face is inside
+   * from the parent to the new child cell.
    */
   void addNewDescendantIfAugmentingRequested(
       exahype::Cell& fineGridCell,
@@ -376,6 +379,9 @@ private:
    *
    * Further sets the refinement event on a coarse grid Cell to Refining
    * if the first new Cell was initialised on the fine grid.
+   *
+   * Additionally, copies the information if a face is inside
+   * from the parent to the new child cell.
    *
    * \note This operations is not thread-safe
    */
