@@ -24,21 +24,26 @@ tarch::logging::Log GRMHD::GRMHDSolver_ADERDG::_log("GRMHDSolver_ADERDG");
 typedef ADERDGBoundaryConditions<GRMHD::GRMHDSolver_ADERDG> ADERDG_BC;
 ADERDG_BC* abc;
 
-void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
-  prepare_id();
-  abc = new ADERDG_BC(this);
+void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView constants) {
+  // Todo: Move this to specfile once we have working constants.
+  std::string id_alfenwave = "AlfenWave";
+  std::string bc_alfenwave = "left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact";
 
-  // face indices: 0 x=xmin 1 x=xmax, 2 y=ymin 3 y=ymax 4 z=zmin 5 z=zmax
-  // corresponding 0-left, 1-right, 2-front, 3-back, 4-bottom, 5-top
-  abc->left = abc->parseFromString("exact");
-  abc->right = abc->parseFromString("exact");
-  abc->front = abc->parseFromString("exact");
-  abc->back = abc->parseFromString("exact");
-  abc->bottom = abc->parseFromString("exact");
-  abc->top = abc->parseFromString("exact");
-  
-  if(!abc->allFacesDefined()) {
-	logError("boundaryValues", "Some Boundary faces are not defined");
+  std::string id_RNSID = "RNSID";
+  std::string bc_RNSID_octant = "left:refl,right:exact,bottom:refl,top:exact,front:refl,back:exact";
+
+  std::string tid = id_alfenwave;
+  std::string tbc = bc_alfenwave;
+
+  if(!prepare_id(tid)) {
+	  logError("prepare_id", "Could not setup Initial Data '" << tid << "', probably misspelled.");
+	  std::abort();
+  }
+
+  abc = new ADERDG_BC(this);
+  //if(!abc->setFromSpecFile<exahype::Parser::ParserView>(constants)) {
+  if(!abc->setFromSpecFile<StringMapView>(StringMapView(tbc))) {
+	logError("boundaryValues", "Some Boundary faces are missing in Specfile. Need: left,right,top,bottom,front,back. Got:" << tbc);
 	std::abort();
   }
 }

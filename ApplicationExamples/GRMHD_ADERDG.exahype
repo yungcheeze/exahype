@@ -64,6 +64,8 @@ exahype-project GRMHD
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
+    constants                      = dummy:dummy
+    /* not yet working: constants aka left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact */
 
     plot vtk::Legendre::vertices::ascii ConservedWriter
       variables const = 19
