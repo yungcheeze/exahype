@@ -439,7 +439,6 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
 
   const int coarsestMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
-
   tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _domainOffset;
 
   #ifdef Parallel
@@ -465,28 +464,28 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
   const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
-  tarch::la::Vector<DIMENSIONS,double> shrunkBoundingBoxOffset = determineShrunkDomainOffset(
+  tarch::la::Vector<DIMENSIONS,double> shrunkDomainOffset = determineShrunkDomainOffset(
       boundingBoxOffset,_boundingBoxSize,_domainOffset,_domainSize);
-  if (!tarch::la::equals(_domainOffset,shrunkBoundingBoxOffset)) {
+  if (!tarch::la::equals(_domainOffset,shrunkDomainOffset)) {
     logInfo("createRepository(...)",
-        "move domain offset artificially to " << shrunkBoundingBoxOffset << " from "
+        "move domain offset artificially to " << shrunkDomainOffset << " from "
         << _domainOffset << " due to bounding box scaling");
   }
-  tarch::la::Vector<DIMENSIONS,double> shrunkBoundingBoxSize = determineShrunkDomainSize(
-        shrunkBoundingBoxOffset,_boundingBoxSize,_domainOffset,_domainSize);
-  if (!tarch::la::equals(_domainSize,shrunkBoundingBoxSize)) {
+  tarch::la::Vector<DIMENSIONS,double> shrunkDomainSize = determineShrunkDomainSize(
+        shrunkDomainOffset,_boundingBoxSize,_domainOffset,_domainSize);
+  if (!tarch::la::equals(_domainSize,shrunkDomainSize)) {
     logInfo("createRepository(...)",
-        "shrink domain size artificially to " << shrunkBoundingBoxSize << " from "
+        "shrink domain size artificially to " << shrunkDomainSize << " from "
         << _domainSize << " due to bounding box scaling or since non-cubic domain was specified");
   }
   logInfo("createRepository(...)",
-      "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size and (shrunk) domain size"<<
-      coarsestUserMeshSize);
+      "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size "<<
+      coarsestUserMeshSize << " and (shrunk) domain size " << shrunkDomainSize);
 
   logInfo(
       "createRepository(...)",
-      "summary: create computational domain at " << shrunkBoundingBoxOffset <<
-      " of width/size " << shrunkBoundingBoxSize <<
+      "summary: create computational domain at " << shrunkDomainOffset <<
+      " of width/size " << shrunkDomainSize <<
       ". bounding box has offset " << boundingBoxOffset <<
       " and size " << _boundingBoxSize <<
       ". grid regular up to level " << coarsestMeshLevel << " (level 1 is coarsest available cell in tree)");
