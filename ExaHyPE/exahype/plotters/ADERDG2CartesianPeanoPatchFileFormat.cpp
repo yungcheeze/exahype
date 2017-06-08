@@ -148,7 +148,8 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
       case PlotterType::Hdf5:
         _writer = new tarch::plotter::griddata::blockstructured::PeanoHDF5PatchFileWriter(
           DIMENSIONS,_order,_filename,
-          _fileCounter>0
+          _fileCounter>0,
+          true
         );
         break;
     }
@@ -188,23 +189,6 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
                      << "-" << _fileCounter;
-
-/*
-    switch (_plotterType) {
-      case PlotterType::BinaryVTK:
-        break;
-      case PlotterType::ASCIIVTK:
-        break;
-      case PlotterType::BinaryVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-      case PlotterType::ASCIIVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-    }
-*/
 
     const bool hasBeenSuccessful =
       _writer->writeToFile(snapshotFileName.str());

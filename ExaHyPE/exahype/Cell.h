@@ -73,44 +73,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * Returns if the face is inside. Inside for
-   * a face means that at least one vertex
-   * of the 2^{d-1} vertices building up
-   * the face must be inside of the domain.
-   *
-   * Otherwise the face might be on the
-   * boundary of the domain or outside of
-   * the domain.
-   *
-   * <h3>Problems with previous implementation</h3>
-   * The previous implementation which did not
-   * take the bounding box into account (given below)
-   * did not work correctly if the computational domain
-   * was anisotropic and we performed adaptive refinement.
-   * Then, fine grid cells might suddenly get neighbours and thus
-   * their vertices are not outside anymore.
-   *
-   * \code{.cpp}
-   * const int orientation = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
-   * const int direction   = (faceIndex-orientation)/2; // The normal direction: 0: x, 1: y, 1: z.
-   *
-   * dfor2(v) // Loop over vertices.
-   * if (v(direction) == orientation &&
-   *   verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
-   *   return true;
-   * }
-   * enddforx // v
-   * return false;
-   * \endcode
-   */
-  static bool isFaceInside(
-      const int faceIndex,
-      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
-
-  /**
    * TODO(Dominic): Revise this docu.
    * Here we reset helper variables that play a role in
    * the neighbour merge methods.
@@ -158,11 +120,23 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     }
   }
 
+  /**
+   * Determine inside and outside faces of a cell.
+   * A face is considered inside if at least
+   * one of its vertices is inside.
+   *
+   * <h2>Issues with AMR</h2>
+   * Use this function only for cells
+   * on the coarsest mesh level per solver.
+   *
+   * If the computational domain
+   * is anisotropic and we perform adaptive refinement.
+   * Then, fine grid cells might suddenly get neighbours and thus
+   * their vertices are not outside anymore.
+   */
   static std::bitset<DIMENSIONS_TIMES_TWO> determineInsideAndOutsideFaces(
-      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
+        const exahype::Vertex* const verticesAroundCell,
+        const peano::grid::VertexEnumerator& verticesEnumerator);
 
   #ifdef Parallel
   /**

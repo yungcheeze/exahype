@@ -22,12 +22,12 @@
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
+  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
   init(cmdlineargs{{SolverInitCallExtension}});
 }
 
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,Order+1,
                                  maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
 }

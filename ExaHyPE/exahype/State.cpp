@@ -26,6 +26,8 @@
 bool exahype::State::FuseADERDGPhases           = false;
 double exahype::State::WeightForPredictionRerun = 0.9;
 
+bool exahype::State::VirtuallyExpandBoundingBox = false;
+
 bool exahype::State::EnableMasterWorkerCommunication = true;
 bool exahype::State::EnableNeighbourCommunication    = true;
 

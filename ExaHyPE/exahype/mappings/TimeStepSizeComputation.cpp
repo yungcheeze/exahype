@@ -169,8 +169,9 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
 
     bool usedTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
     aderdgSolver->setStabilityConditionWasViolated(usedTimeStepSizeWasInstable);
+
+    const double timeStepSizeWeight = exahype::State::getTimeStepSizeWeightForPredictionRerun();
     if (usedTimeStepSizeWasInstable) {
-      const double timeStepSizeWeight = exahype::State::getTimeStepSizeWeightForPredictionRerun();
       aderdgSolver->updateMinNextPredictorTimeStepSize(
           timeStepSizeWeight * stableTimeStepSize);
       aderdgSolver->setMinPredictorTimeStepSize(
@@ -179,7 +180,7 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
       logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[instable] updatedTimeStepSize="<<aderdgSolver->getMinNextPredictorTimeStepSize());
     } else {
       aderdgSolver->updateMinNextPredictorTimeStepSize(
-          0.5 * (stableTimeStepSize + usedTimeStepSize));
+          0.5 * (usedTimeStepSize + timeStepSizeWeight * stableTimeStepSize));
 
       logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[stable] updatedTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
     }

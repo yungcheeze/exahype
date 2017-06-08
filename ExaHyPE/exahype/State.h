@@ -68,13 +68,47 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
  public:
+  /**
+   * A flag indicating we fuse the algorithmic
+   * phases of all ADERDGSolver and
+   * LimitingADERDGSolver instances.
+   */
   static bool FuseADERDGPhases;
 
+  /**
+   * The weight which is used to scale
+   * the stable time step size the fused
+   * ADERDG time stepping scheme is
+   * reset to after a rerun has become necessary.
+   *
+   * TODO(Dominic): Further consider to introduce
+   * a second weight for the averaging:
+   *
+   * t_est = 0.5 (t_est_old + beta t_stable), beta<1.
+   *
+   * fuse-algorithmic-steps-reset-factor
+   * fuse-algorithmic-steps-averaging-factor
+   */
   static double WeightForPredictionRerun;
+
+  /**
+   * A flag indicating that the bounding box
+   * has been virtually expanded (or not).
+   *
+   * \note In case the bounding box has been expanded,
+   * the computational domain usually shrinks
+   * since only those cells are considered
+   * as inside which have only inside or
+   * boundary vertices.
+   * A cell is considered as outside
+   * if it has at least one(!) outside vertex.
+   */
+  static bool VirtuallyExpandBoundingBox;
 
   /**
    * States used to disable or enable master-worker
    * and neighbour communication.
+   * This makes sense for debugging only.
    */
   static bool EnableMasterWorkerCommunication;
   static bool EnableNeighbourCommunication;
