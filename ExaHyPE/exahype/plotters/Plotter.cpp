@@ -15,6 +15,7 @@
 
 #include "exahype/plotters/VTK/ADERDG2CartesianVTK.h"
 #include "exahype/plotters/ADERDG2CartesianPeanoPatchFileFormat.h"
+#include "exahype/plotters/ADERDG2LegendrePeanoPatchFileFormat.h"
 #include "exahype/plotters/VTK/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/CSV/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/VTK/ADERDG2LegendreDivergenceVTK.h"
@@ -164,6 +165,19 @@ exahype::plotters::Plotter::Plotter(
       }
       if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesPeanoFileFormatHDF5::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesPeanoFileFormatHDF5(postProcessing);
+      }
+
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreCellsPeanoFileFormatAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreCellsPeanoFileFormatAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreVerticesPeanoFileFormatAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreVerticesPeanoFileFormatAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreCellsPeanoFileFormatHDF5::getIdentifier())) {
+        _device = new ADERDG2LegendreCellsPeanoFileFormatHDF5(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreVerticesPeanoFileFormatHDF5::getIdentifier())) {
+        _device = new ADERDG2LegendreVerticesPeanoFileFormatHDF5(postProcessing);
       }
 
       if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
