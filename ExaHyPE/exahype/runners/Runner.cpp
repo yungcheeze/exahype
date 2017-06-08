@@ -444,9 +444,12 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   #ifdef Parallel
   if (exahype::State::VirtuallyExpandBoundingBox) {
-    const double boundingBoxScaling =
-        static_cast<double>(coarsestMeshLevel) /
-        (static_cast<double>(coarsestMeshLevel)-2);
+    const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
+    const double boundingBoxScaling = 1+2*coarsestMeshSize/_boundingBoxSize[0];
+    // TODO(Dominic): Keep for reference.
+//    const double boundingBoxScaling =
+//        static_cast<double>(coarsestMeshLevel) /
+//        (static_cast<double>(coarsestMeshLevel)-2);
     assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize );
     const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
     assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize, boundingBoxScaling );
