@@ -2,9 +2,9 @@ import argparse
 from argparse import RawTextHelpFormatter
 
 import re
+import os
 
 import runtimeParser as rp
-import hpclib as hpc
 
 '''
 .. module:: usertimeplot
@@ -16,7 +16,7 @@ import hpclib as hpc
 :synopsis: Extracts performance metrics from Peano output files with specific file naming pattern.
 '''
 
-def extract_table(root_dir,prefix,nodes,tasks,cores,runs,cc,mode)
+def extract_table(root_dir,prefix):
     '''
     Extracts performance metrics from Peano output files with specific file naming pattern.
    
@@ -25,27 +25,27 @@ def extract_table(root_dir,prefix,nodes,tasks,cores,runs,cc,mode)
          Directory containing the Peano output files.
       prefix (str):
          Prefix of the files - usually the date of the test and an identifier for the test.
-    '''    
-   	# collect filenames
-   	for filename in os.listdir(root_dir):
-    if filename.endswith(".out") and filename.startswith(prefix) 
-        match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out')
-        nodes = match.group(1)
-        tasks = match.group(2)
-        cores = match.group(3)
-        mode  = match.group(4)
-        cc    = match.group(5)
+    '''
+
+    
+    
+     # collect filenames
+    for filename in os.listdir(root_dir):
+        if filename.endswith(".out") and filename.startswith(prefix):
+            match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out',filename)
+            nodes = match.group(1)
+            tasks = match.group(2)
+            cores = match.group(3)
+            mode  = match.group(4)
+            cc    = match.group(5)
         
-        print("Found file "+filename)
-        print("Extracted the following metadata from file name:")
-        print("nodes="nodes)
-        print("tasks="tasks)
-        print("cores="cores)
-        print("mode="mode)
-        print("cc="cc)
-        continue
-    else:
-        print("Did not find any file with prefix "+prefix+" and suffix \'.out\'.")
+            print("Found file "+filename)
+            print("Extracted the following metadata from file name:")
+            print("nodes="+nodes)
+            print("tasks="+tasks)
+            print("cores="+cores)
+            print("mode ="+mode)
+            print("cc   ="+cc)
 
 ########################################################################
 # START OF THE PROGRAM
@@ -55,7 +55,7 @@ def extract_table(root_dir,prefix,nodes,tasks,cores,runs,cc,mode)
 help = '''
 Extra performance metrics from Peano output files with specific file naming pattern
 and write them to a csv file with name
-<cc>_<TBB>
+<prefix_<cc>_<mode>.csv
 
 \n\n
 Sample usage:\n
@@ -63,10 +63,12 @@ python extract-table-dominic.py -path \'examples/151217_phi1_node/'
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
-parser.add_argument('-path',required=True,help="Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.")
+parser.add_argument('-path',required=True,help="Directory containing the Peano output files.")
+parser.add_argument('-prefix',required=True,help="Prefix of the Peano output files.")
 
-args           = parser.parse_args();
+args     = parser.parse_args();
 
-root_dir       = args.path
+root_dir = args.path
+prefix   = args.prefix
 
-extract_table(root_dir)
+extract_table(root_dir,prefix)
