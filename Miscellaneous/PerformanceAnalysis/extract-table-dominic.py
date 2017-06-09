@@ -7,6 +7,7 @@ import re
 import os
 import csv
 
+import operator
 
 import runtimeParser
 
@@ -50,7 +51,23 @@ def extract_table(root_dir,prefix):
                     usertime   = times[adapter]['usertime']
                     cputime    = times[adapter]['cputime']
  
-                    csvwriter.writerow([cc,mode,nodes,tasks,cores,adapter,iterations,usertime,cputime])
+                    csvwriter.writerow([nodes,tasks,cores,adapter,iterations,usertime,cputime,cc,mode])
+
+def sort_table(filename):
+    '''
+    Sorts the rows of the file according to nodes,tasks,cores,adapter name.
+    See: https://stackoverflow.com/a/17109098
+    '''
+    datafile    = open(filename, 'r')
+    reader      = csv.reader(datafile,delimiter='&')
+    sorted_data = sorted(reader, key=lambda x: (x[3],int(x[0]),int(x[1]),int(x[2])))
+    datafile.close() 
+ 
+    with open(filename, 'w') as datafile:
+        writer = csv.writer(datafile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerows(sorted_data)
+
+ 
 
 ########################################################################
 # START OF THE PROGRAM
@@ -77,3 +94,4 @@ root_dir = args.path
 prefix   = args.prefix
 
 extract_table(root_dir,prefix)
+sort_table(root_dir+"/"+prefix+".csv")
