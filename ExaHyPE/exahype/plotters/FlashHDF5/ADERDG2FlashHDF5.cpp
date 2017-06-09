@@ -1,4 +1,4 @@
-#include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
+#include "exahype/plotters/FlashHDF5/ADERDG2FlashHDF5.h"
 
 #include <cstdlib>
 #include <stdio.h>
@@ -7,8 +7,8 @@
 #include <limits> // signaling_NaN
 
 
-std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
-	return std::string("Carpet::Cartesian::Vertices::HDF5");
+std::string exahype::plotters::ADERDG2FlashHDF5::getIdentifier() {
+	return std::string("hdf5::FLASH");
 }
 
 
@@ -20,31 +20,31 @@ template <typename T> std::string toString( T Number ) {
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
 typedef tarch::la::Vector<DIMENSIONS, int> ivec;
 
-tarch::logging::Log exahype::plotters::ADERDG2CarpetHDF5::_log("exahype::plotters::ADERDG2CarpetHDF5");
+tarch::logging::Log exahype::plotters::ADERDG2FlashHDF5::_log("exahype::plotters::ADERDG2FlashHDF5");
 
 
 #ifndef HDF5
 /*************************************************************************************************
- * ADERDG2CarpetHDF5 Dummy implementation in case HDF5 support is skipped.
+ * ADERDG2FlashHDF5 Dummy implementation in case HDF5 support is skipped.
  * Probably such a section is (except the constructor) not neccessary as the methods are never
  * referenced/called.
  *************************************************************************************************/
 
-exahype::plotters::ADERDG2CarpetHDF5::ADERDG2CarpetHDF5(
+exahype::plotters::ADERDG2FlashHDF5::ADERDG2FlashHDF5(
   exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) : Device(postProcessing) {
-	printf("ERROR: Compile with HDF5, otherwise you cannot use the HDF5 plotter.\n");
+	printf("ERROR: Compile with HDF5, otherwise you cannot use the ADERDG2FlashHDF5 plotter.\n");
 	abort();
 }
 
 // all other methods are stubs
-exahype::plotters::ADERDG2CarpetHDF5::~ADERDG2CarpetHDF5() {}
-void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) {}
-void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const int cellDescriptionsIndex, const int element) {}
-void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,double timeStamp) {}
-void exahype::plotters::ADERDG2CarpetHDF5::startPlotting(double time) {}
-void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
+exahype::plotters::ADERDG2FlashHDF5::~ADERDG2FlashHDF5() {}
+void exahype::plotters::ADERDG2FlashHDF5::init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) {}
+void exahype::plotters::ADERDG2FlashHDF5::plotPatch(const int cellDescriptionsIndex, const int element) {}
+void exahype::plotters::ADERDG2FlashHDF5::plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,double timeStamp) {}
+void exahype::plotters::ADERDG2FlashHDF5::startPlotting(double time) {}
+void exahype::plotters::ADERDG2FlashHDF5::finishPlotting() {}
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
+void exahype::plotters::ADERDG2FlashHDF5::interpolateCartesianPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -53,7 +53,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
     double timeStamp
   ) {}
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(
+void exahype::plotters::ADERDG2FlashHDF5::interpolateCartesianSlicedPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -64,7 +64,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(
   ) {}
 
 #else
-#include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
+#include "exahype/plotters/FlashHDF5/FlashHDF5Writer.h"
 #include "kernels/KernelUtils.h" // indexing
 #include "peano/utils/Loop.h" // dfor
 #include "kernels/DGMatrices.h"
@@ -74,17 +74,17 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(
 #include <sstream>
 
 /*************************************************************************************************
- * ADERDG2CarpetHDF5 non-dummy implementation
+ * ADERDG2FlashHDF5 non-dummy implementation
  *************************************************************************************************/
 
-exahype::plotters::ADERDG2CarpetHDF5::ADERDG2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) :
+exahype::plotters::ADERDG2FlashHDF5::ADERDG2FlashHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) :
     Device(postProcessing) { writer = nullptr; }
 
-exahype::plotters::ADERDG2CarpetHDF5::~ADERDG2CarpetHDF5() {
+exahype::plotters::ADERDG2FlashHDF5::~ADERDG2FlashHDF5() {
 	if(writer) delete writer;
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int basisSize, int solverUnknowns, int writtenUnknowns, const std::string& select) {
+void exahype::plotters::ADERDG2FlashHDF5::init(const std::string& filename, int basisSize, int solverUnknowns, int writtenUnknowns, const std::string& select) {
 	bool oneFilePerTimestep = true;
 	bool allUnknownsInOneFile = true;
 
@@ -93,7 +93,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int
 	std::fill_n(writtenQuantitiesNames, writtenUnknowns, nullptr);
 	_postProcessing->writtenQuantitiesNames(writtenQuantitiesNames);
 	
-	writer = new exahype::plotters::CarpetHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
+	writer = new exahype::plotters::FlashHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
 		writtenQuantitiesNames, oneFilePerTimestep, allUnknownsInOneFile);	
 
 	if(writer->slicer) {
@@ -101,7 +101,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int
 	}
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
+void exahype::plotters::ADERDG2FlashHDF5::plotPatch(
         const int cellDescriptionsIndex,
         const int element) {
   auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
@@ -116,7 +116,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
   }
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, double* u, double timeStamp) {
+void exahype::plotters::ADERDG2FlashHDF5::plotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, double* u, double timeStamp) {
 
     if(writer->slicer && !writer->slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
 	return;
@@ -141,17 +141,17 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const dvec& offsetOfPatch, 
 }
 
 
-void exahype::plotters::ADERDG2CarpetHDF5::startPlotting(double time) {
+void exahype::plotters::ADERDG2FlashHDF5::startPlotting(double time) {
 	_postProcessing->startPlotting(time);
 	writer->startPlotting(time);
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {
+void exahype::plotters::ADERDG2FlashHDF5::finishPlotting() {
 	_postProcessing->finishPlotting();
 	writer->finishPlotting();
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp) {
+void exahype::plotters::ADERDG2FlashHDF5::interpolateCartesianPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp) {
   const int basisSize = writer->basisSize;
   const int solverUnknowns = writer->solverUnknowns;
   const int order = basisSize-1;
@@ -194,7 +194,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(const dvec&
 }
 
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp, const exahype::plotters::CartesianSlicer& slicer) {
+void exahype::plotters::ADERDG2FlashHDF5::interpolateCartesianSlicedPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp, const exahype::plotters::CartesianSlicer& slicer) {
   const int basisSize = writer->basisSize;
   const int solverUnknowns = writer->solverUnknowns;
   const int order = basisSize-1;
