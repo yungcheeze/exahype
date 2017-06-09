@@ -332,6 +332,8 @@ void exahype::mappings::MeshRefinement::enterCell(
            exahype::Vertex::Records::RefinementControl::Unrefined
            &&
            !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
+           &&
+           fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
       ) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
       }
@@ -388,6 +390,8 @@ void exahype::mappings::MeshRefinement::leaveCell(
 //        exahype::Vertex::Records::RefinementControl::Refined
 //        &&
 //        !coarseGridVertices[ coarseGridVerticesEnumerator(v) ].isHangingNode()
+//          &&
+//          fineGridVertices[ coarseGridVerticesEnumerator(v) ].isInside()
 //    ) {
 //      coarseGridVertices[ coarseGridVerticesEnumerator(v) ].erase();
 //    }

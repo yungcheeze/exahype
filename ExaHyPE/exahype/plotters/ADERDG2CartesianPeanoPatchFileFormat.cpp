@@ -148,7 +148,8 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
       case PlotterType::Hdf5:
         _writer = new tarch::plotter::griddata::blockstructured::PeanoHDF5PatchFileWriter(
           DIMENSIONS,_order,_filename,
-          _fileCounter>0
+          _fileCounter>0,
+          true
         );
         break;
     }

@@ -33,14 +33,14 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
      */
     static tarch::logging::Log _log;
   public:
-    GRMHDSolver_FV(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    GRMHDSolver_FV(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
     
     /**
      * Initialise the solver.
      *
      * \param[in] cmdlineargs the command line arguments.
      */
-    void init(std::vector<std::string>& cmdlineargs);
+    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
 
     /**
      * @see FiniteVolumesSolver

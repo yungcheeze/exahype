@@ -219,12 +219,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getMaximumMeshDepth("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getMaximumMeshDepth("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"),"+
+                          "cmdlineargs"+
                           (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
-      _methodBodyWriter.write( "  , cmdlineargs));\n");
+      _methodBodyWriter.write( " ));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       

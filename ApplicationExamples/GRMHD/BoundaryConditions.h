@@ -2,6 +2,23 @@
 #ifndef GENERIC_BOUNDARY_CONDITIONS_WHICH_SHOULD_GO_SOMEWHERE_CENTRAL
 #define GENERIC_BOUNDARY_CONDITIONS_WHICH_SHOULD_GO_SOMEWHERE_CENTRAL
 
+/** Helper class to parse key value strings */
+class StringMapView {
+   std::string base;
+   public:
+    StringMapView(std::string _base) : base(_base) {}
+    std::string getValueAsString(const std::string& key) const {
+	std::size_t startIndex = base.find(key);
+	startIndex = base.find(":", startIndex);
+	std::size_t endIndex = base.find_first_of("}, \n\r", startIndex + 1);
+	return base.substr(startIndex + 1, endIndex - startIndex - 1);
+    }
+    bool isValueValidString(const std::string& key) const {
+	std::size_t startIndex = base.find(key);
+	return (startIndex != std::string::npos);
+    }
+  };
+
 /*
  * status of this file:
  * 
@@ -78,6 +95,39 @@ public:
 	 * 
 	 ***************************************************************************/
 	
+	#define BC_FROM_SPECFILE_SIDE(name) \
+		if(constants.isValueValidString(#name)) { \
+			std::string val = constants.getValueAsString(#name);\
+			name = parseFromString(val);\
+			if(name==nullptr) {\
+				logError("setFromSpecFile", "Boundary condition at " #name ": Invalid method: '" << val << "'");\
+			} else {\
+				logInfo("setFromSpecFile", #name " boundary: " << val);\
+			}\
+		} else {\
+			logError("setFromSpecFile", "Boundary condition at " #name " is not valid according to specfile parser.");\
+		}
+
+	/**
+	 * MapView shall have methods
+	 *    bool isValueValidString(std::string)
+	 *    std:.string getvalueAsString(std::string)
+	 * such as the Parser::ParserView class has.
+	 * 
+	 * @returns true in case of success, false otherwise
+	 **/
+	template<typename MapView>
+	bool setFromSpecFile(MapView constants) {
+		tarch::logging::Log _log("BoundaryCondition");
+		BC_FROM_SPECFILE_SIDE(left);
+		BC_FROM_SPECFILE_SIDE(right);
+		BC_FROM_SPECFILE_SIDE(front);
+		BC_FROM_SPECFILE_SIDE(back);
+		BC_FROM_SPECFILE_SIDE(bottom);
+		BC_FROM_SPECFILE_SIDE(top);
+		return allFacesDefined();
+	}
+
 	/**
 	 * assign a boundary method by some string value
 	 * @returns pinter if value could be correctly parsed, in case of error nullptr.
@@ -200,6 +250,19 @@ public:
 	 *  2) Add yourName to the parseFromString thing
 	 * 
 	 ***************************************************************************/
+	
+	// similar as ADERDg
+	template<typename MapView>
+	bool setFromSpecFile(MapView constants) {
+		tarch::logging::Log _log("FV-BoundaryCondition");
+		BC_FROM_SPECFILE_SIDE(left);
+		BC_FROM_SPECFILE_SIDE(right);
+		BC_FROM_SPECFILE_SIDE(front);
+		BC_FROM_SPECFILE_SIDE(back);
+		BC_FROM_SPECFILE_SIDE(bottom);
+		BC_FROM_SPECFILE_SIDE(top);
+		return allFacesDefined();
+	}
 
 	/**
 	 * assign a boundary method by some string value
