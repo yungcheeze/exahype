@@ -156,6 +156,7 @@ void exahype::plotters::CarpetHDF5Writer::openH5() {
 	closeH5(); // just to be sure
 	int writtenUnknown=0;
 	for(auto& file : files) {
+		// @TODO: MPI Rank number should go in here.
 		local_filename = prefix + (allUnknownsInOneFile ? "" : (sep + writtenQuantitiesNames[writtenUnknown])) + suffix;
 
 		logInfo("open", "Opening File '"<< local_filename << "'");
@@ -273,8 +274,7 @@ void exahype::plotters::CarpetHDF5Writer::plotPatchForSingleUnknown(
 	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, dtuple);
 	delta.write(PredType::NATIVE_DOUBLE, dx.data()); // issue: conversion from double to float
 	
-	const int max_string_length = 60;
-	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length); // todo: use name.size().
+	StrType t_str = H5::StrType(H5::PredType::C_S1, name.size()+1); // Todo: not sure about +1 for \0
 	Attribute aname = table.createAttribute("name", t_str, H5S_SCALAR);
 	aname.write(t_str, name.c_str());
 }
