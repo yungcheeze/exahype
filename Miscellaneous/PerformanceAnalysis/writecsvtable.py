@@ -12,7 +12,7 @@ import operator
 import runtimeParser
 
 '''
-.. module:: usertimeplot
+.. module:: extractCSVTable
   :platform: Unix, Windows, Mac
   :synopsis: Extracts performance metrics from Peano output files with specific file naming pattern.
    
@@ -67,15 +67,13 @@ def sort_table(filename):
         writer = csv.writer(datafile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerows(sorted_data)
 
- 
-
 ########################################################################
 # START OF THE PROGRAM
 ########################################################################
 # For the meaning of the command line arguments, see the documentation
 # of the function 'extrat_table' above.
 help = '''
-Extra performance metrics from Peano output files with specific file naming pattern
+Extract performance metrics from Peano output files with specific file naming pattern
 and write them to a csv file with name
 <prefix_<cc>_<mode>.csv
 
