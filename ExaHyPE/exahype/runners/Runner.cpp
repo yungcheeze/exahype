@@ -438,7 +438,8 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       _domainOffset);
   _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
 
-  const int coarsestMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
+  const int coarsestUserMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
+  int boundingBoxMeshLevel = coarsestUserMeshLevel;
   tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _domainOffset;
 
   #ifdef Parallel
@@ -484,26 +485,27 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     // Choose the number of elements for resolving
     // the boundary as N=3^lBB - 2, i.e. have two elements
     // outside of the domain.
-    const double hU = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
-    const double HD = tarch::la::max(_domainSize);
+    const double coarsestUserMeshSpacing =
+        exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+    const double maxDomainExtent = tarch::la::max(_domainSize);
 
-    double alphaBB = 0;
-    double HBB     = 0;
-    double hBB     = std::numeric_limits<double>::max();
+    double boundingBoxScaling         = 0;
+    double boundingBoxExtent          = 0;
+    double boundingBoxMeshSpacing     = std::numeric_limits<double>::max();
 
-    int lBB        = coarsestMeshLevel-1;
-    while (hBB > hU) {
-      const double NBB = std::pow(3,lBB);
-      alphaBB = NBB / ( NBB - 2 );
-      HBB     = alphaBB * HD;
-      hBB     = HBB/NBB;
-      lBB++;
+    int level = coarsestUserMeshLevel;
+    while (boundingBoxMeshSpacing > coarsestUserMeshSpacing) {
+      const double boundingBoxMeshCells = std::pow(3,boundingBoxMeshLevel-1);
+      boundingBoxScaling                = boundingBoxMeshCells / ( boundingBoxMeshCells - 2 );
+      boundingBoxExtent                 = boundingBoxScaling * maxDomainExtent;
+      boundingBoxMeshSpacing            = boundingBoxExtent/boundingBoxMeshCells;
+      level++;
     }
-    assertion6(alphaBB>=1.0,alphaBB,HBB,hBB,lBB,hU,HD);
-    assertion(lBB==coarsestMeshLevel,"We do not update the solver's refinement criterion with the new mesh size yet!");
+    assertion6(boundingBoxScaling>=1.0,boundingBoxScaling,boundingBoxExtent,boundingBoxMeshSpacing,boundingBoxMeshLevel,coarsestUserMeshSpacing,maxDomainExtent);
 
-    _boundingBoxSize  *= alphaBB;
-    boundingBoxOffset -= hBB;
+    boundingBoxMeshLevel = level--;
+    _boundingBoxSize    *= boundingBoxScaling;
+    boundingBoxOffset   -= boundingBoxMeshSpacing;
   }
   #endif
 
@@ -526,6 +528,11 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   logInfo("createRepository(...)",
       "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size "<<
       coarsestUserMeshSize << " and (shrunk) domain size " << shrunkDomainSize);
+  if (boundingBoxMeshLevel!=coarsestUserMeshLevel) {
+    logInfo("createRepository(...)",
+        "had to refine " << boundingBoxMeshLevel-coarsestUserMeshLevel << " more times in order to "
+            " satisfy user's maximum mesh size criterion while scaling the bounding box");
+  }
 
   logInfo(
       "createRepository(...)",
@@ -533,7 +540,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       " of width/size " << shrunkDomainSize <<
       ". bounding box has offset " << boundingBoxOffset <<
       " and size " << _boundingBoxSize <<
-      ". grid regular up to level " << coarsestMeshLevel << " (level 1 is coarsest available cell in tree)");
+      ". grid regular up to level " << boundingBoxMeshLevel << " (level 1 is coarsest available cell in tree)");
 
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
