@@ -1,10 +1,14 @@
+#!/user/bin/python3
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 import argparse
 from argparse import RawTextHelpFormatter
 
 import re
 import os
+import csv
 
-import runtimeParser as rp
+
+import runtimeParser
 
 '''
 .. module:: usertimeplot
@@ -26,26 +30,27 @@ def extract_table(root_dir,prefix):
       prefix (str):
          Prefix of the files - usually the date of the test and an identifier for the test.
     '''
-
-    
-    
-     # collect filenames
-    for filename in os.listdir(root_dir):
-        if filename.endswith(".out") and filename.startswith(prefix):
-            match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out',filename)
-            nodes = match.group(1)
-            tasks = match.group(2)
-            cores = match.group(3)
-            mode  = match.group(4)
-            cc    = match.group(5)
-        
-            print("Found file "+filename)
-            print("Extracted the following metadata from file name:")
-            print("nodes="+nodes)
-            print("tasks="+tasks)
-            print("cores="+cores)
-            print("mode ="+mode)
-            print("cc   ="+cc)
+ 
+    # collect filenames
+    with open(prefix+'.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for filename in os.listdir(root_dir):
+            if filename.endswith(".out") and filename.startswith(prefix):
+                match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out',filename)
+                nodes = match.group(1)
+                tasks = match.group(2)
+                cores = match.group(3)
+                mode  = match.group(4)
+                cc    = match.group(5)
+                    
+                times = runtimeParser.parse_adapter_times(filename) 
+                
+                for adapter in times:
+                    iterations = times[adapter]['n']
+                    usertime   = times[adapter]['usertime']
+                    cputime    = times[adapter]['cputime']
+ 
+                    csvwriter.writerow([cc,mode,nodes,tasks,cores,adapter,iterations,usertime,cputime])
 
 ########################################################################
 # START OF THE PROGRAM
