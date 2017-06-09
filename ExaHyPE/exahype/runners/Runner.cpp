@@ -443,22 +443,67 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   #ifdef Parallel
   if (exahype::State::VirtuallyExpandBoundingBox) {
-    const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
-    const double boundingBoxScaling = 1+2*coarsestMeshSize/_boundingBoxSize[0];
+    // Variant 1: Maximise the mesh size
+    // const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
+    // const double boundingBoxScaling = 1+2*coarsestMeshSize/_boundingBoxSize[0];
+    // boundingBoxSize  *= boundingBoxScaling;
+    // boundingBoxOffset += boundingBoxScaling*_boundingBoxSize; // TODO(Dominic): This is for Tobias' method
+
+    // Variant 2: Tobias's variant
     // TODO(Dominic): Keep for reference.
-//    const double boundingBoxScaling =
-//        static_cast<double>(coarsestMeshLevel) /
-//        (static_cast<double>(coarsestMeshLevel)-2);
-    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize );
-    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize, boundingBoxScaling );
+    // Add to docu: boundingBoxScaling tries to preserve the domain.
+    //    const double boundingBoxScaling =
+    //        static_cast<double>(coarsestMeshLevel) /
+    //        (static_cast<double>(coarsestMeshLevel)-2);
+    //    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize );
+    //    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+    //    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize, boundingBoxScaling );
+    //
+    //    logInfo(
+    //        "createRepository(...)",
+    //        "increase bounding box artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+    //
+    //    _boundingBoxSize  *= boundingBoxScaling;
+    //    boundingBoxOffset += boundingBoxShift*_boundingBoxSize; // TODO(Dominic): This is for Tobias' method
 
-    logInfo(
-        "createRepository(...)",
-        "increase bounding box artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+    // Variant 3: Find minimum bounding box mesh refinement level lBB that
+    // resolves the boundary accurately.
+    //
+    // Problem:
+    // Minimise lBB and vary HBB,xBB,N in order to satisfy
+    // N * hBB   = HD  (1)
+    // xBB + hBB = xD, (2)
+    //
+    // with
+    // hBB = HBB/(3^lBB), HBB: bounding box size,
+    // xBB: bounding box offset,
+    // xD: domain offset,
+    // HD: domain size.
+    //
+    // Constraints:
+    // Choose the number of elements for resolving
+    // the boundary as N=3^lBB - 2, i.e. have two elements
+    // outside of the domain.
+    const double hU = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+    const double HD = tarch::la::max(_domainSize);
 
-    _boundingBoxSize  *= boundingBoxScaling;
-    boundingBoxOffset += boundingBoxShift;
+    double alphaBB = 0;
+    double HBB     = 0;
+    double hBB     = std::numeric_limits<double>::max();
+
+    int lBB        = coarsestMeshLevel-1;
+    while (hBB > hU) {
+      const double NBB = std::pow(3,lBB);
+      alphaBB = NBB / ( NBB - 2 );
+      HBB     = alphaBB * HD;
+      hBB     = HBB/NBB;
+      lBB++;
+    }
+    assertion6(alphaBB>=1.0,alphaBB,HBB,hBB,lBB,hU,HD);
+    assertion(lBB==coarsestMeshLevel,"We do not update the solver's refinement criterion with the new mesh size yet!");
+
+    _boundingBoxSize  *= alphaBB;
+    boundingBoxOffset -= hBB;
   }
   #endif
 
