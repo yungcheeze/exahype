@@ -34,6 +34,22 @@ exahype::mappings::FinaliseMeshRefinement::communicationSpecification() const {
       true);
 }
 
+peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
+    touchVertexFirstTimeSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
+// Below all specs are Nop
+
+peano::MappingSpecification
+exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
 peano::MappingSpecification
 exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
@@ -41,25 +57,11 @@ exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification(int 
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
-peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
-    touchVertexFirstTimeSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
-}
-
 peano::MappingSpecification
 exahype::mappings::FinaliseMeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
-}
-
-peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
@@ -117,24 +119,6 @@ void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& s
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
-void exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTime(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
-                           fineGridX, fineGridH,
-                           coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-
-  fineGridVertex.mergeOnlyNeighboursMetadata(_localState.getAlgorithmSection());
-
-  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
-}
-
 void exahype::mappings::FinaliseMeshRefinement::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -189,9 +173,8 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
-  vertex.mergeOnlyWithNeighbourMetadata(
-      fromRank,fineGridX,fineGridH,level,
-      _localState.getAlgorithmSection());
+  vertex.dropNeighbourMetadata(
+      fromRank,fineGridX,fineGridH,level);
 
   logTraceOut("mergeWithNeighbour(...)");
 }
@@ -352,6 +335,15 @@ void exahype::mappings::FinaliseMeshRefinement::destroyCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
+
+void exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTime(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
 void exahype::mappings::FinaliseMeshRefinement::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
