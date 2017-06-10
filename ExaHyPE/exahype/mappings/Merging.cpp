@@ -33,7 +33,7 @@ peano::MappingSpecification
 exahype::mappings::Merging::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
+      peano::MappingSpecification::Serial,true); // TODO Debug
 }
 
 // Specifications below are all nop.
@@ -41,7 +41,7 @@ peano::MappingSpecification
 exahype::mappings::Merging::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+      peano::MappingSpecification::Serial,true); // TODO Debug
 }
 
 
@@ -158,6 +158,118 @@ void exahype::mappings::Merging::endIteration(
   logTraceOutWith1Argument("endIteration(State)", solverState);
 }
 
+void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+    const int pos1Scalar,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+    const int pos2Scalar) {
+  auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+  parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined7);
+  pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+      const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+      const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+      const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+      if (element2>=0 && element1>=0) {
+        solver->mergeNeighbours(
+            cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+            _temporaryVariables._tempFaceUnknowns[solverNumber],
+            _temporaryVariables._tempStateSizedVectors[solverNumber],
+            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+
+        solver->mergeNeighboursMetadata(
+            cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+      }
+      #ifdef Debug // TODO(Dominic):
+      _interiorFaceMerges++;
+      #endif
+    }
+  endpfor
+  grainSize.parallelSectionHasTerminated();
+}
+
+void exahype::mappings::Merging::mergeWithBoundaryData(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+    const int pos1Scalar,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+    const int pos2Scalar) {
+  auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+  parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined8);
+  pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+      const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+      int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+      int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+      assertion4((element1==exahype::solvers::Solver::NotFound &&
+                  element2==exahype::solvers::Solver::NotFound)
+                 || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+                 || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
+                 cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+
+      if (element1 >= 0) {
+        solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+
+        #ifdef Debug
+        _boundaryFaceMerges++;
+        #endif
+      }
+      if (element2 >= 0){
+        solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+        #ifdef Debug
+        _boundaryFaceMerges++;
+        #endif
+      }
+    }
+  endpfor
+  grainSize.parallelSectionHasTerminated();
+}
+
+void exahype::mappings::Merging::mergeWithBoundaryOrEmptyCellMetadata(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+    const int pos1Scalar,
+    const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+    const int pos2Scalar) {
+  auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+      parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined8);
+  pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+      const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+      const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+      const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+      assertion4((element1==exahype::solvers::Solver::NotFound &&
+          element2==exahype::solvers::Solver::NotFound)
+          || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+          || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
+          cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+
+      if (element1 >= 0) {
+        solver->mergeWithBoundaryOrEmptyCellMetadata(
+            cellDescriptionsIndex1,element1,pos1,pos2);
+      }
+      if (element2 >= 0){
+        solver->mergeWithBoundaryOrEmptyCellMetadata(
+            cellDescriptionsIndex2,element2,pos2,pos1); // !!! Be aware of the indices
+      }
+    }
+  endpfor
+  grainSize.parallelSectionHasTerminated();
+}
+
 void exahype::mappings::Merging::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -174,70 +286,21 @@ void exahype::mappings::Merging::touchVertexFirstTime(
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     dfor2(pos1)
       dfor2(pos2)
+        // TODO(Dominic): There are some redundant parts in these checks
         if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
-          auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-              parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined7);
-          pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-            if (solver->isComputing(_localState.getAlgorithmSection())) {
-              const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
-              const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
-              const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-              const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-              if (element2>=0 && element1>=0) {
-                solver->mergeNeighbours(
-                    cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-                    _temporaryVariables._tempFaceUnknowns[solverNumber],
-                    _temporaryVariables._tempStateSizedVectors[solverNumber],
-                    _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
-              }
-              #ifdef Debug // TODO(Dominic):
-              _interiorFaceMerges++;
-              #endif
-            }
-          endpfor
-          grainSize.parallelSectionHasTerminated();
+          mergeNeighboursDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
         if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
-          auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-              parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined8);
-          pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-            if (solver->isComputing(_localState.getAlgorithmSection())) {
-              const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
-              const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
-              int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-              int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-              assertion4((element1==exahype::solvers::Solver::NotFound &&
-                          element2==exahype::solvers::Solver::NotFound)
-                         || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
-                         || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
-                         cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+          mergeWithBoundaryData(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
-              if (element1 >= 0) {
-                solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-                                              _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                              _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                              _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+          fineGridVertex.setMergePerformed(pos1,pos2,true);
+        }
 
-                #ifdef Debug
-                _boundaryFaceMerges++;
-                #endif
-              }
-              if (element2 >= 0){
-                solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-                                              _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                              _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                              _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
-                #ifdef Debug
-                _boundaryFaceMerges++;
-                #endif
-              }
-            }
-          endpfor
-          grainSize.parallelSectionHasTerminated();
+        //
+        if (fineGridVertex.hasToMergeWithBoundaryOrEmptyCellMetadata(pos1,pos2)) {
+          mergeWithBoundaryOrEmptyCellMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }

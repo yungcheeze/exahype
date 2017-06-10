@@ -95,6 +95,35 @@ private:
   int _boundaryFaceMerges;
   #endif
 
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeNeighboursDataAndMetadata(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeWithBoundaryData(exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+      const int pos2Scalar);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeWithBoundaryOrEmptyCellMetadata(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+      const int pos2Scalar);
+
   #ifdef Parallel
   /**
    * Iterates over the received metadata and every time
