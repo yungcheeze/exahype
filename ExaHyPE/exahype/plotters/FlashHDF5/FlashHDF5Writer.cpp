@@ -5,6 +5,7 @@
 #include "exahype/plotters/FlashHDF5/FlashHDF5Writer.h"
 #include "peano/utils/Loop.h" // dfor
 #include <sstream>
+#include <iterator> // ostream_iterator
 #include <stdexcept>
 
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
@@ -18,6 +19,18 @@ template <typename T> std::string toString( T Number ) {
 	std::ostringstream ss; ss << Number; return ss.str();
 }
 
+// Printing any std::vector
+// Source: https://stackoverflow.com/a/10758845
+template <typename T>
+std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
+  if ( !v.empty() ) {
+    out << '[';
+    std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, ", "));
+    out << "\b\b]";
+  }
+  return out;
+}
+
 // small helper
 void writeStringAttribute(H5Object* o, std::string key, std::string value) {
 	StrType t_str = H5::StrType(H5::PredType::C_S1, value.size()+1);
@@ -28,18 +41,30 @@ void writeStringAttribute(H5Object* o, std::string key, std::string value) {
 
 exahype::plotters::FlashHDF5Writer::ExtendableDataSet::ExtendableDataSet(const sizes& _basic_shape, hsize_t _increase)
 	:
+	_log("FlashHDF5Writer::ExtendableDataSet"), // just for debugging!
 	basic_shape(_basic_shape),
 	initial_dims(copy_front(basic_shape, _increase)),
 	initial_maxdims(copy_front(basic_shape, H5S_UNLIMITED)),
-	dataspace(initial_dims.size(), initial_dims.data(), initial_maxdims.data()),
+	chunk_size(copy_front(basic_shape, 1)), // chunk size is exactly size of actual data
+	initial_dataspace(initial_dims.size(), initial_dims.data(), initial_maxdims.data()),
 	increase(_increase),
 	dataset(nullptr),
 	capacity(0),
 	size(0)
 	{
 	
-	// chunk size is exactly size of actual data
-	prop.setChunk(basic_shape.size(), basic_shape.data());
+	prop.setChunk(chunk_size.size(), chunk_size.data());
+	
+	// the DSetCreatPropList is also the place to go for turning on compression.
+}
+
+std::string exahype::plotters::FlashHDF5Writer::ExtendableDataSet::toString() const {
+	std::stringstream s;
+	s << "ExtendableDataSet:\n";
+	s << "  Initial DataSpace: ( rank=" <<  initial_dims.size() << ", dims=" << initial_dims << ", maxdims=" << initial_maxdims << ")\n";
+	s << "  Size of Chunks:    (ndims=" << chunk_size.size() << ",    dim =" << chunk_size <<  ")\n";
+	s << "  capacity = " << capacity << ", size = " << size << ", increase = " << increase << "\n";
+	return s.str();
 }
 
 /* In principle, I would like to pass a  H5::Location* pointer (HDF 1.10), however the common interface
@@ -49,7 +74,7 @@ exahype::plotters::FlashHDF5Writer::ExtendableDataSet::ExtendableDataSet(const s
 template <typename H5GroupOrFile>
 void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::newDataSet(H5GroupOrFile* location, const std::string& name, const H5::DataType &data_type) {
 	if(!dataset && size == 0) {
-		dataset = new DataSet(location->createDataSet(name, data_type, dataspace, prop));
+		dataset = new DataSet(location->createDataSet(name, data_type, initial_dataspace, prop));
 		capacity = increase;
 		size = 1;
 		//return dataset;
@@ -60,20 +85,32 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::newDataSet(H5GroupOr
 
 
 void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::extend(int _capacity) {
-	capacity = _capacity;
 	sizes new_capacity(initial_dims);
-	new_capacity[0] = capacity;
+	new_capacity[0] = _capacity;
+	
+	// Debugging:
+	logInfo("extend", "with capacity = " << capacity << ", size = " << size << ", increase = " << increase);
+	logInfo("extend", "going to new capacity = " << _capacity << " with shape " << new_capacity);
+	
 	dataset->extend(new_capacity.data());
+	capacity = _capacity;
 }
 
 void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::write(const DataType &mem_type, const void *buf) {
 	size++;
-	if(capacity < size) extend(size + increase);
+	if(capacity <= size) extend(size + increase);
 
 	// Select a hyperslab in extended portion of the dataset.
 	DataSpace *filespace = new DataSpace(dataset->getSpace());
-	sizes offset(initial_dims.size(), 0.0); // initial offset 0
-	offset[0] = size * increase;
+	
+	sizes block_offset(initial_dims.size(), 0.0); // initial offset 0
+	block_offset[0] = size;
+	
+	// we default to block size 1, so block count is actually element size.
+	sizes block_count(initial_dims);
+	block_count[0] = 1; // hyperslab contains only one block/element in extending direction
+	
+	logInfo("write", "size=" << size <<", writing block size " << block_count << " to offset " << block_offset);
 	
 	// Hyperslab: https://support.hdfgroup.org/HDF5/doc/cpplus_RM/class_h5_1_1_data_space.html#a3147799b3cd1e741e591175e61785854
 	// op	- IN: Operation to perform on current selection
@@ -81,7 +118,8 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::write(const DataType
 	// start	- IN: Offset of the start of hyperslab
 	// stride	- IN: Hyperslab stride - default to NULL
 	// block	- IN: Size of block in the hyperslab - default to NULL
-	filespace->selectHyperslab(H5S_SELECT_SET, initial_dims.data(), offset.data());
+	// C++: (op, count, start, stride, block)
+	filespace->selectHyperslab(H5S_SELECT_SET, block_count.data(), block_offset.data());
 
 	// Define memory space.
 	DataSpace *memspace = new DataSpace(basic_shape.size(), basic_shape.data(), NULL);
@@ -194,10 +232,15 @@ exahype::plotters::FlashHDF5Writer::FlashHDF5Writer(
 	
 	// open file(s) initially, if neccessary
 	if(!oneFilePerTimestep) openH5();
+	timegroup = nullptr;
 	
 	// for Debugging:
 	logInfo("FlashHDF5DebugInfo", "dim=" << dim);
 	logInfo("FlashHDF5DebugInfo", "writtenCellIdx=" << writtenCellIdx->toString());
+	
+	logInfo("init", "Created fields =  " << fields->toString());
+	logInfo("init", "Created origin =  " << origin->toString());
+	logInfo("init", "Created delta =  " << delta->toString());
 }
 
 void exahype::plotters::FlashHDF5Writer::setupFile(H5::H5File* file) {
@@ -267,6 +310,7 @@ void exahype::plotters::FlashHDF5Writer::startPlotting(double time) {
 	}
 	auto file = files[0];
 	
+	//if(timegroup) delete timegroup; // properly closing
 	timegroup = new Group(file->createGroup(std::string("/it") + toString(iteration)));
 	
 	// setup extendable (chunked) data tables
@@ -284,6 +328,14 @@ void exahype::plotters::FlashHDF5Writer::startPlotting(double time) {
 }
   
 void exahype::plotters::FlashHDF5Writer::finishPlotting() {
+	fields->shrink_to_fit();
+	origin->shrink_to_fit();
+	delta->shrink_to_fit();
+	
+	fields->closeDataSet();
+	origin->closeDataSet();
+	delta->closeDataSet();
+	
 	if(oneFilePerTimestep) closeH5();
 	else flushH5();
 

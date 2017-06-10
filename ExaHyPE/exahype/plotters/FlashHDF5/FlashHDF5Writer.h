@@ -104,6 +104,7 @@ public:
   struct ExtendableDataSet {
 	typedef hsize_t hsize;
 	typedef std::vector<hsize> sizes;
+	tarch::logging::Log _log;
 	
 	/// Returns a copy of v = { val, v[0], v[1], ...  }, leaves v unchanged.
 	sizes static copy_front(sizes v, hsize val) { v.insert(v.begin(), val); return v; }
@@ -111,7 +112,8 @@ public:
 	const sizes basic_shape; ///< The actual shape of the data, for instance (a,b,c)
 	const sizes initial_dims; ///< The initial dimensions of the  dataspace, for instance (inc,a,b,c)
 	const sizes initial_maxdims; ///< the maximum dimensions of the datapsace, for instance (UNLIMITED,a,b,c)
-	const H5::DataSpace   dataspace;
+	const sizes chunk_size; ///< The size of an individual chunk
+	const H5::DataSpace   initial_dataspace; ///< The space with which a DataSet is started
 	const int increase; ///< The number of blocks to add when we have to increase. You want a large number.
 
 	/*const*/ H5::DSetCreatPropList prop; // holding chunk size information
@@ -130,6 +132,7 @@ public:
 	void write(const H5::DataType &mem_type, const void *buf);
 	void shrink_to_fit() { extend(size); }
 	void closeDataSet() { delete dataset; }
+	std::string toString() const;
   };
 
   H5::Group           *timegroup;
