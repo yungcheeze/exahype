@@ -2633,7 +2633,7 @@ exahype::solvers::ADERDGSolver::determineAugmentationStatus(
   return
       (cellDescription.getType()==CellDescription::Type::Ancestor) ?
           MaximumAugmentationStatus :
-          tarch::la::max(cellDescription.getFacewiseHelperStatus());
+          tarch::la::max(cellDescription.getFacewiseAugmentationStatus());
 }
 
 void exahype::solvers::ADERDGSolver::overwriteFacewiseAugmentationStatus(
