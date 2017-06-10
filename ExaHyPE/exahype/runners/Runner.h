@@ -215,6 +215,47 @@ class exahype::runners::Runner {
    *
    * Sets the _boundingBoxSize field to the
    * bounding box used for the repository.
+   *
+   * <h2>Bounding box scaling</h2>
+   * If the user switches on the bounding box scaling,
+   * we determine a minimum bounding box mesh refinement level lBB
+   * and a minimum bounding box width HBB which
+   * yields a mesh that resolves the domain boundary accurately.
+   *
+   * Since there are arbitrary many solutions to this problem,
+   * we add the following constraints:
+   *
+   * 1.Choose the number of elements for resolving
+   * the boundary as N=3^lBB - 2, i.e. have two elements
+   * outside of the domain.
+   *
+   * 2. The new mesh size hBB = HBB/(3^lBB) must
+   * be smaller than or equal to the user's mesh size hD,
+   * i.e, lBB must be larger or equal to the user's
+   * coarsest mesh level lD with hD > HD/3^lD.
+   *
+   * We thus end up with the following problem:
+   *
+   * Minimise lBB and vary HBB,xBB in order to satisfy
+   * N*hBB      = HD, (1)
+   * xBB + hBB  = xD, (2)
+   *
+   * with
+   * hBB = HBB/(3^lBB), HBB: bounding box size,
+   * xBB: bounding box offset,
+   * xD: domain offset,
+   * HD: domain size.
+   *
+   * Solution:
+   * From the first constraint, we have that N=3^lBB-2.
+   *
+   * We then have from (1)-(2) and expanding hBB:
+   *
+   * HBB = 3^lBB / 3^lBB-2 * HD,
+   * xBB = xD - HBB/3^lBB,
+   *
+   * where lBB >= lD is the first lBB such
+   * that hBB <= hD.
    */
   exahype::repositories::Repository* createRepository();
 
