@@ -112,7 +112,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
         const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
 
   /**
-   * Checks if the cell description at the indices corresponding
+   * Checks if the cell descriptions at the indices corresponding
    * to \p pos1 and \p pos2 need to be merged with each other.
    *
    * TODO(Dominic): The idea is to store purely geometry based information
@@ -121,6 +121,15 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * into the solvers. I need to discuss this with Tobias.
    */
   bool hasToMergeWithBoundaryData(
+        const tarch::la::Vector<DIMENSIONS,int>& pos1,
+        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+
+  /**
+   * Checks if the cell description at one of the indices corresponding
+   * to \p pos1 and \p pos2 need to merge their metadata with
+   * an empty cell or the boundary.
+   */
+  bool hasToMergeWithBoundaryOrEmptyCellMetadata(
         const tarch::la::Vector<DIMENSIONS,int>& pos1,
         const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
 
@@ -220,7 +229,8 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int fromRank) const;
 
   /**
-   * TODO(Dominic): Add docu.
+   * Receive metadata from neighbouring ranks
+   * and merge the solvers with it.
    *
    * \note Since this function sets the
    * neighbourMergePerformed flags, do never
@@ -233,6 +243,18 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int level,
       const exahype::records::State::AlgorithmSection& section) const;
 
+  /**
+   * Drops the metadata received from neighbouring ranks.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
+   */
+  void dropNeighbourMetadata(
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      const int level) const;
 
   /**
    * Checks for all cell descriptions (ADER-DG, FV, ...)
