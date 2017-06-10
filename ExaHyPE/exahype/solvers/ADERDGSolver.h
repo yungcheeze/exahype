@@ -727,7 +727,7 @@ public:
   /**
    * TODO(Dominic): Add docu.
    */
-  void resetFacewiseHelperStatus(
+  void overwriteFacewiseHelperStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
@@ -745,7 +745,7 @@ public:
   /**
    * TODO(Dominic): Add docu.
    */
-  void resetFacewiseAugmentationStatus(
+  void overwriteFacewiseAugmentationStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
@@ -804,13 +804,6 @@ public:
    */
   static void overwriteFacewiseLimiterStatus(
       CellDescription& cellDescription);
-
-  /**
-   * Overwrites the facewise limiter status values at the
-   * boundary with the cellwise limiter status value
-   * (cellDescription.getLimiterStatus()).
-   */
-  static void resetFacewiseLimiterStatus(CellDescription& cellDescription);
 
   /**
    * TODO(Dominic): Can later be replaced
@@ -1832,6 +1825,12 @@ public:
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
+  void mergeWithBoundaryOrEmptyCellMetadata(
+        const int cellDescriptionsIndex,
+        const int element,
+        const tarch::la::Vector<DIMENSIONS, int>& posCell,
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) override;
+
   void prepareNextNeighbourMerging(
       const int cellDescriptionsIndex,const int element,
       exahype::Vertex* const fineGridVertices,
@@ -1922,6 +1921,8 @@ public:
   ///////////////////////////////////
   void appendNeighbourCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
       const int solverNumber) override;
 
