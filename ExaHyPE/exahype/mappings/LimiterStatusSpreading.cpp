@@ -56,14 +56,14 @@ peano::MappingSpecification
 exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
+      peano::MappingSpecification::Serial,true); // TODO(Dominic): TBB
 }
 
 peano::MappingSpecification
 exahype::mappings::LimiterStatusSpreading::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+      peano::MappingSpecification::Serial,true);  // TODO(Dominic): TBB
 }
 peano::MappingSpecification
 exahype::mappings::LimiterStatusSpreading::leaveCellSpecification(int level) const {
@@ -190,8 +190,9 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
             limitingADERDG->
               evaluateLimiterStatusBasedRefinementCriterion(
                   fineGridCell.getCellDescriptionsIndex(),element);
-        limitingADERDG->updateNextMeshUpdateRequest(meshUpdateRequest);
 
+        // TODO(Dominic): Race conditions
+        limitingADERDG->updateNextMeshUpdateRequest(meshUpdateRequest);
         if (meshUpdateRequest) {
           limitingADERDG->updateNextLimiterDomainChange(exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
         }
