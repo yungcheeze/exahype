@@ -278,6 +278,8 @@ private:
    * If the counter is set to zero, change a troubled cell
    * to NeighbourOfCellIsTroubled1.
    *
+   * Further write back the new value to the boundary.
+   *
    * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
    *
    * \return True if the limiter domain changes irregularly in the cell, i.e.,
@@ -840,6 +842,15 @@ public:
   exahype::solvers::LimiterDomainChange updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
+
+  /**
+   * Update the limiter status of the solver patch
+   * using the boundary states.
+   *
+   * Then write back the result to the boundary.
+   */
+  exahype::solvers::LimiterDomainChange updateLimiterStatus(SolverPatch& solverPatch) const;
+
   /*
    * Deallocate the limiter patch on all AMR related
    * helper cells.
@@ -1148,6 +1159,12 @@ public:
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices);
 
+  void mergeWithBoundaryOrEmptyCellMetadata(
+      const int cellDescriptionsIndex,
+      const int element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) override;
+
   void prepareNextNeighbourMerging(
       const int cellDescriptionsIndex,const int element,
       exahype::Vertex* const fineGridVertices,
@@ -1159,6 +1176,8 @@ public:
   ///////////////////////////////////
   void appendNeighbourCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
       const int solverNumber) override;
 
