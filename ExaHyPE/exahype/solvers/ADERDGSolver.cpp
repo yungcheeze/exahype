@@ -1152,25 +1152,21 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
   // Further augment or deaugment cells and descendants if no other event
   // or an augmentation event has been triggered.
   switch (fineGridCellDescription.getRefinementEvent()) {
-  case CellDescription::AugmentingRequested: // TODO(Dominic): Add to docu that the mergeWithNeighbourCall might set this.
+  case CellDescription::AugmentingRequested:
     refineFineGridCell = true;
     break;
   case CellDescription::None:
     switch (fineGridCellDescription.getType()) {
     case CellDescription::Cell:
-      fineGridCellDescription.setRefinementEvent(CellDescription::DeaugmentingChildrenRequestedTriggered);
-      if (fineGridCellDescription.getAugmentationStatus()>0) {
-        fineGridCellDescription.setRefinementEvent(CellDescription::AugmentingRequested);
-        refineFineGridCell = true;
-      }
-      break;
     case CellDescription::Descendant:
       fineGridCellDescription.setRefinementEvent(CellDescription::DeaugmentingChildrenRequestedTriggered);
-      if (fineGridCellDescription.getAugmentationStatus()>0) {
+      vetoDeaugmenting =
+          fineGridCellDescription.getIsAugmented() ||
+          fineGridCellDescription.getAugmentationStatus()>0;
+      if (!fineGridCellDescription.getIsAugmented() &&
+          fineGridCellDescription.getAugmentationStatus()>0) {
         fineGridCellDescription.setRefinementEvent(CellDescription::AugmentingRequested);
         refineFineGridCell = true;
-      } else {
-        vetoDeaugmenting = fineGridCellDescription.getIsAugmented();
       }
       break;
     default:
@@ -1191,6 +1187,8 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
       if (coarseGridCellDescription.getRefinementEvent()==CellDescription::DeaugmentingChildrenRequested) {
         coarseGridCellDescription.setRefinementEvent(CellDescription::None);
 
+        assertion1(fineGridCellDescription.getType()==CellDescription::Descendant,
+                   fineGridCellDescription.toString());
         assertion1(coarseGridCellDescription.getType()==CellDescription::Cell ||
                    coarseGridCellDescription.getType()==CellDescription::Descendant,
                    coarseGridCellDescription.toString());
