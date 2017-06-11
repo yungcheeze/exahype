@@ -108,8 +108,10 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * into the solvers. I need to discuss this with Tobias.
    */
   bool hasToMergeNeighbours(
-        const tarch::la::Vector<DIMENSIONS,int>& pos1,
-        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
 
   /**
    * Checks if the cell descriptions at the indices corresponding
@@ -121,17 +123,21 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * into the solvers. I need to discuss this with Tobias.
    */
   bool hasToMergeWithBoundaryData(
-        const tarch::la::Vector<DIMENSIONS,int>& pos1,
-        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
 
   /**
    * Checks if the cell description at one of the indices corresponding
    * to \p pos1 and \p pos2 need to merge their metadata with
    * an empty cell or the boundary.
    */
-  bool hasToMergeWithBoundaryOrEmptyCellMetadata(
-        const tarch::la::Vector<DIMENSIONS,int>& pos1,
-        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+  bool hasToMergeEmptyCellMetadata(
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
 
   /**
    * Sets a flag on the cell descriptions at the indices corresponding

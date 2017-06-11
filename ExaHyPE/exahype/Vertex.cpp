@@ -50,7 +50,7 @@ exahype::Vertex::getCellDescriptionsIndex() const {
 void exahype::Vertex::mergeOnlyNeighboursMetadata(const exahype::records::State::AlgorithmSection& section) {
   dfor2(pos1)
     dfor2(pos2)
-      if (hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have two valid indices
+      if (hasToMergeNeighbours(pos1,pos1Scalar,pos2,pos2Scalar)) { // Assumes that we have two valid indices
         auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
             parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
@@ -69,7 +69,7 @@ void exahype::Vertex::mergeOnlyNeighboursMetadata(const exahype::records::State:
         grainSize.parallelSectionHasTerminated();
 
         setMergePerformed(pos1,pos2,true);
-      } else if (hasToMergeWithBoundaryOrEmptyCellMetadata(pos1,pos2)) { // Assumes that we have two valid indices
+      } else if (hasToMergeEmptyCellMetadata(pos1,pos1Scalar,pos2,pos2Scalar)) { // Assumes that we have two valid indices
         auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
             parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
@@ -100,8 +100,10 @@ void exahype::Vertex::mergeOnlyNeighboursMetadata(const exahype::records::State:
 }
 
 bool exahype::Vertex::hasToMergeNeighbours(
-      const tarch::la::Vector<DIMENSIONS,int>& pos1,
-      const tarch::la::Vector<DIMENSIONS,int>& pos2) const {
+    const tarch::la::Vector<DIMENSIONS,int>& pos1,
+    const int pos1Scalar,
+    const tarch::la::Vector<DIMENSIONS,int>& pos2,
+    const int pos2Scalar) const {
   if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
     const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
     const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
@@ -164,15 +166,33 @@ bool exahype::Vertex::hasToMergeNeighbours(
 
 bool exahype::Vertex::hasToMergeWithBoundaryData(
       const tarch::la::Vector<DIMENSIONS,int>& pos1,
-      const tarch::la::Vector<DIMENSIONS,int>& pos2) const {
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const {
   if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
-    const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
-    const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
         _vertexData.getCellDescriptionsIndex(pos1Scalar);
     const int cellDescriptionsIndex2 =
         _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
+//    if (cellDescriptionsIndex1==81) {
+//      std::cout << "<<" <<std::endl;
+//      std::cout << "cellDescriptionsIndex2="<<cellDescriptionsIndex2 <<std::endl;
+//      std::cout << "valid="<<exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)<<std::endl;
+//      std::cout << ">>" <<std::endl;
+//    } TODO Debug
+//
+//    if (cellDescriptionsIndex2==81) {
+//      std::cout << "<<" <<std::endl;
+//      std::cout << "cellDescriptionsIndex1="<<cellDescriptionsIndex1 <<std::endl;
+//      std::cout << "valid="<<exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)<<std::endl;
+//      std::cout << ">>" <<std::endl;
+//    }TODO Debug
+
+    // TODO(Dominic): There is still an issue with the hanging vertex bookkeeper at the boundary
+    // if we perform adaptive mesh refinement. Have to discuss this with Tobias.
+    // isInside seems to be the most robust way if set it on the coarsest level
+    // and prolongate it to the children
     const bool validIndexNextToInvalidIndex =
         (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
             &&
@@ -189,6 +209,9 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
                 || cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex
                 #endif
                 ));
+
+//    const bool validIndexNextToInvalidIndex = true;
+//    hasToMergeWithBoundaryOrEmptyCellMetadata(pos1,pos1Scalar,pos2,pos2Scalar); TODO Debug
 
     if (validIndexNextToInvalidIndex) {
       const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
@@ -240,12 +263,12 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
   return false;
 }
 
-bool exahype::Vertex::hasToMergeWithBoundaryOrEmptyCellMetadata(
-      const tarch::la::Vector<DIMENSIONS,int>& pos1,
-      const tarch::la::Vector<DIMENSIONS,int>& pos2) const {
+bool exahype::Vertex::hasToMergeEmptyCellMetadata(
+    const tarch::la::Vector<DIMENSIONS,int>& pos1,
+    const int pos1Scalar,
+    const tarch::la::Vector<DIMENSIONS,int>& pos2,
+    const int pos2Scalar) const {
   if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
-    const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
-    const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
         _vertexData.getCellDescriptionsIndex(pos1Scalar);
     const int cellDescriptionsIndex2 =
@@ -254,14 +277,18 @@ bool exahype::Vertex::hasToMergeWithBoundaryOrEmptyCellMetadata(
     return (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
             &&
             (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)
-             &&
-             cellDescriptionsIndex2!=multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex))
+            &&
+            cellDescriptionsIndex2!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+            &&
+            cellDescriptionsIndex2!=multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex))
             ||
             (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)
                 &&
-                (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)
-                 &&
-                 cellDescriptionsIndex2!=multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex));
+                (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
+                &&
+                cellDescriptionsIndex1!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+                &&
+                cellDescriptionsIndex1!=multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex));
   }
 
   return false;
