@@ -80,6 +80,10 @@ private:
    */
   exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
 
+  /**
+   * Per solver a flag, indicating if has requested
+   * a mesh update request or a limiter domain change.
+   */
   exahype::solvers::SolverFlags _solverFlags;
 
  public:

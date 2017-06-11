@@ -232,7 +232,7 @@ void exahype::mappings::SolutionUpdate::endIteration(
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
-      solver->updateNextAttainedStableState(!_solverFlags._meshUpdateRequest[solverNumber]);
+      solver->updateNextAttainedStableState(!solver->getNextMeshUpdateRequest());
       logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
 
       if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {

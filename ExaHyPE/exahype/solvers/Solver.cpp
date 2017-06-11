@@ -35,7 +35,7 @@ tarch::logging::Log exahype::solvers::Solver::_log( "exahype::solvers::Solver");
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   assertion(solverFlags._limiterDomainChange==nullptr);
-  assertion(solverFlags._meshUpdateRequest    ==nullptr);
+  assertion(solverFlags._meshUpdateRequest  ==nullptr);
 
   int numberOfSolvers    = exahype::solvers::RegisteredSolvers.size();
   solverFlags._limiterDomainChange = new LimiterDomainChange[numberOfSolvers];
