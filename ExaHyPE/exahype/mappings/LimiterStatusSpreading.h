@@ -55,7 +55,11 @@ private:
    */
   exahype::State _localState;
 
-//  bool _gridUpdateRequested; // TODO(Dominic): Change to array; per solve
+  /**
+   * Per solver a flag, indicating if has requested
+   * a mesh update request or a limiter domain change.
+   */
+  exahype::solvers::SolverFlags _solverFlags;
 
 public:
   #ifdef Parallel
