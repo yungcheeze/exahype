@@ -309,31 +309,11 @@ class exahype::runners::Runner {
    * all cells if one of the above is specified
    * by the user.
    *
-   * Compute the offset of the shrunk domain.
-   */
-  tarch::la::Vector<DIMENSIONS, double> determineShrunkDomainOffset(
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-      const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& domainSize) const;
-
-  /**
-   * If the user specifies a non-cubic computational domain or
-   * turns the virtual expansion of the bounding box on,
-   * the actual computational domain shrinks a little bit.
-   * The actual computational domain consists only of
-   * cells that are completely inside of the
-   * domain. This is usually not the case for
-   * all cells if one of the above is specified
-   * by the user.
-   *
    * Compute the size of the shrunk domain.
    */
-  tarch::la::Vector<DIMENSIONS, double> determineShrunkDomainSize(
-      const tarch::la::Vector<DIMENSIONS, double>& shrunkDomainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-      const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& domainSize) const;
+  tarch::la::Vector<DIMENSIONS, double> determineScaledDomainSize(
+      const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+      const double meshSize) const;
 
  public:
   explicit Runner(Parser& parser);
