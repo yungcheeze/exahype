@@ -335,7 +335,7 @@ void exahype::mappings::MeshRefinement::enterCell(
            exahype::Vertex::Records::RefinementControl::Unrefined
            &&
            !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
-           && fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
+//           && fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
       ) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
       }
