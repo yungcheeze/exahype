@@ -73,10 +73,10 @@ std::string exahype::plotters::FlashHDF5Writer::ExtendableDataSet::toString() co
  */
 template <typename H5GroupOrFile>
 void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::newDataSet(H5GroupOrFile* location, const std::string& name, const H5::DataType &data_type) {
-	if(!dataset && size == 0) {
+	if(dataset == nullptr && size == 0 && capacity == 0) {
 		dataset = new DataSet(location->createDataSet(name, data_type, initial_dataspace, prop));
 		capacity = increase;
-		size = 1;
+		size = 0;
 		//return dataset;
 	} else {
 		throw std::domain_error("Close old Dataset before opening new one");
@@ -97,7 +97,6 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::extend(int _capacity
 }
 
 void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::write(const DataType &mem_type, const void *buf) {
-	size++;
 	if(capacity <= size) extend(size + increase);
 
 	// Select a hyperslab in extended portion of the dataset.
@@ -126,6 +125,8 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::write(const DataType
 	
 	// Write data to the extended portion of the dataset.
 	dataset->write(buf, mem_type, *memspace, *filespace);
+	
+	size++;
 }
 
 
@@ -183,24 +184,26 @@ exahype::plotters::FlashHDF5Writer::FlashHDF5Writer(
 			dim = static_cast<CartesianSlicer*>(slicer)->targetDim;
 		}
 	}
+	
+	typedef std::vector<hsize_t> hsizes;
+	hsizes fieldShape; // using c++11 list initialization below.
+	// to avoid type truncation warnings (int -> hsize):
+	const hsize_t basisSize_h = static_cast<hsize_t>(basisSize), writtenUnknowns_h = static_cast<hsize_t>(writtenUnknowns);
 
-	// Important: The FlashHDF5Writer assumes that dimensional reduction really happens in the
-	//            mapped patches. This is not the case in the VTK plotters which don't make a
-	//            difference between CartesianSlicer and RegionSlicer.
 	switch(dim) { // written dimensions
 		case 3:
 		writtenCellIdx = new kernels::index(basisSize, basisSize, basisSize, writtenUnknowns);
-		//singleFieldIdx = new kernels::index(basisSize, basisSize, basisSize);
+		fieldShape = { basisSize_h, basisSize_h, basisSize_h, writtenUnknowns_h };
 		break;
 		
 		case 2:
 		writtenCellIdx = new kernels::index(basisSize, basisSize, writtenUnknowns);
-		//singleFieldIdx = new kernels::index(basisSize, basisSize);
+		fieldShape = { basisSize_h, basisSize_h, writtenUnknowns_h };
 		break;
 		
 		case 1:
 		writtenCellIdx = new kernels::index(basisSize, writtenUnknowns);
-		//singleFieldIdx = new kernels::index(basisSize);
+		fieldShape = { basisSize_h, writtenUnknowns_h };
 		break;
 		
 		default:
@@ -221,11 +224,9 @@ exahype::plotters::FlashHDF5Writer::FlashHDF5Writer(
 			writtenQuantitiesNames[u] = const_cast<char*>(replacement_name->c_str());
 		}
 	}
-	
-	typedef std::vector<hsize_t> hsizes;
-	
+
 	// this is the dataspace describing how to write a patch/cell/component.
-	fields = new ExtendableDataSet(hsizes(dim, basisSize), 10);
+	fields = new ExtendableDataSet(fieldShape, 10);
 	// dataspaces describing the geometry
 	origin = new ExtendableDataSet(hsizes(1, dim), 10);
 	delta  = new ExtendableDataSet(hsizes(1, dim), 10);
@@ -253,6 +254,14 @@ void exahype::plotters::FlashHDF5Writer::setupFile(H5::H5File* file) {
 	writeStringAttribute(parameters, "writtenCellIdx", writtenCellIdx->toString());
 	writeStringAttribute(parameters, "DIMENSIONS", toString(DIMENSIONS));
 	writeStringAttribute(parameters, "slicer", slicer ? slicer->toString() : "none/null");
+	
+	// write the names of the unknowns
+	// TODO: Fix this, does not yet produce correct data but garbage instead
+	/*
+	DataSpace names_space(1, std::vector<hsize_t>(1, writtenUnknowns).data());
+	DataSet names = parameters->createDataSet("FieldNames", PredType::C_S1, names_space);
+	names.write(writtenQuantitiesNames, PredType::C_S1);
+	*/
 	
 	// todos:
 	// * add MPI information
@@ -316,15 +325,18 @@ void exahype::plotters::FlashHDF5Writer::startPlotting(double time) {
 	// setup extendable (chunked) data tables
 	fields->newDataSet<Group>(timegroup, "fields", PredType::NATIVE_FLOAT);
 	origin->newDataSet<Group>(timegroup, "origin", PredType::NATIVE_FLOAT);
-	delta->newDataSet<Group>(timegroup, "delta", PredType::NATIVE_FLOAT);
+	delta->newDataSet<Group>(timegroup, "delta", PredType::NATIVE_FLOAT); // dx of subgrid
 	
 	Attribute atime = timegroup->createAttribute("time", PredType::NATIVE_DOUBLE, H5S_SCALAR);
 	atime.write(PredType::NATIVE_DOUBLE, &time);
+	Attribute ait = timegroup->createAttribute("iteration", PredType::NATIVE_INT, H5S_SCALAR);
+	ait.write(PredType::NATIVE_INT, &iteration);
 	
 	// has to been kept in sync with fields, origin, delta counters
-	component = 0;
-	num_components = timegroup->createAttribute("components", PredType::NATIVE_INT, H5S_SCALAR);
-	num_components.write(PredType::NATIVE_INT, &component);
+	//component = 0;
+	//num_components = timegroup->createAttribute("components", PredType::NATIVE_INT, H5S_SCALAR);
+	//num_components.write(PredType::NATIVE_INT, &component);
+	// forget about this -> it should all be extracted from the shape of the data.
 }
   
 void exahype::plotters::FlashHDF5Writer::finishPlotting() {
@@ -356,13 +368,13 @@ void exahype::plotters::FlashHDF5Writer::plotPatch(
 	
 	// write out the grid information
 	origin->write(PredType::NATIVE_DOUBLE, offsetOfPatch.data());
-	delta->write(PredType::NATIVE_DOUBLE, sizeOfPatch.data()); // OR DX?
+	delta->write(PredType::NATIVE_DOUBLE, dx.data());
 	
 	// At the end: Count up the patches/components and update it
 	// so we know how many components we have.
 	// TODO: should rely on fields.size or similar instead
-	component++;
-	num_components.write(PredType::NATIVE_INT, &component);
+	//component++;
+	//num_components.write(PredType::NATIVE_INT, &component);
 }
 
 

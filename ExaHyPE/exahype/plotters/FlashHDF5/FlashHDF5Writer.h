@@ -131,7 +131,7 @@ public:
 	void newDataSet(H5GroupOrFile* loc, const std::string& name, const H5::DataType &data_type);
 	void write(const H5::DataType &mem_type, const void *buf);
 	void shrink_to_fit() { extend(size); }
-	void closeDataSet() { delete dataset; }
+	void closeDataSet() { delete dataset; dataset=nullptr; size=0; capacity=0; }
 	std::string toString() const;
   };
 
