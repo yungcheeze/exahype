@@ -156,23 +156,6 @@ bool exahype::Vertex::hasToMergeNeighbours(
     const int cellDescriptionsIndex1 = _vertexData.getCellDescriptionsIndex(pos1Scalar);
     const int cellDescriptionsIndex2 = _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
-    if (cellDescriptionsIndex1==773) {
-      std::cout << ">>merge? 1 with=" <<  cellDescriptionsIndex2 <<
-          " is neighbour valid=" <<
-          exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2) << std::endl;
-
-      if (cellDescriptionsIndex2==801) {
-        auto& test = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)[0];
-        std::cout <<  test.toString() << std::endl;
-      }
-    }
-
-    if (cellDescriptionsIndex2==773) {
-      std::cout << ">>merge? 1 with=" <<  cellDescriptionsIndex1 <<
-          " is neighbour valid=" <<
-          exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) << std::endl;
-    }
-
     if (//cellDescriptionsIndex1!=cellDescriptionsIndex2 && // This scenario occured during one run due to inconsistent adjacency indices
         exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) &&
         exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
@@ -189,15 +172,6 @@ bool exahype::Vertex::hasToMergeNeighbours(
 
       const int faceIndex1 = 2*direction+orientation1;
       const int faceIndex2 = 2*direction+orientation2;
-
-      if (cellDescriptionsIndex1==773) {
-        std::cout << ">>merge? 2 with=" <<  cellDescriptionsIndex2 << std::endl;
-      }
-
-      if (cellDescriptionsIndex2==773) {
-        std::cout << ">>merge? 2 with=" <<  cellDescriptionsIndex1 << std::endl;
-      }
-
 
       // cell 1
       for (auto& p1 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
@@ -228,14 +202,6 @@ bool exahype::Vertex::hasToMergeNeighbours(
         if (p2.getNeighbourMergePerformed(faceIndex2)) {
           return false;
         }
-      }
-
-      if (cellDescriptionsIndex1==773 && cellDescriptionsIndex2==801) {
-        std::cout << ">>merge! 2" << std::endl;
-      }
-
-      if (cellDescriptionsIndex2==773 && cellDescriptionsIndex1==801) {
-        std::cout << ">>merge! 2" << std::endl;
       }
 
       return true;
@@ -405,14 +371,6 @@ void exahype::Vertex::setMergePerformed(
 
   const int faceIndex1 = 2*direction+orientation1;
   const int faceIndex2 = 2*direction+orientation2;
-
-  if (cellDescriptionsIndex1==773) {
-    std::cout << ">>merge: celldescriptionsIndex2="<<cellDescriptionsIndex2 << ",pos2=" << pos1.toString() << ",faceIndex1=" << faceIndex1 << std::endl;
-  }
-
-  if (cellDescriptionsIndex2==773) {
-    std::cout << ">>merge: celldescriptionsIndex1="<<cellDescriptionsIndex1 << ",pos2=" << pos2.toString() << ",faceIndex2=" << faceIndex2 << std::endl;
-  }
 
   // ADER-DG
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
