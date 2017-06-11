@@ -158,6 +158,24 @@ void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& sol
   #endif
 }
 
+void exahype::mappings::LimiterStatusSpreading::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
+                           fineGridX, fineGridH,
+                           coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+
+  fineGridVertex.mergeOnlyMetadataAtHangingNode(_localState.getAlgorithmSection());
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
+}
+
 void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -171,7 +189,7 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  fineGridVertex.mergeOnlyNeighboursMetadata(_localState.getAlgorithmSection());
+  fineGridVertex.mergeOnlyMetadata(_localState.getAlgorithmSection());
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
@@ -441,17 +459,6 @@ void exahype::mappings::LimiterStatusSpreading::createCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
  // do nothing
-}
-
-void exahype::mappings::LimiterStatusSpreading::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
 }
 
 void exahype::mappings::LimiterStatusSpreading::destroyHangingVertex(

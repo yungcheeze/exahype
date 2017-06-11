@@ -96,7 +96,12 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * neighbourMergePerformed flags, do never
    * use it in combination with the Merging mapping.
    */
-  void mergeOnlyNeighboursMetadata(const exahype::records::State::AlgorithmSection& section);
+  void mergeOnlyMetadata(const exahype::records::State::AlgorithmSection& section);
+
+  /**
+   * Merge metadata at a hanging node.
+   */
+  void mergeOnlyMetadataAtHangingNode(const exahype::records::State::AlgorithmSection& section);
 
   /**
    * Checks if the cell descriptions at the indices corresponding
@@ -130,10 +135,10 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
   /**
    * Checks if the cell description at one of the indices corresponding
-   * to \p pos1 and \p pos2 need to merge their metadata with
-   * an empty cell or the boundary.
+   * to \p pos1 and \p pos2 need to merge their metadata at
+   * a empty cell, i.e. there is a hanging node within the domain.
    */
-  bool hasToMergeEmptyCellMetadata(
+  bool hasToMergeWithEmptyCell(
       const tarch::la::Vector<DIMENSIONS,int>& pos1,
       const int pos1Scalar,
       const tarch::la::Vector<DIMENSIONS,int>& pos2,
