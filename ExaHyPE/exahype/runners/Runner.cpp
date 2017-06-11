@@ -492,6 +492,8 @@ void exahype::runners::Runner::initHPCEnvironment() {
 int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().disableInheritingOfCoarseGridIndices();
+
     exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
     exahype::State::EnableNeighbourCommunication    = _parser.getMPINeighbourCommunication();
     #ifdef Parallel
