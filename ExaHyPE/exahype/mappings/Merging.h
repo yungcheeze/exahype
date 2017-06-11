@@ -108,7 +108,7 @@ private:
   /**
    * TODO(Dominic): Add docu.
    */
-  void mergeWithBoundaryData(exahype::Vertex& fineGridVertex,
+  void mergeWithBoundaryDataAndMetadata(exahype::Vertex& fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,int>&  pos1,
       const int pos1Scalar,
       const tarch::la::Vector<DIMENSIONS,int>&  pos2,

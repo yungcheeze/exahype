@@ -270,6 +270,9 @@ void exahype::mappings::MeshRefinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+
+  assertion(fineGridCell.isInside());
+
   bool refineFineGridCell = false;
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -332,8 +335,7 @@ void exahype::mappings::MeshRefinement::enterCell(
            exahype::Vertex::Records::RefinementControl::Unrefined
            &&
            !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
-           &&
-           fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
+           && fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
       ) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
       }

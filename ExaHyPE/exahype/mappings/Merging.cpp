@@ -191,7 +191,7 @@ void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
   grainSize.parallelSectionHasTerminated();
 }
 
-void exahype::mappings::Merging::mergeWithBoundaryData(
+void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,int>&  pos1,
     const int pos1Scalar,
@@ -218,6 +218,8 @@ void exahype::mappings::Merging::mergeWithBoundaryData(
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
+        solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex1,element1,pos1,pos2);
+
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
@@ -227,6 +229,9 @@ void exahype::mappings::Merging::mergeWithBoundaryData(
                                       _temporaryVariables._tempFaceUnknowns[solverNumber],
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+
+        solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex2,element2,pos2,pos1);
+
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
@@ -249,6 +254,7 @@ void exahype::mappings::Merging::mergeWithBoundaryOrEmptyCellMetadata(
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
       const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+
       const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
       const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
       assertion4((element1==exahype::solvers::Solver::NotFound &&
@@ -282,24 +288,22 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                            fineGridX, fineGridH,
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
+
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     dfor2(pos1)
       dfor2(pos2)
         // TODO(Dominic): There are some redundant parts in these checks
-        if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
+        if (fineGridVertex.hasToMergeNeighbours(pos1,pos1Scalar,pos2,pos2Scalar)) { // Assumes that we have to valid indices
           mergeNeighboursDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
-
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
-        if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
-          mergeWithBoundaryData(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
-
+        if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
+          mergeWithBoundaryDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
-
         //
-        if (fineGridVertex.hasToMergeWithBoundaryOrEmptyCellMetadata(pos1,pos2)) {
+        if (fineGridVertex.hasToMergeEmptyCellMetadata(pos1,pos1Scalar,pos2,pos2Scalar)) {
           mergeWithBoundaryOrEmptyCellMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
