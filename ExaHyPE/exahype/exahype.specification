@@ -80,15 +80,16 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
 
-// adapter:
-//   name: MeshRefinementAndPlotGrid
-//   merge-with-user-defined-mapping: PreProcessing
-//   merge-with-user-defined-mapping: Merging                 // Merge Time Step data
-//   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-//   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-//   merge-with-user-defined-mapping: LoadBalancing
-//   merge-with-user-defined-mapping: PostProcessing
-//   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+//adapter:
+//  name: MeshRefinementAndPlotGrid
+//  merge-with-user-defined-mapping: PreProcessing
+//  merge-with-user-defined-mapping: Merging                 // Merge Time Step data
+//  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
+//  merge-with-predefined-mapping:   VTKGridVisualiser(grid)
+//  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+//  merge-with-user-defined-mapping: LoadBalancing
+//  merge-with-user-defined-mapping: PostProcessing
+//  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
 // adapter:
 //   name: PlotAugmentedAMRGrid
@@ -251,3 +252,5 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Reinitialisation
   merge-with-user-defined-mapping: PostProcessing
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+  
