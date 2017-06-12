@@ -100,6 +100,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
       _helperStatusWriter(0),
       _limiterStatusWriter(0),
       _previousLimiterStatusWriter(0),
+      _isAugmentedWriter(0),
       _cellCounter(0) {}
 
 exahype::mappings::AugmentedAMRTreePlot2d::~AugmentedAMRTreePlot2d() {}
@@ -119,6 +120,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _helperStatusWriter(masterThread._helperStatusWriter),
       _limiterStatusWriter(masterThread._limiterStatusWriter),
       _previousLimiterStatusWriter(masterThread._previousLimiterStatusWriter),
+      _isAugmentedWriter(masterThread._isAugmentedWriter),
       _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
@@ -386,6 +388,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
           _helperStatusWriter->plotCell(cellIndex,pFine.getHelperStatus());
           _limiterStatusWriter->plotCell(cellIndex,pFine.getLimiterStatus());
           _previousLimiterStatusWriter->plotCell(cellIndex,pFine.getPreviousLimiterStatus());
+          _isAugmentedWriter->plotCell(cellIndex,pFine.getIsAugmented() ? 1 : 0);
           solverFound = true;
         }
       }
@@ -398,6 +401,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         _helperStatusWriter->plotCell(cellIndex,-1);
         _limiterStatusWriter->plotCell(cellIndex, -1);
         _previousLimiterStatusWriter->plotCell(cellIndex,-1);
+        _isAugmentedWriter->plotCell(cellIndex,0);
       }
 
     } else {
@@ -410,6 +414,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
       _helperStatusWriter->plotCell(cellIndex,-1);
       _limiterStatusWriter->plotCell(cellIndex, -1);
       _previousLimiterStatusWriter->plotCell(cellIndex,-1);
+      _isAugmentedWriter->plotCell(cellIndex,0);
     }
 
     _cellCounter++;
@@ -429,8 +434,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   assertion(_vtkWriter == 0);
 
   _cellCounter = 0;
-
-
 
   _vtkWriter = new UsedWriter();
 
@@ -461,6 +464,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
       "Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
   _previousLimiterStatusWriter = _vtkWriter->createCellDataWriter(
       "Previous-Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
+  _isAugmentedWriter = _vtkWriter->createCellDataWriter("isAugmented(Yes=1,No=0)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
@@ -476,6 +480,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _helperStatusWriter->close();
   _limiterStatusWriter->close();
   _previousLimiterStatusWriter->close();
+  _isAugmentedWriter->close();
   _cellNumberWriter->close();
 
   delete _vertexWriter;
@@ -490,19 +495,21 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _helperStatusWriter;
   delete _limiterStatusWriter;
   delete _previousLimiterStatusWriter;
+  delete _isAugmentedWriter;
 
-  _vertexWriter = 0;
-  _cellWriter = 0;
+  _vertexWriter = nullptr;
+  _cellWriter = nullptr;
 
-  _cellNumberWriter            = 0;
-  _cellTypeWriter              = 0;
-  _cellDescriptionIndexWriter  = 0;
-  _cellRefinementEventWriter   = 0;
-  _cellDataWriter              = 0;
-  _augmentationStatusWriter    = 0;
-  _helperStatusWriter          = 0;
-  _limiterStatusWriter         = 0;
-  _previousLimiterStatusWriter = 0;
+  _cellNumberWriter            = nullptr;
+  _cellTypeWriter              = nullptr;
+  _cellDescriptionIndexWriter  = nullptr;
+  _cellRefinementEventWriter   = nullptr;
+  _cellDataWriter              = nullptr;
+  _augmentationStatusWriter    = nullptr;
+  _helperStatusWriter          = nullptr;
+  _limiterStatusWriter         = nullptr;
+  _previousLimiterStatusWriter = nullptr;
+  _isAugmentedWriter = nullptr;
 
   std::ostringstream snapshotFileName;
   snapshotFileName << "tree"
@@ -517,7 +524,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _vertex2IndexMap.clear();
 
   delete _vtkWriter;
-  _vtkWriter = 0;
+  _vtkWriter = nullptr;
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::descend(
