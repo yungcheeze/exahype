@@ -98,6 +98,9 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
 ) {
   _localState = solverState;
 
+  exahype::solvers::initialiseSolverFlags(_solverFlags);
+  exahype::solvers::prepareSolverFlags(_solverFlags);
+
   // We memorise the previous request per solver
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -110,9 +113,6 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
       limitingADERDG->updateNextLimiterDomainChange(limitingADERDG->getLimiterDomainChange());
     }
   }
-
-  exahype::solvers::initialiseSolverFlags(_solverFlags);
-  exahype::solvers::prepareSolverFlags(_solverFlags);
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -158,6 +158,24 @@ void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& sol
   #endif
 }
 
+void exahype::mappings::LimiterStatusSpreading::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
+                           fineGridX, fineGridH,
+                           coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+
+  fineGridVertex.mergeOnlyMetadataAtHangingNode(_localState.getAlgorithmSection());
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
+}
+
 void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -171,7 +189,7 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  fineGridVertex.mergeOnlyNeighboursMetadata(_localState.getAlgorithmSection());
+  fineGridVertex.mergeOnlyMetadata(_localState.getAlgorithmSection());
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
@@ -200,7 +218,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
 
         bool meshUpdateRequest =
             limitingADERDG->
-              evaluateLimiterStatusBasedRefinementCriterion(
+              evaluateLimiterStatusRefinementCriterion(
                   fineGridCell.getCellDescriptionsIndex(),element);
 
         _solverFlags._meshUpdateRequest[solverNumber] |= meshUpdateRequest;
@@ -441,17 +459,6 @@ void exahype::mappings::LimiterStatusSpreading::createCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
  // do nothing
-}
-
-void exahype::mappings::LimiterStatusSpreading::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
 }
 
 void exahype::mappings::LimiterStatusSpreading::destroyHangingVertex(

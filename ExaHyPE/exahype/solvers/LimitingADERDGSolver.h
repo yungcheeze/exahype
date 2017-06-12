@@ -231,6 +231,8 @@ private:
 
   /**
    * Deallocates a limiter patch.
+   *
+   * \note Thread-safe.
    */
   void deallocateLimiterPatch(
       const int cellDescriptionsIndex,
@@ -241,6 +243,8 @@ private:
    *
    * \return The index of the patch in the heap
    * vector at address \p cellDescriptionsIndex.
+   *
+   * \note Thread-safe.
    */
   int allocateLimiterPatch(
           const int cellDescriptionsIndex,
@@ -620,8 +624,19 @@ public:
    * only considers direct (face) neighbours, we need to refine all cells with
    * a limiter status Troubled-1 and Troubled-2.
    */
-  bool evaluateLimiterStatusBasedRefinementCriterion(
+  bool evaluateLimiterStatusRefinementCriterion(
       const int cellDescriptionsIndex,const int solverElement) const;
+
+
+  /**
+   * Evaluate a stricter DMP as an a-priori refinement
+   * criterion.
+   *
+   * TODO(Dominic): It is a little hacked together
+   */
+  bool evaluateDiscreteMaximumPrincipleRefinementCriterion(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   /**
    * Based on the limiter status of a solver patch
@@ -857,6 +872,8 @@ public:
    *
    * It is safe to use this method during
    * the mesh refinement iterations.
+   *
+   * \note Thread-safe.
    */
    void deallocateLimiterPatchOnHelperCell(
        const int cellDescriptionsIndex,

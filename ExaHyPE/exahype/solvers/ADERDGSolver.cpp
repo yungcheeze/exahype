@@ -1147,7 +1147,6 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
 
   // Then do fine grid cell stuff
   bool refineFineGridCell = false;
-  bool vetoDeaugmenting   = true;
 
   // Further augment or deaugment cells and descendants if no other event
   // or an augmentation event has been triggered.
@@ -1159,10 +1158,9 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
     switch (fineGridCellDescription.getType()) {
     case CellDescription::Cell:
     case CellDescription::Descendant:
-      fineGridCellDescription.setRefinementEvent(CellDescription::DeaugmentingChildrenRequestedTriggered);
-      vetoDeaugmenting =
-          fineGridCellDescription.getIsAugmented() ||
-          fineGridCellDescription.getAugmentationStatus()>0;
+      if (fineGridCellDescription.getAugmentationStatus()==0) {
+        fineGridCellDescription.setRefinementEvent(CellDescription::DeaugmentingChildrenRequestedTriggered);
+      }
       if (!fineGridCellDescription.getIsAugmented() &&
           fineGridCellDescription.getAugmentationStatus()>0) {
         fineGridCellDescription.setRefinementEvent(CellDescription::AugmentingRequested);
@@ -1177,8 +1175,11 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
       break;
   }
 
-  // And check if we can reset the deaugmenting children request of the parent.
-  if (vetoDeaugmenting) {
+  // And check if we must veto the deaugmenting children request of the parent.
+  if (
+      fineGridCellDescription.getIsAugmented() ||
+      fineGridCellDescription.getAugmentationStatus()>0
+  ) {
     const int coarseGridCellElement = tryGetElement(fineGridCellDescription.getParentIndex(),
                                               fineGridCellDescription.getSolverNumber());
     if (coarseGridCellElement!=exahype::solvers::Solver::NotFound) {
