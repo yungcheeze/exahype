@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="ExaHyPE-stream
+#SBATCH --job-name="ExaHyPE-stream"
 #SBATCH -o ExaHyPE-stream.%A.out
 #SBATCH -e ExaHyPE-stream.%A.err
 #SBATCH -t 00:05:00

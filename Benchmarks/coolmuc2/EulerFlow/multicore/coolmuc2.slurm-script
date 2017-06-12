@@ -17,6 +17,8 @@ source /etc/profile.d/modules.sh
 
 module load tbb
 
+module load likwid/4.1
+
 nodes=1
 tasks=1
 tasksPerNode=1
@@ -44,4 +46,18 @@ cat $spec >> $out
 #ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
 
 # execute the job
-./ExaHyPE-EulerFlow-p9-$sharedMem-$compiler $spec >> $out
+# ./ExaHyPE-EulerFlow-p9-$sharedMem-$compiler $spec >> $out
+
+if (( $coresPerTask==1 )); then
+  likwid-perfctr -C 0 -g MEM      ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -C 0 -g FLOPS_DP ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -C 0 -g L2CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+else
+  let maxCore=coresPerTask-1
+
+  likwid-perfctr -C 0-$maxCore -g MEM      ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -C 0-$maxCore -g L2CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  # not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+fi
