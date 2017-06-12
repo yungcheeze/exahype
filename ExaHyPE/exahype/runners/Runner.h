@@ -215,6 +215,47 @@ class exahype::runners::Runner {
    *
    * Sets the _boundingBoxSize field to the
    * bounding box used for the repository.
+   *
+   * <h2>Bounding box scaling</h2>
+   * If the user switches on the bounding box scaling,
+   * we determine a minimum bounding box mesh refinement level lBB
+   * and a minimum bounding box width HBB which
+   * yields a mesh that resolves the domain boundary accurately.
+   *
+   * Since there are arbitrary many solutions to this problem,
+   * we add the following constraints:
+   *
+   * 1.Choose the number of elements for resolving
+   * the boundary as N=3^lBB - 2, i.e. have two elements
+   * outside of the domain.
+   *
+   * 2. The new mesh size hBB = HBB/(3^lBB) must
+   * be smaller than or equal to the user's mesh size hD,
+   * i.e, lBB must be larger or equal to the user's
+   * coarsest mesh level lD with hD > HD/3^lD.
+   *
+   * We thus end up with the following problem:
+   *
+   * Minimise lBB and vary HBB,xBB in order to satisfy
+   * N*hBB      = HD, (1)
+   * xBB + hBB  = xD, (2)
+   *
+   * with
+   * hBB = HBB/(3^lBB), HBB: bounding box size,
+   * xBB: bounding box offset,
+   * xD: domain offset,
+   * HD: domain size.
+   *
+   * Solution:
+   * From the first constraint, we have that N=3^lBB-2.
+   *
+   * We then have from (1)-(2) and expanding hBB:
+   *
+   * HBB = 3^lBB / 3^lBB-2 * HD,
+   * xBB = xD - HBB/3^lBB,
+   *
+   * where lBB >= lD is the first lBB such
+   * that hBB <= hD.
    */
   exahype::repositories::Repository* createRepository();
 
@@ -268,31 +309,11 @@ class exahype::runners::Runner {
    * all cells if one of the above is specified
    * by the user.
    *
-   * Compute the offset of the shrunk domain.
-   */
-  tarch::la::Vector<DIMENSIONS, double> determineShrunkDomainOffset(
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-      const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& domainSize) const;
-
-  /**
-   * If the user specifies a non-cubic computational domain or
-   * turns the virtual expansion of the bounding box on,
-   * the actual computational domain shrinks a little bit.
-   * The actual computational domain consists only of
-   * cells that are completely inside of the
-   * domain. This is usually not the case for
-   * all cells if one of the above is specified
-   * by the user.
-   *
    * Compute the size of the shrunk domain.
    */
-  tarch::la::Vector<DIMENSIONS, double> determineShrunkDomainSize(
-      const tarch::la::Vector<DIMENSIONS, double>& shrunkDomainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-      const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS, double>& domainSize) const;
+  tarch::la::Vector<DIMENSIONS, double> determineScaledDomainSize(
+      const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+      const double meshSize) const;
 
  public:
   explicit Runner(Parser& parser);

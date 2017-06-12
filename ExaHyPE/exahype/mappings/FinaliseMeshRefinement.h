@@ -76,7 +76,10 @@ class exahype::mappings::FinaliseMeshRefinement {
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Nop
+   * Call the solvers finaliseStateUpdates functions.
+   * Furhter, compute the min and max if a solver is of type
+   * LimitingADERDG and there is a patch allocated
+   * in the \p fineGridCell for this solver.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -85,11 +88,6 @@ class exahype::mappings::FinaliseMeshRefinement {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
-  FinaliseMeshRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -109,6 +107,11 @@ class exahype::mappings::FinaliseMeshRefinement {
    */
   void mergeWithWorkerThread(const FinaliseMeshRefinement& workerThread);
 #endif
+
+  /**
+   * Nop
+   */
+  FinaliseMeshRefinement();
 
   /**
    * Nop
@@ -195,8 +198,8 @@ class exahype::mappings::FinaliseMeshRefinement {
 
 #ifdef Parallel
   /**
-   * Drop messages containing meta data associated with the local cells that are adjacent to this vertex
-   * sent to those adjacent remote cells that share a complete face
+   * Drop messages containing meta data associated with the local cells that are
+   * adjacent to this vertex sent to those adjacent remote cells that share a complete face
    * with the local cells.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,

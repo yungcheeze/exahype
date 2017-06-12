@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/adapters/ADERDGTimeStep2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Prediction.h"
@@ -43,19 +44,21 @@ namespace exahype {
  */
 class exahype::adapters::ADERDGTimeStep {
   private:
-    typedef mappings::Merging Mapping0;
-    typedef mappings::SolutionUpdate Mapping1;
-    typedef mappings::Prediction Mapping2;
-    typedef mappings::TimeStepSizeComputation Mapping3;
-    typedef mappings::LoadBalancing Mapping4;
-    typedef mappings::Sending Mapping5;
+    typedef adapters::ADERDGTimeStep2MultiscaleLinkedCell_0 Mapping0;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::SolutionUpdate Mapping2;
+    typedef mappings::Prediction Mapping3;
+    typedef mappings::TimeStepSizeComputation Mapping4;
+    typedef mappings::LoadBalancing Mapping5;
+    typedef mappings::Sending Mapping6;
 
-     Mapping0  _map2Merging;
-     Mapping1  _map2SolutionUpdate;
-     Mapping2  _map2Prediction;
-     Mapping3  _map2TimeStepSizeComputation;
-     Mapping4  _map2LoadBalancing;
-     Mapping5  _map2Sending;
+     Mapping0  _map2ADERDGTimeStep2MultiscaleLinkedCell_0;
+     Mapping1  _map2Merging;
+     Mapping2  _map2SolutionUpdate;
+     Mapping3  _map2Prediction;
+     Mapping4  _map2TimeStepSizeComputation;
+     Mapping5  _map2LoadBalancing;
+     Mapping6  _map2Sending;
 
 
   public:

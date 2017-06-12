@@ -22,6 +22,7 @@
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Reinitialisation.h"
  #include "exahype/mappings/PostProcessing.h"
+ #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation2MultiscaleLinkedCell_4.h"
 
 
 
@@ -45,11 +46,13 @@ class exahype::adapters::FinaliseMeshRefinementAndReinitialisation {
     typedef mappings::PreProcessing Mapping1;
     typedef mappings::Reinitialisation Mapping2;
     typedef mappings::PostProcessing Mapping3;
+    typedef adapters::FinaliseMeshRefinementAndReinitialisation2MultiscaleLinkedCell_4 Mapping4;
 
      Mapping0  _map2FinaliseMeshRefinement;
      Mapping1  _map2PreProcessing;
      Mapping2  _map2Reinitialisation;
      Mapping3  _map2PostProcessing;
+     Mapping4  _map2FinaliseMeshRefinementAndReinitialisation2MultiscaleLinkedCell_4;
 
 
   public:

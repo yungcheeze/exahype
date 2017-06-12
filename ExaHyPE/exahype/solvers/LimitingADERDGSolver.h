@@ -231,6 +231,8 @@ private:
 
   /**
    * Deallocates a limiter patch.
+   *
+   * \note Thread-safe.
    */
   void deallocateLimiterPatch(
       const int cellDescriptionsIndex,
@@ -241,6 +243,8 @@ private:
    *
    * \return The index of the patch in the heap
    * vector at address \p cellDescriptionsIndex.
+   *
+   * \note Thread-safe.
    */
   int allocateLimiterPatch(
           const int cellDescriptionsIndex,
@@ -277,6 +281,8 @@ private:
    * decrease the iterationsToCureTroubledCell counter.
    * If the counter is set to zero, change a troubled cell
    * to NeighbourOfCellIsTroubled1.
+   *
+   * Further write back the new value to the boundary.
    *
    * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
    *
@@ -618,8 +624,19 @@ public:
    * only considers direct (face) neighbours, we need to refine all cells with
    * a limiter status Troubled-1 and Troubled-2.
    */
-  bool evaluateLimiterStatusBasedRefinementCriterion(
+  bool evaluateLimiterStatusRefinementCriterion(
       const int cellDescriptionsIndex,const int solverElement) const;
+
+
+  /**
+   * Evaluate a stricter DMP as an a-priori refinement
+   * criterion.
+   *
+   * TODO(Dominic): It is a little hacked together
+   */
+  bool evaluateDiscreteMaximumPrincipleRefinementCriterion(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   /**
    * Based on the limiter status of a solver patch
@@ -840,12 +857,23 @@ public:
   exahype::solvers::LimiterDomainChange updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
+
+  /**
+   * Update the limiter status of the solver patch
+   * using the boundary states.
+   *
+   * Then write back the result to the boundary.
+   */
+  exahype::solvers::LimiterDomainChange updateLimiterStatus(SolverPatch& solverPatch) const;
+
   /*
    * Deallocate the limiter patch on all AMR related
    * helper cells.
    *
    * It is safe to use this method during
    * the mesh refinement iterations.
+   *
+   * \note Thread-safe.
    */
    void deallocateLimiterPatchOnHelperCell(
        const int cellDescriptionsIndex,
@@ -1148,6 +1176,12 @@ public:
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices);
 
+  void mergeWithBoundaryOrEmptyCellMetadata(
+      const int cellDescriptionsIndex,
+      const int element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) override;
+
   void prepareNextNeighbourMerging(
       const int cellDescriptionsIndex,const int element,
       exahype::Vertex* const fineGridVertices,
@@ -1159,6 +1193,8 @@ public:
   ///////////////////////////////////
   void appendNeighbourCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
       const int solverNumber) override;
 

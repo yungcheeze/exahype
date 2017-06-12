@@ -80,15 +80,16 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
 
-// adapter:
-//   name: MeshRefinementAndPlotGrid
-//   merge-with-user-defined-mapping: PreProcessing
-//   merge-with-user-defined-mapping: Merging                 // Merge Time Step data
-//   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-//   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-//   merge-with-user-defined-mapping: LoadBalancing
-//   merge-with-user-defined-mapping: PostProcessing
-//   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+//adapter:
+//  name: MeshRefinementAndPlotGrid
+//  merge-with-user-defined-mapping: PreProcessing
+//  merge-with-user-defined-mapping: Merging                 // Merge Time Step data
+//  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
+//  merge-with-predefined-mapping:   VTKGridVisualiser(grid)
+//  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+//  merge-with-user-defined-mapping: LoadBalancing
+//  merge-with-user-defined-mapping: PostProcessing
+//  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
 // adapter:
 //   name: PlotAugmentedAMRGrid
@@ -137,6 +138,7 @@ adapter:
 adapter: 
   name: ADERDGTimeStep
   // needs corrector time step size
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
@@ -148,6 +150,7 @@ adapter:
 adapter: 
   name: PlotAndADERDGTimeStep
   // needs corrector time step size
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: Plot
   // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
@@ -160,16 +163,19 @@ adapter:
 // Additional adapters for limiter status spreading and recomputation
 adapter:
   name: LimiterStatusSpreading
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: LimiterStatusSpreading
 
 adapter:  
   name: Reinitialisation
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Reinitialisation
   merge-with-user-defined-mapping: PostProcessing 
 
 adapter: 
   name: LocalRecomputationAndTimeStepSizeComputation
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: LocalRecomputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
@@ -179,6 +185,7 @@ adapter:
 // Additional adapters for 4 phase time stepping
 adapter: 
   name: NeighbourDataMerging
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: PostProcessing 
 
@@ -251,3 +258,5 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Reinitialisation
   merge-with-user-defined-mapping: PostProcessing
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+  

@@ -59,6 +59,7 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/mappings/MeshRefinement.h"
+#include "exahype/mappings/LimiterStatusSpreading.h"
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
@@ -385,37 +386,15 @@ exahype::runners::Runner::determineCoarsestMeshSize(
 }
 
 tarch::la::Vector<DIMENSIONS, double>
-exahype::runners::Runner::determineShrunkDomainOffset(
-    const tarch::la::Vector<DIMENSIONS, double>& boundingBoxOffset,
-    const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-    const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-    const tarch::la::Vector<DIMENSIONS, double>& domainSize) const {
-  const double coarsestMeshSize = determineCoarsestMeshSize(boundingBoxSize);
-
-  tarch::la::Vector<DIMENSIONS, double> shrunkDomainOffset =
-      (domainOffset-boundingBoxOffset) / coarsestMeshSize;
+exahype::runners::Runner::determineScaledDomainSize(
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+    const double meshSize) const {
+  tarch::la::Vector<DIMENSIONS, double> scaledDomainSize =
+      domainSize / meshSize;
   for(int i=0; i<DIMENSIONS; i++) {
-    shrunkDomainOffset[i] = boundingBoxOffset[i] +
-        std::ceil(shrunkDomainOffset[i]) * coarsestMeshSize;
+    scaledDomainSize[i] = std::ceil(scaledDomainSize[i]) * meshSize;
   }
-  return shrunkDomainOffset;
-}
-
-
-tarch::la::Vector<DIMENSIONS, double>
-exahype::runners::Runner::determineShrunkDomainSize(
-    const tarch::la::Vector<DIMENSIONS, double>& shrunkDomainOffset,
-    const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize,
-    const tarch::la::Vector<DIMENSIONS, double>& domainOffset,
-    const tarch::la::Vector<DIMENSIONS, double>& domainSize) const {
-  const double coarsestMeshSize = determineCoarsestMeshSize(boundingBoxSize);
-
-  tarch::la::Vector<DIMENSIONS, double> shrunkDomainSize =
-      ( domainOffset+domainSize-shrunkDomainOffset ) / coarsestMeshSize;
-  for(int i=0; i<DIMENSIONS; i++) {
-    shrunkDomainSize[i] = std::floor(shrunkDomainSize[i]) * coarsestMeshSize;
-  }
-  return shrunkDomainSize;
+  return scaledDomainSize;
 }
 
 /**
@@ -430,12 +409,9 @@ tarch::la::Vector<DIMENSIONS, double> exahype::runners::Runner::determineBoundin
 }
 
 exahype::repositories::Repository* exahype::runners::Runner::createRepository() {
-  // Geometry is static as we need it survive the whole simulation time.
+  // Geometry is static as we need it to survive the whole simulation time.
   _domainOffset = _parser.getOffset();
   _domainSize   = _parser.getDomainSize();
-  static peano::geometry::Hexahedron geometry(
-      _domainSize,
-      _domainOffset);
   _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
 
   const int coarsestUserMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
@@ -444,47 +420,6 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   #ifdef Parallel
   if (exahype::State::VirtuallyExpandBoundingBox) {
-    // Variant 1: Maximise the mesh size
-    // const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
-    // const double boundingBoxScaling = 1+2*coarsestMeshSize/_boundingBoxSize[0];
-    // boundingBoxSize  *= boundingBoxScaling;
-    // boundingBoxOffset += boundingBoxScaling*_boundingBoxSize; // TODO(Dominic): This is for Tobias' method
-
-    // Variant 2: Tobias's variant
-    // TODO(Dominic): Keep for reference.
-    // Add to docu: boundingBoxScaling tries to preserve the domain.
-    //    const double boundingBoxScaling =
-    //        static_cast<double>(coarsestMeshLevel) /
-    //        (static_cast<double>(coarsestMeshLevel)-2);
-    //    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize );
-    //    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-    //    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize, boundingBoxScaling );
-    //
-    //    logInfo(
-    //        "createRepository(...)",
-    //        "increase bounding box artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
-    //
-    //    _boundingBoxSize  *= boundingBoxScaling;
-    //    boundingBoxOffset += boundingBoxShift*_boundingBoxSize; // TODO(Dominic): This is for Tobias' method
-
-    // Variant 3: Find minimum bounding box mesh refinement level lBB that
-    // resolves the boundary accurately.
-    //
-    // Problem:
-    // Minimise lBB and vary HBB,xBB,N in order to satisfy
-    // N * hBB   = HD  (1)
-    // xBB + hBB = xD, (2)
-    //
-    // with
-    // hBB = HBB/(3^lBB), HBB: bounding box size,
-    // xBB: bounding box offset,
-    // xD: domain offset,
-    // HD: domain size.
-    //
-    // Constraints:
-    // Choose the number of elements for resolving
-    // the boundary as N=3^lBB - 2, i.e. have two elements
-    // outside of the domain.
     const double coarsestUserMeshSpacing =
         exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
     const double maxDomainExtent = tarch::la::max(_domainSize);
@@ -511,36 +446,35 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
   const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
   const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
-  tarch::la::Vector<DIMENSIONS,double> shrunkDomainOffset = determineShrunkDomainOffset(
-      boundingBoxOffset,_boundingBoxSize,_domainOffset,_domainSize);
-  if (!tarch::la::equals(_domainOffset,shrunkDomainOffset)) {
+  tarch::la::Vector<DIMENSIONS,double> scaledDomainSize =
+      determineScaledDomainSize(_domainSize,coarsestMeshSize);
+  if (!tarch::la::equals(_domainSize,scaledDomainSize)) {
     logInfo("createRepository(...)",
-        "move domain offset artificially to " << shrunkDomainOffset << " from "
-        << _domainOffset << " due to bounding box scaling");
-  }
-  tarch::la::Vector<DIMENSIONS,double> shrunkDomainSize = determineShrunkDomainSize(
-        shrunkDomainOffset,_boundingBoxSize,_domainOffset,_domainSize);
-  if (!tarch::la::equals(_domainSize,shrunkDomainSize)) {
-    logInfo("createRepository(...)",
-        "shrink domain size artificially to " << shrunkDomainSize << " from "
-        << _domainSize << " due to bounding box scaling or since non-cubic domain was specified");
+        "scale domain size artificially to " << scaledDomainSize << " from "
+        << _domainSize << " since non-cubic domain was specified");
   }
   logInfo("createRepository(...)",
       "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size "<<
-      coarsestUserMeshSize << " and (shrunk) domain size " << shrunkDomainSize);
+      coarsestUserMeshSize << " and domain size " << scaledDomainSize);
   if (boundingBoxMeshLevel!=coarsestUserMeshLevel) {
     logInfo("createRepository(...)",
-        "had to refine " << boundingBoxMeshLevel-coarsestUserMeshLevel << " more times in order to "
-            " satisfy user's maximum mesh size criterion while scaling the bounding box");
+        "We will need to refine the grid " << boundingBoxMeshLevel-coarsestUserMeshLevel << " more time(s) than expected "
+            " in order to satisfy user's maximum mesh size criterion while scaling the bounding box");
   }
 
   logInfo(
       "createRepository(...)",
-      "summary: create computational domain at " << shrunkDomainOffset <<
-      " of width/size " << shrunkDomainSize <<
+      "summary: create computational domain at " << _domainOffset <<
+      " of width/size " << scaledDomainSize <<
       ". bounding box has offset " << boundingBoxOffset <<
       " and size " << _boundingBoxSize <<
       ". grid regular up to level " << boundingBoxMeshLevel << " (level 1 is coarsest available cell in tree)");
+
+  _domainSize = scaledDomainSize;
+
+  static peano::geometry::Hexahedron geometry(
+      _domainSize,
+      _domainOffset);
 
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
@@ -558,6 +492,8 @@ void exahype::runners::Runner::initHPCEnvironment() {
 int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().disableInheritingOfCoarseGridIndices();
+
     exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
     exahype::State::EnableNeighbourCommunication    = _parser.getMPINeighbourCommunication();
     #ifdef Parallel
@@ -586,9 +522,10 @@ int exahype::runners::Runner::run() {
     initHPCEnvironment();
 
     exahype::mappings::MeshRefinement::Mode=
-         exahype::mappings::MeshRefinement::RefinementMode::Initial;
+         exahype::mappings::MeshRefinement::RefinementMode::Initial; // TODO(Dominic): Might be able to make this a bool now
     #ifdef Parallel
     exahype::mappings::MeshRefinement::FirstIteration = false;
+    exahype::mappings::LimiterStatusSpreading::FirstIteration = false;
     #endif
 
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -625,7 +562,6 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   bool gridUpdate = false;
 
   int gridSetupIterations = 0;
-//  repository.switchToMeshRefinementAndPlotGrid();
   repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
@@ -944,8 +880,6 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   repository.switchToNeighbourDataMerging();
   repository.iterate();
 
-  // TODO(Dominic): Continue to work here
-
   // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LimiterStatusSpreading);
@@ -984,6 +918,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
         !exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
       repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
     }
+
     logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation();
@@ -1122,6 +1057,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
   logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","run "<<numberOfStepsToRun<< " iterations with fused algorithmic steps");
+
   /*
    * The adapter below performs the following steps:
    *
@@ -1146,6 +1082,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.switchToADERDGTimeStep();
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
+
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested by at least one solver");
   }
@@ -1169,6 +1106,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.switchToPrediction();
     repository.iterate();
   }
+
   // ---- reduction/broadcast barrier ----
 }
 
