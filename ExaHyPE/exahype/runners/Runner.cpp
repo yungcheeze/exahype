@@ -576,7 +576,6 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
 
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
-  repository.switchToMeshRefinementAndPlotGrid();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
