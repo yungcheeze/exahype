@@ -8,7 +8,7 @@
 #@ energy_policy_tag = ExaHyPE_stream_energy_tag
 #@ minimize_time_to_solution = yes
 #@ wall_clock_limit = 04:00:00
-#@ job_name = EulerFlow
+#@ job_name = stream
 #@ network.MPI = sn_all,not_shared,us
 #@ notification=complete
 #@ notify_user=dominic.e.charrier@durham.ac.uk
@@ -18,7 +18,7 @@
 . /etc/profile
 . /etc/profile.d/modules.sh
 module load gcc/4.9
-module load tbb
+module load likwid
 
 ./stream-gcc-noomp > results_gcc-noomp.out 
 ./stream-icc-noomp > results_icc-noomp.out 
@@ -35,8 +35,8 @@ export OMP_NUM_THREADS=28
 ./stream-gcc-omp > results_gcc-omp.out 
 ./stream-icc-omp > results_icc-omp.out 
 
-likwid-perfctr -C 0-23 -g MEM ./stream-gcc-omp > results_gcc-omp-mem.out 
-likwid-perfctr -C 0-23 -g MEM ./stream-icc-omp > results_icc-omp-mem.out 
+likwid-perfctr -C 0-27 -g MEM ./stream-gcc-omp > results_gcc-omp-mem.out 
+likwid-perfctr -C 0-27 -g MEM ./stream-icc-omp > results_icc-omp-mem.out 
 
-likwid-perfctr -C 0-23 -g FLOPS_DP ./stream-gcc-omp > results_gcc-omp-flops.out 
-likwid-perfctr -C 0-23 -g FLOPS_DP ./stream-icc-omp > results_icc-omp-flops.out 
+likwid-perfctr -C 0-27 -g FLOPS_DP ./stream-gcc-omp > results_gcc-omp-flops.out 
+likwid-perfctr -C 0-27 -g FLOPS_DP ./stream-icc-omp > results_icc-omp-flops.out 
