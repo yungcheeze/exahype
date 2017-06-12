@@ -30,7 +30,7 @@ exahype-project  Euler
     dimension const          = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 1.2
+    end-time                 = 0.01
   end computational-domain
 
   shared-memory
@@ -67,10 +67,13 @@ exahype-project  Euler
     kernel const      = generic::fluxes::nonlinear
     language const    = C
 
-    plot vtu::Cartesian::cells::ascii ConservedQuantitiesWriter
+    //plot Peano::Legendre::cells::hdf5 ConservedQuantitiesWriter
+    //plot Peano::Legendre::cells::ascii ConservedQuantitiesWriter
+    //plot vtk::Legendre::cells::binary ConservedQuantitiesWriter
+    plot vtk::Legendre::cells::ascii ConservedQuantitiesWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.1e-1
+      repeat          = 0.1e-4
       output          = ./conserved
     end plot
 
