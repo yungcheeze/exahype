@@ -69,11 +69,8 @@ void Euler::LimitingADERDG_FV::boundaryValues(
     const int normalNonZero,
     const double* const stateIn,
     double* stateOut) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
-  stateOut[4] = stateIn[4];
+  // Compute boundary state.
+  for (int i=0; i<NumberOfVariables+NumberOfParameters; i++) {
+    stateOut[i] = stateIn[i];
+  }
 }
