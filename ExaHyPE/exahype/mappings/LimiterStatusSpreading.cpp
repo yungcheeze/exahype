@@ -98,6 +98,9 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
 ) {
   _localState = solverState;
 
+  exahype::solvers::initialiseSolverFlags(_solverFlags);
+  exahype::solvers::prepareSolverFlags(_solverFlags);
+
   // We memorise the previous request per solver
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -110,9 +113,6 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
       limitingADERDG->updateNextLimiterDomainChange(limitingADERDG->getLimiterDomainChange());
     }
   }
-
-  exahype::solvers::initialiseSolverFlags(_solverFlags);
-  exahype::solvers::prepareSolverFlags(_solverFlags);
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
