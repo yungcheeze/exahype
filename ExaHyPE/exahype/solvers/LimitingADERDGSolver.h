@@ -668,7 +668,14 @@ public:
         const int solverNumber);
 
   /**
-   * TODO(Dominic): add more docu
+   * Update the cellwise limiter status using the facewise limiter status
+   * values.
+   *
+   * Ensure a limiter patch is allocated on all cells
+   * on the finest level of the grid which have
+   * a limiter status greater than 0.
+   *
+   * Dellocate the limiter patch on helper cells.
    *
    * \note We overwrite the facewise limiter status values with the new value
    * in order to use the updateLimiterStatusAfterSetInitialConditions function

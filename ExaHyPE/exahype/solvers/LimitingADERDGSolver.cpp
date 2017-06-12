@@ -511,6 +511,29 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
       fineGridPositionOfCell,solverNumber);
+
+  // Project DG solution onto FV patch; TODO(Dominic): Put in its own method?
+  // We need to perform this action every time we have performed a mesh update.
+  // Do not remove!
+  const int solverElement =
+      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (solverElement!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& solverPatch =
+        _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
+    if (
+        solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()
+        &&
+        solverPatch.getLimiterStatus()>0 &&
+        solverPatch.getPreviousLimiterStatus()==0
+    ) {
+      const int limiterElement = tryGetLimiterElementFromSolverElement(
+              fineGridCell.getCellDescriptionsIndex(),solverElement);
+      assertion (limiterElement!=exahype::solvers::Solver::NotFound);
+      LimiterPatch& limiterPatch =
+          _limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
+      projectDGSolutionOnFVSpace(solverPatch,limiterPatch);
+    }
+  }
 }
 
 ///////////////////////////////////
@@ -1628,8 +1651,43 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
   const int limiterElement1 = tryGetLimiterElement(cellDescriptionsIndex1,solverPatch1.getSolverNumber());
   const int limiterElement2 = tryGetLimiterElement(cellDescriptionsIndex2,solverPatch2.getSolverNumber());
 
+  //    std::cout << "[pre] solution:" << std::endl;
+  //    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+//  if (solverPatch1.getCorrectorTimeStamp()>0.18) {
+//    if (cellDescriptionsIndex1==161 &&
+//        cellDescriptionsIndex2==597) {
+//      std::cout << "[merge] cell1="<<cellDescriptionsIndex1<<",datas=" << solverPatch1.toString() << std::endl;
+//      if (limiterElement1!=exahype::solvers::Solver::NotFound) {
+//        LimiterPatch& limiterPatch1 = _limiter->getCellDescription(cellDescriptionsIndex1,limiterElement1);
+//        _limiter->printFiniteVolumesSolution(limiterPatch1);
+//      }
+//
+//      std::cout << "[merge] cell2="<<cellDescriptionsIndex2<<",data=" << solverPatch2.toString() << std::endl;
+//      if (limiterElement1!=exahype::solvers::Solver::NotFound) {
+//        LimiterPatch& limiterPatch2 = _limiter->getCellDescription(cellDescriptionsIndex2,limiterElement2);
+//        _limiter->printFiniteVolumesSolution(limiterPatch2);
+//      }
+//    }
+//  }
+
   // We only limit on the finest mesh level
   if (solverPatch1.getLevel()==getMaximumAdaptiveMeshLevel()) {
+    assertion2(solverPatch1.getLevel()==getMaximumAdaptiveMeshLevel(),solverPatch1.toString(),solverPatch2.toString());
+
+    // TODO(Dominic): This is actually a stopping criterion. In this case the
+    // FV cell should skip the solution update and just swap the previous
+    // and old solution. Or copy its own values onto the boundary It should further notify the solver that
+    // a (local) recomputation is necessary.
+    assertion2(
+        solverPatch1.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
+        || solverPatch2.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
+        solverPatch1.toString(),solverPatch2.toString());
+    assertion2(
+        solverPatch2.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
+        || solverPatch1.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
+        solverPatch1.toString(),solverPatch2.toString());
+
+
     // 1. Merge solver solution or limiter solution values in
     // non-overlapping parts of solver and limiter domain:
     switch (solverPatch1.getLimiterStatus()) {
