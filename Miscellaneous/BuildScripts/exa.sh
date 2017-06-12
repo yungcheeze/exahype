@@ -180,6 +180,8 @@ case $CMD in
 		err "MODE:      ${MODE:=-not set-}"
 		err "SHAREDMEM: ${SHAREDMEM:=-not set-}"
 		err "DISTRIBUTEDMEM: ${DISTRIBUTEDMEM:=-not set -}"
+		err "TBB_INC=${TBB_INC:=-not set -}"
+		err "TBB_SHLIB=${TBB_SHLIB:=-not set -}"
 		err
 		err "Exa Project Makefile specific:"
 		err "PROJECT_CFLAGS: ${PROJECT_CFLAGS:=-not set-}"
