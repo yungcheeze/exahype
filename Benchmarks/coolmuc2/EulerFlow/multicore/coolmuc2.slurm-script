@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --job-name="ExaHyPE-EulerFlow"
+#SBATCH -o ExaHyPE-EulerFlow.%A.out
+#SBATCH -e ExaHyPE-EulerFlow.%A.err
+#SBATCH -t 01:00:00
+#SBATCH --exclusive
+#SBATCH --cluster=mpp2
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=28
+#SBATCH --mail-user=jean-matthieu.gallard@tum.de
+#SBATCH --mail-type=ALL
+#SBATCH --array=1-2 # ham7: 1..24 cores + 48 threads (HT)
+
+source /etc/profile.d/modules.sh
+
+
+module load tbb
+
+nodes=1
+tasks=1
+tasksPerNode=1
+coresPerTask=$SLURM_ARRAY_TASK_ID
+let procsPerNode=tasksPerNode*coresPerTask
+
+compiler=Intel
+sharedMem=TBB
+if (( coresPerTask==1 )); then
+  sharedMem=None
+fi
+
+prefix=EulerFlow-no-output-p9-regular-0
+out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+
+script=coolmuc2.slurm-script
+spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+
+# pipe some information into output file
+module list 2>$out
+echo "" >> $out
+cat $script >>$out
+echo "" >> $out
+cat $spec >> $out
+#ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
+
+# execute the job
+./ExaHyPE-EulerFlow-p9-$sharedMem-$compiler $spec >> $out
