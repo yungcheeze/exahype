@@ -507,13 +507,26 @@ int exahype::runners::Runner::run() {
       exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
       exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
     } else {
-      assertionMsg(false,
-          "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
-          "You might need to add the 'optimisation' environment.");
-      logError("run()",
-                "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
-                "You might need to add the 'optimisation' environment.");
-      abort();
+      bool abortProgram = false;
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          abortProgram = true;
+        }
+        if (solver->getMaximumAdaptiveMeshDepth()>0) {
+          abortProgram = true;
+        }
+      }
+
+      if (abortProgram) {
+        assertionMsg(false,
+            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+            "You might need to add the 'optimisation' environment.");
+        logError("run()",
+            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+            "You might need to add the 'optimisation' environment.");
+        abort();
+      }
     }
     // must be after repository creation
     initDistributedMemoryConfiguration();
@@ -563,6 +576,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
 
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
+  repository.switchToMeshRefinementAndPlotGrid();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
@@ -1147,19 +1161,19 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   // refinement criterion. We enforce that the
   // limiter is only active on the finest mesh level
   // by mesh refinement.
-  while (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
-    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
-
-    repository.getState().switchToUpdateMeshContext();
-    repository.switchToMergeTimeStepData();
-    repository.iterate();
-
-    createMesh(repository);
-
-    repository.getState().switchToPostAMRContext();
-    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
-    repository.iterate();
-  }
+//  while (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+//    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
+//
+//    repository.getState().switchToUpdateMeshContext();
+//    repository.switchToMergeTimeStepData();
+//    repository.iterate();
+//
+//    createMesh(repository);
+//
+//    repository.getState().switchToPostAMRContext();
+//    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
+//    repository.iterate();
+//  }
 
   printTimeStepInfo(1,repository);
 
