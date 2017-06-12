@@ -65,7 +65,10 @@ exahype-project  Euler
     kernel const            = generic::fluxes::nonlinear
     language const          = C
 
-    plot vtk::Cartesian::cells::ascii ConservedWriter
+    plot Peano::Legendre::cells::hdf5 ConservedQuantitiesWriter
+    //plot Peano::Legendre::cells::ascii ConservedQuantitiesWriter
+    //plot vtk::Legendre::cells::binary ConservedQuantitiesWriter
+    //plot vtk::Legendre::cells::ascii ConservedQuantitiesWriter
       variables const = 5
       time      = 0.0
       repeat    = 0.05
