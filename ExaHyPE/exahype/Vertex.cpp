@@ -175,14 +175,12 @@ bool exahype::Vertex::hasToMergeNeighbours(
 
       // cell 1
       for (auto& p1 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-        assertion(p1.getLevel()==getLevel());
         if (p1.getNeighbourMergePerformed(faceIndex1)) {
           return false;
         }
       }
       for (auto& p1 : exahype::solvers::
           FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-        assertion(p1.getLevel()==getLevel());
         if (p1.getNeighbourMergePerformed(faceIndex1)) {
           return false;
         }
@@ -191,14 +189,12 @@ bool exahype::Vertex::hasToMergeNeighbours(
       // cell 2
       for (auto& p2 : exahype::solvers::
           ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-        assertion(p2.getLevel()==getLevel());
         if (p2.getNeighbourMergePerformed(faceIndex2)) {
           return false;
         }
       }
       for (auto& p2 : exahype::solvers::
           FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-        assertion(p2.getLevel()==getLevel());
         if (p2.getNeighbourMergePerformed(faceIndex2)) {
           return false;
         }
@@ -375,26 +371,22 @@ void exahype::Vertex::setMergePerformed(
   // ADER-DG
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
     for (auto& p1 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-      assertion(p1.getLevel()==getLevel());
       p1.setNeighbourMergePerformed(faceIndex1,state);
     }
 
     assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1));
     for (auto& p1 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-      assertion(p1.getLevel()==getLevel());
       p1.setNeighbourMergePerformed(faceIndex1,state);
     }
   }
 
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
     for (auto& p2 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-      assertion(p2.getLevel()==getLevel());
       p2.setNeighbourMergePerformed(faceIndex2,state);
     }
 
     assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2));
     for (auto& p2 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-      assertion(p2.getLevel()==getLevel());
       p2.setNeighbourMergePerformed(faceIndex2,state);
     }
   }
