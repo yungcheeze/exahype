@@ -1678,15 +1678,20 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
     // FV cell should skip the solution update and just swap the previous
     // and old solution. Or copy its own values onto the boundary It should further notify the solver that
     // a (local) recomputation is necessary.
-    assertion2(
-        solverPatch1.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-        || solverPatch2.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
+    const bool neighboursCanCommunicate =
+        (solverPatch1.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok) ||
+            solverPatch2.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3))
+            &&
+            (solverPatch2.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok) ||
+                solverPatch1.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3));
+    assertion2(neighboursCanCommunicate,
         solverPatch1.toString(),solverPatch2.toString());
-    assertion2(
-        solverPatch2.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-        || solverPatch1.getLimiterStatus()<=static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
-        solverPatch1.toString(),solverPatch2.toString());
-
+    if (!neighboursCanCommunicate) {
+      logError("mergeNeighboursBasedOnLimiterStatus(...)","Neighbours cannot communicate. " <<
+          std::endl << "cell1=" << solverPatch1.toString() <<
+          std::endl << ".cell2=" << solverPatch1.toString());
+      abort();
+    }
 
     // 1. Merge solver solution or limiter solution values in
     // non-overlapping parts of solver and limiter domain:
