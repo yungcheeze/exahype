@@ -150,7 +150,10 @@ namespace exahype {
    * for each FiniteVolumesCellDescription associated with this cell
    * (description).
    */
-  exahype::MetadataHeap::HeapEntries encodeNeighbourCommunicationMetadata(const int cellDescriptionsIndex);
+  exahype::MetadataHeap::HeapEntries encodeNeighbourCommunicationMetadata(
+      const int cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest);
 
   /**
    * TODO(Dominic): Add docu.
@@ -187,6 +190,8 @@ namespace exahype {
   void sendNeighbourCommunicationMetadata(
       const int                                   toRank,
       const int                                   cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,int>&    src,
+      const tarch::la::Vector<DIMENSIONS,int>&    dest,
       const tarch::la::Vector<DIMENSIONS,double>& x,
       const int                                   level);
 
@@ -1400,6 +1405,26 @@ class exahype::solvers::Solver {
         double**                                  tempStateSizedSquareMatrices) =0;
 
   /**
+   * Merge cell description \p element in
+   * the cell descriptions array stored at \p
+   * cellDescriptionsIndex with metadata
+   * stemming from the boundary or an empty cell.
+   *
+   * This function is used to prescribe boundary
+   * conditions for the diffused limiter status,
+   * augmentation, and helper status.
+   *
+   * Usually the boundary conditions of these
+   * diffusion processes are set to the lowest
+   * value in this function.
+   */
+  virtual void mergeWithBoundaryOrEmptyCellMetadata(
+      const int cellDescriptionsIndex,
+      const int element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) = 0;
+
+  /**
    * After all merges with neighbour and boundary data have been performed for all the surrounding
    * faces of a cell (description), we prepare the neighbour merge helper variables
    * for the next neighbour merge in one of the following grid traversals.
@@ -1421,6 +1446,8 @@ class exahype::solvers::Solver {
    */
   virtual void appendNeighbourCommunicationMetadata(
       MetadataHeap::HeapEntries& metadata,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
       const int solverNumber) = 0;
 

@@ -25,7 +25,7 @@ typedef tarch::la::Vector<DIMENSIONS,int> ivec;
 
 
 std::string exahype::plotters::FiniteVolume2CarpetHDF5::getIdentifier() {
-	return std::string("hdf5::Cartesian::Vertices");
+	return std::string("Carpet::Cartesian::Vertices::HDF5");
 }
 
 

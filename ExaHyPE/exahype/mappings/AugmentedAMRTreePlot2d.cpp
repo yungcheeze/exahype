@@ -384,10 +384,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
           _augmentationStatusWriter->plotCell(cellIndex,pFine.getAugmentationStatus());
           _helperStatusWriter->plotCell(cellIndex,pFine.getHelperStatus());
-          _limiterStatusWriter->plotCell(
-              cellIndex,pFine.getLimiterStatus());
-          _previousLimiterStatusWriter->plotCell(
-              cellIndex,pFine.getPreviousLimiterStatus());
+          _limiterStatusWriter->plotCell(cellIndex,pFine.getLimiterStatus());
+          _previousLimiterStatusWriter->plotCell(cellIndex,pFine.getPreviousLimiterStatus());
           solverFound = true;
         }
       }

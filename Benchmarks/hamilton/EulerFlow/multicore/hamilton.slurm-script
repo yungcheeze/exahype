@@ -27,11 +27,15 @@ export I_MPI_FABRICS="shm:dapl"
 nodes=1
 tasks=1
 tasksPerNode=1
-coresPerTask=%SLURM_ARRAY_TASK_ID
+coresPerTask=$SLURM_ARRAY_TASK_ID
 let procsPerNode=tasksPerNode*coresPerTask
 
 compiler=Intel
-sharedMem=None
+sharedMem=TBB
+if (( coresPerTask==1 )); then
+  sharedMem=None
+fi
+
 prefix=EulerFlow-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
 

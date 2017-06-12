@@ -242,6 +242,24 @@ void exahype::mappings::MeshRefinement::createCell(
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
 
+void exahype::mappings::MeshRefinement::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
+                           fineGridX, fineGridH,
+                           coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+
+  fineGridVertex.mergeOnlyMetadataAtHangingNode(_localState.getAlgorithmSection());
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
+}
+
 void exahype::mappings::MeshRefinement::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -255,7 +273,7 @@ void exahype::mappings::MeshRefinement::touchVertexFirstTime(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  fineGridVertex.mergeOnlyNeighboursMetadata(_localState.getAlgorithmSection());
+  fineGridVertex.mergeOnlyMetadata(_localState.getAlgorithmSection());
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
@@ -270,6 +288,9 @@ void exahype::mappings::MeshRefinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+
+  assertion(fineGridCell.isInside());
+
   bool refineFineGridCell = false;
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -332,8 +353,7 @@ void exahype::mappings::MeshRefinement::enterCell(
            exahype::Vertex::Records::RefinementControl::Unrefined
            &&
            !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
-           &&
-           fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
+           && fineGridVertices[ fineGridVerticesEnumerator(v) ].isInside()
       ) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
       }
@@ -694,17 +714,6 @@ void exahype::mappings::MeshRefinement::mergeWithWorkerThread(
   // do nothing
 }
 #endif
-
-void exahype::mappings::MeshRefinement::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
 
 void exahype::mappings::MeshRefinement::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,

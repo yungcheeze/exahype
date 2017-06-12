@@ -8,7 +8,7 @@
 
 
 std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
-	return std::string("hdf5::Cartesian::Vertices");
+	return std::string("Carpet::Cartesian::Vertices::HDF5");
 }
 
 

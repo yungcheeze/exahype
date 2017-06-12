@@ -74,10 +74,33 @@ CartesianSlicer* CartesianSlicer::fromSelectionQuery(const std::string& select) 
 	return new CartesianSlicer(r, ron);
 }
 
+/**
+ * A variant of tarch::la::Vector::toString which replcaes infVal with repl.
+ **/
+std::string valueReplPrinter(const tarch::la::Vector<DIMENSIONS, double>& vec, const double infVal, const std::string& repl) {
+	stringstream s;
+	s << "[";
+	for(int i=0; i < DIMENSIONS; i++) {
+		if(vec[i] == infVal) s << repl;
+		else s << vec[i];
+		if(i + 1 < DIMENSIONS) s << ",";
+	}
+	s << "]";
+	return s.str();
+}
 
 std::string RegionSlicer::toString() const {
+	// a beautiful infinity character in utf8. Could also just use "inf".
+	// Unicode works in most Linux and Mac terminals but not Windows. (https://stackoverflow.com/a/12020179)
+	std::string inf = "\u221E", plus = "+", minus = "-";
+	
 	stringstream s;
-	s << "RegionSlicer(" << _regionOfInterestLeftBottomFront << ", " << _regionOfInterestRightTopBack << ")";
+	s << "RegionSlicer("
+	  << valueReplPrinter(_regionOfInterestLeftBottomFront, defaultLeftBottomFront, minus + inf)
+	  << ","
+	  << valueReplPrinter(_regionOfInterestRightTopBack, defaultRightTopBack, plus + inf)
+	  << ")";
+	
 	return s.str();
 }
 

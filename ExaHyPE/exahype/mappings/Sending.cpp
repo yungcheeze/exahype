@@ -283,7 +283,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
            x.toString() << ", level=" <<level);
 
   exahype::sendNeighbourCommunicationMetadata(
-      toRank,srcCellDescriptionIndex,x,level);
+      toRank,srcCellDescriptionIndex,src,dest,x,level);
 }
 
 ///////////////////////////////////////

@@ -290,7 +290,7 @@ void exahype::mappings::Reinitialisation::sendDataToNeighbour(
              x.toString() << ", level=" <<level);
 
   exahype::sendNeighbourCommunicationMetadata(
-      toRank, srcCellDescriptionIndex, x, level);
+      toRank, srcCellDescriptionIndex, src, dest, x, level);
 }
 
 

@@ -18,29 +18,27 @@
 #   the nodes are diskless
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
 hMax=(0.05 0.01 0.005 0.001)
-times=(0.01 0.002 0.0005 0.0001)
+times=(0.01 0.002 0.0005 0.0001) # p=3
+#times=(0.003)                    # p=5
+times=(0.001)                    # p=9
 
 i=0
 mesh=regular-$i
 h=${hMax[i]}
 t=${times[i]}
 
-order=5
-
-sharedMem=TBB
+order=9
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-
 
 for io in 'output' 'no-output'
 do
   # Create script
   script=hamilton.slurm-script
-  newScript=hamilton-$io-p$order-n1-t1-$sharedMem.slurm-script
+  newScript=hamilton-$io-p$order-n1-t1.slurm-script
   cp $script $newScript
  
-  sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
   sed -i 's,EulerFlow-no-output,EulerFlow-'$io',g' $newScript
 
   sed -i 's,p3,p'$order',g' $newScript

@@ -64,9 +64,11 @@ namespace exahype {
  *
  * <h3>General limitations</h3>
  * 
- * <strong> No global MPI writing </strong> Currently, each MPI rank produces its own file. In
- * contrast, in Cactus there is by default a single file accross all ranks. Again, files can be
- * easily merged with standard cactus tools.
+ * <strong> MPI support not yet completed </strong>. We plan two modes:
+ *   (1) Standard approach: Each MPI rank produces its own file
+ *   (2) One file is created accross all ranks (HDF5 should provide easy methods to do so).
+ * In any way, you find tools at Miscellaneous/CarpetHDF5-Utils to merge several files to a single
+ * one, distribute data, or as you whish.
  *
  * <strong> Structure of array vs. array of structures </strong>
  * The CarpetHDF5 file format directly resembles the closest way how to dump Cactus memory into files.

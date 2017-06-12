@@ -727,6 +727,14 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
   }
 }
 
+void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryOrEmptyCellMetadata(
+      const int cellDescriptionsIndex,
+      const int element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) {
+   // do nothing
+}
+
 void exahype::solvers::FiniteVolumesSolver::prepareNextNeighbourMerging(
     const int cellDescriptionsIndex,const int element,
     exahype::Vertex* const fineGridVertices,
@@ -1013,6 +1021,8 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 void
 exahype::solvers::FiniteVolumesSolver::appendNeighbourCommunicationMetadata(
     exahype::MetadataHeap::HeapEntries& metadata,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
     const int cellDescriptionsIndex,
     const int solverNumber) {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);

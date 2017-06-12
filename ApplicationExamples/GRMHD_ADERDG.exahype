@@ -29,7 +29,7 @@ exahype-project GRMHD
     dimension const                = 3
     width                          = 1.0, 1.0, 1.0
     offset                         = 0.0, 0.0, 0.0
-    end-time                       = 2.1
+    end-time                       = 0.000000001
   end computational-domain
   
   shared-memory
@@ -74,12 +74,18 @@ exahype-project GRMHD
       output    = ./vtk-output/conserved
     end plot
 
-    plot hdf5::Cartesian::vertices ConservedWriter
+    plot Carpet::Cartesian::Vertices::HDF5 ConservedWriter
       variables const = 19
       time = 0.0
       repeat = 0.00001
-      output = ./hdf5-output/conserved
-      select = z:0.0,y:0.0
+      output = ./hdf5-carpet/conserved
+    end plot
+
+    plot hdf5::flash ConservedWriter
+      variables const = 19
+      time = 0.0
+      repeat = 0.00001
+      output = ./hdf5-flash/conserved
     end plot
 
     plot user::defined SphereIntegrals
@@ -87,7 +93,6 @@ exahype-project GRMHD
       time = 0.0
       repeat = 0.000666667  /*0.129329*/
       output = ./global-sphere-integrals
-      select    = x:0.0,y:0.0
     end plot
 
 

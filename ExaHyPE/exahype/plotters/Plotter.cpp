@@ -23,6 +23,7 @@
 
 #include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
 #include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
+#include "exahype/plotters/FlashHDF5/ADERDG2FlashHDF5.h"
 #include "exahype/plotters/VTK/FiniteVolumes2VTK.h"
 #include "exahype/plotters/VTK/LimitingADERDG2CartesianVTK.h"
 #include "exahype/plotters/VTK/LimitingADERDGSubcells2CartesianVTK.h"
@@ -253,6 +254,9 @@ exahype::plotters::Plotter::Plotter(
       if (equalsIgnoreCase(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new ADERDG2CarpetHDF5(postProcessing);
       }
+      if (equalsIgnoreCase(_identifier, ADERDG2FlashHDF5::getIdentifier())) {
+        _device = new ADERDG2FlashHDF5(postProcessing);
+      }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
       /**
@@ -392,6 +396,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (equalsIgnoreCase(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new ADERDG2CarpetHDF5(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2FlashHDF5::getIdentifier())) {
+        _device = new ADERDG2FlashHDF5(postProcessing);
       }
 
       /**

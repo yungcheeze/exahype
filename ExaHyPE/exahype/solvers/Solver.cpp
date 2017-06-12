@@ -35,7 +35,7 @@ tarch::logging::Log exahype::solvers::Solver::_log( "exahype::solvers::Solver");
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   assertion(solverFlags._limiterDomainChange==nullptr);
-  assertion(solverFlags._meshUpdateRequest    ==nullptr);
+  assertion(solverFlags._meshUpdateRequest  ==nullptr);
 
   int numberOfSolvers    = exahype::solvers::RegisteredSolvers.size();
   solverFlags._limiterDomainChange = new LimiterDomainChange[numberOfSolvers];
@@ -409,7 +409,10 @@ void exahype::solvers::Solver::toString(std::ostream& out) const {
 }
 
 #ifdef Parallel
-exahype::MetadataHeap::HeapEntries exahype::encodeNeighbourCommunicationMetadata(int cellDescriptionsIndex) {
+exahype::MetadataHeap::HeapEntries exahype::encodeNeighbourCommunicationMetadata(
+    int cellDescriptionsIndex,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest) {
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
 
   const int length =
@@ -421,7 +424,10 @@ exahype::MetadataHeap::HeapEntries exahype::encodeNeighbourCommunicationMetadata
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     solver->appendNeighbourCommunicationMetadata(
-        encodedMetaData,cellDescriptionsIndex,solverNumber);
+        encodedMetaData,
+        src,dest,
+        cellDescriptionsIndex,
+        solverNumber);
   }
   assertion2(static_cast<int>(encodedMetaData.size())==length,encodedMetaData.size(),length);
   return encodedMetaData;
@@ -482,10 +488,12 @@ bool exahype::isMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(exah
 void exahype::sendNeighbourCommunicationMetadata(
     const int                                   toRank,
     const int                                   cellDescriptionsIndex,
+    const tarch::la::Vector<DIMENSIONS,int>&    src,
+    const tarch::la::Vector<DIMENSIONS,int>&    dest,
     const tarch::la::Vector<DIMENSIONS,double>& x,
     const int                                   level) {
   MetadataHeap::HeapEntries encodedMetadata =
-      encodeNeighbourCommunicationMetadata(cellDescriptionsIndex);
+      encodeNeighbourCommunicationMetadata(cellDescriptionsIndex,src,dest);
   MetadataHeap::getInstance().sendData(
       encodedMetadata,toRank,
       x,level,peano::heap::MessageType::NeighbourCommunication);

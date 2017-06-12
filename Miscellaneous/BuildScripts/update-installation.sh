@@ -65,6 +65,11 @@ for cmd in "$@"; do
 			cd Toolkit/src
 			make dist
 			;;
+		"toolkit-fastmake") # no clean, just recompile and make jar
+			info "Toolkit make and dist"
+			cd Toolkit/src
+			make compile && make jar
+			;;
 		"libxsmm") # Checkout or recompile libxsmm
 			info "Cloning or updating Libxsmm"
 			[[ -e Libxsmm ]] || git clone https://github.com/hfp/libxsmm.git Libxsmm
@@ -87,7 +92,7 @@ for cmd in "$@"; do
 			;;
 		""|"help"|"--help")
 			info "Allows updating parts of this repository"
-			info "Valid commands are: exahype/bootstrap/all, peano, toolkit, libxsmm"
+			info "Valid commands are: exahype/bootstrap/all, peano, toolkit, clean-toolkit, toolkit-jar, toolkit-fastmake, libxsmm"
 			info "and all of it's combinations, whitespace seperated"
 			;;
 		*)

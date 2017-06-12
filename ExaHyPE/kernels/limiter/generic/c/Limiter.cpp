@@ -145,10 +145,16 @@ bool kernels::limiter::generic::c::discreteMaximumPrincipleAndMinAndMaxSearch(
       discreteMaximumPrincipleSatisfied=false;
     }
 
+    // TODO(Dominic): A little hacky
+
     // We have the new min and max directly available now and
-    // overwrite the boundary values with it
+    // overwrite the block for face 0 with it
     boundaryMinPerObservable[v] = localMinPerObservable[v];
     boundaryMaxPerObservable[v] = localMaxPerObservable[v];
+
+    // In the block for face 1, we write the boundary min and max
+    boundaryMinPerObservable[v+numberOfObservables] = boundaryMin;
+    boundaryMaxPerObservable[v+numberOfObservables] = boundaryMax;
   }
 
   // clean up
