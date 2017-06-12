@@ -218,7 +218,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
 
         bool meshUpdateRequest =
             limitingADERDG->
-              evaluateLimiterStatusBasedRefinementCriterion(
+              evaluateLimiterStatusRefinementCriterion(
                   fineGridCell.getCellDescriptionsIndex(),element);
 
         _solverFlags._meshUpdateRequest[solverNumber] |= meshUpdateRequest;

@@ -624,8 +624,19 @@ public:
    * only considers direct (face) neighbours, we need to refine all cells with
    * a limiter status Troubled-1 and Troubled-2.
    */
-  bool evaluateLimiterStatusBasedRefinementCriterion(
+  bool evaluateLimiterStatusRefinementCriterion(
       const int cellDescriptionsIndex,const int solverElement) const;
+
+
+  /**
+   * Evaluate a stricter DMP as an a-priori refinement
+   * criterion.
+   *
+   * TODO(Dominic): It is a little hacked together
+   */
+  bool evaluateDiscreteMaximumPrincipleRefinementCriterion(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   /**
    * Based on the limiter status of a solver patch

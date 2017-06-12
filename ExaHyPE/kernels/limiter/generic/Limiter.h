@@ -90,19 +90,25 @@ void findCellLocalLimiterMinAndMax(
  * Returns true if the nodal solution degrees of freedom
  * satisfy a discrete maximum principle.
  *
+ * Writes the new cell local min and max to the face 0 block
+ * of boundaryMinPerVariables and \p boundaryMaxPerVariables.
+ *
+ * Writes the minimised/maximised boundary min and max to the face 1 block
+ * of boundaryMinPerVariables and \p boundaryMaxPerVariables.
+ *
  * \note[24/11/16]
  * We currently abuse the term Voronoi neighbour for direct neighbour.
  *
  * \param[in] luh                           The nodal solution degrees of freedom
  * \param[in] solver                        An ADERDG solver
  * \param[in] relaxationParameter The relaxation parameter for the discrete maximum principle (DMP).
- * \param[in] differenceScaling          The difference scaling factor for the discrete maximum principle (DMP).
- * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ * \param[in] differenceScaling             The difference scaling factor for the discrete maximum principle (DMP).
+ * \param[inout] boundaryMinPerVariables    An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
  *                                          containing the minimum values per variable of the current cell
  *                                          and its neighbour at the particular face. Together these values
  *                                          can be used to compute the Voronoi maximum per variable.
- * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
- *                                          containing the minimum values per variable of the current cell
+ * \param[inout] boundaryMaxPerVariables    An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ *                                          containing the maximum values per variable of the current cell
  *                                          and its neighbour at the particular face. Together these values
  *                                          can be used to compute the Voronoi maximum per variable.
  *
