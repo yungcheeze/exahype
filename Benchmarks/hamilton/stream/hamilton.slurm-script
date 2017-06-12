@@ -4,7 +4,7 @@
 #SBATCH -p par7.q
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mail-user=tobias.weinzierl@durham.ac.uk
+#SBATCH --mail-user=dominic.e.charrier@durham.ac.uk
 #SBATCH --mail-type=ALL
 module load intel/xe_2017.2
 module load likwid/4.1
