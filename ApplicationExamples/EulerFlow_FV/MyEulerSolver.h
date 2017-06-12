@@ -27,15 +27,13 @@ namespace Euler{
 }
 
 class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
-
   private:
     /**
      * Log device
      */
     static tarch::logging::Log _log;
-
   public:
-    MyEulerSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    MyEulerSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
     
     /**
      * Initialise the solver.
@@ -44,19 +42,18 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
      */
     void init(std::vector<std::string>& cmdlineargs);
 
-
     /**
      * @see FiniteVolumesSolver
      */    
     bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
+    virtual bool useNonConservativeProduct() const {return false;}
+    virtual bool useSource()                 const {return false;}
     
     /**
      * @see FiniteVolumesSolver
      */    
     void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override; 
-
-
-          
+    
     /**
      * Compute the flux tensor.
      *
@@ -79,8 +76,6 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
     /**
      * Impose boundary conditions at a point on a boundary face
      * within the time interval [t,t+dt].
-     * Impose boundary conditions at a point on a face
-     * during the time interval [t,t+dt].
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    t         the start of the time interval.
@@ -97,10 +92,6 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-
-    void algebraicSource(const double* const Q, double* S) override;
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
-    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
 
 };
 
