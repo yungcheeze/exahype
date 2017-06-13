@@ -45,8 +45,7 @@ void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solv
 void exahype::solvers::prepareSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     solverFlags._limiterDomainChange[solverNumber] = LimiterDomainChange::Regular;
-    assertion(exahype::solvers::RegisteredSolvers[solverNumber]->getNextMeshUpdateRequest()==false);
-    solverFlags._meshUpdateRequest[solverNumber] = false;
+    solverFlags._meshUpdateRequest[solverNumber]   = false;
   }
 }
 
