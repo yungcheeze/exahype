@@ -181,12 +181,17 @@ def extract_likwid_metrics(root_dir,prefix):
     with open(prefix+'.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
+        # write header
         header = ["nodes","tasks","cores","cc","mode"]
         for metric in metrics:
-            header += [metric+"(Sum)",metric+"(Min)",metric+"(Max)",metric+"(Avg)"]
+            for column in columns:          
+                    header.append(metric+"("+column+")")
         csvwriter.writerow(header)
+
+        # write content
         for filename in os.listdir(root_dir):
             if filename.endswith(".out") and filename.startswith(prefix):
+                print(filename)
                 match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out',filename)
                 nodes = match.group(1)
                 tasks = match.group(2)
@@ -194,11 +199,12 @@ def extract_likwid_metrics(root_dir,prefix):
                 mode  = match.group(4)
                 cc    = match.group(5)
                     
-                measurements = parse_likwid_metrics(filename,metrics,int(cores)==1) 
+                measurements = parse_likwid_metrics(root_dir+'/'+filename,metrics,int(cores)==1) 
                 
                 row = [nodes,tasks,cores,cc,mode]
                 for metric in metrics:
-                    row += measurements[metric]
+                    for column in columns:
+                        row.append ( str(measurements[metric][column]) )
                 csvwriter.writerow(row)
 
 def parse_likwid_metrics(file_path,metrics,singlecore=False):
@@ -234,22 +240,21 @@ def parse_likwid_metrics(file_path,metrics,singlecore=False):
         for line in file_handle:
             for metric in metrics: 
                 if metric in line:
-                    for i in range(0,4):
-                        segments = line.split('|')
+                    segments = line.split('|')
                         
-                        if singlecore:
-                            #    |     Runtime (RDTSC) [s]    |    6.5219    |
-                            value = float(segments[2].strip());
-                            result[metric]["Sum"] = value
-                            result[metric]["Min"] = value
-                            result[metric]["Max"] = value
-                            result[metric]["Avg"] = value
-                        else:
-                            #   |  Runtime (RDTSC) [s] STAT |   27.4632  |   1.1443  |   1.1443  |   1.1443  |
-                            result[metric]["Sum"] = float(segments[2].strip());
-                            result[metric]["Min"] = float(segments[3].strip());
-                            result[metric]["Max"] = float(segments[4].strip());
-                            result[metric]["Avg"] = float(segments[5].strip());
+                    if singlecore:
+                        #    |     Runtime (RDTSC) [s]    |    6.5219    |
+                        value = float(segments[2].strip());
+                        result[metric]["Sum"] = value
+                        result[metric]["Min"] = value
+                        result[metric]["Max"] = value
+                        result[metric]["Avg"] = value
+                    else:
+                        #   |  Runtime (RDTSC) [s] STAT |   27.4632  |   1.1443  |   1.1443  |   1.1443  |
+                        result[metric]["Sum"] = float(segments[2].strip());
+                        result[metric]["Min"] = float(segments[3].strip());
+                        result[metric]["Max"] = float(segments[4].strip());
+                        result[metric]["Avg"] = float(segments[5].strip());
     except:
         print ("Error: Could not process file '%s'!\n" % (file_path))
         raise
@@ -262,12 +267,14 @@ def sort_table(filename):
     See: https://stackoverflow.com/a/17109098
     '''
     datafile    = open(filename, 'r')
+    header      = next(datafile).strip()
     reader      = csv.reader(datafile,delimiter='&')
     sorted_data = sorted(reader, key=lambda x: (int(x[0]),int(x[1]),int(x[2])))
     datafile.close() 
  
     with open(filename, 'w') as datafile:
         writer = csv.writer(datafile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(header.split('&'))
         writer.writerows(sorted_data)
 
 ########################################################################
@@ -282,7 +289,7 @@ and write them to a csv file with name
 
 \n\n
 Sample usage:\n
-python extractlikwidmetrics.py -path \'examples/151217_phi1_node/'
+python extractlikwidmetrics.py -path \'examples/151217_phi1_node/' -prefix "EulerFlow"
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
@@ -294,5 +301,5 @@ args     = parser.parse_args();
 root_dir = args.path
 prefix   = args.prefix
 
-extract_table(root_dir,prefix)
-sort_table(root_dir+"/"+prefix+".csv")
+extract_likwid_metrics(root_dir,prefix)
+sort_table(prefix+".csv")
