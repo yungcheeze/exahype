@@ -46,8 +46,8 @@ ifeq ($(BOUNDARYCONDITIONS),)
 endif
 
 ifeq ($(call tolower,$(GPROF)),on)
-	COMPILER_CFLAGS += -g 
-	COMPILER_LFLAGS += -g 
+	COMPILER_CFLAGS += -pg 
+	COMPILER_LFLAGS += -pg 
 endif
 # ************************************************
 #

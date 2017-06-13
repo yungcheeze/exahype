@@ -13,7 +13,7 @@ module load gcc
 module unload tbb
 module load tbb
 
-export GPROF=on
+export GPROF=off
 export MODE=Release
 export COMPILER=Intel
 export DISTRIBUTEDMEM=MPI
