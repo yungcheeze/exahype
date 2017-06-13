@@ -182,7 +182,7 @@ def extract_likwid_metrics(root_dir,prefix):
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
         # write header
-        header = ["nodes","tasks","cores","cc","mode"]
+        header = ["Nodes","Tasks (per Node)","Cores (per Task)","CC","Mode"]
         for metric in metrics:
             for column in columns:          
                     header.append(metric+"("+column+")")
