@@ -1106,8 +1106,8 @@ void exahype::solvers::LimitingADERDGSolver::determineSolverMinAndMax(SolverPatc
     }
 
     for (int i=0; i<DIMENSIONS_TIMES_TWO*numberOfObservables; ++i) {
-      assertion1(*(observablesMin+i)<std::numeric_limits<double>::max(),i);
-      assertion1(*(observablesMax+i)>-std::numeric_limits<double>::max(),i);
+      assertion2(*(observablesMin+i)<std::numeric_limits<double>::max(),i,solverPatch.toString());
+      assertion2(*(observablesMax+i)>-std::numeric_limits<double>::max(),i,solverPatch.toString());
     } // Dead code elimination will get rid of this loop
   }
 }
