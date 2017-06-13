@@ -11,7 +11,7 @@ exe1=ExaHyPE-Euler
 exe2=ExaHyPE-EulerFlow
 compiler=Intel
 
-for p in 9
+for p in 3 5 7 9
 do
   cd $toroot
   java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $appcasepath/benchmarks/EulerFlow-$io-p$p-regular-0-t1-c1.exahype

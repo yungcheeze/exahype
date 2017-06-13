@@ -17,39 +17,42 @@
 #   64 GB TruDDR4 memory
 #   the nodes are diskless
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
+
+order=3
+
 hMax=(0.05 0.01 0.005 0.001)
 times=(0.01 0.002 0.0005 0.0001) # p=3
 #times=(0.003)                    # p=5
-times=(0.001)                    # p=9
+#times=(0.001)                    # p=9
 
 i=0
 mesh=regular-$i
 h=${hMax[i]}
 t=${times[i]}
 
-order=9
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 
 for io in 'output' 'no-output'
 do
-  # Create script
-  script=coolmuc2.slurm-script
-  newScript=coolmuc2-$io-p$order-n1-t1.slurm-script
-  cp $script $newScript
- 
-  sed -i 's,EulerFlow-no-output,EulerFlow-'$io',g' $newScript
-
-  sed -i 's,p3,p'$order',g' $newScript
-  sed -i 's,regular-0,'$mesh',g' $newScript
-
-  sed -i 's,script=coolmuc2.slurm-script,script='$newScript',g' $newScript
-  
-  # Create spec files
-  for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
+  #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
+  for coresPerTask in 1 2 4 14 28 56
   do
+    # Create script
+    script=coolmuc2.slurm-script
+    newScript=coolmuc2-$io-p$order-n1-t1-c$coresPerTask.slurm-script
+    cp $script $newScript
+   
+    sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',g' $newScript
+    sed -i 's,EulerFlow-no-output,EulerFlow-'$io',g' $newScript
+
+    sed -i 's,p3,p'$order',g' $newScript
+    sed -i 's,regular-0,'$mesh',g' $newScript
+
+    sed -i 's,script=coolmuc2.slurm-script,script='$newScript',g' $newScript  
+    # Create spec files
     spec=EulerFlow-$io.exahype
     prefix=EulerFlow-$io-p$order-$mesh-t1-c$coresPerTask
     newSpec=$prefix'.exahype'
