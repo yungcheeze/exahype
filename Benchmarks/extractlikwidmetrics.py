@@ -178,7 +178,7 @@ def extract_likwid_metrics(root_dir,prefix):
     columns    = [ "Sum","Min","Max","Avg" ]
     
     # collect filenames
-    with open(prefix+'.csv', 'w') as csvfile:
+    with open(prefix+'.likwid.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
         # write header
@@ -190,7 +190,7 @@ def extract_likwid_metrics(root_dir,prefix):
 
         # write content
         for filename in os.listdir(root_dir):
-            if filename.endswith(".out") and filename.startswith(prefix):
+            if filename.endswith(".out.likwid") and filename.startswith(prefix):
                 print(filename)
                 match = re.search(prefix+'-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)\.out',filename)
                 nodes = match.group(1)
