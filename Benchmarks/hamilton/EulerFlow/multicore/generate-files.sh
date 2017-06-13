@@ -17,52 +17,72 @@
 #   64 GB TruDDR4 memory
 #   the nodes are diskless
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
-hMax=(0.05 0.01 0.005 0.001)
-times=(0.01 0.002 0.0005 0.0001) # p=3
-#times=(0.003)                    # p=5
-times=(0.001)                    # p=9
+project=EulerFlow
 
-i=0
-mesh=regular-$i
-h=${hMax[i]}
-t=${times[i]}
-
-order=9
-
+fuseAlgorithmicSteps=off
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
+hMax=(0.05 0.01 0.005 0.001)
+T=(0.01 0.002 0.0005 0.0001) # p=3
+io=no-output # or output
 
-for io in 'output' 'no-output'
+# Derived options
+prefix=$project-$io
+if [ "$fuseAlgorithmicSteps" == "on" ]; then
+ prefix+="-fused"
+else
+ prefix+="-nonfused"
+fi
+
+for order in 3 5 7 9
 do
+  if (( order == 5 )); then
+    T=(0.003)                    # p=5
+  fi
+  if (( order == 7 )); then
+    T=(0.001)                    # p=9
+  fi
+  if (( order == 9 )); then
+    T=(0.0003)                   # p=9
+  fi
+
+  i=0
+  mesh=regular-$i
+  h=${hMax[i]}
+  t=${T[i]}
+
   # Create script
   script=hamilton.slurm-script
-  newScript=hamilton-$io-p$order-n1-t1.slurm-script
+  newScript=hamilton-$prefix-p$order-n1-t1.slurm-script
   cp $script $newScript
  
-  sed -i 's,EulerFlow-no-output,EulerFlow-'$io',g' $newScript
+  sed -i 's,'$project'-no-output,'$prefix',g' $newScript
 
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
 
-  sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript
+  sed -i 's,script=benchmarks/multicore/hamilton.slurm-script,script=benchmarks/multicore/'$newScript',g' $newScript
   
   # Create spec files
-  for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
+  for coresPerTask in 1 12 24
+  #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
     spec=EulerFlow-$io.exahype
-    prefix=EulerFlow-$io-p$order-$mesh-t1-c$coresPerTask
-    newSpec=$prefix'.exahype'
+    filename=$prefix-p$order-$mesh-t1-c$coresPerTask
+    newSpec=$filename'.exahype'
+
     cp $spec $newSpec
 
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
-    sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,g' $newSpec 
-    sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
+    sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 
+    sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',' $newSpec
    
-    sed -i -r 's,skip-reduction-in-batched-time-steps(\s*)=(\s*)(\w+),skip-reduction-in-batched-time-steps\1=\2'$skipReductionInBatchedTimeSteps',g' $newSpec
-    sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',g' $newSpec
-   
-    sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',g' $newSpec
-    sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
+    sed -i -r 's,skip-reduction-in-batched-time-steps(\s*)=(\s*)(\w+),skip-reduction-in-batched-time-steps\1=\2'$skipReductionInBatchedTimeSteps',' $newSpec
+    sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',' $newSpec
+    sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(\w+),fuse-algorithmic-steps\1=\2'$fuseAlgorithmicSteps',' $newSpec
+  
+    sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',' $newSpec
+    sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',' $newSpec
   done
 done
