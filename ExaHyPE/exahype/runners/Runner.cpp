@@ -534,11 +534,10 @@ int exahype::runners::Runner::run() {
     initDataCompression();
     initHPCEnvironment();
 
-    exahype::mappings::MeshRefinement::Mode=
-         exahype::mappings::MeshRefinement::RefinementMode::Initial; // TODO(Dominic): Might be able to make this a bool now
+    exahype::mappings::MeshRefinement::IsInitialMeshRefinement=true;
     #ifdef Parallel
-    exahype::mappings::MeshRefinement::FirstIteration = false;
-    exahype::mappings::LimiterStatusSpreading::FirstIteration = false;
+    exahype::mappings::MeshRefinement::IsFirstIteration = false;
+    exahype::mappings::LimiterStatusSpreading::IsFirstIteration = false;
     #endif
 
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {

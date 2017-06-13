@@ -100,8 +100,8 @@ void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& s
   _localState=solverState;
 
   #ifdef Parallel
-  exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
-  exahype::mappings::MeshRefinement::FirstIteration = true;
+  exahype::mappings::LimiterStatusSpreading::IsFirstIteration = true;
+  exahype::mappings::MeshRefinement::IsFirstIteration = true;
   #endif
 
   #ifdef Parallel
@@ -163,6 +163,11 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     endpfor
     grainSize.parallelSectionHasTerminated();
   }
+}
+
+void exahype::mappings::FinaliseMeshRefinement::endIteration(
+    exahype::State& solverState) {
+  exahype::mappings::MeshRefinement::IsInitialMeshRefinement = false;
 }
 
 #ifdef Parallel
@@ -268,12 +273,6 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
 #endif
-
-/**
- * Nop
- */
-void exahype::mappings::FinaliseMeshRefinement::endIteration(
-    exahype::State& solverState) {}
 
 void exahype::mappings::FinaliseMeshRefinement::createHangingVertex(
     exahype::Vertex& fineGridVertex,

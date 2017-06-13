@@ -27,11 +27,10 @@
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
 #ifdef Parallel
-bool exahype::mappings::MeshRefinement::FirstIteration = true;
+bool exahype::mappings::MeshRefinement::IsFirstIteration = true;
 #endif
 
-exahype::mappings::MeshRefinement::RefinementMode
-exahype::mappings::MeshRefinement::Mode = exahype::mappings::MeshRefinement::RefinementMode::APriori;
+bool exahype::mappings::MeshRefinement::IsInitialMeshRefinement = false;
 
 tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::MeshRefinement");
 
@@ -143,7 +142,7 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
   }
 
   #ifdef Parallel
-  exahype::mappings::MeshRefinement::FirstIteration = false;
+  exahype::mappings::MeshRefinement::IsFirstIteration = false;
   #endif
 }
 
@@ -304,7 +303,7 @@ void exahype::mappings::MeshRefinement::enterCell(
               coarseGridVertices,
               coarseGridVerticesEnumerator,
               fineGridPositionOfCell,
-              MeshRefinement::Mode==RefinementMode::Initial,
+              IsInitialMeshRefinement,
               solverNumber);
 
       refineFineGridCell |=
@@ -316,7 +315,7 @@ void exahype::mappings::MeshRefinement::enterCell(
               coarseGridVertices,
               coarseGridVerticesEnumerator,
               fineGridPositionOfCell,
-              MeshRefinement::Mode==RefinementMode::Initial,
+              IsInitialMeshRefinement,
               solverNumber);
     }
 
@@ -429,7 +428,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
-  if (exahype::mappings::MeshRefinement::FirstIteration) {
+  if (exahype::mappings::MeshRefinement::IsFirstIteration) {
     return;
   }
   vertex.mergeOnlyWithNeighbourMetadata(
