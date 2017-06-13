@@ -45,7 +45,10 @@ ifeq ($(BOUNDARYCONDITIONS),)
 	BOUNDARYCONDITIONS=None
 endif
 
-
+if($(call tolower,$(GPROF)),on)
+	COMPILER_CFLAGS += -g 
+	COMPILER_LFLAGS += -g 
+endif
 # ************************************************
 #
 #Set compiler and linker flags for the different Debug/Release modes
@@ -56,7 +59,7 @@ endif
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS += 
+	COMPILER_CFLAGS +=
 	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),peanoprofile)
