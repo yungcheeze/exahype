@@ -12,6 +12,7 @@
 
 #include "exahype/amr/AdaptiveMeshRefinement.h"
 
+
 namespace exahype {
 namespace solvers {
 
@@ -522,6 +523,8 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
         _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
     if (
         solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()
+        &&
+        !tarch::la::equals(solverPatch.getCorrectorTimeStepSize(),0.0) // this excludes the initial grid setup
         &&
         solverPatch.getLimiterStatus()>0 &&
         solverPatch.getPreviousLimiterStatus()==0
