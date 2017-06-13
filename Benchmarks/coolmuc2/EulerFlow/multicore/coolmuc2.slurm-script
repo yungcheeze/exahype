@@ -2,7 +2,7 @@
 #SBATCH --job-name="ExaHyPE-EulerFlow"
 #SBATCH -o ExaHyPE-EulerFlow.%A.out
 #SBATCH -e ExaHyPE-EulerFlow.%A.err
-#SBATCH -t 01:00:00
+#SBATCH -t 01:59:00
 #SBATCH --exclusive
 #SBATCH --cluster=mpp2
 #SBATCH --nodes=1
@@ -16,13 +16,14 @@ source /etc/profile.d/modules.sh
 
 module load tbb
 
-module load likwid/4
+module load likwid/4.0
 
 nodes=1
 tasks=1
 tasksPerNode=1
 coresPerTask=1
 let procsPerNode=tasksPerNode*coresPerTask
+opt=gen
 
 compiler=Intel
 sharedMem=TBB
@@ -30,11 +31,13 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=EulerFlow-no-output-p9-regular-0
-out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+prefix=EulerFlow-no-output-p3-regular-0
+out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler-$opt.out
 
 script=coolmuc2.slurm-script
-spec=benchmarks/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+spec=benchmarks/$prefix-t$tasksPerNode-c$coresPerTask-$opt.exahype
+
+export OMP_NUM_THREADS=$coresPerTask
 
 # pipe some information into output file
 module list 2>$out
@@ -48,17 +51,19 @@ cat $spec >> $out
 # ./ExaHyPE-EulerFlow-p9-$sharedMem-$compiler $spec >> $out
 
 if (( $coresPerTask==1 )); then
-  likwid-perfctr -f -C 0 -g MEM      ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0 -g FLOPS_DP ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0 -g L2CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0 -g BRANCH   ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -f -C 0 -g MEM       ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0 -g FLOPS_AVX ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0 -g L2        ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0 -g L2CACHE   ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0 -g BRANCH    ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
   # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
 else
   let maxCore=coresPerTask-1
 
-  likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
-  likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g MEM       ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g FLOPS_AVX ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g L2        ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g L2CACHE   ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g BRANCH    ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler-$opt $spec >> $out
   # not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
 fi
