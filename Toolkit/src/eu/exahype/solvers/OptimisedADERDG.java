@@ -105,12 +105,15 @@ public class OptimisedADERDG implements Solver {
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
+    String abstractSolverConstructorSignatureExtension = "";
     String solverInitSignatureExtension        = "";
     if (_enableProfiler) {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
       solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
     }
     content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     
@@ -144,12 +147,16 @@ public class OptimisedADERDG implements Solver {
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
+    String abstractSolverConstructorSignatureExtension = "";
+    String abstractSolverConstructorArgumentExtension = "";
     String solverInitCallExtension             = "";    
     
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorArgumentExtension  += ", std::move(profiler)";
+      abstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
       
       if(_enableDeepProfiler) {
         content.put("DeepProfilerArg", ", _profiler.get()");
@@ -212,7 +219,8 @@ public class OptimisedADERDG implements Solver {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
       solverInitCallExtension = ", constants";
 	  }
-    
+    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
+    content.put("AbstractSolverConstructorArgumentExtension", abstractSolverConstructorArgumentExtension);
 	  content.put("SolverInitCallExtension",solverInitCallExtension);
 	  content.put("ProfilerInclude",profilerInclude);
 	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
