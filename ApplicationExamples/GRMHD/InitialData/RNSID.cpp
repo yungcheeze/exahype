@@ -3,7 +3,19 @@
 #include "InitialData/InitialData.h"
 #include "Fortran/PDE.h"
 
-#ifdef RNSID_AVAILABLE
+#ifndef RNSID_AVAILABLE
+
+#include <stdlib.h>
+#include <stdio.h>
+
+rnsid::rnsid() {
+        printf("Cannot call RNSID as not compiled with -DRNSID_AVAILABLE");
+        abort();
+}
+
+void rnsid::Interpolate(const double* x, double t, double* Q) {}
+
+#else /* RNSID_AVAILABLE */
 
 #include "rnsid/rnsid.h"
 
