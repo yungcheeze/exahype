@@ -2,7 +2,7 @@
 # Stream V. 5.10
 ## Prepare build on Supermuc ##
 
-module load intel/xe_2017.2
+#module load intel/xe_2017.2
 
 # Build
 echo "build gcc-noomp"
