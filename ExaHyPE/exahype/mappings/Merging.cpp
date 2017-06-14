@@ -180,8 +180,10 @@ void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
             _temporaryVariables._tempStateSizedVectors[solverNumber],
             _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
-        solver->mergeNeighboursMetadata(
-            cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
+          solver->mergeNeighboursMetadata(
+              cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+        }
       }
       #ifdef Debug // TODO(Dominic):
       _interiorFaceMerges++;
@@ -217,8 +219,9 @@ void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
                                       _temporaryVariables._tempFaceUnknowns[solverNumber],
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
-
-        solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex1,element1,pos1,pos2);
+        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
+          solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex1,element1,pos1,pos2);
+        }
 
         #ifdef Debug
         _boundaryFaceMerges++;
@@ -230,7 +233,9 @@ void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
-        solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex2,element2,pos2,pos1);
+        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
+          solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex2,element2,pos2,pos1);
+        }
 
         #ifdef Debug
         _boundaryFaceMerges++;
@@ -458,6 +463,15 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
             _temporaryVariables._tempStateSizedVectors[solverNumber],
             _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
             x,level);
+
+        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
+          solver->mergeWithNeighbourMetadata(
+              metadataPortion,
+              src, dest,
+              destCellDescriptionIndex,element);
+        }
+
+
       } else {
         logDebug(
             "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<

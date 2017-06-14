@@ -12,6 +12,8 @@
   // @TODO Please insert your code here.
 }
 
+{{Project}}::{{plotterName}}::~{{plotterName}}() {
+}
 
 void {{Project}}::{{plotterName}}::startPlotting( double time) {
   // @TODO Please insert your code here.

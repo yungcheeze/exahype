@@ -89,36 +89,7 @@ private:
 
 public:
 
-  enum class RefinementMode {
-    /**
-     * This is refinement based on the refinement criterion.
-     *
-     * A-priori means here that we do refine before the
-     * solution update is performed.
-     */
-    APriori,
-    /**
-     * This is refinement based on the limiter status.
-     * It does only apply for the LimitingADERDGSolver.
-     *
-     * A-posteriori means here that we might refine troubled cells
-     * (and their next two neighbours)
-     * after the solution update was performed.
-     */
-    APosteriori,
-
-    /**
-     * This is refinement based on the user's refinement criterion
-     * and the limiter's physical admissibility detection
-     * applied to the initial condition.
-     *
-     * It can be understood as a mix of A-priori and A-posteriori
-     * refinement.
-     */
-    Initial
-  };
-
-  static RefinementMode Mode;
+  static bool IsInitialMeshRefinement;
 
   #ifdef Parallel
   /**
@@ -126,7 +97,7 @@ public:
    * of MeshRefinement and then reset in
    * FinaliseMeshRefinement::beginIteration(...).
    */
-  static bool FirstIteration;
+  static bool IsFirstIteration;
   #endif
   /**
    * Switched off in serial mode where everything is done in the creational

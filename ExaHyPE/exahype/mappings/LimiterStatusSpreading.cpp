@@ -27,7 +27,7 @@
 #include "exahype/VertexOperations.h"
 
 #ifdef Parallel
-bool exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
+bool exahype::mappings::LimiterStatusSpreading::IsFirstIteration = true;
 #endif
 
 tarch::logging::Log exahype::mappings::LimiterStatusSpreading::_log("exahype::mappings::LimiterStatusSpreading");
@@ -154,7 +154,7 @@ void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& sol
   deleteSolverFlags(_solverFlags);
 
   #ifdef Parallel
-  exahype::mappings::LimiterStatusSpreading::FirstIteration = false;
+  exahype::mappings::LimiterStatusSpreading::IsFirstIteration = false;
   #endif
 }
 
@@ -266,7 +266,7 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
-  if (exahype::mappings::LimiterStatusSpreading::FirstIteration) {
+  if (exahype::mappings::LimiterStatusSpreading::IsFirstIteration) {
     return;
   }
   vertex.mergeOnlyWithNeighbourMetadata(

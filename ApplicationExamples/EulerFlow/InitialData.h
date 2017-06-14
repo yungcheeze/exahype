@@ -19,4 +19,6 @@ void MovingGauss(const double* const x, double* V, double t);
 
 void DiffusingGauss(const double* const x, double* Q, double /*t*/);
 
+void SmoothedSodShockTube(const double* const x, double* Q, double /*t*/);
+
 #endif /* __INITIAL_DATA_EULERFLOW__ */

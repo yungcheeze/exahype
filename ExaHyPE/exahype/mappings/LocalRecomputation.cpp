@@ -26,8 +26,6 @@
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "exahype/mappings/MeshRefinement.h"
-
 peano::CommunicationSpecification
 exahype::mappings::LocalRecomputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
@@ -131,9 +129,6 @@ void exahype::mappings::LocalRecomputation::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   _localState = solverState;
-
-  exahype::mappings::MeshRefinement::Mode=
-      exahype::mappings::MeshRefinement::RefinementMode::APriori;
 
   initialiseTemporaryVariables();
 

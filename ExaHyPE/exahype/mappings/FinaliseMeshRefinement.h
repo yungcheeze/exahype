@@ -76,6 +76,12 @@ class exahype::mappings::FinaliseMeshRefinement {
   void beginIteration(exahype::State& solverState);
 
   /**
+   * Sets the MeshRefinement::IsInitialMeshRefinement status to false.
+   * MeshRefinement::IsInitialMeshRefinement is set in Runner::run.
+   */
+  void endIteration(exahype::State& solverState);
+
+  /**
    * Call the solvers finaliseStateUpdates functions.
    * Furhter, compute the min and max if a solver is of type
    * LimitingADERDG and there is a patch allocated
@@ -354,11 +360,6 @@ class exahype::mappings::FinaliseMeshRefinement {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
-  void endIteration(exahype::State& solverState);
 
   /**
    * Nop

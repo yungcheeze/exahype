@@ -1543,6 +1543,7 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
       fineGridCellDescription.setFacewiseAugmentationStatus(MaximumAugmentationStatus); // implicit conversion
       fineGridCellDescription.setHelperStatus(0);
       fineGridCellDescription.setFacewiseHelperStatus(0); // implicit conversion
+      fineGridCellDescription.setIsAugmented(false); // since we might replace descendants with cells
       fineGridCellDescription.setNewlyCreated(true);
       ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
       fineGridCellDescription.setRefinementEvent(CellDescription::None);

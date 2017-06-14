@@ -68,7 +68,7 @@ public:
    * of LimiterStatusSpreading and then reset in
    * MeshRefinement::beginIteration(...) and Reinitialisaion::beginIteration().
    */
-  static bool FirstIteration;
+  static bool IsFirstIteration;
   #endif
   /**
    * Switched on.

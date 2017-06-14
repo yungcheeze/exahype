@@ -45,7 +45,10 @@ ifeq ($(BOUNDARYCONDITIONS),)
 	BOUNDARYCONDITIONS=None
 endif
 
-
+ifeq ($(call tolower,$(GPROF)),on)
+	COMPILER_CFLAGS += -pg 
+	COMPILER_LFLAGS += -pg 
+endif
 # ************************************************
 #
 #Set compiler and linker flags for the different Debug/Release modes
@@ -56,7 +59,7 @@ endif
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS += 
+	COMPILER_CFLAGS +=
 	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),peanoprofile)
@@ -192,7 +195,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	LINK_FORTRAN      += -lgfortran
 
 	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
-	COMPILER_LFLAGS   += 
+	COMPILER_LFLAGS   += -lm -lstdc++
 	
 	ifeq ($(call tolower,$(MODE)),debug)
 	  COMPILER_CFLAGS  += -O0 -ggdb
@@ -364,7 +367,9 @@ buildinfo:
 		"PROJECT_CFLAGS = $(PROJECT_CFLAGS)" \
 		"PROJECT_LFLAGS = $(PROJECT_LFLAGS)" \
 		> $(PROJECT_PATH)/buildinfo.h
-
+#	touch the file which loads the buildinfo in order to have the most recent ones
+	touch $(EXAHYPE_PATH)/exahype/Version.cpp
+	
 		
 cfiles.mk:
 	touch cfiles.mk

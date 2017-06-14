@@ -36,6 +36,27 @@ void Euler::sodShockTube(const double* const x,double* Q) {
   }
 }
 
+void Euler::smoothedSodShockTube(const double* const x, double* Q) {
+  // Velocities are set to zero.
+  Q[1] = 0.0;
+  Q[2] = 0.0;
+  Q[3] = 0.0;
+  // (Smoothed out) jump in density and pressure.
+  //
+  // Original distribution:
+  // if(x[0] < 0.5) {
+  //    Q[0] = 1.0;
+  //    Q[4] = 1.0;
+  //  } else {
+  //    Q[0] = 0.125;
+  //    Q[4] = 0.1;
+  //  }
+
+  const double steepness = 20;
+
+  Q[0] = 0.1   + 0.5 * ( 1.0 + std::tanh(steepness*(x[0]-0.5)) ) * (1.0-0.1);
+  Q[4] = 0.125 + 0.5 * ( 1.0 + std::tanh(steepness*(x[0]-0.5)) ) * (1.0-0.125);
+}
 
 void Euler::explosionProblem(const double* const x,double* Q) {
   // Velocities are set to zero (initially). 
@@ -87,6 +108,27 @@ void Euler::sodShockTube(const double* const x,double* Q) {
   }
 }
 
+void Euler::smoothedSodShockTube(const double* const x, double* Q) {
+  // Velocities are set to zero.
+  Q[1] = 0.0;
+  Q[2] = 0.0;
+  Q[3] = 0.0;
+  // (Smoothed out) jump in density and pressure.
+  //
+  // Original distribution:
+  // if(x[0] < 0.5) {
+  //    Q[0] = 1.0;
+  //    Q[4] = 1.0;
+  //  } else {
+  //    Q[0] = 0.125;
+  //    Q[4] = 0.1;
+  //  }
+
+  const double steepness = 20;
+
+  Q[0] = 0.1   + 0.5 * ( 1.0 + std::tanh(steepness*(x[0]-0.5)) ) * (1.0-0.1);
+  Q[4] = 0.125 + 0.5 * ( 1.0 + std::tanh(steepness*(x[0]-0.5)) ) * (1.0-0.125);
+}
 
 void Euler::explosionProblem(const double* const x,double* Q) {
   // Density and velocities are set to zero (initially).
@@ -106,6 +148,7 @@ void Euler::explosionProblem(const double* const x,double* Q) {
 
 void Euler::initialData(const double* const x,double* Q) {
   //rarefactionWave(x,Q);
-  sodShockTube(x,Q);
+  //sodShockTube(x,Q);
+  smoothedSodShockTube(x,Q);
   //explosionProblem(x,Q);
 }

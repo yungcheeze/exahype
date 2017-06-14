@@ -192,7 +192,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionString("Kernel["+_kernelNumber+"].registration", "AderdgSolver");
       writeVersionString("Kernel["+_kernelNumber+"].type", _projectName+"::"+_solverName);
       writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
-      writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
+      writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants()); // != null);
+      writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
+      writeVersionString("Kernel["+_kernelNumber+"].kernel", node.getKernel().getText());
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
     } catch (Exception exc) {
@@ -238,6 +240,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionString("Kernel["+_kernelNumber+"].type", _projectName+"::"+_solverName);
       writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants());
+      writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
+      writeVersionString("Kernel["+_kernelNumber+"].kernel", node.getKernel().getText());
       writeVersionString("Kernel["+_kernelNumber+"].patchSize", patchSize);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
@@ -276,6 +280,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionCode  ("Kernel["+_kernelNumber+"].abstract[FV]", _projectName+"::Abstract"+solverNameFV+"::constantsToString(ostream);");
       writeVersionCode  ("Kernel["+_kernelNumber+"].abstract[ADERDG]", _projectName+"::Abstract"+solverNameADERDG+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
+      writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelLimiter", node.getKernelLimiter().getText());
       
       // ADER-DG
       _methodBodyWriter.write("  {\n");
@@ -340,7 +346,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write(FileSearch.PPinclude(plotterName, _directoryAndPathChecker.outputDirectory.getAbsolutePath()));
       
-      writeVersionString("Kernel["+(_kernelNumber-1)+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
+      writeVersionString("Kernel["+(_kernelNumber-1)+"].Plotter["+_plotterNumber+"]",
+         _projectName + "::" + plotterName + "(variables=" + node.getVariables().getText() + ")");
 
       if (plotterType.equals("user::defined")) {
         _methodBodyWriter.write(
