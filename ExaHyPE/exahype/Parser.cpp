@@ -979,10 +979,12 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
   bool recompile = false;
   bool runToolkitAgain = false;
   if (solver->getType() != getType(solverNumber)) {
-    logError("checkIfSolverIsConsistent",
+    logError("checkSolverConsistency",
              "'" << getIdentifier(solverNumber)
-                 << "': Solver type in specification file"
-                 << "differs from implementation solver type.");
+                 << "': Solver type in specification file "
+		 << "('" << exahype::solvers::Solver::toString(getType(solverNumber)) << "') "
+                 << "differs from solver type used in implementation "
+		 << "('" << exahype::solvers::Solver::toString(solver->getType()) << "').");
     recompile = true;
     _interpretationErrorOccured = true;
   }
@@ -1035,6 +1037,9 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
   }
 
   // @todo We should add checks for FV as well
+  
+  // (Sven:) somehow for me the following lines are never printed. I don't
+  // know why.
 
   if (runToolkitAgain) {
     logError("checkSolverConsistency",
