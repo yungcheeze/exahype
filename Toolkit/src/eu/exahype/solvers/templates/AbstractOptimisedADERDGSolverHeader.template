@@ -49,7 +49,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     class VariableNames;
     {{NamingSchemes}}
     
-    {{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    {{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}});
 
     /**
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
