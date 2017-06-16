@@ -1,5 +1,12 @@
 ! Con2Prim helper routines, a file by Olindo Zanotti.
 
+! Note that we have these routines now alternatively also as C++
+! available.
+! Using this multiline comment you can choose which implementation
+! you want to use:
+
+#if 0
+
 RECURSIVE FUNCTION RTSAFE_C2P_RMHD1(X1,X2,XACC,gam,d,e,s2,b2,sb2,w,FAILED)
   IMPLICIT NONE
   INTEGER, PARAMETER    :: MAXIT=200
@@ -114,55 +121,4 @@ PURE SUBROUTINE FUNC_C2P_RMHD1(x,f,df,gam,d,e,s2,b2,sb2,w)
   
 END SUBROUTINE FUNC_C2P_RMHD1
 
-
-RECURSIVE SUBROUTINE MatrixInverse3x3(M,iM,det) 
-    !---------------
-    ! compute the determinant det of the NxN-matrix M
-    !---------------
-    IMPLICIT NONE
-    ! input variables 
-    REAL, INTENT(IN)   :: M(3,3)
-    ! output variables
-    REAL, INTENT(OUT)    :: iM(3,3)
-    REAL, INTENT(OUT)    :: det
-    ! output variables
-    REAL    :: Id(3,3)
-    INTEGER :: i,j
-    ! 
-    det = M(1,1)*M(2,2)*M(3,3)-M(1,1)*M(2,3)*M(3,2)-M(2,1)*M(1,2)*M(3,3)+M(2,1)*M(1,3)*M(3,2)+M(3,1)*M(1,2)*M(2,3)-M(3,1)*M(1,3)*M(2,2)
-    IF(det*det.LT.1e-20) THEN
-        print *, 'FATAL ERROR: det = 0'
-        CALL EXAHYPE_ABORT
-    ENDIF
-    !
-    iM(1,1) =M(2,2)*M(3,3)-M(2,3)*M(3,2)
-    iM(1,2) =M(1,3)*M(3,2)-M(1,2)*M(3,3)
-    iM(1,3) =M(1,2)*M(2,3)-M(1,3)*M(2,2)
-    iM(2,1) =M(2,3)*M(3,1)-M(2,1)*M(3,3)
-    iM(2,2) =M(1,1)*M(3,3)-M(1,3)*M(3,1)
-    iM(2,3) =M(1,3)*M(2,1)-M(1,1)*M(2,3)
-    iM(3,1) =M(2,1)*M(3,2)-M(2,2)*M(3,1)
-    iM(3,2) =M(1,2)*M(3,1)-M(1,1)*M(3,2)
-    iM(3,3) =M(1,1)*M(2,2)-M(1,2)*M(2,1)
-    iM = iM/det
-    !
-    Id = MATMUL(M,iM)
-    DO i=1,3
-        DO j=1,3
-            IF(i.eq.j) THEN
-                IF((Id(i,j)-1.)**2..GT.1e-18) THEN
-                    print *, 'FATAL ERROR 2: det = 0'
-                    CALL EXAHYPE_ABORT
-                ENDIF
-            ELSE
-                IF((Id(i,j)**2).GT.1e-18) THEN
-                    print *, 'FATAL ERROR 3: det = 0'
-                    CALL EXAHYPE_ABORT
-                ENDIF
-            ENDIF
-        ENDDO
-    ENDDO
-    !
-    CONTINUE
-    !
-END SUBROUTINE MatrixInverse3x3
+#endif

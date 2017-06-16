@@ -216,3 +216,56 @@ RECURSIVE SUBROUTINE PDECons2Prim(V,Q,iErr)
   V(1:19) = (/ rho, vf_cov(1:3), p, BV(1:3), psi , lapse, shift(1:3), gammaij(1:6)/)
   !
 END SUBROUTINE PDECons2Prim
+
+! Basically a helper...
+RECURSIVE SUBROUTINE MatrixInverse3x3(M,iM,det) 
+    !---------------
+    ! compute the determinant det of the NxN-matrix M with N=3.
+    !---------------
+    IMPLICIT NONE
+    ! input variables 
+    REAL, INTENT(IN)   :: M(3,3)
+    ! output variables
+    REAL, INTENT(OUT)    :: iM(3,3)
+    REAL, INTENT(OUT)    :: det
+    ! output variables
+    REAL    :: Id(3,3)
+    INTEGER :: i,j
+    ! 
+    det = M(1,1)*M(2,2)*M(3,3)-M(1,1)*M(2,3)*M(3,2)-M(2,1)*M(1,2)*M(3,3)+M(2,1)*M(1,3)*M(3,2)+M(3,1)*M(1,2)*M(2,3)-M(3,1)*M(1,3)*M(2,2)
+    IF(det*det.LT.1e-20) THEN
+        print *, 'FATAL ERROR: det = 0'
+        CALL EXAHYPE_ABORT
+    ENDIF
+    !
+    iM(1,1) =M(2,2)*M(3,3)-M(2,3)*M(3,2)
+    iM(1,2) =M(1,3)*M(3,2)-M(1,2)*M(3,3)
+    iM(1,3) =M(1,2)*M(2,3)-M(1,3)*M(2,2)
+    iM(2,1) =M(2,3)*M(3,1)-M(2,1)*M(3,3)
+    iM(2,2) =M(1,1)*M(3,3)-M(1,3)*M(3,1)
+    iM(2,3) =M(1,3)*M(2,1)-M(1,1)*M(2,3)
+    iM(3,1) =M(2,1)*M(3,2)-M(2,2)*M(3,1)
+    iM(3,2) =M(1,2)*M(3,1)-M(1,1)*M(3,2)
+    iM(3,3) =M(1,1)*M(2,2)-M(1,2)*M(2,1)
+    iM = iM/det
+    !
+    Id = MATMUL(M,iM)
+    DO i=1,3
+        DO j=1,3
+            IF(i.eq.j) THEN
+                IF((Id(i,j)-1.)**2..GT.1e-18) THEN
+                    print *, 'FATAL ERROR 2: det = 0'
+                    CALL EXAHYPE_ABORT
+                ENDIF
+            ELSE
+                IF((Id(i,j)**2).GT.1e-18) THEN
+                    print *, 'FATAL ERROR 3: det = 0'
+                    CALL EXAHYPE_ABORT
+                ENDIF
+            ENDIF
+        ENDDO
+    ENDDO
+    !
+    CONTINUE
+    !
+END SUBROUTINE MatrixInverse3x3
