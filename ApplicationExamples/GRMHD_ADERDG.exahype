@@ -29,7 +29,7 @@ exahype-project GRMHD
     dimension const                = 3
     width                          = 1.0, 1.0, 1.0
     offset                         = 0.0, 0.0, 0.0
-    end-time                       = 0.000000001
+    end-time                       = 1000.000000001
   end computational-domain
   
   shared-memory
@@ -59,7 +59,7 @@ exahype-project GRMHD
     /* gamma is actually parts of a matrix... */
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     order const                    = 3
-    maximum-mesh-size              = 0.33339
+    maximum-mesh-size              = 0.333339
     maximum-mesh-depth             = 0
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
@@ -93,6 +93,13 @@ exahype-project GRMHD
       time = 0.0
       repeat = 0.000666667  /*0.129329*/
       output = ./global-sphere-integrals
+    end plot
+
+    plot vtk::Cartesian::cells::ascii IntegralsWriter
+      variables const = 0
+      time = 0.0
+      repeat = 0.000001
+      output = ./output/global-integrals
     end plot
 
 
