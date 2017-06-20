@@ -30,7 +30,10 @@ void kernels::aderdg::optimised::volumeIntegral(
 
 #ifdef __INTEL_COMPILER
   __assume_aligned(lFhi, ALIGNMENT);
+  __assume_aligned(Kxi_T, ALIGNMENT);
   __assume_aligned(weights3, ALIGNMENT);
+  __assume_aligned(weights2, ALIGNMENT);
+  __assume_aligned(lduh, ALIGNMENT); //lduh should be aligned, see Solver.h
 {% if useSourceOrNCP %}
   __assume_aligned(lShi, ALIGNMENT);
 {% endif %}
@@ -41,7 +44,7 @@ void kernels::aderdg::optimised::volumeIntegral(
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
 {% for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
 {% for i in i_seq%}
-  #pragma simd
+  #pragma vector aligned
   for(int it=0;it<{{nDof*nDofPad}};it++) 
     s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
