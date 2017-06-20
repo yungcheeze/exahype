@@ -53,8 +53,14 @@ void kernels::aderdg::optimised::riemannSolver(
   {% endfor %}
   
   double lambdaL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+#ifdef USE_IPO
+  #pragma forceinline recursive
+#endif
   solver.{{solverName}}::eigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);
   double lambdaR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+#ifdef USE_IPO
+  #pragma forceinline recursive
+#endif
   solver.{{solverName}}::eigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);
   
   double smax = 0.;
@@ -90,6 +96,9 @@ void kernels::aderdg::optimised::riemannSolver(
        Qavg[n] = 0.5 * (lQbndL[n*{{bndBlockSize}}+ij] + lQbndR[n*{{bndBlockSize}}+ij]);
        gradQ[n+{{nVar}}*normalNonZero] = lQbndR[n*{{bndBlockSize}}+ij] - lQbndL[n*{{bndBlockSize}}+ij];
     }
+#ifdef USE_IPO
+    #pragma forceinline recursive
+#endif
     solver.{{solverName}}::nonConservativeProduct(Qavg, gradQ, ncp);
     for(int n=0; n < {{nVar}}; n++) {
       lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[n];

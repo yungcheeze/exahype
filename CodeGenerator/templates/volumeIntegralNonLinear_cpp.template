@@ -18,7 +18,8 @@
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
-#include "kernels/aderdg/optimised/CpphGemms.h"
+
+#include "kernels/aderdg/optimised/asm_volumeIntegral.c"
 
 void kernels::aderdg::optimised::volumeIntegral( 
   double* restrict lduh, 
@@ -48,9 +49,12 @@ void kernels::aderdg::optimised::volumeIntegral(
   for(int it=0;it<{{nDof*nDofPad}};it++) 
     s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
+  #pragma forceinline
   {{gemm_x}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
+  #pragma forceinline
   {{gemm_y}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
 {% if nDim == 3 %} 
+  #pragma forceinline
   {{gemm_z}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {% endif %}  
 {% endfor%}

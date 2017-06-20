@@ -57,6 +57,9 @@ void kernels::aderdg::optimised::boundaryConditions(
 {% for iVar in iVar_range_0_nVar %}
     q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+ii];
 {% endfor %}
+#ifdef USE_IPO
+    #pragma forceinline recursive
+#endif
     solver.{{solverName}}::boundaryValues(x,t,dt,faceIndex,normalNonZero,
                           &f_in[0],&q_in[0],
                           &f_out[0],&q_out[0]);
@@ -79,6 +82,9 @@ void kernels::aderdg::optimised::boundaryConditions(
 {% for iVar in iVar_range_0_nVar %}
     q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+jj*{{nDof}}+ii];
 {% endfor %}
+#ifdef USE_IPO
+    #pragma forceinline recursive
+#endif
     solver.{{solverName}}::boundaryValues(x,t,dt,faceIndex,normalNonZero,
                             &f_in[0],&q_in[0],
                             &f_out[0],&q_out[0]);

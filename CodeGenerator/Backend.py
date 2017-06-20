@@ -43,7 +43,7 @@ import AdjustSolutionGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
-import CpphGemmsGenerator
+#import CpphGemmsGenerator #legacy, unused
 import ConfigurationParametersGenerator
 import BoundaryConditionsGenerator
 import ConverterGenerator
@@ -166,8 +166,9 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
-    cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
-    cpphGemmsGenerator.generateCode()
+    # no ccph anymore => not needed anymore. Legacy TODO JMG clean later
+    #cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
+    #cpphGemmsGenerator.generateCode()
     configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config))
     configurationParametersGenerator.generateCode()
     boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config))

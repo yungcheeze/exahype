@@ -33,6 +33,9 @@ double kernels::aderdg::optimised::stableTimeStepSize(
   for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) { //xyz
     double denominator = 0.0;
     for (int d = 0; d < {{nDim}}; d++) {
+#ifdef USE_IPO
+      #pragma forceinline recursive
+#endif
       solver.{{solverName}}::eigenvalues(&luh[{{nVar}}*ijk], d, lambda);
       
       double maxEigenvalue = 0.0;

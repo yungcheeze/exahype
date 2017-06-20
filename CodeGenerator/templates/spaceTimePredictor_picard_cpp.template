@@ -17,7 +17,8 @@
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
-#include "kernels/aderdg/optimised/CpphGemms.h"
+
+#include "kernels/aderdg/optimised/asm_picard.c"
 
 #include "{{solverHeader}}"
 
@@ -131,6 +132,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if useDeepProfiler %}
         profiler->start("spaceTimePredictor_PDEsource");
 {% endif %}
+#ifdef USE_IPO
+        #pragma forceinline recursive
+#endif
         solver.{{solverName}}::algebraicSource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
 {% if useDeepProfiler %}
         profiler->stop("spaceTimePredictor_PDEsource");
@@ -174,6 +178,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+          #pragma forceinline
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
 {% if useNCP %}
           /* 
@@ -187,6 +192,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             }
           } 
           */
+          #pragma forceinline
           {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
 {% endif %}          
         }
@@ -215,6 +221,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+          #pragma forceinline
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
 {% if useNCP %}
           /*
@@ -228,6 +235,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             }
           }
           */
+          #pragma forceinline
           {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
 {% endif %}
         }
@@ -257,6 +265,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+          #pragma forceinline
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
 {% if useNCP %}
           /*
@@ -270,6 +279,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             }
           }
           */
+          #pragma forceinline
           {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
 {% endif %}
         }
@@ -292,6 +302,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         profiler->stop("spaceTimePredictor");
         profiler->start("spaceTimePredictor_PDEncp");
 {% endif %}
+#ifdef USE_IPO
+        #pragma forceinline recursive
+#endif
         solver.{{solverName}}::nonConservativeProduct(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
 {% if useDeepProfiler %}
         profiler->stop("spaceTimePredictor_PDEncp");
@@ -338,6 +351,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = iweight * iK1[it];
           }
+          #pragma forceinline
           {{gemm_lqh}}(&rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))], &s_m[0], &lQi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof}}*i))]);
         }
       }
