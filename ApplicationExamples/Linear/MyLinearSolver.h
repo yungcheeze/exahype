@@ -33,7 +33,7 @@ class Linear::MyLinearSolver: public Linear::AbstractMyLinearSolver {
      */
     static tarch::logging::Log _log;
   public:
-    MyLinearSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    MyLinearSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.
@@ -132,9 +132,10 @@ class Linear::MyLinearSolver: public Linear::AbstractMyLinearSolver {
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
     virtual bool useCoefficientMatrix() const {return true;}
     virtual bool usePointSource()            const {return false;}
+    
     virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
 
-    void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
+    void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) override;
 
     void riemannSolver_Nodal(double v_p,double v_m, double sigma_p, double sigma_m, double z_p , double z_m, double& v_hat_p , double& v_hat_m, double& sigma_hat_p, double& sigma_hat_m);
 

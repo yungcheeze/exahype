@@ -32,7 +32,7 @@ void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const dou
 
   Variables vars(Q);
 
-  vars.p() = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
+  vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
   //  vars.p()=0;
   vars.v(0,0);
 }
@@ -158,7 +158,7 @@ void Linear::MyLinearSolver::coefficientMatrix(const double* const Q,const int d
 }
 
 
-void Linear::MyLinearSolver::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex){
+void Linear::MyLinearSolver::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace){
 
   constexpr int numberOfVariables  = MyLinearSolver::NumberOfVariables;
   constexpr int numberOfVariables2 = numberOfVariables*numberOfVariables;
