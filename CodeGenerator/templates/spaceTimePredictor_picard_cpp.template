@@ -44,6 +44,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
   __assume_aligned(iK1, ALIGNMENT);
+  __assume_aligned(weights3, ALIGNMENT);
   __assume_aligned(luh, ALIGNMENT); //luh should be aligned, see Solver.h
 {% if useSourceOrNCP %}
   __assume_aligned(lSi, ALIGNMENT);
@@ -54,7 +55,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
  
 #endif
-  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
+
+  // 0. Allocate local variable
+  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT))); //for the gemms with alpha*Kxi or alpha*iK1
+  const double dtBydx = inverseDx[0] * dt; //Assume dx[0] == dx[1] == dx[2]
+  int ijk; //helper counter
   
 {% if useNCP %}
   double dudxT_by_dx[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
@@ -67,12 +72,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   #pragma simd
   for(int it=0;it<{{nDof*nDofPad}};it++) {
     dudxT_by_dx[it] = inverseDx[0] * dudx_T[it];
-  }
-    
+  }    
 {% endif %}
 
   // 1. Trivial initial guess
-  for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+  for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
     for (int l = 0; l < {{nDof}}; l++) {
       std::copy(&luh[{{nVar}}*ijk], &luh[{{nVar}}*ijk]+{{nVar}}, &lQi[{{nVarPad}}*(l+{{nDof}}*ijk)]);
     }
@@ -97,7 +101,6 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 */
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};
-  int ijk;
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
@@ -153,9 +156,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       // Copy rhs0 -> rhs for slice at i
       //std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]); //rhs is computed on the fly, TODO JMG clean legacy
       for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+        const double weight = weights3[ijk] * F0[i];
         #pragma simd
         for (int n = 0; n < {{nVar}}; n++) {
-          rhs[n+{{nVarPad}}*(ijk+{{nDof*nDof*nDof3D}}*i)] = weights3[ijk] * F0[i] * luh[n+{{nVar}}*ijk];
+          rhs[n+{{nVarPad}}*(ijk+{{nDof*nDof*nDof3D}}*i)] = weight * luh[n+{{nVar}}*ijk];
         }
       }
       
@@ -170,7 +174,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dt * inverseDx[0];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
@@ -214,7 +218,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dt * inverseDx[1];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
@@ -259,7 +263,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dt * inverseDx[2];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
