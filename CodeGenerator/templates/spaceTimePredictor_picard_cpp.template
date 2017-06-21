@@ -95,6 +95,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};
+  int ijk;
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
@@ -154,12 +155,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
       
 
-      // Compute the "derivatives" (contributions of the stiffness matrix)
+      // Compute the "derivatives" (contributions of the stiffness matrix)      
       // x direction (independent from the y and z derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt * inverseDx[0];
+          const double updateSize = weights3[ijk] * dt * inverseDx[0];
 
           // Matrix operation
           /*
@@ -194,15 +195,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           */
           #pragma forceinline
           {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
-{% endif %}          
+{% endif %}
+          ijk++;       
         }
       }
 
       // y direction (independent from the x and z derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt * inverseDx[1];
+          const double updateSize = weights3[ijk] * dt * inverseDx[1];
 
           // Matrix operation
           /*
@@ -238,15 +240,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
 {% endif %}
+          ijk++;
         }
       }
        
 {% if nDim==3 %}
       // z direction (independent from the x and y derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] *  weights1[j] * weights1[k];
-          const double updateSize = weight * dt * inverseDx[2];
+          const double updateSize = weights3[ijk] * dt * inverseDx[2];
 
           // Matrix operation
           /*
@@ -282,6 +285,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
 {% endif %}
+          ijk++;
         }
       }
 {% endif %}
@@ -328,11 +332,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
     std::memset(lQi, 0, {{(nDof**nDim) * nDof * nVarPad}} * sizeof(double));
+    ijk=0;
     for (int i = 0; i < {{nDof3D}}; i++) {
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = {{'weights1[i] *' if nDim == 3 else ''}} weights1[j] *  weights1[k];
-          const double iweight = 1.0 / weight;
+          const double iweight = 1.0 / weights3[ijk];
 
           // Matrix operation
           /*
@@ -352,7 +356,8 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = iweight * iK1[it];
           }
           #pragma forceinline
-          {{gemm_lqh}}(&rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))], &s_m[0], &lQi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof}}*i))]);
+          {{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &lQi[{{nVarPad*nDof}}*ijk]);
+          ijk++;
         }
       }
     }
