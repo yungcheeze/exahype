@@ -111,46 +111,42 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
 
   if (useFlux) {
     idx3 idx(basisSize, basisSize, numberOfVariables);
-    idx4 idx_lFix(basisSize,basisSize,basisSize,numberOfVariables);
+    idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
     
     for (int i = 0; i < basisSize; i++) { // loop over time unknowns
       // x-direction
-      const int x_offset = 0 * basisSize3 * numberOfVariables;
       for (int j = 0; j < basisSize; j++) {
         const double weight =
             kernels::gaussLegendreWeights[order][i] *
             kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight / dx[0];
 
-        // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
-              lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
-                  lFi[x_offset + idx_lFix(i, j, m, l)] * updateSize;
+              lduh[idx(j, k, l)] += 
+                  kernels::Kxi[order][k][m] *
+                  lFi[idx_lFi(i, j, m, 0, l)] * updateSize;
             }
           }
         }
       }
 
       // y-direction
-      idx3 idx(basisSize, basisSize, numberOfVariables);
-      idx4 idx_lFiy(basisSize,basisSize,basisSize,numberOfVariables);
-      const int y_offset = 1 * basisSize3 * numberOfVariables;
-      for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
         const double weight =
             kernels::gaussLegendreWeights[order][i] *
-            kernels::gaussLegendreWeights[order][j];
+            kernels::gaussLegendreWeights[order][k];
         const double updateSize = weight / dx[1];
 
-        // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
-        for (int k = 0; k < basisSize; k++) {
+        for (int j = 0; j < basisSize; j++) {
           for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
-              lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
-                  lFi[y_offset + idx_lFiy(i, j, m, l)] * updateSize;
+              lduh[idx(j, k, l)] += 
+                  kernels::Kxi[order][j][m] * 
+                  lFi[idx_lFi(i, m, k, 1, l)] * updateSize;
             }
           }
         }
@@ -161,10 +157,9 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
   // source
   if (useSourceOrNCP) {
     idx3 idx(basisSize, basisSize, numberOfVariables);
-    idx4 idx_lS(basisSize,basisSize,basisSize,numberOfVariables);
+    idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
     
     for (int i = 0; i < basisSize; i++) { // loop over time unknowns
-      const int s_offset = 2 * basisSize3 * numberOfVariables;
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           const double weight =
@@ -173,7 +168,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
               kernels::gaussLegendreWeights[order][k];
 
           for (int l = 0; l < numberOfVariables; l++) {
-            lduh[idx(j, k, l)] += weight * lFi[s_offset + idx_lS(i, j, k, l)];
+            lduh[idx(j, k, l)] += weight * lFi[idx_lFi(i, j, k, 2, l)];
           }
         }
       }
