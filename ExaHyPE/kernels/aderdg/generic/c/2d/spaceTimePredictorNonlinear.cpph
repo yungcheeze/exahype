@@ -648,7 +648,7 @@ void spaceTimePredictorNonlinear(
 //        &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
 //    );
 //
-//  aderExtrapolatorNonlinear<useFlux, numberOfVariables,numberOfParameters, basisSize>(
+//  aderExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
 //      lQhi,
 //      &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
 //      &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
