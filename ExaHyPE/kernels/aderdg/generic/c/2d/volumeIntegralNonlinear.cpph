@@ -95,7 +95,6 @@ namespace c {
 //  }
 //}
 
-// TODO(Dominic): Commented out for now.
 /*
  * This ones takes the space-time volume flux instead of the ime-averaged flux
  */
