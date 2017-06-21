@@ -25,6 +25,7 @@ batchFactor=0.8
 hMax=(0.05 0.01 0.005 0.001)
 T=(0.01 0.002 0.0005 0.0001) # p=3
 io=no-output # or output
+kernels=opt
 
 # Derived options
 prefix=$project-$io
@@ -53,11 +54,13 @@ do
 
   # Create script
   script=hamilton.slurm-script
-  newScript=hamilton-$prefix-p$order-n1-t1.slurm-script
+  newScript=hamilton-$prefix-p$order-n1-t1-$kernels.slurm-script
   cp $script $newScript
  
   sed -i 's,'$project'-no-output,'$prefix',g' $newScript
 
+  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+  
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
 
@@ -73,6 +76,10 @@ do
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
+
+    if [[ "$kernels" == "opt" ]]; then
+      sed -i -r "s,generic::fluxes::nonlinear,optimised::fluxes::nonlinear," $newSpec
+    fi
 
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
     sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 
