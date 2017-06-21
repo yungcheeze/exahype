@@ -78,6 +78,8 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     }
   }
 
+/* //we compute rhs on the fly, no need for rhs_0, TODO JMG clean legacy
+
   // 2. Compute the contribution of the initial condition uh to the time update
   for (int i = 0; i < {{nDof3D}}; i++) {
     for (int j = 0; j < {{nDof}}; j++) {
@@ -92,7 +94,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       }
     }
   }
-
+*/
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};
   int ijk;
@@ -149,8 +151,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       }
 
       // Copy rhs0 -> rhs for slice at i
-      std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);  
+      //std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]); //rhs is computed on the fly, TODO JMG clean legacy
+      for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+        #pragma simd
+        for (int n = 0; n < {{nVar}}; n++) {
+          rhs[n+{{nVarPad}}*(ijk+{{nDof*nDof*nDof3D}}*i)] = weights3[ijk] * F0[i] * luh[n+{{nVar}}*ijk];
+        }
+      }
+      
 {% if useNCP %}
+      //set gradQ to 0
       std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVarPad*nDim}} * sizeof(double));
 {% endif %}
       
