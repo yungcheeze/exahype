@@ -1896,7 +1896,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // Remove the tempFluxUnkowns and tempUnknowns.
   volumeIntegral(
       lduh,
-      tempFluxUnknowns,
+      tempSpaceTimeFluxUnknowns[0],
       &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
 #else 
   spaceTimePredictor(

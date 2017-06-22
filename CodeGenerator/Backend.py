@@ -50,7 +50,7 @@ import ConverterGenerator
 import string
 import re
 
-
+m_args                   = { 'useV2' : True }
 m_architecture           = ''
 m_precision              = ''
 m_config                 = {}
@@ -147,11 +147,11 @@ def generateContext(i_config):
 
     
 def generateComputeKernels():
-    kernelsHeaderGenerator = KernelsHeaderGenerator.KernelsHeaderGenerator(generateContext(m_config))
+    kernelsHeaderGenerator = KernelsHeaderGenerator.KernelsHeaderGenerator(generateContext(m_config), m_args)
     kernelsHeaderGenerator.generateCode()
-    spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(generateContext(m_config))
+    spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(generateContext(m_config),m_args)
     spaceTimePredictorGenerator.generateCode()
-    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config))
+    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config), m_args)
     volumeIntegralGenerator.generateCode()
     surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(generateContext(m_config))
     surfaceIntegralGenerator.generateCode()
