@@ -43,8 +43,8 @@ void kernels::aderdg::optimised::volumeIntegral(
   double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
   
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
-{% for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
-{% for i in i_seq%}
+{% for j in j_seq %} {# if nDim == 2 then j_seq == [0] #}
+{% for i in i_seq %}
   #pragma vector aligned
   for(int it=0;it<{{nDof*nDofPad}};it++) 
     s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
@@ -57,8 +57,8 @@ void kernels::aderdg::optimised::volumeIntegral(
   #pragma forceinline
   {{gemm_z}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {% endif %}  
-{% endfor%}
-{% endfor%}
+{% endfor %}
+{% endfor %}
 
 {% if useSourceOrNCP %}
   // source
@@ -66,7 +66,7 @@ void kernels::aderdg::optimised::volumeIntegral(
     // Fortran: lduh(:,k,j,i) += w * lShi(:,k,j,i)
     #pragma simd
     for (int n = 0; n < {{nVar}}; n++) {
-      lduh[n+{{nVar}}*ijk] += weights3[ijk] * lShi[n+{{nVarPad}}*ijk]; //weights3[ijk] = weights1[i] * weights1[j] * (dim==3 ? weights1[k]: 1)
+      lduh[n+{{nVar}}*ijk] += weights3[ijk] * lShi[n+{{nVarPad}}*ijk];
     }
   }
 {% endif %}

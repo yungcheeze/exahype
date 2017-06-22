@@ -21,10 +21,10 @@
 
 void kernels::aderdg::optimised::riemannSolver( 
   {{solverName}}& solver,
-  double* restrict lFbndL,
-  double* restrict lFbndR,
-  const double* restrict const lQbndL,
-  const double* restrict const lQbndR,
+  double* restrict lFhbndL,
+  double* restrict lFhbndR,
+  const double* restrict const lQhbndL,
+  const double* restrict const lQhbndR,
   const double dt,
   const int normalNonZero
 {% if useDeepProfiler %}
@@ -34,23 +34,27 @@ void kernels::aderdg::optimised::riemannSolver(
 
 #ifdef __INTEL_COMPILER
   __assume_aligned(weights2, ALIGNMENT);
+  __assume_aligned(lFhbndL, ALIGNMENT);
+  __assume_aligned(lFhbndR, ALIGNMENT);
+  __assume_aligned(lQhbndL, ALIGNMENT);
+  __assume_aligned(lQhbndR, ALIGNMENT);
 #endif
 
-  double tmp_bnd[{{nVar*bndBlockSize}}] __attribute__((aligned(ALIGNMENT)));
+  double tmp_bnd[{{nVarPad*nDof*nDof3D}}] __attribute__((aligned(ALIGNMENT)));
   double QavL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   double QavR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   
-  {% for iVar in i_seq %}
-  for(int i=0;i<{{bndBlockSize}};i++) {
-    QavL[{{iVar}}] += weights2[i] * lQbndL[{{iVar*bndBlockSize}}+i];
+  for(int i=0;i<{{nDof*nDof3D}};i++) {
+    #pragma simd
+    for(int n=0; n<{{nVarPad}}; n++) {
+      QavL[n] += weights2[i] * lQhbndL[n+{{nVarPad}}*i];
+    }
+    #pragma simd
+    for(int n=0; n<{{nVarPad}}; n++) {
+      QavR[n] += weights2[i] * lQhbndR[n+{{nVarPad}}*i];
+    }
   }
-  {% endfor %}
   
-  {% for iVar in i_seq %}
-  for(int i=0;i<{{bndBlockSize}};i++) {
-    QavR[{{iVar}}] += weights2[i] * lQbndR[{{iVar*bndBlockSize}}+i];
-  }
-  {% endfor %}
   
   double lambdaL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
 #ifdef USE_IPO
@@ -70,39 +74,41 @@ void kernels::aderdg::optimised::riemannSolver(
   
   
   #pragma simd
-  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);
+  for(int i=0; i<{{nVarPad*nDof*nDof3D}}; i++) {
+    tmp_bnd[i] = smax * (lQhbndL[i]-lQhbndR[i]);
   }
   
   #pragma simd
-  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    lFbndL[i] += lFbndR[i];
+  for(int i=0; i<{{nVarPad*nDof*nDof3D}}; i++) {
+    lFhbndL[i] += lFhbndR[i];
   }
   
   #pragma simd
-  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;
+  for(int i=0; i<{{nVarPad*nDof*nDof3D}}; i++) {
+    lFhbndL[i] = 0.5 * (lFhbndL[i] + tmp_bnd[i]) ;
   }
-  std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));   
+  std::memcpy(lFhbndR, lFhbndL, {{nVarPad*nDof*nDof3D}} * sizeof(double));   
   
 {% if useNCP %}
   //add non-conservative product part
   double Qavg[{{nVar}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   double gradQ[{{nDim*nVar}}] __attribute__((aligned(ALIGNMENT))) = {0.};
-  double ncp[{{nVar}}] __attribute__((aligned(ALIGNMENT))) = {0.0};
+  double ncp[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.0};
   
-  for(int ij=0; ij<{{bndBlockSize}}; ij++) {
+  for(int ij=0; ij<{{nDof*nDof3D}}; ij++) {
+    #pragma simd
     for(int n=0; n < {{nVar}}; n++) {
-       Qavg[n] = 0.5 * (lQbndL[n*{{bndBlockSize}}+ij] + lQbndR[n*{{bndBlockSize}}+ij]);
-       gradQ[n+{{nVar}}*normalNonZero] = lQbndR[n*{{bndBlockSize}}+ij] - lQbndL[n*{{bndBlockSize}}+ij];
+       Qavg[n] = 0.5 * (lQhbndL[n+{{nVarPad}}*ij] + lQhbndR[n+{{nVarPad}}*ij]);
+       gradQ[n+{{nVar}}*normalNonZero] = lQhbndR[n+{{nVarPad}}*ij] - lQhbndL[n+{{nVarPad}}*ij];
     }
 #ifdef USE_IPO
     #pragma forceinline recursive
 #endif
     solver.{{solverName}}::nonConservativeProduct(Qavg, gradQ, ncp);
-    for(int n=0; n < {{nVar}}; n++) {
-      lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[n];
-      lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp[n];
+    #pragma simd
+    for(int n=0; n < {{nVarPad}}; n++) {
+      lFhbndR[n+{{nVarPad}}*ij] -= 0.5*ncp[n];
+      lFhbndL[n+{{nVarPad}}*ij] += 0.5*ncp[n];
     }
   }
 {% endif %}

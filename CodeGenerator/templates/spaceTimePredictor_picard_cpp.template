@@ -44,6 +44,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
   __assume_aligned(iK1, ALIGNMENT);
+  __assume_aligned(weights3, ALIGNMENT);
   __assume_aligned(luh, ALIGNMENT); //luh should be aligned, see Solver.h
 {% if useSourceOrNCP %}
   __assume_aligned(lSi, ALIGNMENT);
@@ -54,7 +55,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
  
 #endif
-  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
+
+  // 0. Allocate local variable
+  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT))); //for the gemms with alpha*Kxi or alpha*iK1
+  const double dtBydx = inverseDx[0] * dt; //Assume dx[0] == dx[1] == dx[2]
+  int ijk; //helper counter
   
 {% if useNCP %}
   double dudxT_by_dx[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
@@ -67,16 +72,17 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   #pragma simd
   for(int it=0;it<{{nDof*nDofPad}};it++) {
     dudxT_by_dx[it] = inverseDx[0] * dudx_T[it];
-  }
-    
+  }    
 {% endif %}
 
   // 1. Trivial initial guess
-  for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+  for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
     for (int l = 0; l < {{nDof}}; l++) {
       std::copy(&luh[{{nVar}}*ijk], &luh[{{nVar}}*ijk]+{{nVar}}, &lQi[{{nVarPad}}*(l+{{nDof}}*ijk)]);
     }
   }
+
+/* //we compute rhs on the fly, no need for rhs_0, TODO JMG clean legacy
 
   // 2. Compute the contribution of the initial condition uh to the time update
   for (int i = 0; i < {{nDof3D}}; i++) {
@@ -92,7 +98,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       }
     }
   }
-
+*/
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};
 
@@ -148,18 +154,27 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       }
 
       // Copy rhs0 -> rhs for slice at i
-      std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);  
+      //std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]); //rhs is computed on the fly, TODO JMG clean legacy
+      for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+        const double weight = weights3[ijk] * F0[i];
+        #pragma simd
+        for (int n = 0; n < {{nVar}}; n++) {
+          rhs[n+{{nVarPad}}*(ijk+{{nDof*nDof*nDof3D}}*i)] = weight * luh[n+{{nVar}}*ijk];
+        }
+      }
+      
 {% if useNCP %}
+      //set gradQ to 0
       std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVarPad*nDim}} * sizeof(double));
 {% endif %}
       
 
-      // Compute the "derivatives" (contributions of the stiffness matrix)
+      // Compute the "derivatives" (contributions of the stiffness matrix)      
       // x direction (independent from the y and z derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt * inverseDx[0];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
@@ -194,15 +209,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           */
           #pragma forceinline
           {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
-{% endif %}          
+{% endif %}
+          ijk++;       
         }
       }
 
       // y direction (independent from the x and z derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt * inverseDx[1];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
@@ -238,15 +254,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
 {% endif %}
+          ijk++;
         }
       }
        
 {% if nDim==3 %}
       // z direction (independent from the x and y derivatives)
+      ijk=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = weights1[i] *  weights1[j] * weights1[k];
-          const double updateSize = weight * dt * inverseDx[2];
+          const double updateSize = weights3[ijk] * dtBydx;
 
           // Matrix operation
           /*
@@ -282,6 +299,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
 {% endif %}
+          ijk++;
         }
       }
 {% endif %}
@@ -328,11 +346,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
     std::memset(lQi, 0, {{(nDof**nDim) * nDof * nVarPad}} * sizeof(double));
+    ijk=0;
     for (int i = 0; i < {{nDof3D}}; i++) {
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double weight = {{'weights1[i] *' if nDim == 3 else ''}} weights1[j] *  weights1[k];
-          const double iweight = 1.0 / weight;
+          const double iweight = 1.0 / weights3[ijk];
 
           // Matrix operation
           /*
@@ -352,7 +370,8 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = iweight * iK1[it];
           }
           #pragma forceinline
-          {{gemm_lqh}}(&rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))], &s_m[0], &lQi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof}}*i))]);
+          {{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &lQi[{{nVarPad*nDof}}*ijk]);
+          ijk++;
         }
       }
     }
