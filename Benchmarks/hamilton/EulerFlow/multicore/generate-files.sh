@@ -19,16 +19,20 @@
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
 project=EulerFlow
 
-fuseAlgorithmicSteps=off
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 hMax=(0.05 0.01 0.005 0.001)
 T=(0.01 0.002 0.0005 0.0001) # p=3
 io=no-output # or output
-kernels=opt
+
+kernels=gen
 
 # Derived options
+
+for fuseAlgorithmicSteps in "on" "off"
+do
 prefix=$project-$io
+
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
  prefix+="-fused"
 else
@@ -53,8 +57,8 @@ do
   t=${T[i]}
 
   # Create script
-  script=hamilton.slurm-script
-  newScript=hamilton-$prefix-p$order-n1-t1-$kernels.slurm-script
+  script=benchmarks/multicore/hamilton.slurm-script
+  newScript=benchmarks/multicore/hamilton-$prefix-p$order-n1-t1-$kernels.slurm-script
   cp $script $newScript
  
   sed -i 's,'$project'-no-output,'$prefix',g' $newScript
@@ -67,12 +71,12 @@ do
   sed -i 's,script=benchmarks/multicore/hamilton.slurm-script,script=benchmarks/multicore/'$newScript',g' $newScript
   
   # Create spec files
-  for coresPerTask in 1 12 24
+  for coresPerTask in 1 6 12 24
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
-    spec=EulerFlow-$io.exahype
-    filename=$prefix-p$order-$mesh-t1-c$coresPerTask
+    spec=benchmarks/multicore/EulerFlow-$io.exahype
+    filename=benchmarks/multicore/$prefix-p$order-$mesh-t1-c$coresPerTask
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
@@ -92,4 +96,5 @@ do
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',' $newSpec
     sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',' $newSpec
   done
+done
 done
