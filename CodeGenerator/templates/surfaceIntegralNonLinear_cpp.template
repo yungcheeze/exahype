@@ -21,7 +21,7 @@
 
 void kernels::aderdg::optimised::surfaceIntegral( 
   double* restrict lduh, 
-  const double* restrict const lFbnd, 
+  const double* restrict const lFhbnd, 
   const tarch::la::Vector<DIMENSIONS,double> &inverseDx
 ) {
   //TODO JMG uncomment when using vectorization
@@ -39,8 +39,8 @@ void kernels::aderdg::optimised::surfaceIntegral(
       for (int k = 0; k < {{nDof}}; k++) {
         // left flux minus right flux
         lduh[ij*{{nDof*nVar}}+k*{{nVar}}+l] -=
-            (lFbnd[{{bndFaceSize*1}}+l*{{bndBlockSize}}+ij] * FRCoeff[k] -
-             lFbnd[{{bndFaceSize*0}}+l*{{bndBlockSize}}+ij] * FLCoeff[k]) *
+            (lFhbnd[{{bndFaceSize*1}}+l*{{bndBlockSize}}+ij] * FRCoeff[k] -
+             lFhbnd[{{bndFaceSize*0}}+l*{{bndBlockSize}}+ij] * FLCoeff[k]) *
             weight;
       }
     }
@@ -58,8 +58,8 @@ void kernels::aderdg::optimised::surfaceIntegral(
       for (int j = 0; j < {{nDof}}; j++) {
         // back flux minus front flux
         lduh[ikLuhIndex + j*{{nDof*nVar}}+ l] -=
-            (lFbnd[{{bndFaceSize*3}}+l*{{bndBlockSize}}+ik] * FRCoeff[j] -
-             lFbnd[{{bndFaceSize*2}}+l*{{bndBlockSize}}+ik] * FLCoeff[j]) *
+            (lFhbnd[{{bndFaceSize*3}}+l*{{bndBlockSize}}+ik] * FRCoeff[j] -
+             lFhbnd[{{bndFaceSize*2}}+l*{{bndBlockSize}}+ik] * FLCoeff[j]) *
             weight;
         }
       }
@@ -72,8 +72,8 @@ void kernels::aderdg::optimised::surfaceIntegral(
       for (int i = 0; i < {{nDof}}; i++) {
         // bottom flux minus top flux
         lduh[i*{{nDof*nDof*nVar}}+ jk*{{nVar}}+l] -=
-            (lFbnd[{{bndFaceSize*5}}+l*{{bndBlockSize}}+jk] * FRCoeff[i] -
-             lFbnd[{{bndFaceSize*4}}+l*{{bndBlockSize}}+jk] * FLCoeff[i]) *
+            (lFhbnd[{{bndFaceSize*5}}+l*{{bndBlockSize}}+jk] * FRCoeff[i] -
+             lFhbnd[{{bndFaceSize*4}}+l*{{bndBlockSize}}+jk] * FLCoeff[i]) *
             weight;
       }
     }

@@ -79,7 +79,7 @@ namespace kernels {
       
       void surfaceIntegral( 
         double* restrict lduh, 
-        const double* restrict const lFbnd, 
+        const double* restrict const lFhbnd, 
         const tarch::la::Vector<DIMENSIONS,double> &inverseDx
       );
 /*
@@ -101,10 +101,10 @@ namespace kernels {
 
       void riemannSolver( 
         {{solverName}}& solver,
-        double* restrict lFbndL,
-        double* restrict lFbndR,
-        const double* restrict const lQbndL,
-        const double* restrict const lQbndR,
+        double* restrict lFhbndL,
+        double* restrict lFhbndR,
+        const double* restrict const lQhbndL,
+        const double* restrict const lQhbndR,
         const double dt,
         const int normalNonZero
 {% if useDeepProfiler %}

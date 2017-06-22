@@ -21,10 +21,10 @@
 
 void kernels::aderdg::optimised::riemannSolver( 
   {{solverName}}& solver,
-  double* restrict lFbndL,
-  double* restrict lFbndR,
-  const double* restrict const lQbndL,
-  const double* restrict const lQbndR,
+  double* restrict lFhbndL,
+  double* restrict lFhbndR,
+  const double* restrict const lQhbndL,
+  const double* restrict const lQhbndR,
   const double dt,
   const int normalNonZero
 {% if useDeepProfiler %}
@@ -42,13 +42,13 @@ void kernels::aderdg::optimised::riemannSolver(
   
   {% for iVar in i_seq %}
   for(int i=0;i<{{bndBlockSize}};i++) {
-    QavL[{{iVar}}] += weights2[i] * lQbndL[{{iVar*bndBlockSize}}+i];
+    QavL[{{iVar}}] += weights2[i] * lQhbndL[{{iVar*bndBlockSize}}+i];
   }
   {% endfor %}
   
   {% for iVar in i_seq %}
   for(int i=0;i<{{bndBlockSize}};i++) {
-    QavR[{{iVar}}] += weights2[i] * lQbndR[{{iVar*bndBlockSize}}+i];
+    QavR[{{iVar}}] += weights2[i] * lQhbndR[{{iVar*bndBlockSize}}+i];
   }
   {% endfor %}
   
@@ -71,19 +71,19 @@ void kernels::aderdg::optimised::riemannSolver(
   
   #pragma simd
   for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);
+    tmp_bnd[i] = smax * (lQhbndL[i]-lQhbndR[i]);
   }
   
   #pragma simd
   for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    lFbndL[i] += lFbndR[i];
+    lFhbndL[i] += lFhbndR[i];
   }
   
   #pragma simd
   for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
-    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;
+    lFhbndL[i] = 0.5 * (lFhbndL[i] + tmp_bnd[i]) ;
   }
-  std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));   
+  std::memcpy(lFhbndR, lFhbndL, {{nVar*bndBlockSize}} * sizeof(double));   
   
 {% if useNCP %}
   //add non-conservative product part
@@ -93,16 +93,16 @@ void kernels::aderdg::optimised::riemannSolver(
   
   for(int ij=0; ij<{{bndBlockSize}}; ij++) {
     for(int n=0; n < {{nVar}}; n++) {
-       Qavg[n] = 0.5 * (lQbndL[n*{{bndBlockSize}}+ij] + lQbndR[n*{{bndBlockSize}}+ij]);
-       gradQ[n+{{nVar}}*normalNonZero] = lQbndR[n*{{bndBlockSize}}+ij] - lQbndL[n*{{bndBlockSize}}+ij];
+       Qavg[n] = 0.5 * (lQhbndL[n*{{bndBlockSize}}+ij] + lQhbndR[n*{{bndBlockSize}}+ij]);
+       gradQ[n+{{nVar}}*normalNonZero] = lQhbndR[n*{{bndBlockSize}}+ij] - lQhbndL[n*{{bndBlockSize}}+ij];
     }
 #ifdef USE_IPO
     #pragma forceinline recursive
 #endif
     solver.{{solverName}}::nonConservativeProduct(Qavg, gradQ, ncp);
     for(int n=0; n < {{nVar}}; n++) {
-      lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[n];
-      lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp[n];
+      lFhbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[n];
+      lFhbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp[n];
     }
   }
 {% endif %}
