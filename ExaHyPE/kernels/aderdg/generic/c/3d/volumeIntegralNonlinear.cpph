@@ -24,21 +24,21 @@
 #if DIMENSIONS == 3
 
 /*
- * This ones takes the space-time volume flux instead of the ime-averaged flux
+ * This one takes the space-time volume flux instead of the time-averaged flux
  */
 template <bool useSourceOrNCP, bool useFlux, const int numberOfVariables, int basisSize>
-void volumeIntegralNonlinear(double* lduh, const double* const lFi,
+void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const double* const lFi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize  * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
 
   // Initialize the update DOF
-  std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
+  std::fill_n(lduh, basisSize3 * numberOfVariables, 0.0);
 
   if (useFlux) {
     idx4 idx(basisSize, basisSize, basisSize, numberOfVariables); // (z,y,x,var)
-    idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,z,y,x,flux/source,var)
+    idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS+1, numberOfVariables); // (t,z,y,x,flux/source,var)
 
     for (int i = 0; i < basisSize; i++) { // loop over time unknowns
       // x-direction
@@ -67,7 +67,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
           const double weight =
               kernels::gaussLegendreWeights[order][i] * // t
               kernels::gaussLegendreWeights[order][j] * // z
-              kernels::gaussLegendreWeights[order][l] * // x
+              kernels::gaussLegendreWeights[order][l];  // x
           const double updateSize = weight / dx[1];
           
           for (int k = 0; k < basisSize; k++) { // y
@@ -81,34 +81,33 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
           }
         }
       }
-    }
-    // z-direction
-    for (int k = 0; k < basisSize; k++) { // y 
-      for (int l = 0; l < basisSize; l++) { // x
-        const double weight =
-            kernels::gaussLegendreWeights[order][i] * // t
-            kernels::gaussLegendreWeights[order][k] * // y
-            kernels::gaussLegendreWeights[order][l];  // x
-        const double updateSize = weight / dx[2];
+      // z-direction
+      for (int k = 0; k < basisSize; k++) { // y 
+        for (int l = 0; l < basisSize; l++) { // x
+          const double weight =
+              kernels::gaussLegendreWeights[order][i] * // t
+              kernels::gaussLegendreWeights[order][k] * // y
+              kernels::gaussLegendreWeights[order][l];  // x
+          const double updateSize = weight / dx[2];
 
-        for (int j = 0; j < basisSize; j++) { // z
-          for (int m = 0; m < numberOfVariables; m++) {
-            for (int n = 0; n < basisSize; n++) {  
-              lduh[idx(j, k, l, m)] += 
-                  kernels::Kxi[order][j][n] *
-                  lFi[idx_lFi(i, n, k, l, 2, m)] * updateSize;
+          for (int j = 0; j < basisSize; j++) { // z
+            for (int m = 0; m < numberOfVariables; m++) {
+              for (int n = 0; n < basisSize; n++) {  
+                lduh[idx(j, k, l, m)] += 
+                    kernels::Kxi[order][j][n] *
+                    lFi[idx_lFi(i, n, k, l, 2, m)] * updateSize;
+              }
             }
           }
         }
       }
     }
-  }
   } // useFlux
 
   // source
   if (useSourceOrNCP) {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
-    idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
+    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables); // (z,y,x,var)
+    idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS+1, numberOfVariables); // (t,z,y,x,flux/source,var)
 
     for (int i = 0; i < basisSize; i++) { // loop over time unknowns
       for (int j = 0; j < basisSize; j++) { // z
