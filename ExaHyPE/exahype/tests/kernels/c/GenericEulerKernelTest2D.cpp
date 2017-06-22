@@ -771,7 +771,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
                     3.70370370370370349811e-02};  // mesh spacing
     // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
-    logWarning( "testVolumeIntegralNonlinear()", "Test is currently disabled!" );
+    logWarning( "testVolumeIntegralNonlinear()", "Test is currently disabled since input data is not suitable." );
 //    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, true, nVar, basisSize>(
 //        lduh,
 //        ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
