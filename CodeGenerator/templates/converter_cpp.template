@@ -14,37 +14,37 @@
 #include "kernels/aderdg/optimised/converter.h"
 
 void kernels::aderdg::optimised::converter::Bnd_optimised2generic(const double* const opt, double* gen) {
-  for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
-      for(int l=0; l<{{nVar}}; l++) {
-        gen[l+{{nVar}}*(j+{{nDof**(nDim-1)}}*i)] = opt[j+{{bndBlockSize}}*(l+{{nVar}}*i)];
+  for(int d=0; d<{{2 * nDim}}; d++) {
+    for(int ij=0; ij<{{nDof*nDof3D}}; ij++) {
+      for(int n=0; n<{{nVar}}; n++) {
+        gen[n+{{nVar}}*(ij+{{nDof*nDof3D}}*d)] = opt[n+{{nVarPad}}*(ij+{{nDof*nDof3D}}*d)];
       }
     }    
   }
 }
 
 void kernels::aderdg::optimised::converter::Bnd_generic2optimised(const double* const gen, double* opt) {
-  for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
-      for(int l=0; l<{{nVar}}; l++) {
-        opt[j+{{bndBlockSize}}*(l+{{nVar}}*i)] = gen[l+{{nVar}}*(j+{{nDof**(nDim-1)}}*i)];
+  for(int d=0; d<{{2 * nDim}}; d++) {
+    for(int ij=0; ij<{{nDof*nDof3D}}; ij++) {
+      for(int n=0; n<{{nVar}}; n++) {
+        opt[n+{{nVarPad}}*(ij+{{nDof*nDof3D}}*d)] = gen[n+{{nVar}}*(ij+{{nDof*nDof3D}}*d)];
       }
     }    
   }
 }
 
 void kernels::aderdg::optimised::converter::BndFace_optimised2generic(const double* const opt, double* gen) {
-  for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
-    for(int l=0; l<{{nVar}}; l++) {
-      gen[l+{{nVar}}*j] = opt[j+{{bndBlockSize}}*l];
+  for(int ij=0; ij<{{nDof*nDof3D}}; ij++) {
+    for(int n=0; n<{{nVar}}; n++) {
+      gen[n+{{nVar}}*ij] = opt[n+{{nVarPad}}*ij];
     }
   }    
 }
 
 void kernels::aderdg::optimised::converter::BndFace_generic2optimised(const double* const gen, double* opt) {
-  for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
-    for(int l=0; l<{{nVar}}; l++) {
-      opt[j+{{bndBlockSize}}*l] = gen[l+{{nVar}}*j];
+  for(int ij=0; ij<{{nDof*nDof3D}}; ij++) {
+    for(int n=0; n<{{nVar}}; n++) {
+      opt[n+{{nVarPad}}*ij] = gen[n+{{nVar}}*ij];
     }
   }    
 }

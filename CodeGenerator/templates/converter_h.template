@@ -24,11 +24,11 @@ namespace kernels {
 
         constexpr int getLuhArraySize()        { return {{(nDof**nDim)*nVar}};}
 
-        constexpr int getBndGenArraySize()     { return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};}
-        constexpr int getBndOptArraySize()     { return {{2 * nDim * bndBlockSize * nVar}};}
+        constexpr int getBndGenArraySize()     { return {{2 * nDim * nDof * nDof3D * nVar}};}
+        constexpr int getBndOptArraySize()     { return {{2 * nDim * nDof * nDof3D * nVarPad}};}
 		
-        constexpr int getBndFaceGenArraySize() { return {{(nDof ** (nDim-1)) * nVar}};}
-        constexpr int getBndFaceOptArraySize() { return {{bndBlockSize * nVar}};}
+        constexpr int getBndFaceGenArraySize() { return {{nDof * nDof3D * nVar}};}
+        constexpr int getBndFaceOptArraySize() { return {{nDof * nDof3D * nVarPad}};}
 
         constexpr int getFhiGenArraySize()     { return {{(nDof ** nDim) * nVar * (nDim+1)}};}
         constexpr int getFhiOptArraySize()     { return {{(nDof ** nDim) * nVarPad * (nDim+1)}};}

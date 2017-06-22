@@ -38,13 +38,9 @@ class RiemannGenerator:
         self.m_context = i_context
 
 
-    def generateCode(self):
-        self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
-        
+    def generateCode(self):        
         if(self.m_context['isLinear']):
             pass
-        else:
-            self.m_context['i_seq'] = range(0,self.m_context['nVar'])
-            
+        else:            
             # render template
             TemplatingUtils.renderAsFile('riemannSolverNonLinear_cpp.template', self.m_filename, self.m_context)
