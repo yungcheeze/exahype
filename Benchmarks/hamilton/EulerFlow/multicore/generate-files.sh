@@ -41,6 +41,7 @@ fi
 
 for order in 3 5 7 9
 do
+  T=(0.01 0.002 0.0005 0.0001) # p=3
   if (( order == 5 )); then
     T=(0.003)                    # p=5
   fi
