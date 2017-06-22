@@ -46,11 +46,14 @@ void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
   constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
-  
+
   kernels::aderdg::optimised::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
-  kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
-  kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
-  
+  kernels::aderdg::optimised::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
+
+  //kernels::aderdg::optimised::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
+  //kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
+  //kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
+
 {{AfterSpaceTimePredictor}}
 }
 
@@ -64,15 +67,21 @@ void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* c
 
 
 
-void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {{BeforeVolumeIntegral}}
 
 #if DIMENSIONS==2
+  constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #else
+  constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
-  kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
+
+  kernels::aderdg::optimised::volumeIntegral( lduh, lFi, &lFi[lSi_offset], inverseDx );
+
+  //kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
+
 
 {{AfterVolumeIntegral}}
 }

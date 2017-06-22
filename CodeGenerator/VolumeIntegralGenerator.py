@@ -30,13 +30,15 @@ from MatmulConfig import MatmulConfig
 
 class VolumeIntegralGenerator:
     m_context = {}
+    m_args = {'useV2' : False}
     
     # name of generated output file
     m_filename = "volumeIntegral.cpp"
 
 
-    def __init__(self, i_context):
+    def __init__(self, i_context, i_args):
         self.m_context = i_context
+        self.m_args = i_args
 
 
     def generateCode(self):
@@ -57,7 +59,10 @@ class VolumeIntegralGenerator:
             self.m_context['j_seq'] = range(0,self.m_context['nDof']) if (self.m_context['nDim'] >= 3) else [0]
             
             # render template
-            TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
+            if(self.m_args['useV2']):
+                TemplatingUtils.renderAsFile('volumeIntegralNonLinearV2_cpp.template', self.m_filename, self.m_context)
+            else:
+                TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
 
 
     def generateNonlinearGemms(self):
