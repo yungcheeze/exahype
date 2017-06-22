@@ -1918,9 +1918,10 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // the extrpolated fluxes. Here, we can also perform the
   // time averaging on the fly.
   // Remove the tempFluxUnkowns and tempUnknowns.
+//  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
   volumeIntegral(
       lduh,
-      tempFluxUnknowns,
+      tempSpaceTimeFluxUnknowns[0],
       cellDescription.getSize());
 #endif
 
@@ -1935,12 +1936,12 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   if(usePaddedData_nVar()) {
     //TODO JMG add assert ignoring padding
   } else {
-    for (int i=0; i<getDataPerCell(); i++) {
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
-      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//    for (int i=0; i<getDataPerCell(); i++) {
+//    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
+//      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   #endif
 }
