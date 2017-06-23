@@ -24,7 +24,6 @@ from MatmulConfig import MatmulConfig
 
 class SpaceTimePredictorGenerator:
     m_context = {}
-    m_args = {'useV2' : False}
 
     # name of generated output file
     m_filename_picard       = 'picard.cpp'
@@ -34,9 +33,8 @@ class SpaceTimePredictorGenerator:
     m_filename_asm_picard   = 'asm_picard' 
 
     
-    def __init__(self, i_config, i_args):
+    def __init__(self, i_config):
         self.m_context = i_config
-        self.m_args = i_args
 
 
     def generateCode(self):
@@ -52,8 +50,8 @@ class SpaceTimePredictorGenerator:
         self.m_context['gemm_lqh']   = gemmName+'_lqh'
         
         TemplatingUtils.renderAsFile('spaceTimePredictor_picard_cpp.template', self.m_filename_picard, self.m_context)
-        if(self.m_args['useV2']):  
-            TemplatingUtils.renderAsFile('spaceTimePredictor_extrapolatorV2_cpp.template', self.m_filename_extrapolator, self.m_context)
+        if(self.m_context['noTimeAveraging']):  
+            TemplatingUtils.renderAsFile('spaceTimePredictor_extrapolator_noTimeAveraging_cpp.template', self.m_filename_extrapolator, self.m_context)
         else:
             TemplatingUtils.renderAsFile('spaceTimePredictor_predictor_cpp.template', self.m_filename_predictor, self.m_context)
             TemplatingUtils.renderAsFile('spaceTimePredictor_extrapolator_cpp.template', self.m_filename_extrapolator, self.m_context)

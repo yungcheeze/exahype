@@ -22,22 +22,17 @@ import TemplatingUtils
 
 class KernelsHeaderGenerator:
     m_context = {}
-    m_args = {'useV2' : False}
 
     # name of generated output file
     m_filename = 'Kernels.h'
 
     
-    def __init__(self, i_context, i_args):
+    def __init__(self, i_context):
         self.m_context = i_context
-        self.m_args = i_args
 
 
     def generateCode(self):
         self.m_context['solverNamespace'] = self.m_context['solverName'].split('::')[0]
         self.m_context['solverClass'] = self.m_context['solverName'].split('::')[1]
-        if(self.m_args['useV2']): 
-            TemplatingUtils.renderAsFile('KernelsV2_h.template', self.m_filename, self.m_context)
-        else:
-            TemplatingUtils.renderAsFile('Kernels_h.template', self.m_filename, self.m_context)
+        TemplatingUtils.renderAsFile('Kernels_h.template', self.m_filename, self.m_context)
 
