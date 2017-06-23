@@ -89,8 +89,10 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::extend(int _capacity
 	new_capacity[0] = _capacity;
 	
 	// Debugging:
+	/*
 	logInfo("extend", "with capacity = " << capacity << ", size = " << size << ", increase = " << increase);
 	logInfo("extend", "going to new capacity = " << _capacity << " with shape " << new_capacity);
+	*/
 	
 	dataset->extend(new_capacity.data());
 	capacity = _capacity;
@@ -109,7 +111,10 @@ void exahype::plotters::FlashHDF5Writer::ExtendableDataSet::write(const DataType
 	sizes block_count(initial_dims);
 	block_count[0] = 1; // hyperslab contains only one block/element in extending direction
 	
+	// Debugging
+	/*
 	logInfo("write", "size=" << size <<", writing block size " << block_count << " to offset " << block_offset);
+	*/
 	
 	// Hyperslab: https://support.hdfgroup.org/HDF5/doc/cpplus_RM/class_h5_1_1_data_space.html#a3147799b3cd1e741e591175e61785854
 	// op	- IN: Operation to perform on current selection

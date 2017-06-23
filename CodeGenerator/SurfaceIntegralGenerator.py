@@ -39,10 +39,7 @@ class SurfaceIntegralGenerator:
 
 
     def generateCode(self):
-        self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
-        self.m_context['bndFaceSize'] = self.m_context['nVar'] * self.m_context['bndBlockSize']
-        self.m_context['nDofPowDimMinOne'] = self.m_context['nDof'] if self.m_context['nDim'] == 2 else (self.m_context['nDof'] * self.m_context['nDof'])
-    
+        self.m_context['bndFaceSize'] = self.m_context['nVarPad'] * self.m_context['nDof'] * self.m_context['nDof3D']  
         if(self.m_context['isLinear']):
            pass
         else:

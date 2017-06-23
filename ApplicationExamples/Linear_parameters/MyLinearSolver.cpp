@@ -34,7 +34,17 @@ void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const dou
 
   vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
   //  vars.p()=0;
+  
   vars.v(0,0);
+
+  vars.jacobian()=0;
+  vars.metric_derivative(0,0,0,0);
+  vars.curve_grid(0,0);
+  
+  // for(int i=3 ; i < 10 ; i++){
+  //   Q[i]=0;
+  // }
+
 }
 
 void Linear::MyLinearSolver::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -167,7 +177,7 @@ void Linear::MyLinearSolver::riemannSolver(double* FL,double* FR,const double* c
   constexpr int basisSize          = MyLinearSolver::Order+1;
   constexpr int order              = basisSize - 1;
   
-  kernels::idx2 idx_QLR(basisSize, numberOfVariables);
+  kernels::idx2 idx_QLR(basisSize, numberOfData);
 
   kernels::idx2 idx_FLR(basisSize, numberOfVariables);
 

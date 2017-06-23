@@ -36,61 +36,29 @@ void kernels::aderdg::optimised::boundaryConditions(
   const int f = faceIndex-2*normalNonZero;
 
   // Determine the free directions from the non-zero normal entry.
-  int d1 = (3 ^ normalNonZero) / 3; //0->1, 1->0, 2->0 , ^ is bitwise XOR
+  const int d1 = (3 ^ normalNonZero) / 3; //0->1, 1->0, 2->0 , ^ is bitwise XOR
 {% if nDim == 3 %}
-  int d2 = 2 - (normalNonZero/2);   //0->2, 1->2, 2->1 
+  const int d2 = 2 - (normalNonZero/2);   //0->2, 1->2, 2->1 
 {% endif %}
   
   double x[{{nDim}}];
   x[normalNonZero] = cellCentre[normalNonZero] + (-0.5 + f)*cellSize[normalNonZero];
-  double f_in[{{nVar}}];
-  double f_out[{{nVar}}];
-  double q_in[{{nVar}}];
-  double q_out[{{nVar}}];
   
-{% if nDim == 2 %}  
-  for (int ii = 0; ii < {{nDof}}; ii++) {  // loop over dof
-    x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::aderdg::optimised::gaussLegendreNodes[{{nDof-1}}][ii] - 0.5);
-{% for iVar in iVar_range_0_nVar %}
-    f_in[{{iVar}}] = fluxIn[{{iVar*blockSize}}+ii];
-{% endfor %}
-{% for iVar in iVar_range_0_nVar %}
-    q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+ii];
-{% endfor %}
-    solver.{{solverName}}::boundaryValues(x,t,dt,faceIndex,normalNonZero,
-                          &f_in[0],&q_in[0],
-                          &f_out[0],&q_out[0]);
-{% for iVar in iVar_range_0_nVar %}
-    fluxOut[{{iVar*blockSize}}+ii] = f_out[{{iVar}}];
-{% endfor %}
-{% for iVar in iVar_range_0_nVar %}
-    stateOut[{{iVar*blockSize}}+ii] = q_out[{{iVar}}];
-{% endfor %}                            
-  }
-  
-{% else %} {# nDim == 3 #}
-  for (int jj = 0; jj < {{nDof}}; jj++) {  // loop over dof
+  for (int jj = 0; jj < {{nDof3D}}; jj++) {  // loop over dof, loop removed by compiler if 2D
+{% if nDim == 3 %}
     x[d2] = cellCentre[d2] + cellSize[d2] * (kernels::aderdg::optimised::gaussLegendreNodes[{{nDof-1}}][jj] - 0.5);
+{% endif %}
     for (int ii = 0; ii < {{nDof}}; ii++) {  // loop over dof
       x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::aderdg::optimised::gaussLegendreNodes[{{nDof-1}}][ii] - 0.5); 
-{% for iVar in iVar_range_0_nVar %}
-    f_in[{{iVar}}] = fluxIn[{{iVar*blockSize}}+jj*{{nDof}}+ii];
-{% endfor %}
-{% for iVar in iVar_range_0_nVar %}
-    q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+jj*{{nDof}}+ii];
-{% endfor %}
+#ifdef USE_IPO
+    #pragma forceinline recursive
+#endif
     solver.{{solverName}}::boundaryValues(x,t,dt,faceIndex,normalNonZero,
-                            &f_in[0],&q_in[0],
-                            &f_out[0],&q_out[0]);
-{% for iVar in iVar_range_0_nVar %}
-    fluxOut[{{iVar*blockSize}}+jj*{{nDof}}+ii] = f_out[{{iVar}}];
-{% endfor %}
-{% for iVar in iVar_range_0_nVar %}
-    stateOut[{{iVar*blockSize}}+jj*{{nDof}}+ii] = q_out[{{iVar}}];
-{% endfor %}  
+                          &fluxIn[(ii+jj*{{nDof3D}})*{{nVarPad}}],&stateIn[(ii+jj*{{nDof3D}})*{{nVarPad}}],
+                          &fluxOut[(ii+jj*{{nDof3D}})*{{nVarPad}}],&stateOut[(ii+jj*{{nDof3D}})*{{nVarPad}}]);   
     }
   }
-{% endif %}
+  
 }
 
 

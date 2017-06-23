@@ -21,6 +21,7 @@
 
 SHELL = bash
 tolower = $(shell echo $(1) | tr '[:upper:]' '[:lower:]')
+SOLVERKERNELS_IPO_OBJ=$(PROJECT_PATH)/solver_ipo.o
 
 # ************************************************
 
@@ -133,12 +134,12 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  COMPILER_CFLAGS += -g3
 	  COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-	  #COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
-	  COMPILER_CFLAGS += -p -pg -g3 -O3 -no-ipo -ip
+	  #COMPILER_CFLAGS += -p -pg -g3 -fast -ip
+	  COMPILER_CFLAGS += -p -pg -g3 -O3 -ip
 	  COMPILER_LFLAGS += -p -pg
 	else
-	  #COMPILER_CFLAGS   += -fast -no-ipo -ip
-	  COMPILER_CFLAGS   += -O3 -no-ipo -ip
+	  #COMPILER_CFLAGS   += -fast -ip
+	  COMPILER_CFLAGS   += -O3 -ip
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
@@ -261,6 +262,7 @@ endif
 # list of files to compile. Remember that make evaluates expressions lazy, thus we can
 # do an include here but run the make target afterwards to fill the actual files.
 -include cfiles.mk
+-include cipofiles.mk
 -include ffiles.mk
 
 
@@ -313,7 +315,7 @@ endif
 # By default, I use the compiler command. But you might wanna modify it.
 LL=$(CC)
 
-
+CIPOOBJECTS=$(CIPOSOURCES:.cpp=.o)
 COBJECTS=$(CSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 FMODULEOBJECTS=$(FMODULESOURCES:.f90=.o)
@@ -340,7 +342,7 @@ all: wellsortedbuild
 # results in all text over each other and a race condition when buildinfo
 # has not finished yet but the main.cpp code is already compiling.
 
-wellsortedbuild: header buildinfo ffiles.mk cfiles.mk
+wellsortedbuild: buildinfo ffiles.mk cfiles.mk cipofiles.mk header
 ifneq ($(FMODULEOBJECTS),)
 		$(MAKE) $(FMODULEOBJECTS)
 endif
@@ -381,14 +383,20 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> cfiles.mk
-	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' -not -path $(EXAHYPE_PATH)'/exahype/solvers/*' | tr '\n' ' ' >> cfiles.mk	
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))  
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
+
+#	ipo for kernel + application + exahype/solvers
+cipofiles.mk:
+	touch cipofiles.mk
+	echo -n CIPOSOURCES= > cipofiles.mk
 ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/optimised' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH)'/kernels/aderdg/optimised' -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
 endif
+	find -H $(EXAHYPE_PATH)'/exahype/solvers' -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
+	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
 
 ffiles.mk:
 	touch ffiles.mk
@@ -404,6 +412,10 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
 
+mergeipoobjects:  $(CIPOOBJECTS)
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -wd10015 -DUSE_IPO -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH) -ipo-c $(CIPOOBJECTS) -o $(SOLVERKERNELS_IPO_OBJ)
+#	-wd10015: disable the specific warning from ipo-c: icpc: warning #10015: multi-file optimization .o file produced; no link
+#	combine all the ipo objects into one object (with ipo between the merged objects)
 	
 header:
 	@echo ================================
@@ -439,9 +451,9 @@ header:
 	@echo the compiler manual, ExaHyPE does not set any COMPILER_CFLAGS, i.e. it is up 
 	@echo to you to initialise all compiler settings. Notably, you have to specify 
 	@echo through EXAHYPE_CC which compiler to use.
-
-build:  $(FOBJECTS) $(COBJECTS)
-	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+	
+build:  $(FOBJECTS) mergeipoobjects $(COBJECTS) 
+	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) -no-ipo $(SYSTEM_LFLAGS) $(SOLVERKERNELS_IPO_OBJ)
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument
@@ -452,11 +464,16 @@ clean:
 	rm -f ffiles.mk
 	rm -f $(COBJECTS)
 	rm -f cfiles.mk
+	rm -f $(CIPOOBJECTS)
+	rm -f $(SOLVERKERNELS_IPO_OBJ)
+	rm -f cipofiles.mk
 	rm -f buildinfo.h
 
+$(CIPOOBJECTS): %.o : %.cpp
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) -ipo -DUSE_IPO $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(COBJECTS): %.o : %.cpp
-	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
-
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) -no-ipo $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	
 $(FOBJECTS): %.o : %.f90
 	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@

@@ -26,6 +26,8 @@ export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.
 
 export I_MPI_FABRICS="shm:dapl"
 
+kernels=gen
+
 nodes=1
 tasks=1
 tasksPerNode=1
@@ -39,7 +41,7 @@ if (( coresPerTask==1 )); then
 fi
 
 prefix=EulerFlow-no-output-p3-regular-0
-out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler-$kernels.out
 
 script=benchmarks/multicore/hamilton.slurm-script
 spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype

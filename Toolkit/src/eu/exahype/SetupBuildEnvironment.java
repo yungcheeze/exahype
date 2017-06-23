@@ -235,8 +235,15 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");
       }
       _writer.write("\n\n");
-      _writer.write(
-          "-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
+      if (_useOptimisedKernels) {
+        _writer.write("ifeq ($(USE_IPO),on)\n");
+        _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile_with_ipo\n");
+        _writer.write("else\n");
+      }
+      _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
+      if (_useOptimisedKernels) {
+        _writer.write("endif\n");
+      }
       _writer.write("\n\n\n\n");
       _writer.write("all: \n");
       _writer.write("\t@echo " + node.getName() + "\n");

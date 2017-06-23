@@ -33,7 +33,7 @@ peano::MappingSpecification
 exahype::mappings::Merging::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true); // TODO Debug
+      peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 // Specifications below are all nop.
@@ -41,7 +41,7 @@ peano::MappingSpecification
 exahype::mappings::Merging::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true); // TODO Debug
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 

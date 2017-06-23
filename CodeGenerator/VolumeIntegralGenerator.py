@@ -44,7 +44,6 @@ class VolumeIntegralGenerator:
             pass
         else:
             self.generateNonlinearGemms() # generates gemms
-            self.m_context['nDof3D'] = 1 if self.m_context['nDim'] == 2 else self.m_context['nDof']
             # initialize context
             gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
             self.m_context['gemm_x'] = gemmName+'_lduh_x'

@@ -43,7 +43,7 @@ import AdjustSolutionGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
-import CpphGemmsGenerator
+#import CpphGemmsGenerator #legacy, unused
 import ConfigurationParametersGenerator
 import BoundaryConditionsGenerator
 import ConverterGenerator
@@ -137,8 +137,9 @@ def executeBashCommand(i_command, i_commandLineParameters):
 
 def generateContext(i_config):
     context = copy.copy(i_config)
-    context['nVarPad'] = getSizeWithPadding(i_config['nVar'])
-    context['nDofPad'] = getSizeWithPadding(i_config['nDof'])
+    context['nVarPad'] = getSizeWithPadding(context['nVar'])
+    context['nDofPad'] = getSizeWithPadding(context['nDof'])
+    context['nDof3D'] = 1 if context['nDim'] == 2 else context['nDof']
     context['isLinear'] = m_numerics == "linear"
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
@@ -166,8 +167,9 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
-    cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
-    cpphGemmsGenerator.generateCode()
+    # no ccph anymore => not needed anymore. Legacy TODO JMG clean later
+    #cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
+    #cpphGemmsGenerator.generateCode()
     configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config))
     configurationParametersGenerator.generateCode()
     boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config))

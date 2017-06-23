@@ -1,3 +1,5 @@
+#!/bin/bash
+
 
 #path test case <-> root of Exahype
 appcasepath=ApplicationExamples/EulerFlow
@@ -12,8 +14,14 @@ mpi=None
 exe1=ExaHyPE-Euler
 exe2=ExaHyPE-EulerFlow
 COMPILER=Intel
+gprofsuffix=""
+if [ `echo $GPROF | tr [:upper:] [:lower:]`="on" ];  then
+  gprofsuffix="-gprof"
+fi
 
-for p in 3 5 7 9
+
+#for p in 3 5 7 9
+for p in 5 7 9
 do
   cd $toroot
   java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $appcasepath/benchmarks/EulerFlow-$io-p$p-regular-0-t1-c1-$opt.exahype
@@ -32,8 +40,7 @@ do
     #read -p "press any key..."
     
     make clean
-    make -j56 && \
-    mv $exe1 $exe2-p$p-$SHAREDMEM-$COMPILER-$opt
+    make -j56 && mv $exe1 $exe2-p$p-$SHAREDMEM-$COMPILER-$opt$gprofsuffix
 #    sleep 2m
   done
 done

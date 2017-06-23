@@ -21,60 +21,62 @@
 
 void kernels::aderdg::optimised::surfaceIntegral( 
   double* restrict lduh, 
-  const double* restrict const lFbnd, 
+  const double* restrict const lFhbnd, 
   const tarch::la::Vector<DIMENSIONS,double> &inverseDx
 ) {
-  //TODO JMG uncomment when using vectorization
-// #ifdef __INTEL_COMPILER
-  // __assume_aligned(FRCoeff, ALIGNMENT);
-  // __assume_aligned(FLCoeff, ALIGNMENT);
-  // __assume_aligned(weights2, ALIGNMENT);
-// #endif
+
+#ifdef __INTEL_COMPILER
+  __assume_aligned(FRCoeff, ALIGNMENT);
+  __assume_aligned(FLCoeff, ALIGNMENT);
+  __assume_aligned(weights2, ALIGNMENT);
+  __assume_aligned(lFhbnd, ALIGNMENT);
+  __assume_aligned(lduh, ALIGNMENT);
+#endif
 
   // x faces
-  for (int l = 0; l < {{nVar}}; l++) {
-    for (int ij = 0; ij < {{nDofPowDimMinOne}}; ij++) {
-      const double weight = weights2[ij] * inverseDx[0];
-
-      for (int k = 0; k < {{nDof}}; k++) {
+  for (int yz = 0; yz < {{nDof*nDof3D}}; yz++) {
+    const double weight = weights2[yz] * inverseDx[0];
+    for (int x = 0; x < {{nDof}}; x++) {
+      #pragma simd
+      for (int n = 0; n < {{nVar}}; n++) {
         // left flux minus right flux
-        lduh[ij*{{nDof*nVar}}+k*{{nVar}}+l] -=
-            (lFbnd[{{bndFaceSize*1}}+l*{{bndBlockSize}}+ij] * FRCoeff[k] -
-             lFbnd[{{bndFaceSize*0}}+l*{{bndBlockSize}}+ij] * FLCoeff[k]) *
-            weight;
+        lduh[n+{{nVar}}*(x+{{nDof}}*yz)] -= weight *
+            (lFhbnd[n+{{nVarPad}}*yz+{{bndFaceSize*1}}] * FRCoeff[x] -
+             lFhbnd[n+{{nVarPad}}*yz+{{bndFaceSize*0}}] * FLCoeff[x]);
       }
     }
   }
 
   // y faces
-  for (int l = 0; l < {{nVar}}; l++) {
-    for (int ik = 0; ik < {{nDofPowDimMinOne}}; ik++) {
-      const double weight = weights2[ik] * inverseDx[1];
-{% if nDim == 3 %} {# // ik in [0..nDof*nDof-1], need to extract i and k to compute the correct shift for luh #}
-      const int ikLuhIndex = ((ik/{{nDof}})*{{nDof*nDof}} + ik % {{nDof}})*{{nVar}};
+  
+  for (int xz = 0; xz < {{nDof*nDof3D}}; xz++) {
+    const double weight = weights2[xz] * inverseDx[1];
+{% if nDim == 3 %} {# // xz in [0..nDof*nDof-1], need to extract x and z to compute the correct shift for luh #}
+    const int xzLuhIndex = ((xz/{{nDof}})*{{nDof*nDof}} + xz % {{nDof}}) *{{nVar}};
 {% else %}
-      const int ikLuhIndex = ik*{{nVar}};
+    const int xzLuhIndex = xz*{{nVar}};
 {% endif %} {# // ik in [0..nDof-1] <=> k=ik, i=0 #}
-      for (int j = 0; j < {{nDof}}; j++) {
+    for (int y = 0; y < {{nDof}}; y++) {
+      #pragma simd
+      for (int n = 0; n < {{nVar}}; n++) {
         // back flux minus front flux
-        lduh[ikLuhIndex + j*{{nDof*nVar}}+ l] -=
-            (lFbnd[{{bndFaceSize*3}}+l*{{bndBlockSize}}+ik] * FRCoeff[j] -
-             lFbnd[{{bndFaceSize*2}}+l*{{bndBlockSize}}+ik] * FLCoeff[j]) *
-            weight;
+        lduh[n+xzLuhIndex+y*{{nDof*nVar}}] -= weight *
+            (lFhbnd[n+{{nVarPad}}*xz+{{bndFaceSize*3}}] * FRCoeff[y] -
+             lFhbnd[n+{{nVarPad}}*xz+{{bndFaceSize*2}}] * FLCoeff[y]);
         }
       }
   }
 {% if nDim == 3 %}
   // z faces
-  for (int l = 0; l < {{nVar}}; l++) {
-    for (int jk = 0; jk < {{nDofPowDimMinOne}}; jk++) {
-      const double weight = weights2[jk] * inverseDx[2];
-      for (int i = 0; i < {{nDof}}; i++) {
+  for (int xy = 0; xy < {{nDof*nDof}}; xy++) {
+    const double weight = weights2[xy] * inverseDx[2];
+    for (int z = 0; z < {{nDof}}; z++) {
+      #pragma simd
+      for (int n = 0; n < {{nVar}}; n++) {
         // bottom flux minus top flux
-        lduh[i*{{nDof*nDof*nVar}}+ jk*{{nVar}}+l] -=
-            (lFbnd[{{bndFaceSize*5}}+l*{{bndBlockSize}}+jk] * FRCoeff[i] -
-             lFbnd[{{bndFaceSize*4}}+l*{{bndBlockSize}}+jk] * FLCoeff[i]) *
-            weight;
+        lduh[n+{{nVar}}*(xy+{{nDof*nDof}}*z)] -= weight *
+            (lFhbnd[n+{{nVarPad}}*xy+{{bndFaceSize*5}}] * FRCoeff[z] -
+             lFhbnd[n+{{nVarPad}}*xy+{{bndFaceSize*4}}] * FLCoeff[z]);
       }
     }
   }

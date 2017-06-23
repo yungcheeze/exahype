@@ -32,16 +32,23 @@ tarch::logging::Log exahype::plotters::ADERDG2FlashHDF5::_log("exahype::plotters
 
 exahype::plotters::ADERDG2FlashHDF5::ADERDG2FlashHDF5(
   exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) : Device(postProcessing) {
-	printf("ERROR: Compile with HDF5, otherwise you cannot use the ADERDG2FlashHDF5 plotter.\n");
-	abort();
+	if(std::getenv("EXAHYPE_STRICT")) {
+		logError("ADERDG2FlashHDF5()", "ERROR: Compile with HDF5, otherwise you cannot use the HDF5 plotter.");
+		abort();
+	}
 }
 
 // all other methods are stubs
 exahype::plotters::ADERDG2FlashHDF5::~ADERDG2FlashHDF5() {}
-void exahype::plotters::ADERDG2FlashHDF5::init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) {}
+void exahype::plotters::ADERDG2FlashHDF5::init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) {
+	logError("init()", "Compile with -DHDF5, otherwise you cannot use the HDF5 plotter. There will be no output going to " << filename << " today.");
+	logError("init()", "Will fail gracefully. If you want to stop the program in such a case, please set the environment variable EXAHYPE_STRICT=\"Yes\".");
+}
 void exahype::plotters::ADERDG2FlashHDF5::plotPatch(const int cellDescriptionsIndex, const int element) {}
 void exahype::plotters::ADERDG2FlashHDF5::plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,double timeStamp) {}
-void exahype::plotters::ADERDG2FlashHDF5::startPlotting(double time) {}
+void exahype::plotters::ADERDG2FlashHDF5::startPlotting(double time) {
+	logError("startPlotting()", "Skipping HDF5 output due to missing support.");
+}
 void exahype::plotters::ADERDG2FlashHDF5::finishPlotting() {}
 
 void exahype::plotters::ADERDG2FlashHDF5::interpolateCartesianPatch(

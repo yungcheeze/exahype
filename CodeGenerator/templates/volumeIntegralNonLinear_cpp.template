@@ -18,7 +18,8 @@
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
-#include "kernels/aderdg/optimised/CpphGemms.h"
+
+#include "kernels/aderdg/optimised/asm_volumeIntegral.c"
 
 void kernels::aderdg::optimised::volumeIntegral( 
   double* restrict lduh, 
@@ -30,7 +31,10 @@ void kernels::aderdg::optimised::volumeIntegral(
 
 #ifdef __INTEL_COMPILER
   __assume_aligned(lFhi, ALIGNMENT);
+  __assume_aligned(Kxi_T, ALIGNMENT);
   __assume_aligned(weights3, ALIGNMENT);
+  __assume_aligned(weights2, ALIGNMENT);
+  __assume_aligned(lduh, ALIGNMENT); //lduh should be aligned, see Solver.h
 {% if useSourceOrNCP %}
   __assume_aligned(lShi, ALIGNMENT);
 {% endif %}
@@ -39,19 +43,22 @@ void kernels::aderdg::optimised::volumeIntegral(
   double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
   
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
-{% for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
-{% for i in i_seq%}
-  #pragma simd
+{% for j in j_seq %} {# if nDim == 2 then j_seq == [0] #}
+{% for i in i_seq %}
+  #pragma vector aligned
   for(int it=0;it<{{nDof*nDofPad}};it++) 
     s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
+  #pragma forceinline
   {{gemm_x}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
+  #pragma forceinline
   {{gemm_y}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
 {% if nDim == 3 %} 
+  #pragma forceinline
   {{gemm_z}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {% endif %}  
-{% endfor%}
-{% endfor%}
+{% endfor %}
+{% endfor %}
 
 {% if useSourceOrNCP %}
   // source
@@ -59,7 +66,7 @@ void kernels::aderdg::optimised::volumeIntegral(
     // Fortran: lduh(:,k,j,i) += w * lShi(:,k,j,i)
     #pragma simd
     for (int n = 0; n < {{nVar}}; n++) {
-      lduh[n+{{nVar}}*ijk] += weights3[ijk] * lShi[n+{{nVarPad}}*ijk]; //weights3[ijk] = weights1[i] * weights1[j] * (dim==3 ? weights1[k]: 1)
+      lduh[n+{{nVar}}*ijk] += weights3[ijk] * lShi[n+{{nVarPad}}*ijk];
     }
   }
 {% endif %}
