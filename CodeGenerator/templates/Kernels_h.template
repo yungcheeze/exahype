@@ -47,7 +47,21 @@ namespace kernels {
         , exahype::profilers::Profiler* profiler
 {% endif %}
       );
-      
+
+{% if noTimeAveraging %}
+      void extrapolatorNonlinear(
+        const double* restrict const lQi, 
+        const double* restrict const lFi,
+        double* restrict lQhbnd, 
+        double* restrict lFhbnd);
+        
+      void volumeIntegral( 
+        double* restrict lduh, 
+        const double* restrict const lFi,
+        const double* restrict const lSi, //nullptr if not used
+        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+      );
+{% else %}    
       void predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
@@ -62,7 +76,14 @@ namespace kernels {
         const double* restrict const lFhi,
         double* restrict lQhbnd, 
         double* restrict lFhbnd);
-
+        
+      void volumeIntegral( 
+        double* restrict lduh, 
+        const double* restrict const lFhi,
+        const double* restrict const lShi, //nullptr if not used
+        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+      );
+{% endif %}
 
       void solutionUpdate( 
         double* restrict luh, 
@@ -70,26 +91,12 @@ namespace kernels {
         const double dt
       );
       
-      void volumeIntegral( 
-        double* restrict lduh, 
-        const double* restrict const lFhi,
-        const double* restrict const lShi, //nullptr if not used
-        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
-      );
-      
       void surfaceIntegral( 
         double* restrict lduh, 
         const double* restrict const lFhbnd, 
         const tarch::la::Vector<DIMENSIONS,double> &inverseDx
       );
-/*
-      template <void PDEInitialValues(const double* const x,double* Q)>
-      void initialCondition(
-        double* restrict luh,
-        const tarch::la::Vector<DIMENSIONS,double>& center,
-        const tarch::la::Vector<DIMENSIONS,double>& dx
-      );
-*/
+
       void adjustPointSolution(
         {{solverName}}& solver,
         double* luh,
