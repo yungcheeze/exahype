@@ -168,7 +168,7 @@ def extract_likwid_metrics(root_dir,prefix):
     '''
     
     metrics    = [
-                  "Packed DP MFLOP/s",
+                  " MFLOP/s",
                   "Memory bandwidth [MBytes/s]",
                   "Memory data volume [GBytes]",
                   "L2 bandwidth [MBytes/s]",
@@ -180,7 +180,7 @@ def extract_likwid_metrics(root_dir,prefix):
     columns    = [ "Sum","Min","Max","Avg" ]
     
     # collect filenames
-    with open(prefix+'.csv', 'w') as csvfile:
+    with open(prefix+'.likwid.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
         # write header
@@ -192,7 +192,7 @@ def extract_likwid_metrics(root_dir,prefix):
 
         # write content
         for filename in os.listdir(root_dir):
-            if filename.endswith(".out") and filename.startswith(prefix):
+            if filename.endswith(".out.likwid") and filename.startswith(prefix):
                 print(filename)
                 match = re.search('-p([0-9]+)-.*-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-([A-Za-z]+)',filename)
                 order = match.group(1)
@@ -206,6 +206,7 @@ def extract_likwid_metrics(root_dir,prefix):
                 measurements = parse_likwid_metrics(root_dir+'/'+filename,metrics,int(cores)==1) 
                 
                 row = [nodes,tasks,order,cores,cc,mode,opt]
+                   
                 for metric in metrics:
                     for column in columns:
                         row.append ( str(measurements[metric][column]) )
@@ -309,4 +310,4 @@ root_dir = args.path
 prefix   = args.prefix
 
 extract_likwid_metrics(root_dir,prefix)
-sort_table(prefix+".csv")
+sort_table(prefix+".likwid.csv")
