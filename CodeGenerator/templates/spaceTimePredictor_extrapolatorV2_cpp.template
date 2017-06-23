@@ -96,10 +96,9 @@ void kernels::aderdg::optimised::extrapolatorNonlinear(
         }
       }
     }
-  }
+  } 
+{% if nDim==3 %}
 
-  
-  {% if nDim==3 %}
   // z-direction: face 5 (left) and face 6 (right)
   for (int xy = 0; xy < {{nDof*nDof}}; xy++) {
     // Matrix-Vector Products
@@ -126,5 +125,5 @@ void kernels::aderdg::optimised::extrapolatorNonlinear(
       }
     }
   }
-  {% endif %}
+{% endif %} 
 }
