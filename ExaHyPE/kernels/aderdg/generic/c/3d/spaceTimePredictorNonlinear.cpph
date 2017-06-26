@@ -93,28 +93,27 @@ namespace {
 
       for (int i = 0; i < basisSize; i++) {  // time DOF
         // Compute the fluxes
-        
-        // TODO(Dominic): Refactor
-//        if(useFlux) {
-//          auto grainSizeFluxSourceNCPLoop = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsFluxSourceNCPLoop);
-//          //for (int j = 0; j < basisSize; j++) { // z
-//          pfor(j,0,basisSize,grainSizeFluxSourceNCPLoop.getGrainSize())
-//          for (int k = 0; k < basisSize; k++) { // y
-//            for (int l = 0; l < basisSize; l++) { // x
-//              // Call PDE fluxes
-//              const double* Q = lQi + idx_lQi(j, k, l, i, 0);
-//              F[0] = lFi + idx_lFi(i, j, k, l, 0, 0);
-//              F[1] = lFi + idx_lFi(i, j, k, l, 1, 0);
-//              F[2] = lFi + idx_lFi(i, j, k, l, 2, 0);
-//              solver.flux(Q, F);
-//
-//              // the algebraic source call moved together with ncp products
-//              // to the end.
-//            }
-//          }
-//          endpfor
-//          grainSizeFluxSourceNCPLoop.parallelSectionHasTerminated();
-//        }
+        if(useFlux) {
+          auto grainSizeFluxSourceNCPLoop = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsFluxSourceNCPLoop);
+          //for (int j = 0; j < basisSize; j++) { // z
+          pfor(j,0,basisSize,grainSizeFluxSourceNCPLoop.getGrainSize())
+          for (int k = 0; k < basisSize; k++) { // y
+            for (int l = 0; l < basisSize; l++) { // x
+              // Call PDE fluxes
+              const double* Q = lQi + idx_lQi(j, k, l, i, 0);
+              double* F[3];
+              F[0] = lFi + idx_lFi(i, j, k, l, 0, 0);
+              F[1] = lFi + idx_lFi(i, j, k, l, 1, 0);
+              F[2] = lFi + idx_lFi(i, j, k, l, 2, 0);
+              solver.flux(Q, F);
+
+              // the algebraic source call moved together with ncp products
+              // to the end.
+            }
+          }
+          endpfor
+          grainSizeFluxSourceNCPLoop.parallelSectionHasTerminated();
+        }
 
         // Compute the contribution of the initial condition uh to the right-hand side (rhs0)
         auto grainSizeCopyRhs = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsCopyRhs);
@@ -156,18 +155,9 @@ namespace {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
                 if(useFlux) {
-                  const double* Q = lQi + idx_lQi(j, k, n, i, 0);
-                  double F[3][numberOfVariables];
-                  solver.flux(Q, F);
-                  
                   rhs[idx_rhs(i, j, k, l, m)] -= updateSize *
-                      F[0][m] *
+                      lFi[idx_lFi(i, j, k, n, 0, m)] *
                       kernels::Kxi[order][n][l];
-                  
-                  // TODO(Dominic): Refactor
-//                  rhs[idx_rhs(i, j, k, l, m)] -= updateSize *
-//                      lFi[idx_lFi(i, j, k, n, 0, m)] *
-//                      kernels::Kxi[order][n][l];
                 }
                 if(useNCP) {
                   gradQ[idx_gradQ(j, k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
@@ -683,9 +673,6 @@ void spaceTimePredictorNonlinear(
 
   double* lFi     = tempSpaceTimeFluxUnknowns[0]; // lFi also stores the source
   double* gradQ   = useNCP ? tempSpaceTimeFluxUnknowns[1] : nullptr; // size: basisSize3 * DIMENSIONS * numberOfVariables
-
-  // BgradQ is no more needed since we have the fusedSource. = AlgebraicSource - NCP
-  //double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
 
   aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
       solver, luh, dt, dx, lQi, lQi_old, rhs, lFi, gradQ
