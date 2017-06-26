@@ -1913,8 +1913,13 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       lFhbnd,
       tempSpaceTimeUnknowns,
       tempSpaceTimeFluxUnknowns,
+#ifdef NO_TIME_AVERAGING
+      nullptr,
+      nullptr,
+#else
       tempUnknowns,
       tempFluxUnknowns,
+#endif
       tempStateSizedVector,
       luh,
       cellDescription.getSize(),
@@ -1930,7 +1935,11 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
 //  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
   volumeIntegral(
       lduh,
+#ifdef NO_TIME_AVERAGING
       tempSpaceTimeFluxUnknowns[0],
+#else
+      tempFluxUnknowns,
+#endif
       cellDescription.getSize());
 #endif
 
