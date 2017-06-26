@@ -112,7 +112,7 @@ void kernels::aderdg::optimised::volumeIntegral(
       const double weight = weights3[ijk] * weights1[m];
       #pragma simd
       for (int n = 0; n < {{nVar}}; n++) {
-        lduh[n+{{nVar}}*ijk] += weight * lSi[n+{{nVarPad}}*(ijk+{{nDof**nDim}}*m)))];
+        lduh[n+{{nVar}}*ijk] += weight * lSi[n+{{nVarPad}}*(ijk+{{nDof**nDim}}*m)];
       }
     }  
   }
