@@ -1880,8 +1880,13 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       lFhbnd,
       tempSpaceTimeUnknowns,
       tempSpaceTimeFluxUnknowns,
+#ifdef NO_TIME_AVERAGING
+      nullptr,
+      nullptr,
+#else
       tempUnknowns,
       tempFluxUnknowns,
+#endif
       tempStateSizedVector,
       luh,
       &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
@@ -1896,7 +1901,11 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // Remove the tempFluxUnkowns and tempUnknowns.
   volumeIntegral(
       lduh,
+#ifdef NO_TIME_AVERAGING
+      tempSpaceTimeFluxUnknowns[0],
+#else
       tempFluxUnknowns,
+#endif
       &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
 #else 
   spaceTimePredictor(

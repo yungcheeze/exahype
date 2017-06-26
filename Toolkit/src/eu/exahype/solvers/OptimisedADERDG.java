@@ -10,6 +10,7 @@ import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
   public static final String Identifier = "optimised"; //"optimised::options::nonlinear"
+  public static final String noTimeAveragingOptionId = "notimeavg";
 
   private int     _dimensions;
   private int     _numberOfVariables;
@@ -27,6 +28,7 @@ public class OptimisedADERDG implements Solver {
   private boolean _useFlux;
   private boolean _useSource;
   private boolean _useNCP;
+  private boolean _noTimeAveraging;
 
   public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
@@ -45,7 +47,7 @@ public class OptimisedADERDG implements Solver {
     _useFlux            = options.contains("fluxes");
     _useSource          = options.contains("sources");
     _useNCP             = options.contains("ncp");
-    
+    _noTimeAveraging    = options.contains(noTimeAveragingOptionId);    
   }
   
   private String getAbstractSolverName(String solverName) {
@@ -96,6 +98,10 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
+        
+    Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+        
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
 
@@ -133,9 +139,6 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeAbstractImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-        
-    Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP);
         
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)

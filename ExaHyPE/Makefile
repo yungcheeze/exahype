@@ -119,7 +119,8 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -r8 -cpp -auto 
+	#TODO SVENK shouldn't have to go O0
+	FCOMPILER_CFLAGS  += -O0 -r8 -cpp -auto 
 	# REMOVING "-fast" as it induces compiler bugs!
 	LINK_FORTRAN      += -lifcore
 
@@ -211,7 +212,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
           COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -O3
-          FCOMPILER_CFLAGS  += -O3
+      FCOMPILER_CFLAGS  += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)

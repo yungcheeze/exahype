@@ -197,15 +197,15 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     }
   }
 
-  if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
-  if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
+  if (_vertexDataWriter!=nullptr)           delete _vertexDataWriter;
+  if (_cellDataWriter!=nullptr)             delete _cellDataWriter;
   if (_vertexTimeStampDataWriter!=nullptr)  delete _vertexTimeStampDataWriter;
   if (_cellTimeStampDataWriter!=nullptr)    delete _cellTimeStampDataWriter;
   if (_writer!=nullptr)                     delete _writer;
 
-  _vertexDataWriter    = nullptr;
-  _cellDataWriter      = nullptr;
-  _writer              = nullptr;
+  _vertexDataWriter          = nullptr;
+  _cellDataWriter            = nullptr;
+  _writer                    = nullptr;
   _vertexTimeStampDataWriter = nullptr;
   _cellTimeStampDataWriter   = nullptr;
 }

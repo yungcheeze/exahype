@@ -17,10 +17,12 @@ mpibalancing::SFCDiffusionNodePoolStrategy::SFCDiffusionNodePoolStrategy(int mpi
   _waitTimeOut(waitTimeOutSec),
   _mpiRanksPerNode(mpiRanksPerNode),
   _primaryMPIRanksPerNode(primaryMPIRanksPerNode),
-  _nodePoolState(NodePoolState::DeployingIdlePrimaryNodes) {
+  _numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed(_primaryMPIRanksPerNode),
+  _nodePoolState(NodePoolState::DeployingIdlePrimaryRanks) {
 
   assertion( mpiRanksPerNode>0 );
   assertion( primaryMPIRanksPerNode<=mpiRanksPerNode );
+  assertion( mpiRanksPerNode&primaryMPIRanksPerNode==0 );
 }
 
 
@@ -29,7 +31,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::~SFCDiffusionNodePoolStrategy() {
 
 
 void mpibalancing::SFCDiffusionNodePoolStrategy::fillWorkerRequestQueue(RequestQueue& queue) {
-  if (queue.empty() && _nodePoolState==NodePoolState::DeployingAlsoSecondaryNodes) {
+  if (queue.empty() && _nodePoolState==NodePoolState::DeployingAlsoSecondaryRanks) {
     logInfo(
       "fillWorkerRequestQueue(RequestQueue)",
       "running out of ranks. Answered all pending MPI questions before but new requests keep on dropping in. Stop to deliver MPI ranks"
@@ -40,7 +42,7 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::fillWorkerRequestQueue(RequestQ
   #ifdef Parallel
   assertion( _tag >= 0 );
 
-  const std::clock_t waitTimeoutTimeStamp = clock() + static_cast<std::clock_t>(std::floor(_waitTimeOut * CLOCKS_PER_SEC));
+  std::clock_t waitTimeoutTimeStamp;
 
   bool continueToWait = true;
   while ( continueToWait ) {
@@ -48,6 +50,7 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::fillWorkerRequestQueue(RequestQ
       tarch::parallel::messages::WorkerRequestMessage message;
       message.receive(MPI_ANY_SOURCE,_tag, true, SendAndReceiveLoadBalancingMessagesBlocking);
       queue.push_back( message );
+      waitTimeoutTimeStamp = clock() + static_cast<std::clock_t>(std::floor(_waitTimeOut * CLOCKS_PER_SEC));
     }
 
     continueToWait =
@@ -62,24 +65,27 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::fillWorkerRequestQueue(RequestQ
     totalNumberOfRequestedWorkers += m.getNumberOfRequestedWorkers();
   }
   if (
-    totalNumberOfRequestedWorkers>getNumberOfIdlePrimaryNodes()
+    totalNumberOfRequestedWorkers>getNumberOfIdlePrimaryRanks()
     &&
     _nodePoolState!=NodePoolState::NoNodesLeft
   ) {
-    _nodePoolState = NodePoolState::DeployingAlsoSecondaryNodes;
+    _nodePoolState = NodePoolState::DeployingAlsoSecondaryRanks;
     logInfo(
       "fillWorkerRequestQueue(RequestQueue)",
       "have " << totalNumberOfRequestedWorkers <<
-      " worker requests but only " << getNumberOfIdlePrimaryNodes() <<
+      " worker requests but only " << getNumberOfIdlePrimaryRanks() <<
       " primary node(s), i.e. code is running out of idle nodes. Start to deploy secondary nodes"
     );
     queue = sortRequestQueue( queue );
+  }
+  else {
+    _numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed = std::max(1,totalNumberOfRequestedWorkers / getNumberOfPhysicalNodes());
   }
 }
 
 
 mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffusionNodePoolStrategy::sortRequestQueue( const RequestQueue&  queue ) {
-  assertion( _nodePoolState == NodePoolState::DeployingAlsoSecondaryNodes );
+  assertion( _nodePoolState == NodePoolState::DeployingAlsoSecondaryRanks );
   RequestQueue result;
 
   #ifdef Parallel
@@ -116,7 +122,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
         maxNode     = p.first;
       }
     }
-    logDebug( "sortRequestQueue(Queue)", "extract data of node " << maxNode );
+    logInfo( "sortRequestQueue(Queue)", "answer requests by node " << maxNode );
     assertionEquals(nodeToPriorityMap.count(maxNode),1);
     nodeToPriorityMap.erase(maxNode);
 
@@ -169,7 +175,11 @@ bool mpibalancing::SFCDiffusionNodePoolStrategy::isFirstOrLastPrimaryMPIRankOnAN
 
 
 bool mpibalancing::SFCDiffusionNodePoolStrategy::isPrimaryMPIRank(int rank) const {
-  return rank % _mpiRanksPerNode < _primaryMPIRanksPerNode;
+  const int NumberOfRanksPerPrimaryRank = _mpiRanksPerNode / _primaryMPIRanksPerNode;
+
+  return rank % NumberOfRanksPerPrimaryRank==0;
+
+//  return rank % _mpiRanksPerNode < _primaryMPIRanksPerNode;
 }
 
 
@@ -199,10 +209,10 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::removeNode( int rank ) {
 }
 
 
-int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfIdlePrimaryNodes() const {
+int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfIdlePrimaryRanks() const {
   int result = 0;
   for (auto node: _nodes) {
-    if (node.isIdlePrimaryNode()) {
+    if (node.isIdlePrimaryRank()) {
       result++;
     }
   }
@@ -212,19 +222,19 @@ int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfIdlePrimaryNodes() co
 
 bool mpibalancing::SFCDiffusionNodePoolStrategy::hasIdleNode(int forMaster) const {
   switch (_nodePoolState) {
-    case NodePoolState::DeployingIdlePrimaryNodes:
+    case NodePoolState::DeployingIdlePrimaryRanks:
       {
         for (auto node: _nodes) {
-          if (node.isIdlePrimaryNode()) {
+          if (node.isIdlePrimaryRank()) {
             return true;
           }
         }
       }
       break;
-    case NodePoolState::DeployingAlsoSecondaryNodes:
+    case NodePoolState::DeployingAlsoSecondaryRanks:
     {
       for (auto node: _nodes) {
-        if (node.isIdlePrimaryNode() || node.isIdleSecondaryNode()) {
+        if (node.isIdlePrimaryRank() || node.isIdleSecondaryRank()) {
           return true;
         }
       }
@@ -240,7 +250,7 @@ bool mpibalancing::SFCDiffusionNodePoolStrategy::hasIdleNode(int forMaster) cons
 int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfIdleNodes() const {
   int result = 0;
   for (auto node: _nodes) {
-    if (node.isIdlePrimaryNode() || node.isIdleSecondaryNode()) {
+    if (node.isIdlePrimaryRank() || node.isIdleSecondaryRank()) {
       result++;
     }
   }
@@ -252,10 +262,10 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::setNodeIdle( int rank ) {
   assertion( isRegisteredNode(rank) );
   _nodes[rank].deActivate();
   if (isPrimaryMPIRank(rank)) {
-    _nodePoolState = NodePoolState::DeployingIdlePrimaryNodes;
+    _nodePoolState = NodePoolState::DeployingIdlePrimaryRanks;
   }
   else if (_nodePoolState == NodePoolState::NoNodesLeft) {
-    _nodePoolState = NodePoolState::DeployingAlsoSecondaryNodes;
+    _nodePoolState = NodePoolState::DeployingAlsoSecondaryRanks;
   }
 }
 
@@ -268,7 +278,7 @@ bool mpibalancing::SFCDiffusionNodePoolStrategy::isRegisteredNode(int rank) cons
 
 bool mpibalancing::SFCDiffusionNodePoolStrategy::isIdleNode(int rank) const {
   return (static_cast<int>(_nodes.size())>rank)
-      && (_nodes[rank].isIdlePrimaryNode() || _nodes[rank].isIdleSecondaryNode());
+      && (_nodes[rank].isIdlePrimaryRank() || _nodes[rank].isIdleSecondaryRank());
 }
 
 
@@ -298,35 +308,59 @@ std::string mpibalancing::SFCDiffusionNodePoolStrategy::toString() const {
 
 void mpibalancing::SFCDiffusionNodePoolStrategy::reserveParticularNode(int rank) {
   assertion( isRegisteredNode(rank) );
-  assertion( _nodes[rank].isIdlePrimaryNode() || _nodes[rank].isIdleSecondaryNode() );
+  assertion( _nodes[rank].isIdlePrimaryRank() || _nodes[rank].isIdleSecondaryRank() );
 
   _nodes[rank].activate();
 }
 
 
+int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfPhysicalNodes() const {
+  return std::max(static_cast<int>(_nodes.size()) / _mpiRanksPerNode,1);
+}
+
+
 int mpibalancing::SFCDiffusionNodePoolStrategy::reserveNode(int forMaster) {
   switch (_nodePoolState) {
-    case NodePoolState::DeployingIdlePrimaryNodes:
+    case NodePoolState::DeployingIdlePrimaryRanks:
       {
+        for (int j=0; j<getNumberOfPhysicalNodes(); j++) {
+          for (int i=0; i<_numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed;i++) {
+            const int rank = (j*_mpiRanksPerNode+i+forMaster+1) % tarch::parallel::Node::getInstance().getNumberOfNodes();
+            if (_nodes[rank].isIdlePrimaryRank()) {
+              _nodes[rank].activate();
+              return rank;
+            }
+          }
+        }
+
+        logInfo(
+          "reserveNode(int)",
+          "can't serve request from rank " << forMaster << " with constraint " <<
+          _numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed << " of primary ranks per node. Fallback to all primary ranks"
+        );
+
+        // Fallback
+        const int firstRankToStudy = (forMaster/_mpiRanksPerNode)*_mpiRanksPerNode;
         for (int i=0; i<static_cast<int>(_nodes.size());i++) {
-          if (_nodes[i].isIdlePrimaryNode()) {
-            _nodes[i].activate();
-            return i;
+          const int rank = (firstRankToStudy + i) % tarch::parallel::Node::getInstance().getNumberOfNodes();
+          if (_nodes[rank].isIdlePrimaryRank()) {
+            _nodes[rank].activate();
+            return rank;
           }
         }
       }
       break;
-    case NodePoolState::DeployingAlsoSecondaryNodes:
+    case NodePoolState::DeployingAlsoSecondaryRanks:
       {
         assertion( hasIdleNode(forMaster) );
-        assertion( !_nodes[forMaster].isIdlePrimaryNode() );
-        assertion( !_nodes[forMaster].isIdleSecondaryNode() );
+        assertion( !_nodes[forMaster].isIdlePrimaryRank() );
+        assertion( !_nodes[forMaster].isIdleSecondaryRank() );
 
         for (int i=1; i>0; i++) { // not an endless loop
           if (
             forMaster+i < tarch::parallel::Node::getInstance().getNumberOfNodes()
             &&
-            (_nodes[forMaster+i].isIdlePrimaryNode() || _nodes[forMaster+i].isIdleSecondaryNode())
+            (_nodes[forMaster+i].isIdlePrimaryRank() || _nodes[forMaster+i].isIdleSecondaryRank())
           ) {
             _nodes[forMaster+i].activate();
             return forMaster+i;
@@ -334,7 +368,7 @@ int mpibalancing::SFCDiffusionNodePoolStrategy::reserveNode(int forMaster) {
           if (
             forMaster-i >= 0
             &&
-            ( _nodes[forMaster-i].isIdlePrimaryNode() || _nodes[forMaster-i].isIdleSecondaryNode())
+            ( _nodes[forMaster-i].isIdlePrimaryRank() || _nodes[forMaster-i].isIdleSecondaryRank())
           ) {
             _nodes[forMaster-i].activate();
             return forMaster-i;
@@ -365,7 +399,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::NodePoolListEntry
   const std::string& name,
   bool isPrimaryNode
   ):
-  _state( isPrimaryNode ? State::WorkingPrimaryNode : State::WorkingSecondaryNode ),
+  _state( isPrimaryNode ? State::WorkingPrimaryRank : State::WorkingSecondaryRank ),
   _name(name) {
 }
 
@@ -390,24 +424,24 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::toString(std
   out << "(state:";
   switch (_state) {
     case State::Undef:                 out << "undef";                   break;
-    case State::WorkingPrimaryNode:    out << "working-primary-node";    break;
-    case State::WorkingSecondaryNode:  out << "working-secondary-node";  break;
-    case State::IdlePrimaryNode:       out << "idle-primary-node";       break;
-    case State::IdleSecondaryNode:     out << "idle-secondary-node";     break;
+    case State::WorkingPrimaryRank:    out << "working-primary-rank";    break;
+    case State::WorkingSecondaryRank:  out << "working-secondary-rank";  break;
+    case State::IdlePrimaryRank:       out << "idle-primary-rank";       break;
+    case State::IdleSecondaryRank:     out << "idle-secondary-rank";     break;
   }
   out << ",name:" << _name << ")";
 }
 
 
 void mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::activate() {
-  assertion( _state==State::IdlePrimaryNode || _state==State::IdleSecondaryNode );
-  _state = _state==State::IdlePrimaryNode ? State::WorkingPrimaryNode : State::WorkingSecondaryNode;
+  assertion( _state==State::IdlePrimaryRank || _state==State::IdleSecondaryRank );
+  _state = _state==State::IdlePrimaryRank ? State::WorkingPrimaryRank : State::WorkingSecondaryRank;
 }
 
 
 void mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::deActivate() {
-  assertion( _state==State::WorkingPrimaryNode || _state==State::WorkingSecondaryNode );
-  _state = _state==State::WorkingPrimaryNode ? State::IdlePrimaryNode : State::IdleSecondaryNode;
+  assertion( _state==State::WorkingPrimaryRank || _state==State::WorkingSecondaryRank );
+  _state = _state==State::WorkingPrimaryRank ? State::IdlePrimaryRank : State::IdleSecondaryRank;
 }
 
 
@@ -416,11 +450,11 @@ bool mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::isRegistered
 }
 
 
-bool mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::isIdlePrimaryNode() const {
-  return _state==State::IdlePrimaryNode;
+bool mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::isIdlePrimaryRank() const {
+  return _state==State::IdlePrimaryRank;
 }
 
 
-bool mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::isIdleSecondaryNode() const {
-  return _state==State::IdleSecondaryNode;
+bool mpibalancing::SFCDiffusionNodePoolStrategy::NodePoolListEntry::isIdleSecondaryRank() const {
+  return _state==State::IdleSecondaryRank;
 }

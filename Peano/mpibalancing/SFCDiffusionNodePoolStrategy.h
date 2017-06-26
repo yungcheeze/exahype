@@ -30,6 +30,20 @@ namespace mpibalancing {
 
  * are doomed to fail.
  *
+ *
+ * <h2>Number of idle nodes</h2>
+ *
+ * Please consult the getNumberOfIdleNodes() routine for details. The point is
+ * that the handling of idle nodes is slightly inconsistent here, as there are
+ * idle nodes (secondary) that are never to be deployed in the standard case
+ * even though they have nothing to do.
+ *
+ *
+ * <h2>Typical configurations</h2>
+ *
+ * - It seems to be reasonable to have twice as many ranks as primary ranks.
+ *
+ *
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
@@ -49,10 +63,10 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
          */
         enum class State {
           Undef,
-          IdlePrimaryNode,
-          IdleSecondaryNode,
-          WorkingPrimaryNode,
-          WorkingSecondaryNode
+          IdlePrimaryRank,
+          IdleSecondaryRank,
+          WorkingPrimaryRank,
+          WorkingSecondaryRank
         };
 
       private:
@@ -115,22 +129,22 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
          */
         std::string toString() const;
 
-        bool isIdlePrimaryNode() const;
-        bool isIdleSecondaryNode() const;
+        bool isIdlePrimaryRank() const;
+        bool isIdleSecondaryRank() const;
     };
 
     enum class NodePoolState {
       /**
        * Standard mode. As soon as we run out of primary nodes, we switch it to
-       * DeployingAlsoSecondaryNodes.
+       * DeployingAlsoSecondaryRanks.
        */
-      DeployingIdlePrimaryNodes,
+      DeployingIdlePrimaryRanks,
       /**
        * If this flag is set, we also deploy secondary nodes. However, as soon
        * as our request queue is empty, i.e. as soon as we have answered one
        * batch of requests, we switch into NoNodesLeft.
        */
-      DeployingAlsoSecondaryNodes,
+      DeployingAlsoSecondaryRanks,
       /**
        * We do not hand out any nodes anymore.
        */
@@ -173,11 +187,23 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
 
     const int     _primaryMPIRanksPerNode;
 
+    int           _numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed;
+
     NodePoolState _nodePoolState;
 
     bool continueToFillRequestQueue(int queueSize) const;
 
-    int getNumberOfIdlePrimaryNodes() const;
+    int getNumberOfIdlePrimaryRanks() const;
+
+    /**
+     * Computes the total number of real nodes
+     *
+     * For this, we take the number of ranks and divide it by the passed
+     * argument ranks-per-node. To facilitate debugging (where fewer ranks
+     * might be used than are usually deployed to one node), we combine the
+     * result with a max(...,1).
+     */
+    int getNumberOfPhysicalNodes() const;
 
     /**
      * Take queue and return re-sorted queue. Input and output queue contain

@@ -158,7 +158,7 @@ public class Helpers {
   }
 
   static public void invokeCodeGenerator(String solverFullName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP)
+      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
@@ -181,7 +181,7 @@ public class Helpers {
     }
 */
     String numericsParameter = isLinear ? "linear" : "nonlinear";
-    String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "");
+    String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "") + (noTimeAveraging ? "--noTimeAveraging " : "");
     
 
     // set up the command to execute the code generator
