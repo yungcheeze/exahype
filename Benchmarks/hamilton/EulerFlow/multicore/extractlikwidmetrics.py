@@ -168,7 +168,7 @@ def extract_likwid_metrics(root_dir,prefix):
     '''
     
     metrics    = [
-                  " MFLOP/s",
+                  "  MFLOP/s", # Two whitespaces are important to not find the AVX MFLOP/s by accident
                   "Memory bandwidth [MBytes/s]",
                   "Memory data volume [GBytes]",
                   "L2 bandwidth [MBytes/s]",
