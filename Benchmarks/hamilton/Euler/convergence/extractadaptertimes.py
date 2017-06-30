@@ -77,7 +77,7 @@ def extract_table(root_dir,prefix):
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for filename in os.listdir(root_dir):
             if filename.endswith(".out") and filename.startswith(prefix):
-                # sample: EulerFlow-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
+                # sample: Euler-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
                 match = re.search('^.+-.+-([a-z]+)-.+-([A-Za-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
                 opt   = match.group(1)
                 fused = match.group(2)
@@ -123,7 +123,7 @@ and write them to a csv file with name
 
 \n\n
 Sample usage:\n
-python3 writecsvtable.py -path \'EulerFlow-p3/'
+python3 writecsvtable.py -path \'Euler-p3/'
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)

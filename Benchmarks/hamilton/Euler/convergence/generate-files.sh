@@ -17,7 +17,7 @@
 #   64 GB TruDDR4 memory
 #   the nodes are diskless
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
-project=EulerFlow
+project=Euler
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
@@ -83,7 +83,7 @@ do
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
-    spec=multicore/EulerFlow-$io.exahype
+    spec=multicore/Euler-$io.exahype
     filename=multicore/$prefix-p$order-t1-c$coresPerTask
     newSpec=$filename'.exahype'
 

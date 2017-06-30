@@ -194,7 +194,7 @@ def extract_likwid_metrics(root_dir,prefix):
         for filename in os.listdir(root_dir):
             if filename.endswith(".out.likwid") and filename.startswith(prefix):
                 print(filename)
-                # sample: EulerFlow-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
+                # sample: Euler-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
                 match = re.search('^.+-.+-([a-z]+)-.+-([A-Za-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
                 opt   = match.group(1)
                 fused = match.group(2)
@@ -299,7 +299,7 @@ and write them to a csv file with name
 
 \n\n
 Sample usage:\n
-python extractlikwidmetrics.py -path \'examples/151217_phi1_node/' -prefix "EulerFlow"
+python extractlikwidmetrics.py -path \'examples/151217_phi1_node/' -prefix "Euler"
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)

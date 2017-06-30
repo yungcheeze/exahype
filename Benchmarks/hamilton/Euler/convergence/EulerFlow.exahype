@@ -22,7 +22,7 @@ exahype-project  Euler
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./Benchmarks/hamilton/EulerFlow
+  output-directory const  = ./Benchmarks/hamilton/Euler
   architecture const      = hsw
   log-file                = mylogfile.log
 
@@ -57,7 +57,7 @@ exahype-project  Euler
     spawn-double-compression-as-background-thread = off
   end optimisation
 
-  solver ADER-DG MyEulerSolver
+  solver ADER-DG EulerSolver
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */

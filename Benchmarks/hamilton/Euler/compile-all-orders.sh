@@ -1,6 +1,6 @@
 exe1=ExaHyPE-Euler
-exe2=ExaHyPE-EulerFlow
-header=AbstractMyEulerSolver.h
+exe2=ExaHyPE-Euler
+header=AbstractEulerSolver.h
 
 
 for m in 1 2
