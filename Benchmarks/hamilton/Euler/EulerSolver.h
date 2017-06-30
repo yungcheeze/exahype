@@ -17,12 +17,12 @@ namespace Euler{
 }
 
 class Euler::EulerSolver: public Euler::AbstractEulerSolver {
-  private:
+  public:
     /**
      * See chapter 7.13.2 in "I do like CFD, VOL.1" by Katate Masatsuka.
      */
     static void entropyWave(const double* const x,double t, double* Q);
-  public:
+    
     EulerSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**

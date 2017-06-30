@@ -7,13 +7,10 @@
 #SBATCH -p test.q
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=24
 #SBATCH --mail-user=dominic.e.charrier@durham.ac.uk
 #SBATCH --mail-type=ALL
-#SBATCH --array=24
-##SBATCH --array=1,12,24
-##SBATCH --array=1-24,48 # ham7: 1..24 cores + 48 threads (HT)
-##SBATCH --array=1-16,32 # ham6: 1..16 cores + 32 threads (HT) 
+#SBATCH --array=0,1,2 # mesh sizes
 
 source /etc/profile.d/modules.sh
 module purge
@@ -30,7 +27,7 @@ export I_MPI_FABRICS="shm:dapl"
 nodes=1
 tasks=1
 tasksPerNode=1
-coresPerTask=$SLURM_ARRAY_TASK_ID
+coresPerTask=24
 let procsPerNode=tasksPerNode*coresPerTask
 
 compiler=Intel
@@ -39,11 +36,11 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=Euler-no-output-regular-0-p3
+prefix=Euler-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
 out=$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
-script=multicore/hamilton.slurm-script
-spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+script=convergence/hamilton.slurm-script
+spec=convergence/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
 # pipe some information into output file
 module list 2>$out
@@ -55,20 +52,3 @@ cat $spec >> $out
 
 # execute the job
 ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
-
-#if (( $coresPerTask==1 )); then
-#  likwid-perfctr -f -C 0 -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-#  likwid-perfctr -f -C 0 -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-#  likwid-perfctr -f -C 0 -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-#  likwid-perfctr -f -C 0 -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
-#else
-#  let maxCore=coresPerTask-1
-
-# likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-# likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-# likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-# likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  # not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
-#fi
-

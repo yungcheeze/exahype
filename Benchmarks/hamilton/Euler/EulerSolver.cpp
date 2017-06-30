@@ -12,8 +12,6 @@
  **/
 
 #include "EulerSolver.h"
-#include "InitialData.h"
-
 #include "EulerSolver_Variables.h"
 #include "tarch/la/MatrixVectorOperations.h"
 
@@ -21,6 +19,7 @@
 
 #include <math.h>
 
+#include "kernels/GaussLegendreQuadrature.h"
 
 void Euler::EulerSolver::init(std::vector<std::string>& cmdlineargs) {
 }
@@ -75,22 +74,16 @@ void Euler::EulerSolver::entropyWave(const double* const x,double t, double* Q) 
   constexpr double wInf   = 1.0;
   constexpr double EInf   = 1.0;
 
-  const double irho = 1.0/Q[0];
-
+  Q[1] = Q[0] * uInf;
+  Q[2] = Q[0] * vInf;
+  Q[3] = Q[0] * wInf;
+  Q[4] = EInf;
 #if DIMENSIONS==2
   constexpr double qInf = uInf+vInf;
-  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1] - qInf * t) );
-  Q[1] = uInf;
-  Q[2] = vInf;
-  Q[3] = wInf;
-  Q[4] = EInf;
+  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1] - qInf*t) );
 #else
   constexpr double qInf   = uInf+vInf+wInf;
-  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1]+x[2] - qInf * t) );
-  Q[1] = uInf;
-  Q[2] = vInf;
-  Q[3] = wInf;
-  Q[4] = EInf;
+  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1]+x[2] - qInf*t) );
 #endif
 }
 
@@ -110,21 +103,24 @@ Euler::EulerSolver::refinementCriterion(
 }
 
 void Euler::EulerSolver::boundaryValues(const double* const x, const double t,const double dt,
-                                          const int faceIndex,const int normalNonZero,
+                                          const int faceIndex,const int direction,
                                           const double* const fluxIn,const double* const stateIn,
                                           double* fluxOut, double* stateOut) {
-  //  fluxOut
-  //  //@todo Please implement
-  fluxOut[0] = fluxIn[0];
-  fluxOut[1] = fluxIn[1];
-  fluxOut[2] = fluxIn[2];
-  fluxOut[3] = fluxIn[3];
-  fluxOut[4] = fluxIn[4];
-  //  // stateOut
-  //  // @todo Please implement
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
-  stateOut[4] = stateIn[4];
+  double Q[NumberOfVariables]     = {0.0};
+  double _F[3][NumberOfVariables] = {0.0};
+  double* F[3] = {_F[0],_F[1],_F[2]};
+
+  // initialise
+  std::fill_n(stateOut, NumberOfVariables, 0.0);
+  std::fill_n(fluxOut,  NumberOfVariables, 0.0);
+  for (int i=0; i<Order+1; i++) {
+    const double ti = t + dt * kernels::gaussLegendreNodes[Order][i];
+
+    entropyWave(x,ti,Q);
+    flux(Q,F);
+    for (int v=0; v<NumberOfVariables; v++) {
+      stateOut[v] += Q[v]            * kernels::gaussLegendreWeights[Order][i];
+      fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i]; 
+    }
+  }
 }

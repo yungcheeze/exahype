@@ -21,8 +21,8 @@ project=Euler
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.05 0.01 0.005 0.001)
-T=(0.2 0.2 0.0005 0.0001) # p=3
+hMax=(0.12 0.038 0.0124)
+T=(2.0 2.0 2.0)  # p=3
 io=no-output # or output
 
 kernels=gen
@@ -65,8 +65,8 @@ do
 
 
   # Create script
-  script=multicore/hamilton.slurm-script
-  newScript=multicore/hamilton-$prefix-p$order-n1-t1.slurm-script
+  script=convergence/hamilton.slurm-script
+  newScript=convergence/hamilton-$prefix-p$order-n1-t1.slurm-script
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
@@ -76,15 +76,15 @@ do
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
 
-  sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript
+  sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
   # Create spec files
   for coresPerTask in 24
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
-    spec=multicore/Euler-$io.exahype
-    filename=multicore/$prefix-p$order-t1-c$coresPerTask
+    spec=convergence/Euler-$io.exahype
+    filename=convergence/$prefix-p$order-t1-c$coresPerTask
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
