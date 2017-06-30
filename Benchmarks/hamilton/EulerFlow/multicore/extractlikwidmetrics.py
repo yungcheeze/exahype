@@ -194,14 +194,16 @@ def extract_likwid_metrics(root_dir,prefix):
         for filename in os.listdir(root_dir):
             if filename.endswith(".out.likwid") and filename.startswith(prefix):
                 print(filename)
-                match = re.search('-p([0-9]+)-.*-n([0-9]+)-t([0-9]+)-c([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-([A-Za-z]+)',filename)
-                order = match.group(1)
-                nodes = match.group(2)
-                tasks = match.group(3)
-                cores = match.group(4)
-                mode  = match.group(5)
-                cc    = match.group(6)
-                opt   = match.group(7)
+                # sample: EulerFlow-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
+                match = re.search('^.+-.+-([a-z]+)-.+-([A-Za-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
+                opt   = match.group(1)
+                fused = match.group(2)
+                order = match.group(3)
+                mode  = match.group(4)
+                cc    = match.group(5)
+                nodes = match.group(6)
+                tasks = match.group(7)
+                cores = match.group(8)
                     
                 measurements = parse_likwid_metrics(root_dir+'/'+filename,metrics,int(cores)==1) 
                 

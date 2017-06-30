@@ -22,7 +22,7 @@ exahype-project  Euler
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/EulerFlow
+  output-directory const  = ./Benchmarks/hamilton/EulerFlow
   architecture const      = hsw
   log-file                = mylogfile.log
 

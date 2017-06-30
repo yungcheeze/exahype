@@ -1,2 +1,4 @@
-rm hamilton*-p*-n*-t*.slurm-script
-rm *-t*-c*.exahype
+directory=multicore
+
+rm ${directory}/hamilton*-*-n*-t*.slurm-script
+rm ${directory}/*-t*-c*.exahype
