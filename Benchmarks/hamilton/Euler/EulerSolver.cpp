@@ -15,7 +15,7 @@
 #include "EulerSolver_Variables.h"
 #include "tarch/la/MatrixVectorOperations.h"
 
-#include <memory>
+#include <algorithm>
 
 #include <math.h>
 
@@ -43,7 +43,7 @@ void Euler::EulerSolver::flux(const double* const Q, double** F) {
 }
 
 void Euler::EulerSolver::eigenvalues(const double* const Q,
-                                       const int normalNonZeroIndex,
+                                       const int direction,
                                        double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
@@ -52,12 +52,20 @@ void Euler::EulerSolver::eigenvalues(const double* const Q,
   const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  double u_n = Q[normalNonZeroIndex + 1] * irho;
+  double u_n = Q[direction + 1] * irho;
   double c  = std::sqrt(GAMMA * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
   eigs.j(u_n,u_n,u_n);
+
+//  std::cout << "p="<<c<<std::endl;
+//  std::cout << "c="<<c<<std::endl;
+//
+//  for (int i=0; i<NumberOfVariables; i++) {
+//    std::cout << "eigs["<<i<<"]="<<eigs.data()[i]<<",";
+//  }
+//  std::cout << std::endl;
 }
 
 
@@ -68,22 +76,26 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver::useAdjus
 
 void Euler::EulerSolver::entropyWave(const double* const x,double t, double* Q) {
   constexpr double A      = 1.0;
-  constexpr double rhoInf = 1.0;
+  constexpr double rhoInf = 3.0; // rhoInf-A > 0
   constexpr double uInf   = 1.0;
   constexpr double vInf   = 1.0;
   constexpr double wInf   = 1.0;
-  constexpr double EInf   = 1.0;
+  constexpr double EInf   = 10.0;  // p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() ) > 0
+  constexpr double freq   = 4.0;
 
-  Q[1] = Q[0] * uInf;
-  Q[2] = Q[0] * vInf;
-  Q[3] = Q[0] * wInf;
   Q[4] = EInf;
 #if DIMENSIONS==2
   constexpr double qInf = uInf+vInf;
-  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1] - qInf*t) );
+  Q[0] = rhoInf + A * std::sin( freq * M_PI*(x[0]+x[1] - qInf*t) );
+  Q[1] = Q[0] * uInf;
+  Q[2] = Q[0] * vInf;
+  Q[3] = Q[0] * wInf;
 #else
   constexpr double qInf   = uInf+vInf+wInf;
-  Q[0] = rhoInf + A * std::sin( M_PI*(x[0]+x[1]+x[2] - qInf*t) );
+  Q[0] = rhoInf + A * std::sin( freq * M_PI*(x[0]+x[1]+x[2] - qInf*t) );
+  Q[1] = Q[0] * uInf;
+  Q[2] = Q[0] * vInf;
+  Q[3] = Q[0] * wInf;
 #endif
 }
 
@@ -120,7 +132,9 @@ void Euler::EulerSolver::boundaryValues(const double* const x, const double t,co
     flux(Q,F);
     for (int v=0; v<NumberOfVariables; v++) {
       stateOut[v] += Q[v]            * kernels::gaussLegendreWeights[Order][i];
-      fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i]; 
+      fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
     }
   }
+//  std::copy_n(stateIn, NumberOfVariables, stateOut);
+//  std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
 }

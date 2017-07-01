@@ -31,17 +31,17 @@ void Euler::ErrorWriter::plotPatch(
      double w_dV = 0;
      for (int d=0; d<DIMENSIONS; d++) {
        x[d] = offsetOfPatch[d] + sizeOfPatch[d] * kernels::gaussLegendreNodes[EulerSolver::Order][i(d)];
-       w_dV = sizeOfPatch[d] * kernels::gaussLegendreWeights[EulerSolver::Order][i(d)];    
+       w_dV = sizeOfPatch[d] * kernels::gaussLegendreWeights[EulerSolver::Order][i(d)];
      }
-    
+
      double uAna[EulerSolver::NumberOfVariables];
      EulerSolver::entropyWave(x,timeStamp,uAna);
-    
-     const int iScalar  = peano::utils::dLinearised(i,EulerSolver::Order+1);  
+
+     const int iScalar  = peano::utils::dLinearised(i,EulerSolver::Order+1);
      const double* uNum = u + iScalar*EulerSolver::NumberOfVariables;
- 
+
      for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
-        const double uDiff = std::abs(u[v]-uAna[v]);
+        const double uDiff = std::abs(uNum[v]-uAna[v]);
         errorL2[v] += uDiff*uDiff * w_dV;
      }
   }
