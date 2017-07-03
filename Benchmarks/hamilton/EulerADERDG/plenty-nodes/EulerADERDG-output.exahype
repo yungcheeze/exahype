@@ -72,6 +72,5 @@ exahype-project EulerADERDG
       repeat          = 0.05e-4
       output          = ./primitives
     end plot
-    
   end solver
 end exahype-project

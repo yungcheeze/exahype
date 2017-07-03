@@ -22,8 +22,8 @@ exahype-project EulerADERDG
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/EulerADERDG
-  architecture const      = noarch
+  output-directory const  = ./Benchmarks/hamilton/EulerADERDG
+  architecture const      = hsw
   log-file                = mylogfile.log
 
   computational-domain
@@ -61,16 +61,30 @@ exahype-project EulerADERDG
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 0.038
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
 
-	plot vtk::Cartesian::vertices::ascii PrimitivesWriter
+    plot user::defined ErrorWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.05e-4
+      output          = ./errors
+    end plot
+    
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables const = 5
       time            = 0.0
       repeat          = 0.05e-4
       output          = ./primitives
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.05e-4
+      output          = ./exact-primitives
     end plot
   end solver
 end exahype-project
