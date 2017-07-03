@@ -37,10 +37,10 @@ if (( coresPerTask==1 )); then
 fi
 
 prefix=EulerADERDG-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
-out=$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+out=${prefix}.out
 
 script=convergence/hamilton.slurm-script
-spec=convergence/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+spec=convergence/${prefix}.exahype
 
 # pipe some information into output file
 module list 2>$out
