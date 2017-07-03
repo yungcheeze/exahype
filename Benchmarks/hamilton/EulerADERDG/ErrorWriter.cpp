@@ -10,6 +10,7 @@
 #include "EulerSolver.h"
 
 #include "kernels/GaussLegendreQuadrature.h"
+#include "kernels/KernelUtils.h"
 
 #include "peano/utils/Loop.h"
 
@@ -32,7 +33,11 @@ void EulerADERDG::ErrorWriter::plotPatch(
 
   double x[DIMENSIONS];
 
-  dfor(i,AbstractEulerSolver::Order+1) {
+  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+  constexpr int basisSize         = AbstractEulerSolver::Order+1;
+  kernels::idx4 idx(basisSize,basisSize,basisSize,numberOfVariables);
+
+  dfor(i,basisSize) {
      double w_dV = 0;
      for (int d=0; d<DIMENSIONS; d++) {
        x[d] = offsetOfPatch[d] + sizeOfPatch[d] * kernels::gaussLegendreNodes[AbstractEulerSolver::Order][i(d)];
@@ -42,10 +47,10 @@ void EulerADERDG::ErrorWriter::plotPatch(
      double uAna[EulerSolver::NumberOfVariables];
      EulerSolver::entropyWave(x,timeStamp,uAna);
 
-     const int iScalar  = peano::utils::dLinearised(i,EulerSolver::Order+1);
-     const double* uNum = u + iScalar*AbstractEulerSolver::NumberOfVariables;
+//     const int iScalar  = peano::utils::dLinearised(i,basisSize);
+     const double* uNum = u + idx ( (DIMENSIONS==3) ? i(2) : 0, i(1), i(0), 0);
 
-     for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+     for (int v=0; v<numberOfVariables; v++) {
         const double uDiff = std::abs(uNum[v]-uAna[v]);
         errorL2[v]   += uDiff*uDiff * w_dV;
         errorL1[v]   += uDiff * w_dV;
@@ -71,7 +76,9 @@ void EulerADERDG::ErrorWriter::startPlotting( double time) {
 }
 
 void EulerADERDG::ErrorWriter::finishPlotting() {
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+
+  for (int v=0; v<numberOfVariables; v++) {
     errorL2[v]   = sqrt(errorL2[v]);
     normL2Ana[v] = sqrt(normL2Ana[v]);
   }
@@ -79,43 +86,43 @@ void EulerADERDG::ErrorWriter::finishPlotting() {
   std::cout << "**Errors for ADER-DG solver with order="<<AbstractEulerSolver::Order<<"**" << std::endl;
   std::cout << "t_eval : "<<_timeStamp << std::endl;
   std::cout << "variable     : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << v << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "absErrorL1   : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorL1[v] << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "absErrorL2   : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorL2[v] << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "absErrorLInf : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorLInf[v] << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "relErrorL1   : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorL1[v]/normL1Ana[v] << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "relErrorL2   : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorL2[v]/normL2Ana[v] << ", ";
   }
   std::cout << std::endl;
 
   std::cout << "relErrorLInf : ";
-  for (int v=0; v<AbstractEulerSolver::NumberOfVariables; v++) {
+  for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorLInf[v]/normLInfAna[v] << ", ";
   }
   std::cout << std::endl;
