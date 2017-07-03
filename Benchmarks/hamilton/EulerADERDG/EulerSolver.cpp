@@ -58,19 +58,10 @@ void EulerADERDG::EulerSolver::eigenvalues(const double* const Q,
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
   eigs.j(u_n,u_n,u_n);
-
-//  std::cout << "p="<<c<<std::endl;
-//  std::cout << "c="<<c<<std::endl;
-//
-//  for (int i=0; i<NumberOfVariables; i++) {
-//    std::cout << "eigs["<<i<<"]="<<eigs.data()[i]<<",";
-//  }
-//  std::cout << std::endl;
 }
 
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue EulerADERDG::EulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
@@ -81,7 +72,7 @@ void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, doubl
   constexpr double vInf   = 1.0;
   constexpr double wInf   = 1.0;
   constexpr double EInf   = 10.0;  // p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() ) > 0
-  constexpr double freq   = 4.0;
+  constexpr double freq   = 2.0;
 
   Q[4] = EInf;
 #if DIMENSIONS==2
@@ -135,6 +126,4 @@ void EulerADERDG::EulerSolver::boundaryValues(const double* const x, const doubl
       fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
     }
   }
-//  std::copy_n(stateIn, NumberOfVariables, stateOut);
-//  std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
 }

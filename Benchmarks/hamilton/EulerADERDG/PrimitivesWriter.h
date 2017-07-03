@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace Euler{
+namespace EulerADERDG{
   class PrimitivesWriter;
 
   /**

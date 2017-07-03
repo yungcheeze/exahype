@@ -13,6 +13,8 @@
 
 #include "peano/utils/Loop.h"
 
+#include "tarch/la/VectorOperations.h"
+
 #include <algorithm>
 
 
@@ -25,6 +27,8 @@ void EulerADERDG::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
+  const tarch::la::Vector<DIMENSIONS, double> centre = offsetOfPatch + 0.5*sizeOfPatch;
+
   double x[DIMENSIONS];
 
   dfor(i,EulerSolver::Order+1) {
@@ -42,20 +46,38 @@ void EulerADERDG::ErrorWriter::plotPatch(
 
      for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
         const double uDiff = std::abs(uNum[v]-uAna[v]);
-        errorL2[v] += uDiff*uDiff * w_dV;
+        errorL2[v]   += uDiff*uDiff * w_dV;
+        errorL1[v]   += uDiff * w_dV;
+        errorLInf[v]  = std::max( errorLInf[v], uDiff );
+
+        normL1Ana[v]  += std::abs(uAna[v]) * w_dV;
+        normL2Ana[v]  += uAna[v] * uAna[v] * w_dV;
+        normLInfAna[v] = std::max( normLInfAna[v], std::abs(uAna[v]) );
      }
   }
 }
 
-
 void EulerADERDG::ErrorWriter::startPlotting( double time) {
-  std::fill_n(errorL2, EulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(errorL1,  EulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(errorL2,  EulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(errorLInf,EulerSolver::NumberOfVariables, 0.0);
+  
+  std::fill_n(normL1Ana,  EulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(normL2Ana,  EulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(normLInfAna,EulerSolver::NumberOfVariables, 0.0);
 }
-
 
 void EulerADERDG::ErrorWriter::finishPlotting() {
   for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
     errorL2[v] = sqrt(errorL2[v]);
-    std::cout << "eL2("<<v<<")="<<errorL2[v]<<std::endl;
-  } 
+  }
+
+  std::cout << "component || absErrorL1 || absErrorL2 || absErrorLInf || " <<
+      " relErrorL1 || relErrorL2 || relErrorLInf" << std::endl;
+
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << v << " | "
+        << errorL1[v] << " | " << errorL2[v] << " | " << errorLInf[v] << " | "
+        << errorL1[v]/normL1Ana[v] << " | " << errorL2[v]/normL2Ana[v] << " | " << errorLInf[v]/normLInfAna[v] << std::endl;
+  }
 }

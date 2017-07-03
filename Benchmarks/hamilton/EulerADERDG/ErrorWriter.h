@@ -11,13 +11,19 @@
 
 #include "EulerSolver.h"
 
-namespace Euler {
+namespace EulerADERDG {
   class ErrorWriter;
 }
 
 class EulerADERDG::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
  private:
-   double errorL2[EulerSolver::NumberOfVariables]; 
+   double errorL1  [EulerSolver::NumberOfVariables]; 
+   double errorL2  [EulerSolver::NumberOfVariables]; 
+   double errorLInf[EulerSolver::NumberOfVariables];
+   
+   double normL1Ana  [EulerSolver::NumberOfVariables];  
+   double normL2Ana  [EulerSolver::NumberOfVariables];  
+   double normLInfAna[EulerSolver::NumberOfVariables]; 
 
  public:
   /**
