@@ -4,7 +4,8 @@
 #SBATCH -e ExaHyPE-Euler.%A.err
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
-#SBATCH -p test.q
+##SBATCH -p test.q
+#SBATCH -p par7.q
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=24
@@ -44,7 +45,8 @@ script=convergence/hamilton.slurm-script
 spec=convergence/${prefix}.exahype
 
 # pipe some information into output file
-module list 2>$out
+echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
+module list 2>>$out
 echo "" >> $out
 cat $script >>$out
 echo "" >> $out
