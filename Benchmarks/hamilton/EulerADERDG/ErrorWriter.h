@@ -15,7 +15,7 @@ namespace Euler {
   class ErrorWriter;
 }
 
-class Euler::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
+class EulerADERDG::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
  private:
    double errorL2[EulerSolver::NumberOfVariables]; 
 

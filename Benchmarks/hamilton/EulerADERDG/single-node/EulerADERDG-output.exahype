@@ -18,11 +18,11 @@
  A simple project. (well, it was simple, in the beginning).
 
  */
-exahype-project  Euler
+exahype-project EulerADERDG
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/Euler
+  output-directory const  = ./ApplicationExamples/EulerADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
@@ -35,7 +35,7 @@ exahype-project  Euler
 
   shared-memory
     identifier               = dummy
-    cores                    = 7
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -65,5 +65,13 @@ exahype-project  Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
+
+	plot vtk::Cartesian::vertices::ascii PrimitivesWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.05e-4
+      output          = ./primitives
+    end plot
+
   end solver
 end exahype-project

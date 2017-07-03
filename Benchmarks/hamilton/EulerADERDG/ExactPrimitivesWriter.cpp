@@ -1,27 +1,28 @@
-#include "PrimitivesWriter.h"
+#include "ExactPrimitivesWriter.h"
 
+#include "EulerSolver.h"
 
-Euler::PrimitivesWriter::PrimitivesWriter(EulerSolver&  solver) {
+EulerADERDG::ExactPrimitivesWriter::ExactPrimitivesWriter(EulerSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-Euler::PrimitivesWriter::~PrimitivesWriter() {
+EulerADERDG::ExactPrimitivesWriter::~ExactPrimitivesWriter() {
   // @todo Please insert your code here
 }
 
 
-void Euler::PrimitivesWriter::startPlotting(double time) {
+void EulerADERDG::ExactPrimitivesWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void Euler::PrimitivesWriter::finishPlotting() {
+void EulerADERDG::ExactPrimitivesWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void Euler::PrimitivesWriter::mapQuantities(
+void EulerADERDG::ExactPrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -30,9 +31,7 @@ void Euler::PrimitivesWriter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  for (int i=0; i<5; i++){ 
-    outputQuantities[i] = Q[i];
-  }
+  EulerSolver::entropyWave(x.data(),timeStamp,outputQuantities);
 }
 
 

@@ -18,11 +18,11 @@
  A simple project. (well, it was simple, in the beginning).
 
  */
-exahype-project  Euler
+exahype-project EulerADERDG
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/Euler
+  output-directory const  = ./ApplicationExamples/EulerADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
@@ -65,47 +65,13 @@ exahype-project  Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-
-    plot vtu::Cartesian::cells::ascii ConservedQuantitiesWriter
+	
+	plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.05
-      output          = ./conserved
-      select          = x:0.0,y:0.0
+      repeat          = 0.05e-4
+      output          = ./primitives
     end plot
-
-    /*
-    plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
-      variables const = 0
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./output/these-files-should-not-be-there
-      select          = x:0.0,y:0.0
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./primitive
-      select          = x:0.0,y:0.0
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./exact-primitive
-      select          = x:0.0,y:0.0
-    end plot
-
-    plot probe::ascii ProbeWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./seismogram
-      select          = x:0.2,y:0.2
-    end plot
-    */
+    
   end solver
 end exahype-project

@@ -16,7 +16,7 @@ namespace Euler{
   class EulerSolver;
 }
 
-class Euler::EulerSolver: public Euler::AbstractEulerSolver {
+class EulerADERDG::EulerSolver: public EulerADERDG::AbstractEulerSolver {
   public:
     /**
      * See chapter 7.13.2 in "I do like CFD, VOL.1" by Katate Masatsuka.
