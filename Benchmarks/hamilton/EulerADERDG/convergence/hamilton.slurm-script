@@ -36,7 +36,7 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=EulerADERDG-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
+prefix=EulerADERDG-regular-$SLURM_ARRAY_TASK_ID-p3
 
 out=convergence/results/${prefix}.out
 
