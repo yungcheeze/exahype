@@ -50,7 +50,7 @@ do
   sed -i -r 's,tasks(\s*)=(\s*)(([0-9]|\.)*),tasks\1=\2'$tasks',' $newScript
   sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
   sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
-  sed -i 's,Euler-no-output,Euler-'$io',g' $newScript
+  sed -i 's,EulerADERDG-no-output,EulerADERDG-'$io',g' $newScript
 
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
@@ -62,8 +62,8 @@ do
   sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript 
 
   # Create spec file
-  spec=Euler-$io.exahype
-  prefix=Euler-$io-p$order-$mesh-t$tasksPerNode-c$coresPerTask
+  spec=EulerADERDG-$io.exahype
+  prefix=EulerADERDG-$io-p$order-$mesh-t$tasksPerNode-c$coresPerTask
   newSpec=$prefix'.exahype'
   cp $spec $newSpec
 

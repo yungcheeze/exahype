@@ -1,5 +1,5 @@
-exe1=ExaHyPE-Euler
-exe2=ExaHyPE-Euler
+exe1=ExaHyPE-EulerADERDG
+exe2=ExaHyPE-EulerADERDG
 header=AbstractEulerSolver.h
 
 

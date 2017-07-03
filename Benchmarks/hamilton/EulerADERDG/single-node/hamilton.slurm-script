@@ -30,7 +30,7 @@ let tasks=nodes*tasksPerNode
 
 compiler=Intel
 sharedMem=None
-prefix=Euler-no-output-p3-regular-0
+prefix=EulerADERDG-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
 
 script=hamilton.slurm-script
@@ -42,7 +42,7 @@ echo "" >> $out
 cat $script >>$out
 echo "" >> $out
 cat $spec >> $out
-#ExaHyPE-Euler-p3-$sharedMem-$compiler --version >> $out
+#ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler --version >> $out
 
 # execute the job
-mpiexec -np $tasks ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+mpiexec -np $tasks ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out

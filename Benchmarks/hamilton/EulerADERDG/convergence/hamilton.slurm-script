@@ -36,7 +36,7 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=Euler-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
+prefix=EulerADERDG-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
 out=$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 script=convergence/hamilton.slurm-script
@@ -48,7 +48,7 @@ echo "" >> $out
 cat $script >>$out
 echo "" >> $out
 cat $spec >> $out
-#ExaHyPE-Euler-p3-$sharedMem-$compiler --version >> $out
+#ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler --version >> $out
 
 # execute the job
-./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out
