@@ -30,44 +30,39 @@ kernels=gen
 
 for fuseAlgorithmicSteps in "on" "off"
 do 
-  for i in 0 1  2
+  # prefix= project-kernels-mesh-i-
+  # regex = .+-.+-(\w+)-.+-.+-
+  for order in 3 5 7 9
   do
-    # prefix= project-kernels-mesh-i-
-    # regex = .+-.+-(\w+)-.+-.+-
-    for order in 3 5 7 9
+    # Create script
+    prefix=$project-$kernels
+    if [ "$fuseAlgorithmicSteps" == "on" ]; then
+      prefix+="-fused"
+    else
+      prefix+="-nonfused"
+    fi
+    script=convergence/hamilton.slurm-script
+    newScript=convergence/hamilton-$prefix-p${order}.slurm-script
+    cp $script $newScript
+   
+    sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
+    sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+    sed -i 's,p3,p'$order',g' $newScript
+    sed -i 's,regular-0,'$mesh',g' $newScript
+    sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
+  
+    for i in 0 1  2
     do
-      prefix=$project
-
       mesh=regular-$i
       h=${hMax[i]}
       t=${T[i]}
-      
-      prefix+=-$kernels-$mesh
-      
-      if [ "$fuseAlgorithmicSteps" == "on" ]; then
-        prefix+="-fused"
-      else
-        prefix+="-nonfused"
-      fi
-      
-      # Create script
-      script=convergence/hamilton.slurm-script
-      newScript=convergence/hamilton-$prefix-p${order}.slurm-script
-      cp $script $newScript
-   
-      sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
-      sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
-    
-      sed -i 's,p3,p'$order',g' $newScript
-      sed -i 's,regular-0,'$mesh',g' $newScript
-
-      sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
+       
+      specPrefix=$prefix-$mesh   
     
       # Create spec files
       coresPerTask=24
       spec=convergence/EulerADERDG.exahype
-      filename=convergence/$prefix-p$order
+      filename=convergence/$specPrefix-p$order
       newSpec=$filename'.exahype'
 
       cp $spec $newSpec
