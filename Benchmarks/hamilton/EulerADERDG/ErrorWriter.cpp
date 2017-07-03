@@ -16,12 +16,12 @@
 #include <algorithm>
 
 
-Euler::ErrorWriter::ErrorWriter() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
+EulerADERDG::ErrorWriter::ErrorWriter() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
   // @TODO Please insert your code here.
 }
 
 
-void Euler::ErrorWriter::plotPatch(
+void EulerADERDG::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
@@ -48,12 +48,12 @@ void Euler::ErrorWriter::plotPatch(
 }
 
 
-void Euler::ErrorWriter::startPlotting( double time) {
+void EulerADERDG::ErrorWriter::startPlotting( double time) {
   std::fill_n(errorL2, EulerSolver::NumberOfVariables, 0.0);
 }
 
 
-void Euler::ErrorWriter::finishPlotting() {
+void EulerADERDG::ErrorWriter::finishPlotting() {
   for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
     errorL2[v] = sqrt(errorL2[v]);
     std::cout << "eL2("<<v<<")="<<errorL2[v]<<std::endl;

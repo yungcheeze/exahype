@@ -18,11 +18,11 @@
  A simple project. (well, it was simple, in the beginning).
 
  */
-exahype-project  Euler
+exahype-project EulerADERDG
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/Euler
+  output-directory const  = ./ApplicationExamples/EulerADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
