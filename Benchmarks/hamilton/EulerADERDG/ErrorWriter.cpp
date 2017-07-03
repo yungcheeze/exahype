@@ -72,7 +72,8 @@ void EulerADERDG::ErrorWriter::startPlotting( double time) {
 
 void EulerADERDG::ErrorWriter::finishPlotting() {
   for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
-    errorL2[v] = sqrt(errorL2[v]);
+    errorL2[v]   = sqrt(errorL2[v]);
+    normL2Ana[v] = sqrt(normL2Ana[v]);
   }
 
   std::cout << "**Errors**" << std::endl;
