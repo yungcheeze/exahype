@@ -17,6 +17,8 @@ namespace EulerADERDG {
 
 class EulerADERDG::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
  private:
+   double _timeStamp;
+
    double errorL1  [EulerSolver::NumberOfVariables]; 
    double errorL2  [EulerSolver::NumberOfVariables]; 
    double errorLInf[EulerSolver::NumberOfVariables];

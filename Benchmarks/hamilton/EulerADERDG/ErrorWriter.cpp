@@ -17,6 +17,7 @@
 
 #include <algorithm>
 
+#include <iomanip>
 
 EulerADERDG::ErrorWriter::ErrorWriter() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
   // @TODO Please insert your code here.
@@ -58,6 +59,8 @@ void EulerADERDG::ErrorWriter::plotPatch(
 }
 
 void EulerADERDG::ErrorWriter::startPlotting( double time) {
+  _timeStamp = time;
+
   std::fill_n(errorL1,  EulerSolver::NumberOfVariables, 0.0);
   std::fill_n(errorL2,  EulerSolver::NumberOfVariables, 0.0);
   std::fill_n(errorLInf,EulerSolver::NumberOfVariables, 0.0);
@@ -72,12 +75,47 @@ void EulerADERDG::ErrorWriter::finishPlotting() {
     errorL2[v] = sqrt(errorL2[v]);
   }
 
-  std::cout << "component || absErrorL1 || absErrorL2 || absErrorLInf || " <<
-      " relErrorL1 || relErrorL2 || relErrorLInf" << std::endl;
-
+  std::cout << "**Errors**" << std::endl;
+  std::cout << "t_eval : "<<_timeStamp << std::endl;
+  std::cout << "variable     : ";
   for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
-    std::cout << v << " | "
-        << errorL1[v] << " | " << errorL2[v] << " | " << errorLInf[v] << " | "
-        << errorL1[v]/normL1Ana[v] << " | " << errorL2[v]/normL2Ana[v] << " | " << errorLInf[v]/normLInfAna[v] << std::endl;
+    std::cout << v << ", ";
   }
+  std::cout << std::endl;
+
+  std::cout << "absErrorL1   : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorL1[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "absErrorL2   : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorL2[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "absErrorLInf : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorLInf[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "relErrorL1   : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorL1[v]/normL1Ana[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "relErrorL2   : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorL2[v]/normL2Ana[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "relErrorLInf : ";
+  for (int v=0; v<EulerSolver::NumberOfVariables; v++) {
+    std::cout << std::setprecision(2) << errorLInf[v]/normLInfAna[v] << ", ";
+  }
+  std::cout << std::endl;
 }
