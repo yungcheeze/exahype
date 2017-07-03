@@ -66,28 +66,24 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue EulerADERDG::EulerSolver::us
 }
 
 void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, double* Q) {
-  constexpr double A      = 1.0;
-  constexpr double rhoInf = 3.0; // rhoInf-A > 0
-  constexpr double uInf   = 1.0;
-  constexpr double vInf   = 1.0;
-  constexpr double wInf   = 1.0;
-  constexpr double EInf   = 10.0;  // p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() ) > 0
-  constexpr double freq   = 2.0;
+  constexpr double width = 0.20;
 
-  Q[4] = EInf;
-#if DIMENSIONS==2
-  constexpr double qInf = uInf+vInf;
-  Q[0] = rhoInf + A * std::sin( freq * M_PI*(x[0]+x[1] - qInf*t) );
-  Q[1] = Q[0] * uInf;
-  Q[2] = Q[0] * vInf;
-  Q[3] = Q[0] * wInf;
-#else
-  constexpr double qInf   = uInf+vInf+wInf;
-  Q[0] = rhoInf + A * std::sin( freq * M_PI*(x[0]+x[1]+x[2] - qInf*t) );
-  Q[1] = Q[0] * uInf;
-  Q[2] = Q[0] * vInf;
-  Q[3] = Q[0] * wInf;
-#endif
+  #if DIMENSIONS==2
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
+  #else
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
+  #endif
+  const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
+
+  Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
+  Q[1] = Q[0] * v0[0];
+  Q[2] = Q[0] * v0[1];
+  Q[3] = 0.0;
+  Q[4] = 1.;  // pressure
 }
 
 void EulerADERDG::EulerSolver::adjustPointSolution(const double* const x,

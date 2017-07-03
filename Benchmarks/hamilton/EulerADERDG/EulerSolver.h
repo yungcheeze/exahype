@@ -19,7 +19,10 @@ namespace Euler{
 class EulerADERDG::EulerSolver: public EulerADERDG::AbstractEulerSolver {
   public:
     /**
-     * See chapter 7.13.2 in "I do like CFD, VOL.1" by Katate Masatsuka.
+     * Entropy wave is a moving gaussian matter distribution where it is simple
+     * to give an analytic result.
+     *
+     * See also chapter 7.13.2 in "I do like CFD, VOL.1" by Katate Masatsuka.
      */
     static void entropyWave(const double* const x,double t, double* Q);
     
