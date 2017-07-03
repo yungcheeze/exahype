@@ -31,7 +31,7 @@ let tasks=nodes*tasksPerNode
 compiler=Intel
 sharedMem=None
 prefix=EulerADERDG-no-output-p3-regular-0
-out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+out=single-node/results/$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
 
 script=hamilton.slurm-script
 spec=benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype

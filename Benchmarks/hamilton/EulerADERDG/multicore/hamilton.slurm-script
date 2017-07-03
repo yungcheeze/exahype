@@ -40,7 +40,7 @@ if (( coresPerTask==1 )); then
 fi
 
 prefix=EulerADERDG-no-output-regular-0-p3
-out=$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 script=multicore/hamilton.slurm-script
 spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype

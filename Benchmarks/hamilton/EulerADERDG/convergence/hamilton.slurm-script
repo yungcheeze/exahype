@@ -37,7 +37,8 @@ if (( coresPerTask==1 )); then
 fi
 
 prefix=EulerADERDG-no-output-regular-$SLURM_ARRAY_TASK_ID-p3
-out=${prefix}.out
+
+out=convergence/results/${prefix}.out
 
 script=convergence/hamilton.slurm-script
 spec=convergence/${prefix}.exahype
