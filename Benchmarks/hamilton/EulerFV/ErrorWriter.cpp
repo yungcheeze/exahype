@@ -31,7 +31,6 @@ void EulerFV::ErrorWriter::plotPatch(
     double timeStamp) {
   constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
   constexpr int basisSize         = AbstractEulerSolver::PatchSize;
-  constexpr int order             = basisSize-1;
 
   double x[DIMENSIONS];
 
