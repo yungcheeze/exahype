@@ -16,82 +16,86 @@ bool EulerFV::EulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,
 /**
  * to solve Sod's Shock Tube problem
  * reference: "http://www.phys.lsu.edu/~tohline/PHYS7412/sod.html"
- *   |             |         |       |         |
- *   |             |         |       |         |
- *   | rarefaction | contact | shock |         |
- *___|_____________|_________|_______|_________|_______________
- *   x1           x2         x0      x3       x4
+ *   |             |         |       |
+ *   |             |         |       |
+ *   | rarefaction | contact | shock |
+ *___|_____________|___++____|_______|_________
+ *   x1           x2   x0   x3      x4
  */
 void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, double* Q) {
-  // Initial conditions
+  // Initial data
   constexpr double gamma     =1.39999999999999991118;
-  constexpr double mu        =0.40824829046386296172;
-  constexpr double mu2       =mu*mu;
-  constexpr double x0        =0.50000000000000000000;
+  constexpr double x_0       =0.50000000000000000000;
 
-  constexpr double rho_r     =0.12500000000000000000;
-  constexpr double P_r       =0.10000000000000000555;
-  constexpr double u_r       =0.00000000000000000000;
-  constexpr double rho_l     =1.00000000000000000000;
-  constexpr double P_l       =1.00000000000000000000;
-  constexpr double u_l       =0.00000000000000000000;
+  constexpr double rho_5     =0.12500000000000000000; // right states
+  constexpr double P_5       =0.10000000000000000555;
+  constexpr double u_5       =0.00000000000000000000;
+  constexpr double rho_1     =1.00000000000000000000; // left states
+  constexpr double P_1       =1.00000000000000000000;
+  constexpr double u_1       =0.00000000000000000000;
 
-  // Speed of sound
-  constexpr double c_l       =1.18321595661992318149;
-  // constexpr double c_r       =1.05830052442583610883;
+  // Sound speed
+  constexpr double cs_1       =1.18321595661992318149;
 
-  constexpr double P_post    =0.31900053530972960480;
-  constexpr double v_post    =0.89095233349579605608;
-  constexpr double rho_post  =0.27393934150152593476;
-  constexpr double v_shock   =1.63869997736350780926;
-  constexpr double rho_middle=0.44214558642791562670;
+  // Contact left
+  constexpr double rho_3     =0.42631942817849538541;
+  constexpr double P_3       =0.30313017805064701449;
+  constexpr double u_3       =0.92745262004895057117;
+  constexpr double cs_3      =0.99772543261013335592;
+
+  // Contact right
+  constexpr double rho_4     =0.26557371170530713611;
+  constexpr double P_4       =0.30313017805064701449;
+  constexpr double u_4       =0.92745262004895057117;
+
+  // Shock
+  constexpr double u_shock   =1.75215573203017838111;
 
   // Key Positions
-  const double x1 = x0 - c_l*t;
-  const double x3 = x0 + v_post*t;
-  const double x4 = x0 + v_shock*t;
-  // Determining x2
-  constexpr  double c_2 = c_l - ((gamma - 1)/2)*v_post;
-  const      double x2 = x0 + (v_post - c_2)*t;
+  const double x_4 = x_0 + u_shock * t;      // position of shock
+  const double x_3 = x_0 + u_3 * t;          // position of contact discontinuity
+  const double x_2 = x_0 + (u_3 - cs_3) * t; // foot of rarefaction wave
+  const double x_1 = x_0 - cs_1 * t;         // head of rarefaction wave
 
   double p = 0; // pressure
   Q[2] = 0; // y velocity
   Q[3] = 0; // z velocity
   if (t>0) {
-    if (x[0] < x1) {
-      Q[0] = rho_l;
-      Q[1] = Q[0] * u_l;
-      p    = P_l;
-    } else if (x1 <= x[0] && x[0] < x2) {
+    if (x[0] < x_1) {
+      Q[0] = rho_1;
+      Q[1] = Q[0] * u_1;
+      p    = P_1;
+    } else if (x_1 <= x[0] && x[0] < x_2) {
       // rarefaction wave
-      const double c = mu2*((x0 - x[0])/t) + (1 - mu2)*c_l;
-      Q[0] = rho_l*std::pow(c/c_l,2/(gamma - 1));
-      Q[1] = Q[0] * (1 - mu2)*( (-(x0-x[0])/t) + c_l);
-      p    = P_l*std::pow((Q[0]/rho_l),gamma);
-    } else if (x2 <= x[0] && x[0] < x3) {
-      Q[0] = rho_middle;
-      Q[1] = Q[0] * v_post;
-      p    = P_post;
-    } else if (x3 <= x[0] && x[0] < x4) {
-      Q[0] = rho_post;
-      Q[1] = Q[0] * v_post;
-      p    = P_post;
-    } else if (x4 <= x[0]) {
-      Q[0] = rho_r;
-      Q[1] = Q[0] * u_r;
-      p    = P_r;
+      const double u      = 2.0 / (gamma+1) * (cs_1 + (x[0] - x_0) / t);
+      const double factor = 1.0 - 0.5*(gamma-1)*u / cs_1;
+      Q[0] = rho_1 * std::pow( factor, 2/(gamma-1) );
+      Q[1] = Q[0]  * u;
+      p    = P_1   * std::pow( factor, 2.0*gamma/(gamma-1) );
+    } else if (x_2 <= x[0] && x[0] < x_3) {
+      Q[0] = rho_3;
+      Q[1] = Q[0] * u_3;
+      p    = P_3;
+    } else if (x_3 <= x[0] && x[0] < x_4) {
+      Q[0] = rho_4;
+      Q[1] = Q[0] * u_4;
+      p    = P_4;
+    } else if (x_4 <= x[0]) {
+      Q[0] = rho_5;
+      Q[1] = Q[0] * u_5;
+      p    = P_5;
     }
     // total energy = internal energy + kinetic energy
     Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
   } else {
-    if (x[0] < x1) {
-      Q[0] = rho_l;
-      Q[1] = Q[0] * u_l;
-      p    = P_l;
+    if (x[0] < x_0) {
+      Q[0] = rho_1;
+      Q[1] = Q[0] * u_1;
+      p    = P_1;
     } else {
-      Q[0] = rho_r;
-      Q[1] = Q[0] * u_r;
-      p    = P_r;
+      Q[0] = rho_5;
+      Q[1] = Q[0] * u_5;
+      p    = P_5;
     }
 
     Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
