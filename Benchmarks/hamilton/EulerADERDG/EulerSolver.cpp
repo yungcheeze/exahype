@@ -66,7 +66,8 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue EulerADERDG::EulerSolver::us
 }
 
 void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, double* Q) {
-  constexpr double width = 0.20;
+  const double GAMMA     = 1.4;
+  constexpr double width = 0.3;
 
   #if DIMENSIONS==2
   tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
@@ -83,7 +84,9 @@ void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, doubl
   Q[1] = Q[0] * v0[0];
   Q[2] = Q[0] * v0[1];
   Q[3] = 0.0;
-  Q[4] = 1.;  // pressure
+  // total energy = internal energy + kinetic energy
+  const double p = 1.;
+  Q[4] = p / (GAMMA-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
 void EulerADERDG::EulerSolver::adjustPointSolution(const double* const x,
