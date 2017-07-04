@@ -17,7 +17,7 @@
 #   64 GB TruDDR4 memory
 #   the nodes are diskless
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
-project=EulerADERDG
+project=EulerFV
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
@@ -30,9 +30,7 @@ kernels=gen
 
 for fuseAlgorithmicSteps in "on" "off"
 do 
-  # prefix= project-kernels-mesh-i-
-  # regex = .+-.+-(\w+)-.+-.+-
-  for order in 3 5 7 9
+  for patchSize in 7 11 15 17 # corresponds to orders=3 5 7 9
   do
     # Create script
     prefix=$project-$kernels
@@ -42,12 +40,12 @@ do
       prefix+="-nonfused"
     fi
     script=convergence/hamilton.slurm-script
-    newScript=convergence/hamilton-$prefix-p${order}.slurm-script
+    newScript=convergence/hamilton-$prefix-N${patchSize}.slurm-script
     cp $script $newScript
    
     sed -i 's,prefix='$project',prefix='$prefix',g' $newScript
     sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
-    sed -i 's,p3,p'$order',g' $newScript
+    sed -i 's,N3,p'$patchSize',g' $newScript
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
@@ -57,12 +55,12 @@ do
       h=${hMax[i]}
       t=${T[i]}
        
-      specPrefix=$prefix-$mesh   
+      specPrefix=$prefix-$mesh
     
       # Create spec files
       coresPerTask=24
-      spec=convergence/EulerADERDG.exahype
-      filename=convergence/$specPrefix-p$order
+      spec=convergence/EulerFV.exahype
+      filename=convergence/$specPrefix-N$patchSize
       newSpec=$filename'.exahype'
 
       cp $spec $newSpec
@@ -79,7 +77,7 @@ do
       sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',' $newSpec
       sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(\w+),fuse-algorithmic-steps\1=\2'$fuseAlgorithmicSteps',' $newSpec
     
-      sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',' $newSpec
+      sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$patchSize',' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.|-|\+|e|E)*),maximum-mesh-size\1=\2'$h',' $newSpec
     done
   done
