@@ -67,7 +67,7 @@ void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, d
       const double c = mu2*((x0 - x[0])/t) + (1 - mu2)*c_l;
       Q[0] = rho_l*std::pow(c/c_l,2/(gamma - 1));
       Q[1] = Q[0] * (1 - mu2)*( (-(x0-x[0])/t) + c_l);
-      p    = P_l*power((Q[0]/rho_l),gamma);
+      p    = P_l*std::pow((Q[0]/rho_l),gamma);
     } else if (x2 <= x[0] && x[0] < x3) {
       Q[0] = rho_middle;
       Q[1] = Q[0] * v_post;
@@ -82,7 +82,7 @@ void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, d
       p    = P_r;
     }
     // total energy = internal energy + kinetic energy
-    Q[4] = p/(gamma-1) + 0.5*Q[0] * (Q[1]*Q[1]); // v*v; assumes: Q[1+i]=0, i=1,2.
+    Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
   } else {
     if (x[0] < x1) {
       Q[0] = rho_l;
@@ -96,14 +96,6 @@ void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, d
 
     Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
   }
-
-//  std::cout << "x=" << x[0] << ": ";
-//  std::cout << "Q=";
-//  std::cout << Q[0] << ",";
-//  std::cout << Q[1] << ",";
-//  std::cout << Q[2] << ",";
-//  std::cout << Q[3] << ",";
-//  std::cout << Q[4] << std::endl;
 }
 
 void EulerFV::EulerSolver::adjustSolution(
