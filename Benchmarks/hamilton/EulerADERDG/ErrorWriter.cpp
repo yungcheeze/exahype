@@ -29,25 +29,23 @@ void EulerADERDG::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-  const tarch::la::Vector<DIMENSIONS, double> centre = offsetOfPatch + 0.5*sizeOfPatch;
+  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+  constexpr int basisSize         = AbstractEulerSolver::Order+1;
+  constexpr int order             = basisSize-1;
 
   double x[DIMENSIONS];
 
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
-  constexpr int basisSize         = AbstractEulerSolver::Order+1;
   kernels::idx4 idx(basisSize,basisSize,basisSize,numberOfVariables);
-
   dfor(i,basisSize) {
      double w_dV = 0;
      for (int d=0; d<DIMENSIONS; d++) {
-       x[d] = offsetOfPatch[d] + sizeOfPatch[d] * kernels::gaussLegendreNodes[AbstractEulerSolver::Order][i(d)];
-       w_dV = sizeOfPatch[d] * kernels::gaussLegendreWeights[AbstractEulerSolver::Order][i(d)];
+       x[d] = offsetOfPatch[d] + sizeOfPatch[d] * kernels::gaussLegendreNodes[order][i(d)];
+       w_dV = sizeOfPatch[d] * kernels::gaussLegendreWeights[order][i(d)];
      }
 
-     double uAna[EulerSolver::NumberOfVariables];
+     double uAna[numberOfVariables];
      EulerSolver::entropyWave(x,timeStamp,uAna);
 
-//     const int iScalar  = peano::utils::dLinearised(i,basisSize);
      const double* uNum = u + idx ( (DIMENSIONS==3) ? i(2) : 0, i(1), i(0), 0);
 
      for (int v=0; v<numberOfVariables; v++) {

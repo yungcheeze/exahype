@@ -59,7 +59,7 @@ exahype-project EulerADERDG
 
   solver ADER-DG EulerSolver
     variables const   = rho:1,j:3,E:1
-    order const       = 3
+    order const       = 5
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.038
     time-stepping     = global
@@ -69,22 +69,16 @@ exahype-project EulerADERDG
     plot user::defined ErrorWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.05e-4
-      output          = ./errors
+      repeat          = 1e-10
+      output          = not-available
     end plot
     
-    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
-      variables const = 5
-      time            = 10.0
-      repeat          = 0.05e-4
-      output          = ./primitives
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
-      variables const = 5
-      time            = 10.0
-      repeat          = 0.05e-4
-      output          = ./exact-primitives
+    plot vtk::Cartesian::vertices::ascii ErrorPlotter
+      // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
+      variables const = 15 
+      time            = 0.0
+      repeat          = 1e-10
+      output          = ./errors
     end plot
   end solver
 end exahype-project

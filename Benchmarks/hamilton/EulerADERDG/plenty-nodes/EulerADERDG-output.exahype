@@ -65,12 +65,20 @@ exahype-project EulerADERDG
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-	
-	plot vtk::Cartesian::vertices::ascii PrimitivesWriter
+    
+    plot user::defined ErrorWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.05e-4
-      output          = ./primitives
+      repeat          = 1e-2
+      output          = not-available
+    end plot
+    
+    plot vtk::Cartesian::vertices::ascii ErrorPlotter
+      // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
+      variables const = 15 
+      time            = 0.0
+      repeat          = 1e-2
+      output          = ./errors
     end plot
   end solver
 end exahype-project
