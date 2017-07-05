@@ -1,5 +1,4 @@
-exe1=ExaHyPE-EulerADERDG
-exe2=ExaHyPE-EulerADERDG
+exe=ExaHyPE-EulerADERDG
 header=AbstractEulerSolver.h
 
 
@@ -21,7 +20,7 @@ do
     rm *.o
     sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $header
     make -j28 && \
-    mv $exe1 $exe2-p$p-$SHAREDMEM-$COMPILER
+    mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
 #    sleep 2m
   done
 done

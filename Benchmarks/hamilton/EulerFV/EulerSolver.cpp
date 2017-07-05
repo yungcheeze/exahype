@@ -156,14 +156,12 @@ void EulerFV::EulerSolver::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,
-    const int normalNonZero,
+    const int direction,
     const double* const stateInside,
     double* stateOutside) {
   ReadOnlyVariables varsInside(stateInside);
   Variables         varsOutside(stateOutside);
 
   varsOutside = varsInside;
-  const int orientation = faceIndex % 2;
-  const int direction   = (faceIndex-orientation)/2;
   varsOutside[1+direction] =  -varsOutside[1+direction];
 }

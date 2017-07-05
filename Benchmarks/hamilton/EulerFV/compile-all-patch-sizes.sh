@@ -1,5 +1,5 @@
-exe1=ExaHyPE-FV
-exe2=ExaHyPE-FV
+exe1=ExaHyPE-EulerFV
+exe2=ExaHyPE-EulerFV
 header=AbstractEulerSolver.h
 
 
