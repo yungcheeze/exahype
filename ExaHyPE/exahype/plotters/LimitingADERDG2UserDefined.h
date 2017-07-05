@@ -11,21 +11,23 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_USER_DEFINED_H_
-#define _EXAHYPE_PLOTTERS_ADERDG_2_USER_DEFINED_H_
+#ifndef _EXAHYPE_PLOTTERS_LIMITING_ADERDG_2_USER_DEFINED_H_
+#define _EXAHYPE_PLOTTERS_LIMITING_ADERDG_2_USER_DEFINED_H_
 
 #include "exahype/plotters/Plotter.h"
 
+#include "exahype/solvers/LimitingADERDGSolver.h"
+
 namespace exahype {
   namespace plotters {
-    class ADERDG2UserDefined;
+    class LimitingADERDG2UserDefined;
 }
 }
 
 /**
  * Device for realising user defined plotters.
  */
-class exahype::plotters::ADERDG2UserDefined: public exahype::plotters::Plotter::Device {
+class exahype::plotters::LimitingADERDG2UserDefined: public exahype::plotters::Plotter::Device {
  protected:
   std::string   _filename;
   int           _order;
@@ -36,8 +38,8 @@ class exahype::plotters::ADERDG2UserDefined: public exahype::plotters::Plotter::
  public:
   static std::string getIdentifier();
 
-  ADERDG2UserDefined();
-  virtual ~ADERDG2UserDefined();
+  LimitingADERDG2UserDefined();
+  virtual ~LimitingADERDG2UserDefined();
 
   void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) override;
 
@@ -58,4 +60,4 @@ class exahype::plotters::ADERDG2UserDefined: public exahype::plotters::Plotter::
 };
 
 
-#endif
+#endif // _EXAHYPE_PLOTTERS_LIMITING_ADERDG_2_USER_DEFINED_H_

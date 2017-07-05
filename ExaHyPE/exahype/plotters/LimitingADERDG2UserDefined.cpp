@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include "ADERDG2UserDefined.h"
+#include "LimitingADERDG2UserDefined.h"
 #include "tarch/parallel/Node.h"
 
 #include "kernels/DGMatrices.h"
@@ -22,11 +22,11 @@
 #include "kernels/DGBasisFunctions.h"
 
 
-std::string exahype::plotters::ADERDG2UserDefined::getIdentifier() {
+std::string exahype::plotters::LimitingADERDG2UserDefined::getIdentifier() {
   return "user::defined";
 }
 
-exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined():
+exahype::plotters::LimitingADERDG2UserDefined::LimitingADERDG2UserDefined():
   Device(nullptr),
   _order(-1),
   _variables(-1),
@@ -34,7 +34,7 @@ exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined():
 }
 
 
-void exahype::plotters::ADERDG2UserDefined::init(
+void exahype::plotters::LimitingADERDG2UserDefined::init(
   const std::string& filename,
   int                orderPlusOne,
   int                variables,
@@ -48,10 +48,10 @@ void exahype::plotters::ADERDG2UserDefined::init(
   _writtenVariables = writtenVariables;
 }
 
-exahype::plotters::ADERDG2UserDefined::~ADERDG2UserDefined() {
+exahype::plotters::LimitingADERDG2UserDefined::~LimitingADERDG2UserDefined() {
 }
 
-void exahype::plotters::ADERDG2UserDefined::plotPatch(const int cellDescriptionsIndex, const int element) {
+void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDescriptionsIndex, const int element) {
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
