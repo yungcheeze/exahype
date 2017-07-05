@@ -369,7 +369,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
       previousLimiterStatus = 0;
     }
 
-    if(limiterStatus>0) {  // TODO(Dominic): Plot FVM solution instead if <MinimumLimiterStatusForActiveFVPatch
+    if(limiterStatus>=0) {  // TODO(Dominic): Plot FVM solution instead if <MinimumLimiterStatusForActiveFVPatch
       double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
       plotADERDGPatch(
