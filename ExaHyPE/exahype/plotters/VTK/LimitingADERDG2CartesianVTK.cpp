@@ -359,15 +359,12 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
     int limiterStatus         = solverPatch.getLimiterStatus();
     int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
 
     // ignore limiter status on coarser mesh levels
-    assertion(static_cast<unsigned int>(solverPatch.getSolverNumber())
-        <exahype::solvers::RegisteredSolvers.size());
-    if (solverPatch.getLevel()
-        <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
+    assertion(static_cast<unsigned int>(solverPatch.getSolverNumber())<exahype::solvers::RegisteredSolvers.size());
+    if (solverPatch.getLevel()<exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
       limiterStatus         = 0;
       previousLimiterStatus = 0;
     }
