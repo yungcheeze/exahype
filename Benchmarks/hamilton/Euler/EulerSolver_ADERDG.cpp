@@ -217,6 +217,7 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
 #else
   std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
   std::copy_n(stateIn, NumberOfVariables, stateOut);
+//  stateOut[1+direction]=-stateOut[1+direction];
 #endif
 }
 
@@ -227,11 +228,14 @@ void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
   ReadOnlyVariables vars(Q);
 
   observables[0]=vars.rho(); //extract density
+  const double irho = 1./vars.rho();
+  observables[1]=irho*vars.j(0);
+  observables[2]=irho*vars.j(1);
+  observables[3]=irho*vars.j(2);
 
   const double GAMMA = 1.4;
-  const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
-  observables[1]=p; //extract pressure
+  observables[4]=p; //extract pressure
 }
 
 
@@ -240,7 +244,6 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
   const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
   const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
   const double t, const double dt) const {
-
   if (observablesMin[0] <= 0.0) return false;
   if (observablesMin[1] < 0.0) return false;
   return true;
