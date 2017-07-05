@@ -211,29 +211,25 @@ void exahype::plotters::LimitingADERDGSubcells2CartesianVTK::plotPatch(const int
         <exahype::solvers::RegisteredSolvers.size());
     if (solverPatch.getLevel()
         <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
-      limiterStatus         = LimiterStatus::Ok;
-      previousLimiterStatus = LimiterStatus::Ok;
+      limiterStatus         = 0;
+      previousLimiterStatus = 0;
     }
 
-    switch(limiterStatus) {
-      case LimiterStatus::Troubled:
-      case LimiterStatus::NeighbourOfTroubled1:
-      case LimiterStatus::NeighbourOfTroubled2: {
-        const int limiterElement =
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(
-                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
-                tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-        auto& limiterPatch =
-            exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
+    if (limiterStatus>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
+      const int limiterElement =
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
+              tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
+      auto& limiterPatch =
+          exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
 
-        double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
-        plotFiniteVolumesPatch(
-            limiterPatch.getOffset(),
-            limiterPatch.getSize(), limiterSolution,
-            limiterPatch.getTimeStamp(),
-            limiterStatus,
-            previousLimiterStatus);
-      } break;
+      double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
+      plotFiniteVolumesPatch(
+          limiterPatch.getOffset(),
+          limiterPatch.getSize(), limiterSolution,
+          limiterPatch.getTimeStamp(),
+          limiterStatus,
+          previousLimiterStatus);
     }
   }
 }

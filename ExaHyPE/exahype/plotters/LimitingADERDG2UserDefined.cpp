@@ -55,10 +55,7 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    const int minFVPatchLimiterStatus =
-        static_cast<int>(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2);
-
-    if (solverPatch.getLimiterStatus()>=minFVPatchLimiterStatus) {
+    if (solverPatch.getLimiterStatus()>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
       auto* limiter =
           static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->getLimiter().get();
       const int limiterElement = limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
@@ -71,7 +68,7 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
           limiterPatch.getOffset(),
           limiterPatch.getSize(), limiterSolution,
           limiterPatch.getTimeStamp());
-    } else {
+    } else { // solverPatch.getLimiterStatus()<exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch
       double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
       plotADERDGPatch(

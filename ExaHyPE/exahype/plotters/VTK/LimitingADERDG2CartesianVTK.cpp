@@ -368,44 +368,19 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
         <exahype::solvers::RegisteredSolvers.size());
     if (solverPatch.getLevel()
         <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
-      limiterStatus         = LimiterStatus::Ok;
-      previousLimiterStatus = LimiterStatus::Ok;
+      limiterStatus         = 0;
+      previousLimiterStatus = 0;
     }
 
-    switch(limiterStatus) {
-      case LimiterStatus::Troubled:             // TODO(Dominic): Plot FVM solution instead
-      case LimiterStatus::NeighbourOfTroubled1: // TODO(Dominic): Plot FVM solution instead
-      case LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Plot FVM solution instead
-      case LimiterStatus::NeighbourOfTroubled3:
-      case LimiterStatus::NeighbourOfTroubled4:
-      case LimiterStatus::Ok: {
-        double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
+    if(limiterStatus>0) {  // TODO(Dominic): Plot FVM solution instead if <MinimumLimiterStatusForActiveFVPatch
+      double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
-        plotADERDGPatch(
-            solverPatch.getOffset(),
-            solverPatch.getSize(), solverSolution,
-            solverPatch.getCorrectorTimeStamp(),
-            limiterStatus,
-            previousLimiterStatus);
-      } break;
-//      case LimiterStatus::Troubled:
-//      case LimiterStatus::NeighbourIsTroubledCell: {
-//        auto* limitingADERDGSolver =
-//            static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
-//
-//        const int limiterElement =
-//            limitingADERDGSolver->tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-//        auto& limiterPatch =
-//            exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
-//
-//        double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
-//
-//        plotFiniteVolumesPatch(
-//            limiterPatch.getOffset(),
-//            limiterPatch.getSize(), limiterSolution,
-//            limiterPatch.getTimeStamp());
-//      } break;
+      plotADERDGPatch(
+          solverPatch.getOffset(),
+          solverPatch.getSize(), solverSolution,
+          solverPatch.getCorrectorTimeStamp(),
+          limiterStatus,
+          previousLimiterStatus);
     }
   }
 }
