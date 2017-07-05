@@ -60,7 +60,19 @@ void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, d
   double p = 0; // pressure
   Q[2] = 0; // y velocity
   Q[3] = 0; // z velocity
-  if (t>0) {
+  if (tarch::la::equals(t,0.0)) {
+    if (x[0] < x_0) {
+      Q[0] = rho_1;
+      Q[1] = Q[0] * u_1;
+      p    = P_1;
+    } else {
+      Q[0] = rho_5;
+      Q[1] = Q[0] * u_5;
+      p    = P_5;
+    }
+    Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
+
+  } else {
     if (x[0] < x_1) {
       Q[0] = rho_1;
       Q[1] = Q[0] * u_1;
@@ -86,18 +98,6 @@ void EulerFV::EulerSolver::sodShockTube(const double* const x, const double t, d
       p    = P_5;
     }
     // total energy = internal energy + kinetic energy
-    Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
-  } else {
-    if (x[0] < x_0) {
-      Q[0] = rho_1;
-      Q[1] = Q[0] * u_1;
-      p    = P_1;
-    } else {
-      Q[0] = rho_5;
-      Q[1] = Q[0] * u_5;
-      p    = P_5;
-    }
-
     Q[4] = p/(gamma-1) + 0.5 / Q[0] * (Q[1]*Q[1]); // j*j, j=rho*v !!! ; assumes: Q[1+i]=0, i=1,2.
   }
 }

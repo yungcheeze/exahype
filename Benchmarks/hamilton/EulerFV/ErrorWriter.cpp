@@ -31,10 +31,11 @@ void EulerFV::ErrorWriter::plotPatch(
     double timeStamp) {
   constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
   constexpr int basisSize         = AbstractEulerSolver::PatchSize;
+  constexpr int ghostLayerWidth   = AbstractEulerSolver::GhostLayerWidth;
 
   double x[DIMENSIONS];
 
-  kernels::idx4 idx(basisSize,basisSize,basisSize,numberOfVariables);
+  kernels::idx4 idx(basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,numberOfVariables);
   dfor(i,basisSize) {
      double w_dV = 1.0;
      for (int d=0; d<DIMENSIONS; d++) {
@@ -46,7 +47,8 @@ void EulerFV::ErrorWriter::plotPatch(
      double uAna[numberOfVariables];
      EulerSolver::sodShockTube(x,timeStamp,uAna);
 
-     const double* uNum = u + idx ( (DIMENSIONS==3) ? i(2) : 0, i(1), i(0), 0);
+     const double* uNum = u +
+         idx ( (DIMENSIONS==3) ? i(2)+ghostLayerWidth : 0, i(1)+ghostLayerWidth, i(0)+ghostLayerWidth, 0);
 
      for (int v=0; v<numberOfVariables; v++) {
         const double uDiff = std::abs(uNum[v]-uAna[v]);
