@@ -176,7 +176,7 @@ void exahype::mappings::LocalRecomputation::enterCell(
           auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
           switch(limitingADERDG->getLimiterDomainChange()) {
           case exahype::solvers::LimiterDomainChange::Irregular: {
-            limitingADERDG->recomputeSolution(
+            limitingADERDG->recomputeSolutionLocally(
                 fineGridCell.getCellDescriptionsIndex(),
                 element,
                 _solutionUpdateTemporaryVariables,
@@ -184,7 +184,7 @@ void exahype::mappings::LocalRecomputation::enterCell(
                 fineGridVerticesEnumerator);
 
             if (exahype::State::fuseADERDGPhases()) {
-              limitingADERDG->recomputePredictor(
+              limitingADERDG->recomputePredictorLocally(
                   fineGridCell.getCellDescriptionsIndex(),
                   element,
                   _predictionTemporaryVariables,

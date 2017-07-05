@@ -970,7 +970,7 @@ public:
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourOfTroubled1..2, NNT: NeighbourOfTroubled3..4
    */
-  void recomputeSolution(
+  void recomputeSolutionLocally(
       const int cellDescriptionsIndex,
       const int element,
       exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
@@ -999,7 +999,7 @@ public:
    * We compute the new limiter status based on the merged limiter statuses associated
    * with the faces.
    */
-  void recomputePredictor(
+  void recomputePredictorLocally(
       const int cellDescriptionsIndex,
         const int element,
         exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,

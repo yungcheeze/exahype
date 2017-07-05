@@ -1249,10 +1249,9 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
   if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&
       solverPatch.getType()==SolverPatch::Type::Cell) {
     // TODO(Dominic): Old code; keep for reference
-    if (solverPatch.getLimiterStatus() > 0) {
+    if (solverPatch.getLimiterStatus()>0) {
       if (solverPatch.getPreviousLimiterStatus()>=ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
-        const int limiterElement =
-            tryGetLimiterElementFromSolverElement(fineGridCell.getCellDescriptionsIndex(),solverElement);
+        const int limiterElement = tryGetLimiterElementFromSolverElement(fineGridCell.getCellDescriptionsIndex(),solverElement);
         assertion(limiterElement!=exahype::solvers::Solver::NotFound);
         _limiter->rollbackSolution(
             fineGridCell.getCellDescriptionsIndex(),limiterElement,
@@ -1308,7 +1307,7 @@ void exahype::solvers::LimitingADERDGSolver::projectFVSolutionOnDGSpace(
       solverSolution);
 }
 
-void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
+void exahype::solvers::LimitingADERDGSolver::recomputeSolutionLocally(
         const int cellDescriptionsIndex, const int solverElement,
         exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
         exahype::Vertex* const fineGridVertices,
@@ -1364,7 +1363,7 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
   }
 }
 
-void exahype::solvers::LimitingADERDGSolver::recomputePredictor(
+void exahype::solvers::LimitingADERDGSolver::recomputePredictorLocally(
     const int cellDescriptionsIndex,
     const int element,
     exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
