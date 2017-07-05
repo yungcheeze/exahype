@@ -55,7 +55,8 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    if (solverPatch.getLimiterStatus()>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
+    if (
+        solverPatch.getLimiterStatus()>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
       auto* limiter =
           static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->getLimiter().get();
       const int limiterElement = limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
@@ -65,9 +66,9 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
       double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
 
       plotFiniteVolumesPatch(
-          limiterPatch.getOffset(),
-          limiterPatch.getSize(), limiterSolution,
-          limiterPatch.getTimeStamp());
+          solverPatch.getOffset(),
+          solverPatch.getSize(), limiterSolution,
+          solverPatch.getCorrectorTimeStamp()); // The limiter time stamp might not be valid at the time of the plotting
     } else { // solverPatch.getLimiterStatus()<exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch
       double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
