@@ -99,8 +99,8 @@ int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData
 int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
 int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
 // limiter status
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 3;
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 2;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 5;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 3;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
