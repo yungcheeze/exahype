@@ -86,14 +86,21 @@ double exahype::solvers::ADERDGSolver::PipedUncompressedBytes = 0;
 double exahype::solvers::ADERDGSolver::PipedCompressedBytes = 0;
 #endif
 
-
-
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
 double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
-
 bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
+
+// helper status
+int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
+int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
+// augmentation status
+int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
+int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
+// limiter status
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 3;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 2;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
@@ -1435,8 +1442,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 
   // TODO Dominic: This is a little inconsistent since I orignially tried to hide
   // the limiting from the pure ADER-DG scheme
-  fineGridCellDescription.setPreviousLimiterStatus(CellDescription::LimiterStatus::Ok);
-  fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
+  fineGridCellDescription.setPreviousLimiterStatus(0);
+  fineGridCellDescription.setLimiterStatus(0);
 
   // TODO Dominic:
   // Add to docu. We disregarded the following since it can lead to inconsistencies.
@@ -1446,8 +1453,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   //
   if (!initialGrid
       &&
-      coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
-    fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
+      coarseGridCellDescription.getLimiterStatus()>=MinimumLimiterStatusForTroubledCell) {
+    fineGridCellDescription.setLimiterStatus(MinimumLimiterStatusForTroubledCell);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
   }
   overwriteFacewiseLimiterStatus(fineGridCellDescription);
@@ -1665,7 +1672,7 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
 //  assertion1(coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
 //      coarseGridCellDescription.toString()); // TODO(Dominic): Does not always apply see veto
-  assertion1(fineGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
+  assertion1(fineGridCellDescription.getLimiterStatus()==0,
         fineGridCellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(
       fineGridCellDescription.getSolution()),fineGridCellDescription.toString());
@@ -2496,8 +2503,7 @@ exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
 exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
   assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
   const int newLimiterStatusAsInt=std::min(
-      limiterStatusAsInt,
-      static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+      limiterStatusAsInt, MinimumLimiterStatusForTroubledCell );
 
   return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
 }
@@ -2509,12 +2515,12 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
   const int croppedOtherLimiterStatus =
       std::min(
           otherLimiterStatus,
-          static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+          MinimumLimiterStatusForTroubledCell );
 
   int limiterStatus =
       std::min(
         cellDescription.getFacewiseLimiterStatus(faceIndex),
-        static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+        MinimumLimiterStatusForTroubledCell );
   limiterStatus =
       std::max( limiterStatus, croppedOtherLimiterStatus );
 
@@ -2562,10 +2568,6 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursLimiterStatus(
   mergeWithLimiterStatus(cellDescription1,faceIndex1,limiterStatus2);
   mergeWithLimiterStatus(cellDescription2,faceIndex2,limiterStatus1);
 }
-
-// helper status
-int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
-int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
 
 void
 exahype::solvers::ADERDGSolver::updateHelperStatus(
@@ -2630,10 +2632,6 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursHelperStatus(
   mergeWithHelperStatus(cellDescription1,2*direction+orientation1,helperStatus2);
   mergeWithHelperStatus(cellDescription2,2*direction+orientation2,helperStatus1);
 }
-
-// augmentation status
-int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
-int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
 
 void
 exahype::solvers::ADERDGSolver::updateAugmentationStatus(

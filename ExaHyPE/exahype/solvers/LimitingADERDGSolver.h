@@ -323,6 +323,11 @@ private:
    * Depending on the finest adaptive mesh level and the given level,
    * compute the minimum limiter status for which we need to refine
    * a cell.
+   *
+   * If we have FV layer of width 1, refine if the limiter status is at least 1.
+   * If we have a FV layer of width 2, do some telescoping:
+   * On the second finest level, refine if the limiter status is at least 2.
+   * On coarser levels, refine if the limiter status is at least 3.
    */
   int computeMinimumLimiterStatusForRefinement(int level) const;
 

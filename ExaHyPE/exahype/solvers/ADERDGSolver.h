@@ -76,6 +76,19 @@ public:
    */
   static int MinimumAugmentationStatusForAugmentation;
 
+  /**
+   * Minimum limiter status a troubled cell can have.
+   */
+  static int MinimumLimiterStatusForTroubledCell;
+  /**
+   * The minimum limiter status a cell must have
+   * to allocate an active FV patch.
+   *
+   * All patches with nonzero limiter status smaller than this value,
+   * hold a passive FV patch.
+   */
+  static int MinimumLimiterStatusForActiveFVPatch;
+
   #ifdef Asserts
   static double PipedUncompressedBytes;
   static double PipedCompressedBytes;
