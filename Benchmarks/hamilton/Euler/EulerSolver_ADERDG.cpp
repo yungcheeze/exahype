@@ -267,6 +267,12 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
   const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
   const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
   const double t, const double dt) const {
+  if (tarch::la::equals(t,0.0) &&
+      std::abs(center[0]-0.5) < 2*dx[0]
+  ) {
+    return false;
+  }
+
   if (observablesMin[0] <= 0.0) return false;
   if (observablesMin[1] < 0.0) return false;
   return true;
