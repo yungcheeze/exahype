@@ -224,7 +224,7 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
 void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
     double* observables,const int numberOfObservables,
     const double* const Q) const {
-  assertion(numberOfObservables==2);
+  assertion(numberOfObservables==5);
   ReadOnlyVariables vars(Q);
 
   observables[0]=vars.rho(); //extract density
