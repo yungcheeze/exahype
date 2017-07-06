@@ -57,6 +57,15 @@ void Euler::ErrorWriter::plotADERDGPatch(
         normL1Ana[v]  += std::abs(uAna[v]) * w_dV;
         normL2Ana[v]  += uAna[v] * uAna[v] * w_dV;
         normLInfAna[v] = std::max( normLInfAna[v], std::abs(uAna[v]) );
+
+        // DG Errors
+        DGErrorL2[v]   += uDiff*uDiff * w_dV;
+        DGErrorL1[v]   += uDiff * w_dV;
+        DGErrorLInf[v]  = std::max( DGErrorLInf[v], uDiff );
+
+        DGNormL1Ana[v]  += std::abs(uAna[v]) * w_dV;
+        DGNormL2Ana[v]  += uAna[v] * uAna[v] * w_dV;
+        DGNormLInfAna[v] = std::max( DGNormLInfAna[v], std::abs(uAna[v]) );
      }
   }
 }
@@ -109,6 +118,15 @@ void Euler::ErrorWriter::startPlotting( double time) {
   std::fill_n(normL1Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
   std::fill_n(normL2Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
   std::fill_n(normLInfAna,AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+
+  // DG Errors
+  std::fill_n(DGErrorL1,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(DGErrorL2,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(DGErrorLInf,AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+
+  std::fill_n(DGNormL1Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(DGNormL2Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(DGNormLInfAna,AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
 }
 
 void Euler::ErrorWriter::finishPlotting() {
@@ -117,6 +135,9 @@ void Euler::ErrorWriter::finishPlotting() {
   for (int v=0; v<numberOfVariables; v++) {
     errorL2[v]   = sqrt(errorL2[v]);
     normL2Ana[v] = sqrt(normL2Ana[v]);
+
+    DGErrorL2[v]   = sqrt(DGErrorL2[v]);
+    DGNormL2Ana[v] = sqrt(DGNormL2Ana[v]);
   }
 
   std::cout << "**Errors for limiting ADER-DG solver with order="<<AbstractEulerSolver_ADERDG::Order<<"**" << std::endl;
@@ -160,6 +181,43 @@ void Euler::ErrorWriter::finishPlotting() {
   std::cout << "relErrorLInf : ";
   for (int v=0; v<numberOfVariables; v++) {
     std::cout << std::setprecision(2) << errorLInf[v]/normLInfAna[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  // DG errors
+  std::cout << "DGAbsErrorL1   : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorL1[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "DGAbsErrorL2   : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorL2[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "DGAbsErrorLInf : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorLInf[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "DGRelErrorL1   : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorL1[v]/DGNormL1Ana[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "DGRelErrorL2   : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorL2[v]/DGNormL2Ana[v] << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "DGRelErrorLInf : ";
+  for (int v=0; v<numberOfVariables; v++) {
+    std::cout << std::setprecision(2) << DGErrorLInf[v]/DGNormLInfAna[v] << ", ";
   }
   std::cout << std::endl;
 }

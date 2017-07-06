@@ -27,6 +27,17 @@ class Euler::ErrorWriter : public exahype::plotters::LimitingADERDG2UserDefined 
    double normL2Ana  [EulerSolver_ADERDG::NumberOfVariables];
    double normLInfAna[EulerSolver_ADERDG::NumberOfVariables];
 
+   /**
+    * Errors where we only take the DG cells into account.
+    */
+   double DGErrorL1  [EulerSolver_ADERDG::NumberOfVariables];
+   double DGErrorL2  [EulerSolver_ADERDG::NumberOfVariables];
+   double DGErrorLInf[EulerSolver_ADERDG::NumberOfVariables];
+
+   double DGNormL1Ana  [EulerSolver_ADERDG::NumberOfVariables];
+   double DGNormL2Ana  [EulerSolver_ADERDG::NumberOfVariables];
+   double DGNormLInfAna[EulerSolver_ADERDG::NumberOfVariables];
+
  public:
   /**
    * Constructor.
