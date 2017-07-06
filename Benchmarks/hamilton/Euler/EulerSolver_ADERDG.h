@@ -12,14 +12,19 @@
 
 #include "AbstractEulerSolver_ADERDG.h"
 
+#include "exahype/Parser.h"
+
 namespace Euler{
   class EulerSolver_ADERDG;
 }
 
 class Euler::EulerSolver_ADERDG: public Euler::AbstractEulerSolver_ADERDG {
   public:
+    enum class Reference { SodShockTube=0, EntropyWave=1 };
+    static Reference ReferenceChoice;
+
     /**
-     * Entropy wave is a moving gaussian matter distribution where it is simple
+     * Entropy wave is a moving Gaussian matter distribution where it is simple
      * to give an analytic result.
      *
      * See also chapter 7.13.2 in "I do like CFD, VOL.1" by Katate Masatsuka.
@@ -35,27 +40,27 @@ class Euler::EulerSolver_ADERDG: public Euler::AbstractEulerSolver_ADERDG {
      *   |             |         |       |
      *   |             |         |       |
      *   | rarefaction | contact | shock |
-     *___|_____________|___++____|_______|_________
+     *___|_____________|_________|_______|_________
      *   x1           x2   x0   x3      x4
      */
     static void sodShockTube(const double* const x,double t, double* Q);
 
     /**
-     * Defaults to calling function ::sodShockTube. Can be changed via
-     * compiler flag -DSmoothReferenceSolution to
-     * calling function ::entropyWave.
+     * Calls ::sodShockTube if constant 'reference' is set to 'sod',
+     * calls ::entropyWave if constant 'reference is set to 'smooth'.
      */
     static void referenceSolution(const double* const x, const double t, double* Q);
 
 
-    EulerSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    EulerSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,
+        exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
 
     /**
      * Initialise the solver.
      *
      * \param[in] cmdlineargs the command line arguments.
      */
-    void init(std::vector<std::string>& cmdlineargs);
+    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
     
     /**
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell

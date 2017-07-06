@@ -7,7 +7,7 @@
 
 #include "EulerSolver_ADERDG.h"
 
-void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs) {
+void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
 }
 
 
@@ -72,13 +72,13 @@ void Euler::EulerSolver_FV::boundaryValues(
     const int direction,
     const double* const stateInside,
     double* stateOutside) {
-#ifdef SmoothReferenceSolution
-  EulerSolver_ADERDG::referenceSolution(x,t,stateOutside);
-#else
-  ReadOnlyVariables varsInside(stateInside);
-  Variables         varsOutside(stateOutside);
-
-  varsOutside = varsInside;
-  varsOutside[1+direction] =  -varsOutside[1+direction];
-#endif
+  switch (EulerSolver_ADERDG::ReferenceChoice) {
+  case EulerSolver_ADERDG::Reference::SodShockTube:
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
+    stateOutside[1+direction] =  -stateOutside[1+direction];
+    break;
+  case EulerSolver_ADERDG::Reference::EntropyWave:
+    EulerSolver_ADERDG::referenceSolution(x,t,stateOutside);
+    break;
+  }
 }

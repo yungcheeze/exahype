@@ -10,17 +10,14 @@
 // ========================
 #include "exahype/Parser.h"
 
-
-#include <ostream>
-
 #include "AbstractEulerSolver_FV.h"
-
 
 /**
  * We use Peano's logging
  */
 #include "tarch/logging/Log.h"
 
+#include <ostream>
 
 namespace Euler{
   class EulerSolver_FV;
@@ -33,14 +30,14 @@ class Euler::EulerSolver_FV : public Euler::AbstractEulerSolver_FV {
      */
     static tarch::logging::Log _log;
   public:
-    EulerSolver_FV(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    EulerSolver_FV(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
     
     /**
      * Initialise the solver.
      *
      * \param[in] cmdlineargs the command line arguments.
      */
-    void init(std::vector<std::string>& cmdlineargs);
+    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
 
     /**
      * @see FiniteVolumesSolver

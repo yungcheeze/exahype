@@ -17,11 +17,27 @@
 
 #include <algorithm>
 
+#include <string>
+
 #include <math.h>
 
 #include "kernels/GaussLegendreQuadrature.h"
 
-void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
+Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice = Euler::EulerSolver_ADERDG::Reference::EntropyWave;
+
+void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
+  std::string reference = constants.getValueAsString("reference");
+
+  if (reference.compare("smooth")==0) {
+    ReferenceChoice = Reference::EntropyWave;
+  }
+  else if (reference.compare("sod")==0){
+    ReferenceChoice = Reference::SodShockTube;
+  }
+  else {
+    std::cout <<"ERROR: Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'smooth' or 'sod'." << std::endl;
+    std::abort();
+  }
 }
 
 void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
@@ -63,14 +79,6 @@ void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
-
-void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x, const double t, double* Q) {
-#ifdef SmoothReferenceSolution
-  entropyWave(x,t,Q);
-#else
-  sodShockTube(x,t,Q);
-#endif
 }
 
 void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double t, double* Q) {
@@ -177,6 +185,17 @@ void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, doub
   Q[4] = p / (GAMMA-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
+void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x,double t, double* Q) {
+  switch (ReferenceChoice) {
+    case Reference::SodShockTube:
+      sodShockTube(x,t,Q);
+      break;
+    case Reference::EntropyWave:
+      entropyWave(x,t,Q);
+      break;
+  }
+}
+
 void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
                                                   const double w,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
@@ -196,29 +215,33 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
                                           const int faceIndex,const int direction,
                                           const double* const fluxIn,const double* const stateIn,
                                           double* fluxOut, double* stateOut) {
-#ifdef SmoothReferenceSolution
-  double Q[NumberOfVariables]     = {0.0};
-  double _F[3][NumberOfVariables] = {0.0};
-  double* F[3] = {_F[0],_F[1],_F[2]};
+  switch (ReferenceChoice) {
+  case Reference::SodShockTube:
+    std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
+    std::copy_n(stateIn, NumberOfVariables, stateOut);
+    //  stateOut[1+direction]=-stateOut[1+direction];
+    break;
+  case Reference::EntropyWave:
+    // Dirichlet conditions
+    double Q[NumberOfVariables]     = {0.0};
+    double _F[3][NumberOfVariables] = {0.0};
+    double* F[3] = {_F[0],_F[1],_F[2]};
 
-  // initialise
-  std::fill_n(stateOut, NumberOfVariables, 0.0);
-  std::fill_n(fluxOut,  NumberOfVariables, 0.0);
-  for (int i=0; i<Order+1; i++) {
-    const double ti = t + dt * kernels::gaussLegendreNodes[Order][i];
+    // initialise
+    std::fill_n(stateOut, NumberOfVariables, 0.0);
+    std::fill_n(fluxOut,  NumberOfVariables, 0.0);
+    for (int i=0; i<Order+1; i++) {
+      const double ti = t + dt * kernels::gaussLegendreNodes[Order][i];
 
-    referenceSolution(x,ti,Q);
-    flux(Q,F);
-    for (int v=0; v<NumberOfVariables; v++) {
-      stateOut[v] += Q[v]            * kernels::gaussLegendreWeights[Order][i];
-      fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
+      referenceSolution(x,ti,Q);
+      flux(Q,F);
+      for (int v=0; v<NumberOfVariables; v++) {
+        stateOut[v] += Q[v]            * kernels::gaussLegendreWeights[Order][i];
+        fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
+      }
     }
+    break;
   }
-#else
-  std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
-  std::copy_n(stateIn, NumberOfVariables, stateOut);
-//  stateOut[1+direction]=-stateOut[1+direction];
-#endif
 }
 
 void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
