@@ -1066,74 +1066,54 @@ exahype::Parser::ParserView::ParserView(Parser& parser,
     : _parser(parser),
       _solverNumberInSpecificationFile(solverNumberInSpecificationFile) {}
 
-std::string exahype::Parser::ParserView::getValue(
-    const std::string inputString, const std::string& key) const {
+std::string exahype::Parser::ParserView::getValue(const std::string& key) const {
   assertion(_parser.isValid());
-  
-  if (inputString.substr(0, 1) != "{") return "";
-  std::size_t currentIndex = 1;
-  bool nextTokenIsSearchedValue = false;
-  while (currentIndex < inputString.size() - 1) {
-    std::size_t firstIndexColon = inputString.find(":", currentIndex);
-    std::size_t firstIndexBracket = inputString.find("}", currentIndex);
-    std::size_t firstIndexComma = inputString.find(",", currentIndex);
-    std::size_t endIndex =
-        std::min(firstIndexColon, std::min(firstIndexBracket, firstIndexComma));
 
-    std::string newToken =
-        inputString.substr(currentIndex, endIndex - currentIndex);
-    if (nextTokenIsSearchedValue) {
-      return newToken;
+  std::string token;
+  std::regex  COLON_SEPARATED(R"((.+):(.+))");
+  std::smatch match;
+
+  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1);
+  std::regex_search(token, match, COLON_SEPARATED);
+
+  int i = 1;
+  while (match.size() > 1) {
+    if (match.str(1).compare(key)==0) {
+      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2)"'.");
+      return match.str(2);
     }
-
-    nextTokenIsSearchedValue =
-        (endIndex == firstIndexColon) && (newToken == key);
-
-    currentIndex = endIndex + 1;
+    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
+    std::regex_search(token, match, COLON_SEPARATED);
   }
-
+  logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": cannot find constant '" << key << "'.");
   return "";
 }
 
 bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   assertion(_parser.isValid());
 
-  const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
+  std::string token;
+  std::regex  COLON_SEPARATED(R"(.+):(.+))");
+  std::smatch match;
 
-  // TODO: We don't start constant lists etc. with an { any more.
-  // at least sometimes.
-  if (inputString.substr(0, 1) != "{") return false;
-  std::size_t currentIndex = 1;
-  bool nextTokenIsValue = false;
-  while (currentIndex < inputString.size() - 1) {
-    std::size_t firstIndexColon = inputString.find(":", currentIndex);
-    std::size_t firstIndexBracket = inputString.find("}", currentIndex);
-    std::size_t firstIndexComma = inputString.find(",", currentIndex);
-    std::size_t endIndex =
-        std::min(firstIndexColon, std::min(firstIndexBracket, firstIndexComma));
+  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1);
+  std::regex_search(token, match, COLON_SEPARATED);
 
-    if (!nextTokenIsValue) {
-      std::string newToken =
-          inputString.substr(currentIndex, endIndex - currentIndex);
-      logDebug("hasKey(string)", "added token \"" << newToken << "\"");
-      if (newToken == key) {
-        return true;
-      }
+  int i = 1;
+  while (match.size() > 1) {
+    if (match.str(1).compare(key)) {
+      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2)"'.");
+      return true;
     }
-
-    nextTokenIsValue = (endIndex == firstIndexColon);
-
-    currentIndex = endIndex + 1;
+    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
+    std::regex_search(token, match, COLON_SEPARATED);
   }
-
+  logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": cannot find constant '" << key << "'.");
   return false;
 }
 
 int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
-  const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   int result;
   std::istringstream ss(value);
@@ -1149,9 +1129,7 @@ int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
 }
 
 bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
-  const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   bool result;
   std::istringstream ss(value);
@@ -1168,9 +1146,7 @@ bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
 
 double exahype::Parser::ParserView::getValueAsDouble(
     const std::string& key) const {
-  const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   double result;
   std::istringstream ss(value);
@@ -1187,16 +1163,14 @@ double exahype::Parser::ParserView::getValueAsDouble(
 
 std::string exahype::Parser::ParserView::getValueAsString(
     const std::string& key) const {
-  const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  return getValue(inputString, key);
+  return getValue(key);
 }
 
 bool exahype::Parser::ParserView::isValueValidInt(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   int result;
   std::istringstream ss(value);
@@ -1213,7 +1187,7 @@ bool exahype::Parser::ParserView::isValueValidDouble(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   double result;
   std::istringstream ss(value);
@@ -1231,7 +1205,7 @@ bool exahype::Parser::ParserView::isValueValidBool(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  std::string value = getValue(inputString, key);
+  std::string value = getValue(key);
 
   bool result;
   std::istringstream ss(value);
@@ -1248,5 +1222,5 @@ bool exahype::Parser::ParserView::isValueValidString(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
-  return getValue(inputString, key) != "";
+  return getValue(key) != "";
 }
