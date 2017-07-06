@@ -78,6 +78,7 @@ void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
 
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  //  return AdjustSolutionValue::PointWisely; // comment in for vel_y cleaning; do the same in the FV solver
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
@@ -201,6 +202,9 @@ void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
   if (tarch::la::equals(t, 0.0)) {
     referenceSolution(x,0.0,Q);
   }
+  //  else {
+  //     Q[2] = 0.0;
+  //   } // comment in for vel_y cleaning; do the same in the FV solver
 }
 
 exahype::solvers::Solver::RefinementControl
@@ -252,9 +256,9 @@ void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
 
   observables[0]=vars.rho(); //extract density
   const double irho = 1./vars.rho();
-  observables[1]=irho*vars.j(0);
-  observables[2]=irho*vars.j(1);
-  observables[3]=irho*vars.j(2);
+  observables[1]=irho*vars.j(0) * 0.0;
+  observables[2]=irho*vars.j(1) * 0.0;
+  observables[3]=irho*vars.j(2) * 0.0;
 
   const double GAMMA = 1.4;
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
@@ -267,9 +271,11 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
   const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
   const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
   const double t, const double dt) const {
-  if (tarch::la::equals(t,0.0) &&
-      std::abs(center[0]-0.5) < 2*dx[0]
-  ) {
+  // Higher-order ADER-DG methods tend to "oversee" the shock on the
+  // FV subgrid. We thus prescribe the initial FV domain manually here.
+  if (ReferenceChoice == Reference::SodShockTube &&
+      tarch::la::equals(t,0.0) &&
+      std::abs(center[0]-0.5) < 2*dx[0]) {
     return false;
   }
 
