@@ -44,18 +44,18 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 7
-    maximum-mesh-size        = 0.038
-    maximum-mesh-depth       = 0
+    order const              = 4
+    maximum-mesh-size        = 0.12
+    maximum-mesh-depth       = 2
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
     limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
-    dmp-observables          = 2
+    dmp-observables          = 5
     dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 2
+    steps-till-cured         = 10
     
     plot user::defined ErrorWriter
       variables const = 5
@@ -64,12 +64,20 @@ exahype-project Euler
       output          = not-available
     end plot
     
-    plot vtu::Cartesian::vertices::ascii ErrorPlotter
+    plot vtk::Cartesian::vertices::limited::ascii ErrorPlotter
       // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
       variables const = 15 
       time            = 0.0
       repeat          = 1e-2
       output          = ./errors
     end plot
+    
+    plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 1e-2
+      output    = ./fv
+    end plot
+    
   end solver
 end exahype-project
