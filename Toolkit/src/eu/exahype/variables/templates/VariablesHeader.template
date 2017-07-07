@@ -55,8 +55,41 @@ public:
   const char* operator () (int index) const { return _Q[index]; }
 }; // end of VariableNames
 
+/**
+ * Positions of fields in the vector of unknowns,
+ * available as namespace constants.
+ * 
+ * You can use this namespace similar to the class "VariableShortcuts"
+ * but you don't need an object, ie. your notation can get slimmer.
+ * 
+ * Usage is like:
+ * 
+ *    void somewhere() {
+ *       using namespace {{Project}}::{{Solver}}_Variables::shortcuts;
+ *       Q[foo] = 17;
+ *    }
+ *
+ * instead of
+ * 
+ *    void somewhere() {
+ *       {{Project}}::Abstract{{Solver}}::VariableNames q;
+ *       Q[q.foo] = 17;
+ *    }
+ *
+ **/
+namespace {{Project}} {
+	namespace {{Solver}}_Variables {
+		namespace shortcuts {
+			{{VariableShortcuts}}
+		} // namespace shortcuts
+		namespace names {
+			{{VariableNames}}
+		} // namespace names
+	} // end of namespace {{Project}}::{{Solver}}_Variables 
+} // end of namespace {{Project}}
+
 /*
- * NEW CLASS IDEA:
+ * Another class idea:
  * 
  * class ....::VariablePointers {
  *   private:   double* Q;
@@ -106,7 +139,8 @@ class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
     int parameters() const {
       return SizeParameters;
     }
-    
+
+    // Java-generated code for VariablesGetters:
 
 {{VariablesGetters}}
 }; // end of ReadOnlyVariables
@@ -158,9 +192,12 @@ class {{Project}}::Abstract{{Solver}}::Variables {
     int parameters() const {
       return SizeParameters;
     }
-    
+
+    // Java-generated code for VariablesGetters:
 
 {{VariablesGetters}}
+
+    // Java-generated code for VariablesSetters:
 
 {{VariablesSetters}}
 }; // end of Variables
@@ -184,9 +221,13 @@ class {{Project}}::Abstract{{Solver}}::Fluxes {
     int dimensions() const {
       return Dimensions;
     }
-    
+
+
+    // Java-generated code for FluxGetters:
 
 {{FluxesGetters}}
+
+    // Java-generated code for FluxSetters:
 
 {{FluxesSetters}}
 }; // end of Fluxes
