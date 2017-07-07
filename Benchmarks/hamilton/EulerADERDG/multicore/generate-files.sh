@@ -38,15 +38,12 @@ mesh=regular-$i
 h=${hMax[i]}
 t=${T[i]}
 
-prefix+=-$kernels-$mesh
-
-
+prefix=$project-$kernels
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
- prefix+="-fused"
+  prefix+="-fused"
 else
- prefix+="-nonfused"
+  prefix+="-nonfused"
 fi
-
 # prefix= project-io-kernels-mesh-i-
 # regex = .+-.+-(\w+)-.+-.+-
 
@@ -79,7 +76,7 @@ do
   sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript
   
   # Create spec files
-  for coresPerTask in 24
+  for coresPerTask in 1 12 24
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
