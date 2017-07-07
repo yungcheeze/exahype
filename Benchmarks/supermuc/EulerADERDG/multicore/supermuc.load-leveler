@@ -1,0 +1,71 @@
+#!/bin/bash
+#@ job_type = parallel
+#@ class = micro
+#@ node = 1
+#@ tasks_per_node = 1
+#@ island_count = 1
+#@ network.MPI = sn_all,not_shared,us 
+#@ energy_policy_tag = EulerADERDG_energy_tag
+#@ minimize_time_to_solution = yes
+#@ wall_clock_limit = 04:00:00
+#@ job_name = EulerADERDG
+#@ network.MPI = sn_all,not_shared,us
+#@ notification=complete
+#@ notify_user=dominic.e.charrier@durham.ac.uk
+#@ error =  $(job_name).$(jobid).err
+#@ queue
+
+. /etc/profile
+. /etc/profile.d/modules.sh
+module load gcc/4.9
+module load tbb
+
+# Important for multithreaded MPPI
+nodes=1
+tasks=1
+tasksPerNode=1
+coresPerTask=1
+let procsPerNode=tasksPerNode*coresPerTask
+
+export OMP_SINGLE_THREAD=no
+export OMP_NUM_THREADS=$procsPerNode
+
+compiler=Intel
+sharedMem=TBB
+if (( coresPerTask==1 )); then
+  sharedMem=None
+fi
+
+prefix=EulerADERDG-no-output-regular-0-p3
+
+out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+
+script=multicore/supermuc.load-leveler
+spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+
+# pipe some information into output file
+echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
+module list >>$out
+echo "" >> $out
+cat $script >>$out
+echo "" >> $out
+cat $spec >> $out
+#ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler --version >> $out
+# execute the job
+poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out --procs $procsPerNode --nodes $nodes
+
+if (( $coresPerTask==1 )); then
+  likwid-perfctr -f -C 0 -g MEM      poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+  likwid-perfctr -f -C 0 -g FLOPS_DP poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+  likwid-perfctr -f -C 0 -g L2CACHE  poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+  likwid-perfctr -f -C 0 -g BRANCH   poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out
+else
+  let maxCore=coresPerTask-1
+
+ likwid-perfctr -f -C 0-$maxCore -g MEM      poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+ likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+ likwid-perfctr -f -C 0-$maxCore -g L2CACHE  poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+ likwid-perfctr -f -C 0-$maxCore -g BRANCH   poe ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out.likwid  --procs $procsPerNode --nodes $nodes
+ #  not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-EulerADERDG-p3-$sharedMem-$compiler $spec >> $out
+fi

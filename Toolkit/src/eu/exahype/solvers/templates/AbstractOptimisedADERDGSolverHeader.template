@@ -46,6 +46,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     class ReadOnlyVariables;
     class Fluxes;
     class VariableShortcuts;
+    class VariableMultiplicities;s
     class VariableNames;
     {{NamingSchemes}}
     
