@@ -1,4 +1,13 @@
 /**
+ * 
+ * Euler Flow
+ * 
+ * This setup corresponds to the Finite Volume demonstrator code as discussed in 
+ * Section 2 of the guidebook. To keep stuff here extremely simple, the spec file 
+ * does not contain any optimisations or any parallelisation. How to add parallel
+ * features is solely described in the guidebook.
+ * 
+ * 
  * This file is part of the ExaHyPE project.
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
@@ -9,68 +18,56 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
- **/
- 
-/**
-
- Euler Flow
-
- A simple project. (well, it was simple, in the beginning).
-
  */
-exahype-project EulerADERDG
-
-  peano-kernel-path const = ./Peano
-  exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/EulerADERDG
-  architecture const      = noarch
-  log-file                = mylogfile.log
+exahype-project EulerFV
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./Benchmarks/hamilton/EulerFV
 
   computational-domain
-    dimension const          = 3
-    width                    = 1.0, 1.0, 1.0
-    offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.4
+    dimension const         = 2
+    width                   = 1.0, 0.3
+    offset                  = 0.0, 0.0
+    end-time                = 0.21
   end computational-domain
-
+  
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 7
     properties-file          = sharedmemory.properties
   end shared-memory
-
+  
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
-    timestep-batch-factor           = 0.0
-    skip-reduction-in-batched-time-steps = off
+    timestep-batch-factor           = 0.8
+    skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
   end optimisation
-
-  solver ADER-DG EulerSolver
+ 
+  solver Finite-Volumes EulerSolver
     variables const   = rho:1,j:3,E:1
-    order const       = 3
-    /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
+    patch-size const  = 20
+    maximum-mesh-size = 0.038
     time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
+    kernel const      = generic::godunov
     language const    = C
     
     plot user::defined ErrorWriter
       variables const = 5
       time            = 0.0
-      repeat          = 1e-2
+      repeat          = 1e-10
       output          = not-available
     end plot
     
-    plot vtk::Cartesian::vertices::ascii ErrorPlotter
-      // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
+    plot vtu::Cartesian::cells::ascii ErrorPlotter
+      // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
       variables const = 15 
       time            = 0.0
-      repeat          = 1e-2
+      repeat          = 1e-10
       output          = ./errors
     end plot
   end solver

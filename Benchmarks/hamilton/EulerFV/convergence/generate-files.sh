@@ -24,7 +24,7 @@ batchFactor=0.8
 hMax=(0.12 0.038 0.0124)
 T=(0.11 0.11 0.11)
 
-kernels=gen
+kernels=gengodunov # gengodunov or genmusclhancock
 
 # Derived options
 
@@ -64,9 +64,11 @@ do
       newSpec=$filename'.exahype'
 
       cp $spec $newSpec
-
-      if [[ "$kernels" == "opt" ]]; then
-        sed -i -r "s,generic::fluxes::nonlinear,optimised::fluxes::nonlinear," $newSpec
+      
+      if [[ "$kernels" -eq "gengodunov" ]]; then
+        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
+      elif [[ "$kernels" -eq "genmuscl" ]]; then
+        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
       fi
 
       sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
