@@ -1079,7 +1079,7 @@ std::string exahype::Parser::ParserView::getValue(const std::string& key) const 
   int i = 1;
   while (match.size() > 1) {
     if (match.str(1).compare(key)==0) {
-      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2)"'.");
+      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2) << "'.");
       return match.str(2);
     }
     token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
@@ -1102,7 +1102,7 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   int i = 1;
   while (match.size() > 1) {
     if (match.str(1).compare(key)) {
-      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2)"'.");
+      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2) << "'.");
       return true;
     }
     token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
