@@ -182,29 +182,31 @@ def extract_likwid_metrics(root_dir,prefix):
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
         # write header
-        header = ["Order","CC","Kernels","Algorithm","Nodes","Tasks (per Node)","Cores (per Task)","Shared Memory"]
+        header = ["Mesh","Order","CC","Kernels","Algorithm","Nodes","Tasks (per Node)","Cores (per Task)","Shared Memory"]
         for metric in metrics:
             header.append(metric[0]+"("+metric[1]+")")
         csvwriter.writerow(header)
 
         # write content
+        print("processed files:")
         for filename in os.listdir(root_dir):
             if filename.endswith(".out.likwid") and filename.startswith(prefix):
-                print(filename)
-                # sample: Euler-no-output-gen-fused-regular-0-p3-TBB-Intel-n1-t1-c24.out
-                match     = re.search('^'+prefix+'-([a-z]+)-([a-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
-                kernels   = match.group(1)
-                algorithm = match.group(2)
-                order     = match.group(3)
-                mode      = match.group(4)
-                cc        = match.group(5)
-                nodes     = match.group(6)
-                tasks     = match.group(7)
-                cores     = match.group(8)
+                print(root_dir+"/"+filename)
+                # sample: EulerADERDG-no-output-gen-fused-regular-0-p3-TBB-Intel-n1-t1-c24.out
+                match = re.search('^'+prefix+'-([a-z]+)-([a-z]+)-(.*)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
+                kernels   = match.group(1) # opt/gen
+                algorithm = match.group(2) # fused/nonfused
+                mesh      = match.group(3)
+                order     = match.group(4)
+                mode      = match.group(5)
+                cc        = match.group(6)
+                nodes     = match.group(7)
+                tasks     = match.group(8)
+                cores     = match.group(9)
                     
                 measurements = parse_likwid_metrics(root_dir+'/'+filename,metrics,int(cores)==1) 
                 
-                row = [order,cc,kernels,algorithm,nodes,tasks,cores,mode]
+                row = [mesh,order,cc,kernels,algorithm,nodes,tasks,cores,mode]
                    
                 for metric in metrics:
                     row.append ( str(measurements[metric[0]][metric[1]]) )
@@ -278,7 +280,7 @@ def sort_table(filename):
     header      = next(datafile).strip()
     reader      = csv.reader(datafile,delimiter='&')
     # row = [order,cc,kernels,algorithm,nodes,tasks,cores,mode]
-    sorted_data = sorted(reader, key=lambda x: (int(x[0]),x[1],x[2],x[3],int(x[4]),int(x[5]),int(x[6])))
+    sorted_data = sorted(reader, key=lambda x: (x[0],int(x[1]),x[2],x[3],x[4],int(x[5]),int(x[6]),int(x[7])))
     datafile.close() 
  
     with open(filename, 'w') as datafile:
@@ -312,3 +314,5 @@ prefix   = args.prefix
 
 extract_likwid_metrics(root_dir,prefix)
 sort_table(root_dir+"/"+prefix+".likwid.csv")
+print("created table:")
+print(root_dir+"/"+prefix+".likwid.csv")

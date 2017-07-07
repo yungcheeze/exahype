@@ -31,7 +31,7 @@ kernels=gen
 
 for fuseAlgorithmicSteps in "on" "off"
 do
-i=1
+i=0
 mesh=regular-$i
 h=${hMax[i]}
 t=${T[i]}
