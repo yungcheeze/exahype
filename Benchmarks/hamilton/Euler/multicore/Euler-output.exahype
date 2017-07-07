@@ -77,6 +77,6 @@ exahype-project Euler
       repeat    = 1e-2
       output    = ./fv
     end plot
-    
+
   end solver
 end exahype-project

@@ -54,29 +54,6 @@ exahype-project Euler
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 1
     // reference in {smooth,sod}
-    constants                = reference:sod
-    
-    plot user::defined ErrorWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 1e-2
-      output          = not-available
-    end plot
-    
-    plot vtk::Cartesian::vertices::limited::ascii ErrorPlotter
-      // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
-      variables const = 15 
-      time            = 0.0
-      repeat          = 1e-2
-      output          = ./errors
-    end plot
-    
-    plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
-      variables const = 5
-      time      = 0.0
-      repeat    = 1e-2
-      output    = ./fv
-    end plot
-    
+    constants                = reference:sod    
   end solver
 end exahype-project

@@ -31,7 +31,7 @@ kernels=gen
 
 for fuseAlgorithmicSteps in "on" "off"
 do
-i=0
+i=1
 mesh=regular-$i
 h=${hMax[i]}
 t=${T[i]}
@@ -42,8 +42,7 @@ if [ "$fuseAlgorithmicSteps" == "on" ]; then
 else
   prefix+="-nonfused"
 fi
-# prefix= project-io-kernels-mesh-i-
-# regex = .+-.+-(\w+)-.+-.+-
+prefix+="-$mesh"
 
 for order in 3 5 7 9
 do
@@ -65,11 +64,9 @@ do
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
   sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
-  
+
   sed -i 's,p3,p'$order',g' $newScript
-  sed -i 's,regular-0,'$mesh',g' $newScript
 
   sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript
   
