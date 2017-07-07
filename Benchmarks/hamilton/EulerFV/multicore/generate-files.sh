@@ -34,7 +34,6 @@ do
 i=0
 mesh=regular-$i
 h=${hMax[i]}
-t=${T[i]}
 
 prefix=$project-$io-$kernels
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
@@ -47,6 +46,16 @@ prefix+=$mesh
 for patchSize in 7 11 15 17 # corresponds to orders=3 5 7 9
 do
   T=(0.01 0.002 0.0005 0.0001)   # p=3
+  if (( patchSize == 11 )); then
+    T=(0.003)                    # p=5
+  fi
+  if (( patchSize == 15 )); then
+    T=(0.001)                    # p=7
+  fi
+  if (( patchSize == 17 )); then
+    T=(0.0003)                   # p=9
+  fi
+  t=${T[i]}
 
   # Create script
   script=multicore/hamilton.slurm-script

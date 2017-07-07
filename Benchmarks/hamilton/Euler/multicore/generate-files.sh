@@ -34,7 +34,6 @@ do
 i=0
 mesh=regular-$i
 h=${hMax[i]}
-t=${T[i]}
 
 prefix=$project-$io-$kernels
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
@@ -56,6 +55,7 @@ do
   if (( order == 9 )); then
     T=(0.0003)                   # p=9
   fi
+  t=${T[i]}
 
 
   # Create script

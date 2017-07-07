@@ -22,7 +22,6 @@ project=EulerADERDG
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 hMax=(0.05 0.01 0.005 0.001)
-T=(0.2 0.2 0.0005 0.0001) # p=3
 io=no-output # or output
 
 kernels=gen
@@ -34,7 +33,6 @@ do
 i=0
 mesh=regular-$i
 h=${hMax[i]}
-t=${T[i]}
 
 prefix=$project-$io-$kernels
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
@@ -56,7 +54,7 @@ do
   if (( order == 9 )); then
     T=(0.0003)                   # p=9
   fi
-
+  t=${T[i]}
 
   # Create script
   script=multicore/hamilton.slurm-script
