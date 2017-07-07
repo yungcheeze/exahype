@@ -46,6 +46,7 @@ script=multicore/hamilton.slurm-script
 spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
 # pipe some information into output file
+echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
 module list 2>$out
 echo "" >> $out
 cat $script >>$out

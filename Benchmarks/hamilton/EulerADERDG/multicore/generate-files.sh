@@ -52,16 +52,16 @@ fi
 
 for order in 3 5 7 9
 do
- # T=(0.01 0.002 0.0005 0.0001) # p=3
- # if (( order == 5 )); then
- #   T=(0.003)                    # p=5
- # fi
- # if (( order == 7 )); then
- #   T=(0.001)                    # p=9
- # fi
- # if (( order == 9 )); then
- #   T=(0.0003)                   # p=9
- # fi
+  T=(0.01 0.002 0.0005 0.0001)   # p=3
+  if (( order == 5 )); then
+    T=(0.003)                    # p=5
+  fi
+  if (( order == 7 )); then
+    T=(0.001)                    # p=7
+  fi
+  if (( order == 9 )); then
+    T=(0.0003)                   # p=9
+  fi
 
 
   # Create script

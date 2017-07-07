@@ -72,7 +72,8 @@ exahype-project EulerADERDG
       repeat          = 1e-10
       output          = not-available
     end plot
-    
+   
+    /* 
     plot vtk::Cartesian::vertices::ascii ErrorPlotter
       // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
       variables const = 15 
@@ -80,5 +81,6 @@ exahype-project EulerADERDG
       repeat          = 1e-10
       output          = ./errors
     end plot
+    */
   end solver
 end exahype-project
