@@ -70,31 +70,35 @@ def extract_table(root_dir,prefix):
       prefix (str):
          Prefix of the files - usually the date of the test and an identifier for the test.
     '''
- 
+    header = ["Order","CC","Kernels","Algorithm","Adapter","Nodes","Tasks (per Node)","Cores (per Task)","Mode","Iterations","User Time (Total)","CPU Time (Total)"]
+
     # collect filenames
-    with open(prefix+'.csv', 'w') as csvfile:
+    with open(root_dir+"/"+prefix+'.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerow(header)
+
         for filename in os.listdir(root_dir):
             if filename.endswith(".out") and filename.startswith(prefix):
-                # sample: EulerADERDG-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out
-                match = re.search('^.+-.+-([a-z]+)-.+-([A-Za-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
-                opt   = match.group(1)
-                fused = match.group(2)
-                order = match.group(3)
-                mode  = match.group(4)
-                cc    = match.group(5)
-                nodes = match.group(6)
-                tasks = match.group(7)
-                cores = match.group(8)
+                # sample: EulerADERDG-no-output-gen-fused-regular-0-p3-TBB-Intel-n1-t1-c24.out
+                match = re.search('^'+prefix+'-([a-z]+)-([a-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
+                print(filename)
+                kernels   = match.group(1) # opt/gen
+                algorithm = match.group(2) # fused/nonfused
+                order     = match.group(3)
+                mode      = match.group(4)
+                cc        = match.group(5)
+                nodes     = match.group(6)
+                tasks     = match.group(7)
+                cores     = match.group(8)
                     
-                times = parse_adapter_times(filename) 
+                times = parse_adapter_times(root_dir+"/"+filename) 
                 
                 for adapter in times:
                     iterations = times[adapter]['n']
                     usertime   = times[adapter]['usertime']
                     cputime    = times[adapter]['cputime']
  
-                    csvwriter.writerow([nodes,tasks,cores,adapter,iterations,usertime,cputime,cc,mode])
+                    csvwriter.writerow([order,cc,kernels,algorithm,adapter,nodes,tasks,cores,mode,iterations,usertime,cputime])
 
 def sort_table(filename):
     '''
@@ -102,12 +106,15 @@ def sort_table(filename):
     See: https://stackoverflow.com/a/17109098
     '''
     datafile    = open(filename, 'r')
+    header      = next(datafile).strip()
     reader      = csv.reader(datafile,delimiter='&')
-    sorted_data = sorted(reader, key=lambda x: (x[3],int(x[0]),int(x[1]),int(x[2])))
+    # [order,cc,kernels,algorithm,adapter,nodes,tasks,cores,mode,iterations,usertime,cputime]
+    sorted_data = sorted(reader, key=lambda x: (int(x[0]),x[1],x[2],x[3],x[4],int(x[5]),int(x[6]),int(x[7])))
     datafile.close() 
  
     with open(filename, 'w') as datafile:
         writer = csv.writer(datafile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(header.split('&'))
         writer.writerows(sorted_data)
 
 ########################################################################

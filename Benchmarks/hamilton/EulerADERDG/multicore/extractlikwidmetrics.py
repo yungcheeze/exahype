@@ -168,50 +168,46 @@ def extract_likwid_metrics(root_dir,prefix):
     '''
     
     metrics    = [
-                  "  MFLOP/s", # Two whitespaces are important to not find the AVX MFLOP/s by accident
-                  "Memory bandwidth [MBytes/s]",
-                  "Memory data volume [GBytes]",
-                  "L2 bandwidth [MBytes/s]",
-                  "L2 request rate",
-                  "L2 miss rate",
-                  "Branch misprediction rate"
-                  ]
-                  
-    columns    = [ "Sum","Min","Max","Avg" ]
+                  ["  MFLOP/s",                   "Sum"],   # Two whitespaces are required to not find the AVX MFLOP/s by accident
+                  ["Memory bandwidth [MBytes/s]", "Sum"],
+                  ["Memory data volume [GBytes]", "Sum"],
+                  ["L2 bandwidth [MBytes/s]",     "Sum"],
+                  ["L2 request rate",             "Avg"],
+                  ["L2 miss rate",                "Avg"],
+                  ["Branch misprediction rate",   "Avg"]
+                 ]
     
     # collect filenames
-    with open(prefix+'.likwid.csv', 'w') as csvfile:
+    with open(root_dir+"/"+prefix+'.likwid.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter='&',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         
         # write header
-        header = ["Nodes","Tasks (per Node)","Order","Cores (per Task)","CC","Mode","Kernels"]
+        header = ["Order","CC","Kernels","Algorithm","Nodes","Tasks (per Node)","Cores (per Task)","Shared Memory"]
         for metric in metrics:
-            for column in columns:          
-                    header.append(metric+"("+column+")")
+            header.append(metric[0]+"("+metric[1]+")")
         csvwriter.writerow(header)
 
         # write content
         for filename in os.listdir(root_dir):
             if filename.endswith(".out.likwid") and filename.startswith(prefix):
                 print(filename)
-                # sample: Euler-no-output-gen-regular-0-fused-p3-TBB-Intel-n1-t1-c24.out.likwid
-                match = re.search('^.+-.+-([a-z]+)-.+-([A-Za-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
-                opt   = match.group(1)
-                fused = match.group(2)
-                order = match.group(3)
-                mode  = match.group(4)
-                cc    = match.group(5)
-                nodes = match.group(6)
-                tasks = match.group(7)
-                cores = match.group(8)
+                # sample: EulerADERDG-no-output-gen-fused-regular-0-p3-TBB-Intel-n1-t1-c24.out
+                match     = re.search('^'+prefix+'-([a-z]+)-([a-z]+)-p([0-9]+)-([A-Za-z]+)-([A-Za-z]+)-n([0-9]+)-t([0-9]+)-c([0-9]+)',filename)
+                kernels   = match.group(1)
+                algorithm = match.group(2)
+                order     = match.group(3)
+                mode      = match.group(4)
+                cc        = match.group(5)
+                nodes     = match.group(6)
+                tasks     = match.group(7)
+                cores     = match.group(8)
                     
                 measurements = parse_likwid_metrics(root_dir+'/'+filename,metrics,int(cores)==1) 
                 
-                row = [nodes,tasks,order,cores,cc,mode,opt]
+                row = [order,cc,kernels,algorithm,nodes,tasks,cores,mode]
                    
                 for metric in metrics:
-                    for column in columns:
-                        row.append ( str(measurements[metric][column]) )
+                    row.append ( str(measurements[metric[0]][metric[1]]) )
                 csvwriter.writerow(row)
 
 def parse_likwid_metrics(file_path,metrics,singlecore=False):
@@ -221,8 +217,8 @@ def parse_likwid_metrics(file_path,metrics,singlecore=False):
     Args:
        file_path (str):
           Path to the Peano output file.
-       metrics (str[]):
-          A list of the metrics we want to read out.
+       metrics (str[][]):
+          A list of metrics the we want to read out.
        singlecore (bool):
           Specifies if the run was a singlecore run.
 
@@ -237,9 +233,8 @@ def parse_likwid_metrics(file_path,metrics,singlecore=False):
     
     result  = { }
     for metric in metrics:
-        result[metric] =  { }
-        for column in columns:
-            result[metric][column] = -1.0
+        result[metric[0]] =  { }
+        result[metric[0]][metric[1]] = -1.0
 
     try:
         file_handle=open(file_path)
@@ -247,24 +242,27 @@ def parse_likwid_metrics(file_path,metrics,singlecore=False):
         for line in file_handle:
             for metric in metrics: 
                 if singlecore:
-                    if metric in line:
+                    if metric[0] in line:
                         segments = line.split('|')
                         
                         #    |     Runtime (RDTSC) [s]    |    6.5219    |
-                        value = float(segments[2].strip());
-                        result[metric]["Sum"] = value
-                        result[metric]["Min"] = value
-                        result[metric]["Max"] = value
-                        result[metric]["Avg"] = value
-                        
+                        value  = float(segments[2].strip());
+                        values = {}                         
+                        values["Sum"] = value
+                        values["Min"] = value
+                        values["Max"] = value
+                        values["Avg"] = value
+                        result[metric[0]][metric[1]]=values[metric[1]]                        
                 else:
-                    if metric+" STAT" in line:
+                    if metric[0]+" STAT" in line:
                         segments = line.split('|')
                         #   |  Runtime (RDTSC) [s] STAT |   27.4632  |   1.1443  |   1.1443  |   1.1443  |
-                        result[metric]["Sum"] = float(segments[2].strip());
-                        result[metric]["Min"] = float(segments[3].strip());
-                        result[metric]["Max"] = float(segments[4].strip());
-                        result[metric]["Avg"] = float(segments[5].strip());
+                        values = {}                                                 
+                        values["Sum"] = float(segments[2].strip());
+                        values["Min"] = float(segments[3].strip());
+                        values["Max"] = float(segments[4].strip());
+                        values["Avg"] = float(segments[5].strip());
+                        result[metric[0]][metric[1]]=values[metric[1]]
     except:
         print ("Error: Could not process file '%s'!\n" % (file_path))
         raise
@@ -279,7 +277,8 @@ def sort_table(filename):
     datafile    = open(filename, 'r')
     header      = next(datafile).strip()
     reader      = csv.reader(datafile,delimiter='&')
-    sorted_data = sorted(reader, key=lambda x: (int(x[0]),int(x[1]),int(x[2]),int(x[3])))
+    # row = [order,cc,kernels,algorithm,nodes,tasks,cores,mode]
+    sorted_data = sorted(reader, key=lambda x: (int(x[0]),x[1],x[2],x[3],int(x[4]),int(x[5]),int(x[6])))
     datafile.close() 
  
     with open(filename, 'w') as datafile:
@@ -312,4 +311,4 @@ root_dir = args.path
 prefix   = args.prefix
 
 extract_likwid_metrics(root_dir,prefix)
-sort_table(prefix+".likwid.csv")
+sort_table(root_dir+"/"+prefix+".likwid.csv")
