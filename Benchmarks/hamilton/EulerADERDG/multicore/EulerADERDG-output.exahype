@@ -22,7 +22,7 @@ exahype-project EulerADERDG
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/EulerADERDG
+  output-directory const  = ./Benchmarks/hamilton/EulerADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
