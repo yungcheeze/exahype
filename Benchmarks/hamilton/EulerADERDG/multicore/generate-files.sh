@@ -31,14 +31,12 @@ kernels=gen
 
 for fuseAlgorithmicSteps in "on" "off"
 do
-prefix=$project-$io
-
 i=0
 mesh=regular-$i
 h=${hMax[i]}
 t=${T[i]}
 
-prefix=$project-$kernels
+prefix=$project-$io-$kernels
 if [ "$fuseAlgorithmicSteps" == "on" ]; then
   prefix+="-fused"
 else
