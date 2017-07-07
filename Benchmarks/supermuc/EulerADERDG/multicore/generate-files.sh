@@ -49,7 +49,7 @@ do
     do 
       # Create script
       script=multicore/supermuc.load-leveler
-      newScript=multicore/supermuc-$prefix-p$order-n1-t1-c$coresPerTask-$sharedMem.load-leveler
+      newScript=multicore/supermuc-$prefix-p$order-n1-t1-c$coresPerTask.load-leveler
       cp $script $newScript
      
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
