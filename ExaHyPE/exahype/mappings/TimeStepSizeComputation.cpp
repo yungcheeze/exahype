@@ -204,9 +204,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
             ==exahype::solvers::LimiterDomainChange::Irregular);
     const bool recomputeTimeStepSizes =
         (exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation &&
-            solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-            ==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
+        solver->getMeshUpdateRequest());
 
     if (advanceInTime || recomputeTimeStepSizes) {
       logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
@@ -322,10 +320,8 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
               ==exahype::solvers::LimiterDomainChange::Irregular);
       const bool recomputeTimeStepSizes =
-          (exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation &&
-           solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
-           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-           ==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
+              (exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation &&
+              solver->getMeshUpdateRequest());
 
       const int element = solver->tryGetElement(
           fineGridCell.getCellDescriptionsIndex(),solverNumber);
