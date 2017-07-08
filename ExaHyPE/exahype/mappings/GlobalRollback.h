@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#ifndef EXAHYPE_MAPPINGS_Reinitialisation_H_
-#define EXAHYPE_MAPPINGS_Reinitialisation_H_
+#ifndef EXAHYPE_MAPPINGS_GlobalRollback_H_
+#define EXAHYPE_MAPPINGS_GlobalRollback_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -29,61 +29,21 @@
 
 namespace exahype {
 namespace mappings {
-class Reinitialisation;
+class GlobalRollback;
 }
 }
 
 /**
- * This mapping is part of three mappings (+adapters) which together perform the limiter
- * status spreading the recomputation of troubled cells (and their direct) neighbours.
- *
- * This mapping is shared by both algorithmic sections
- * LocalRecomputation and APosterioriRefinement.
- *
- * \see exahype::mappings::SolutionRecomputation for more details.
+ * TODO(Dominic): Update docu.
  *
  * @author Dominic Charrier
  */
-class exahype::mappings::Reinitialisation {
+class exahype::mappings::GlobalRollback {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
-#ifdef Parallel
-  /**
-   * We only send empty data for LimitingADERDGSolvers
-   * where we have detected a irregular change of the limiter domain
-   * but no additional mesh refinement was required.
-   * This information should be available on all ranks.
-   * We ignore other solver types.
-   */
-  static void sendEmptyDataToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-
-  /*
-   * We only send data for LimitingADERDGSolvers
-   * where we have detected a irregular change of the limiter domain
-   * but no additional mesh refinement was required.
-   * This information should be available on all ranks.
-   * We ignore other solver types.
-   */
-  static void sendDataToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&     src,
-      const tarch::la::Vector<DIMENSIONS,int>&     dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-#endif
 
  public:
   /**
@@ -300,25 +260,25 @@ class exahype::mappings::Reinitialisation {
     /**
      * Nop
      */
-    Reinitialisation();
+    GlobalRollback();
 
   #if defined(SharedMemoryParallelisation)
     /**
      * Nop.
      */
-    Reinitialisation(const Reinitialisation& masterThread);
+    GlobalRollback(const GlobalRollback& masterThread);
   #endif
 
     /**
      * Nop.
      */
-    virtual ~Reinitialisation();
+    virtual ~GlobalRollback();
 
   #if defined(SharedMemoryParallelisation)
     /**
      * Nop.
      */
-    void mergeWithWorkerThread(const Reinitialisation& workerThread);
+    void mergeWithWorkerThread(const GlobalRollback& workerThread);
   #endif
 
     /**

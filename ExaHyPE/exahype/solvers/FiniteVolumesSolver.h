@@ -489,8 +489,6 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reinitialiseTimeStepData() override;
-
   double getMinNextTimeStepSize() const override;
 
   bool isValidCellDescriptionIndex(

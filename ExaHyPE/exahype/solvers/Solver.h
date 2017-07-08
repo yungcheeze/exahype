@@ -962,22 +962,6 @@ class exahype::solvers::Solver {
    */
   virtual void startNewTimeStep() = 0;
 
-  /**
-   * This routine is called after the
-   * mesh has been updated and we might have
-   * to reinitialise some of the time
-   * stamps or time step sizes before
-   * we call startNewTimeStep().
-   *
-   * At the time of the call of this
-   * function, a new next time step size
-   * has already been computed.
-   *
-   * TODO(Dominic): Need something like this for each cell description if
-   * we do fused time stepping?
-   */
-  virtual void reinitialiseTimeStepData() = 0;
-
   virtual double getMinNextTimeStepSize() const=0;
 
   /**

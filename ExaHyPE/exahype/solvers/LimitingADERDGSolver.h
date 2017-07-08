@@ -522,6 +522,8 @@ public:
    */
   void startNewTimeStep() override;
 
+  void updateTimeStepSizes();
+
   void zeroTimeStepSizes() override;
 
   /**
@@ -550,8 +552,6 @@ public:
   void rollbackToPreviousTimeStep();
 
   void reconstructStandardTimeSteppingDataAfterRollback();
-
-  void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
   void updateNextMaxCellSize(double maxCellSize) override;
@@ -682,6 +682,10 @@ public:
    *
    * Dellocate the limiter patch on helper cells.
    *
+   * \note !!! Do not deallocate any limiter patches on compute cells
+   * during the limiter status spreading. They might be still necessary
+   * for a global recomputation.
+   *
    * \note We overwrite the facewise limiter status values with the new value
    * in order to use the updateLimiterStatusAfterSetInitialConditions function
    * afterwards which calls determineLimiterStatus(...) again.
@@ -748,6 +752,25 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+  /**
+   * Computes a new time step size and overwrites
+   * the ADER-DG patches predictor and corrector time
+   * step size with it.
+   *
+   * In contrast to startNewTimeStep(int,int), this
+   * method does not shift the time stamps.
+   *
+   * It simply updates the time step sizes
+   * and adjusts the predictor time step size.
+   *
+   * This method is used in the context of
+   * global recomputations.
+   */
+  double updateTimeStepSizes(
+        const int cellDescriptionsIndex,
+        const int element,
+        double*   tempEigenvalues) const;
 
   void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
@@ -905,11 +928,20 @@ public:
            const int solverElement) const;
 
 
-   void reinitialiseSolversGlobally(
+   /**
+    * TODO(Dominic): Add docu.
+    */
+   void rollbackSolverSolutionsGlobally(
           const int cellDescriptionsIndex,
           const int element) const;
 
-   void reinitialiseSolversLocally(
+   /**
+    * Overwrite the new limiter status by the previous one.
+    * Deallocate unneeded limiter patches.
+    * Set iterations to cure troubled cells
+    * to the maximum level.
+    */
+   void reinitialiseSolversGlobally(
        const int cellDescriptionsIndex,
        const int element) const;
 
@@ -953,7 +985,7 @@ public:
    * Helper cell limiter patches can be deallocated during
    * the mesh refinement iterations.
    */
-  void reinitialiseSolvers(
+  void reinitialiseSolversLocally(
       const int cellDescriptionsIndex,
       const int element) const;
 

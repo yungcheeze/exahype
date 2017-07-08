@@ -115,9 +115,8 @@ bool exahype::solvers::FiniteVolumesSolver::isSending(
   return
       section==exahype::records::State::AlgorithmSection::TimeStepping ||
       section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
-      section==exahype::records::State::AlgorithmSection::MeshRefinementAllSend ||
-      section==exahype::records::State::AlgorithmSection::LocalRecomputationAllSend ||
-      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+      section==exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend ||
+      section==exahype::records::State::AlgorithmSection::LocalRecomputationAllSend;
 }
 
 bool exahype::solvers::FiniteVolumesSolver::isComputing(
@@ -189,17 +188,6 @@ void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
     case TimeStepping::GlobalFixed:
       _minTimeStamp             = _minTimeStamp-_previousMinTimeStepSize;
       _minTimeStepSize          = _previousMinTimeStepSize;
-      break;
-  }
-}
-
-void exahype::solvers::FiniteVolumesSolver::reinitialiseTimeStepData() {
-  switch (_timeStepping) {
-    case TimeStepping::Global:
-      // do nothing
-      break;
-    case TimeStepping::GlobalFixed:
-      // do nothing
       break;
   }
 }
