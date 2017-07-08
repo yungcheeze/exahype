@@ -20,7 +20,7 @@ namespace Euler{
 
 class Euler::EulerSolver_ADERDG: public Euler::AbstractEulerSolver_ADERDG {
   public:
-    enum class Reference { SodShockTube=0, EntropyWave=1 };
+    enum class Reference { EntropyWave=0, SodShockTube=1, SphericalExplosion=2 };
     static Reference ReferenceChoice;
 
     /**
@@ -44,6 +44,11 @@ class Euler::EulerSolver_ADERDG: public Euler::AbstractEulerSolver_ADERDG {
      *   x1           x2   x0   x3      x4
      */
     static void sodShockTube(const double* const x,double t, double* Q);
+
+    /**
+     * Spherical explosion.
+     */
+    static void sphericalExplosion(const double* const x,double t, double* Q);
 
     /**
      * Calls ::sodShockTube if constant 'reference' is set to 'sod',

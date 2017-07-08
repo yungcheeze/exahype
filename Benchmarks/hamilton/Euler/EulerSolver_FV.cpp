@@ -80,6 +80,7 @@ void Euler::EulerSolver_FV::boundaryValues(
     double* stateOutside) {
   switch (EulerSolver_ADERDG::ReferenceChoice) {
   case EulerSolver_ADERDG::Reference::SodShockTube:
+  case EulerSolver_ADERDG::Reference::SphericalExplosion:
     std::copy_n(stateInside, NumberOfVariables, stateOutside);
     stateOutside[1+direction] =  -stateOutside[1+direction];
     break;
