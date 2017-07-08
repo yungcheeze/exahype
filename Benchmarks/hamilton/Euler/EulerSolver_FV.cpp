@@ -12,7 +12,7 @@ void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype:
 
 
 bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  //  return true; // comment in for vel_y cleaning; do the same in the ADER-DG solver
+//    return true; // comment in for vel_y cleaning; do the same in the ADER-DG solver
   return tarch::la::equals(t,0.0);
 }
 
@@ -24,9 +24,9 @@ void Euler::EulerSolver_FV::adjustSolution(
   if (tarch::la::equals(t,0.0)) {
     EulerSolver_ADERDG::referenceSolution(x,t,Q);
   }
-  // else {  // comment in for vel_y cleaning; do the same in the ADER-DG solver
-  //   Q[2] = 0.0;
-  // }
+//   else {  // comment in for vel_y cleaning; do the same in the ADER-DG solver
+//     Q[2] = 0.0;
+//   }
 }
 
 
@@ -81,7 +81,7 @@ void Euler::EulerSolver_FV::boundaryValues(
   switch (EulerSolver_ADERDG::ReferenceChoice) {
   case EulerSolver_ADERDG::Reference::SodShockTube:
     std::copy_n(stateInside, NumberOfVariables, stateOutside);
-//    stateOutside[1+direction] =  -stateOutside[1+direction];
+    stateOutside[1+direction] =  -stateOutside[1+direction];
     break;
   case EulerSolver_ADERDG::Reference::EntropyWave:
     EulerSolver_ADERDG::referenceSolution(x,t,stateOutside);

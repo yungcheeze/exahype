@@ -223,7 +223,10 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
   case Reference::SodShockTube:
     std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
     std::copy_n(stateIn, NumberOfVariables, stateOut);
-    //  stateOut[1+direction]=-stateOut[1+direction];
+
+    stateOut[1+direction] =  -stateOut[1+direction];
+    //  fluxOut[1+direction]  =  -fluxOut[1+direction];
+    //  stateOut[1+direction] =-stateOut[1+direction];
     break;
   case Reference::EntropyWave:
     // Dirichlet conditions
@@ -256,9 +259,9 @@ void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
 
   observables[0]=vars.rho(); //extract density
   const double irho = 1./vars.rho();
-  observables[1]=irho*vars.j(0) * 0.0;
-  observables[2]=irho*vars.j(1) * 0.0;
-  observables[3]=irho*vars.j(2) * 0.0;
+  observables[1]=irho*vars.j(0)*0;
+  observables[2]=irho*vars.j(1)*0;
+  observables[3]=irho*vars.j(2)*0;
 
   const double GAMMA = 1.4;
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
