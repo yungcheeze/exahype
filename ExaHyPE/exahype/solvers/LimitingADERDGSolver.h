@@ -904,6 +904,15 @@ public:
            const int cellDescriptionsIndex,
            const int solverElement) const;
 
+
+   void reinitialiseSolversGlobally(
+          const int cellDescriptionsIndex,
+          const int element) const;
+
+   void reinitialiseSolversLocally(
+       const int cellDescriptionsIndex,
+       const int element) const;
+
   /**
    * Reinitialises cells that have been subject to a limiter status change.
    * This method is invoked (during and??) after the limiter status spreading.
@@ -946,10 +955,7 @@ public:
    */
   void reinitialiseSolvers(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
+      const int element) const;
 
   /**
    * Recompute the solution in cells that have been subject to a limiter status change
