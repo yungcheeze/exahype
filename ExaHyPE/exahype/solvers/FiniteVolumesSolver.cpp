@@ -584,9 +584,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
 void exahype::solvers::FiniteVolumesSolver::rollbackSolution(
     const int cellDescriptionsIndex,
-    const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    const int element) {
   swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
 }
 

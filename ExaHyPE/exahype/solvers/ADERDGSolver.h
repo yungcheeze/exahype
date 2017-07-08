@@ -1746,9 +1746,7 @@ public:
    */
   void rollbackSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+      const int element);
 
   void swapSolutionAndPreviousSolution(
       const int cellDescriptionsIndex,
