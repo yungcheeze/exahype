@@ -10,21 +10,68 @@ import operator
 
 import csv
 
-import runtimeParser as rp
-import hpclib as hpc
-from plotting import scalingplot as sp
+def compute_speedup(t,t_ref):
+    """
+    Args:
+       t  (float[]):
+          Array holding times.
+       t_ref (float):
+          Reference time.
+    Returns:
+       Speedup (float[]) with respect to 't_ref'.
+    """
+    n_t = len(t)
+    S    = [0.0]*n_t
+    
+    for i in range(0,n_t):
+        S[i] = t_ref/t[i]
+    return S
 
-def query_table(filename,adapter,cores): 
+def plot_scaling(ax,x,y,label_,color_="blue",marker_="s",markerfacecolor_="blue",hyperthreading=False,annotate=False):
+    """
+    Plots y over x. If 'hyperthreading' is selected, the last value is plotted 
+    separately. If 'annotate' is selected, the plot is annotated with the 'y'
+    values.
+    """
+    x2 = x
+    
+    # In the hyperthreading case, we only want to plot a line
+    # for the real threads. The hyperthreading value is plotted separately
+    if not hyperthreading:
+        plt.plot(x,y,label=r"%s" % label_,markersize=8,marker=marker_,markevery=1,lw=1.1,color=color_,markerfacecolor=markerfacecolor_,markeredgecolor=color_) 
+    else:
+        x2 = x[0:-1] # [inclusive:exclusive]
+        x2.append(x2[-1]+2)
+        
+        plt.plot(x2[0:-1],y[0:-1],label=r"%s" % label_,markersize=8,marker=marker_,markevery=1,lw=1.1,color=color_,markerfacecolor=markerfacecolor_,markeredgecolor=color_) 
+        plt.plot(x2[-1],y[-1],label="",markersize=8,marker=marker_,markevery=1,lw=1.1,color=color_,markerfacecolor=markerfacecolor_,markeredgecolor=color_) 
+    
+    if annotate:
+        for i,j in zip(x2,y):
+            ax.annotate("%.2f" % j,xy=(i,j+0.5),color="blue")
+    return
+
+
+def query_table(filename,mesh,order,adapter,cores): 
     '''
     Read a table and filter out certain
     columns 
     Args:
-    selector
-       a lambda expression
+    filename
+       name of the csv file
+    order
+       approximaation order
+    adapter
+       the adapter
+    cores
+       list of cores
     '''
+    print(filename)
+    print(mesh)
+    print(order)
     datafile    = open(filename, 'r')
     reader      = csv.reader(datafile,delimiter='&')
-    sorted_data = list(filter(lambda x : x[3]==adapter and x[2] in cores, reader))
+    sorted_data = list(filter(lambda x : x[0]==mesh and x[1]==order and x[5]==adapter and x[8] in cores, reader))
     datafile.close() 
     return sorted_data
 
@@ -39,19 +86,23 @@ def query_table(filename,adapter,cores):
 :synopsis: Creates a speedup plot based on user and CPU times stored in CSV tables.
 '''
 
-def plot_multithreading_adapter_scaling(tables,prefixes,legends,adapters,cores,n_runs,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_plot=False,_fontsize=10):
+def plot_multithreading_adapter_scaling(table,prefix,mesh,legend,order,adapters,cores,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_plot=False,_fontsize=10):
     '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
    
     Args:
-      tables (str[]):
-         A bunch of csv files
-      prefixes (str[]):
-         Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per 'root_dir' entry.
-      legends (str[]):
+      table (str):
+         A csv file
+      prefix (str):
+         prefix for the output file
+      mesh (str):
+        the mesh
+      legend (str[]):
          Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per 'root_dir' entry.
-      adapters (str[]):
+      order (str[]):
+         Approximation orders
+      adapter (str[]):
          Name of the adapters. (Use 'Total' for the  cumulative time forall adapters. Does not make sense with per_iteration switched on.)
       cores (int[]):
          The CPU cores (threads) you want to plot.
@@ -72,8 +123,9 @@ def plot_multithreading_adapter_scaling(tables,prefixes,legends,adapters,cores,n
     markerfacecolors = ['None','None','None','k','k','k']
     markers          = ['o','^','s','o','^','s']
     
-    n_tables = len(tables)
-    n_cores  = len(cores)
+    n_legends = len(legend)
+    n_orders  = len(order)
+    n_cores   = len(cores)
     
     # Plotting
     fig = plt.figure()
@@ -99,29 +151,33 @@ def plot_multithreading_adapter_scaling(tables,prefixes,legends,adapters,cores,n
     t_ref = 0
     
     # Loop over tables
-    for i in range(0,n_tables):
-        cumulative_user_times = [0.0]*n_cores
-        cumulative_cpu_times  = [0.0]*n_cores
-        iterations = 1.0
-        for adapter in adapters[i]:
-            data = query_table(tables[i],adapter,cores)
-            iterations            = float(data[4][0]) # must be the same for all adapters
-            cumulative_user_times = list(map(lambda x,y : x+y, cumulative_user_times, list(map(float,[row[5] for row in data]))))
-            cumulative_cpu_times  = list(map(lambda x,y : x+y, cumulative_cpu_times,  list(map(float,[row[6] for row in data]))))
+    for i in range(0,n_legends):
+        for N in order:
+            cumulative_user_times = [0.0]*n_cores
+            cumulative_cpu_times  = [0.0]*n_cores
+            iterations = 1.0
+            for adapter in adapters[i]:
+                data = query_table(table,mesh,N,adapter,cores)
+                #for row in data:
+                #    print(row)
+                cumulative_user_times = list(map(lambda x,y : x+y, cumulative_user_times, list(map(float,[row[11] for row in data]))))
+                cumulative_cpu_times  = list(map(lambda x,y : x+y, cumulative_cpu_times,  list(map(float,[row[12] for row in data]))))
+                
+                if periteration:
+                    iterations               = float(data[0][10]) # must be the same for all cores
+                    cumulative_user_times[:] = [x / iterations for x in cumulative_user_times]
+                    cumulative_cpu_times[:]  = [x / iterations for x in cumulative_cpu_times]
+                    
+            print(cumulative_user_times)
+            print(cumulative_cpu_times)
 
-        if periteration:
-            cumulative_user_times[:] = [x / iterations for x in cumulative_user_times]
-            cumulative_cpu_times[:]  = [x / iterations for x in cumulative_cpu_times]
-        print(cumulative_user_times)
-        print(cumulative_cpu_times)
- 
-        if i==0:
-            t_ref = cumulative_user_times[0]
-        
-        speedup_measured = hpc.compute_speedup(cumulative_user_times,t_ref)
-    
-        # Measured speedup
-        sp.plot_scaling(ax,p,speedup_measured,legends[i],colors[i],markers[i],markerfacecolors[i],hyperthreading,annotate)
+            if i==0:
+                t_ref = cumulative_user_times[0]
+            
+            speedup_measured = compute_speedup(cumulative_user_times,t_ref)
+
+            # Measured speedup
+            plot_scaling(ax,p,speedup_measured,legend[i]+"(N="+N+")",colors[i],markers[i],markerfacecolors[i],hyperthreading,annotate)
 
     plt.ylabel(r'speedup',         fontsize=float(1.2*float(_fontsize)))    
     plt.xlabel(r'number of cores', fontsize=float(1.2*float(_fontsize)))
@@ -156,14 +212,13 @@ def plot_multithreading_adapter_scaling(tables,prefixes,legends,adapters,cores,n
     fig.set_size_inches(7.25,7.25)
     
     if create_plot:
-        plot_info = [''] * n_tables
-        for i in range(0,n_tables):
+        plot_info = [''] * n_legends
+        for i in range(0,n_legends):
             plot_info[i] = '+'.join(adapters[i])
-            plot_info[i] = prefix[i] + '-' + plot_info[i]
             # make sure string is not too loong
-            plot_info[i] = plot_info[i][:int(float(200)/float(n_tables))]
-        plt.savefig('%s/%s.pdf' % ('.','_'.join(plot_info)), bbox_inches='tight')
-        plt.savefig('%s/%s.png' % ('.','_'.join(plot_info)), bbox_inches='tight')
+            plot_info[i] = plot_info[i][:int(float(200)/float(n_legends))]
+        plt.savefig('./%s-%s.pdf' % (prefix,'_'.join(plot_info)), bbox_inches='tight')
+        plt.savefig('./%s-%s.png' % (prefix,'_'.join(plot_info)), bbox_inches='tight')
         print("PDF and PNG output written.")
     else:
         plt.show()
@@ -183,12 +238,13 @@ python plotmulticorespeedup.py -tables EulerFlow-p3' -prefixes \'EulerFlow-p3\' 
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
-parser.add_argument('-tables',nargs='+',required=True,help="A number of tables created via writecsvtable.py. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.")
-parser.add_argument('-prefixes',default=[''],nargs='+',required=True,help="Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.")
-parser.add_argument('-legends',nargs='+',required=True,help="Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.")
-parser.add_argument('-adapters',default=['Total'],nargs='+',help="Name of the adapters separated by a \'+\'. (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)")
+parser.add_argument('-table',required=True,help="A csv file with & separator.")
+parser.add_argument('-prefix',required=True,help="Prefix of the plot files.")
+parser.add_argument('-mesh',required=True,help="Mesh identifier.")
+parser.add_argument('-legend',nargs='+',required=True,help="Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.")
+parser.add_argument('-adapter',default=['Total'],nargs='+',help="Name of the adapters separated by a \'+\'. (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)")
+parser.add_argument('-order',nargs='+',required=True,help="The orders/patch sizes you want to plot")
 parser.add_argument('-cores',nargs='+',required=True,help="The CPU cores (threads) you want to plot.")
-parser.add_argument('-runs',default=1,help="Number of runs for all \'n\' and \'t\' combinations [default=1].")
 parser.add_argument('-xticks',nargs='+',required=False,help="Ticks for the x-axis. Defaults to the thread counts 't'.")
 parser.add_argument('-yticks',nargs='+',required=False,help="Ticks for the y-axis. Defaults to the x-axis ticks 'xticks'.")
 parser.add_argument('-ylim',required=True,help="Upper limit for the y-axis.")
@@ -200,17 +256,18 @@ parser.add_argument('-fontsize',default=10,required=False,help="Font size of the
 
 args           = parser.parse_args();
 
-tables         = args.tables
-prefixes       = args.prefixes
-legends        = args.legends
-n_tables       = len(tables)
-adapters       = [['']]*n_tables
+table          = args.table
+prefix         = args.prefix
+mesh           = args.mesh
+legend         = args.legend
+n_legends      = len(legend)
+adapters       = [['']]*n_legends
 
-for i in range(0,n_tables):
-    adapters[i] = args.adapters[i].split('+')
+for i in range(0,n_legends):
+    adapters[i] = args.adapter[i].split('+')
 
+order          = args.order
 cores          = args.cores
-n_runs         = int(args.runs)
 ylim           = float(args.ylim)
 fontsize       = args.fontsize
 hyperthreading = args.hyperthreading
@@ -224,5 +281,7 @@ if args.xticks is None:
 yticks         = args.yticks
 if args.yticks is None:
     yticks     = xticks
+    
+print(yticks)
 
-plot_multithreading_adapter_scaling(tables,prefixes,legends,adapters,cores,n_runs,xticks,yticks,ylim,periteration,hyperthreading,annotate,createplot,fontsize)
+plot_multithreading_adapter_scaling(table,prefix,mesh,legend,order,adapters,cores,xticks,yticks,ylim,periteration,hyperthreading,annotate,createplot,fontsize)
