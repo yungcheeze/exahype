@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   11/06/2017 00:44
+    * @date   08/07/2017 19:58
     */
    class exahype::records::State { 
       
@@ -42,7 +42,7 @@ namespace exahype {
          typedef exahype::records::StatePacked Packed;
          
          enum AlgorithmSection {
-            TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+            TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementOrGlobalRecomputationAllSend = 6, PredictionRerunAllSend = 7
          };
          
          enum MergeMode {
@@ -647,7 +647,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   11/06/2017 00:44
+    * @date   08/07/2017 19:58
     */
    class exahype::records::StatePacked { 
       
@@ -1291,7 +1291,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::State { 
          
@@ -1300,7 +1300,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum AlgorithmSection {
-               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementOrGlobalRecomputationAllSend = 6, PredictionRerunAllSend = 7
             };
             
             enum MergeMode {
@@ -2773,7 +2773,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::StatePacked { 
          
@@ -4296,7 +4296,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::State { 
          
@@ -4305,7 +4305,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum AlgorithmSection {
-               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementOrGlobalRecomputationAllSend = 6, PredictionRerunAllSend = 7
             };
             
             enum MergeMode {
@@ -5655,7 +5655,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::StatePacked { 
          
@@ -7037,7 +7037,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::State { 
          
@@ -7046,7 +7046,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum AlgorithmSection {
-               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementOrGlobalRecomputationAllSend = 6, PredictionRerunAllSend = 7
             };
             
             enum MergeMode {
@@ -7774,7 +7774,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/06/2017 00:44
+       * @date   08/07/2017 19:58
        */
       class exahype::records::StatePacked { 
          
