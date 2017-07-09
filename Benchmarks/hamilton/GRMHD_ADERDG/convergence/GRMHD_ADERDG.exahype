@@ -21,7 +21,7 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD
+  output-directory const           = ./Benchmarks/hamilton/GRMHD_ADERDG
   architecture const               = noarch
   log-file                         = whatever.log
 
@@ -73,7 +73,7 @@ exahype-project GRMHD
       repeat    = 0.000666667
       output    = ./vtk-output/conserved
     end plot
-
+/*
     plot Carpet::Cartesian::Vertices::HDF5 ConservedWriter
       variables const = 19
       time = 0.0
@@ -87,7 +87,7 @@ exahype-project GRMHD
       repeat = 0.00001
       output = ./hdf5-flash/conserved
     end plot
-
+*/
     plot user::defined SphereIntegrals
       variables const = 0
       time = 0.0
