@@ -1,4 +1,4 @@
-exe=ExaHyPE-Euler_GRMHD
+exe=ExaHyPE-GRMHD
 header=AbstractGRMHDSolver_ADERDG.h
 
 
