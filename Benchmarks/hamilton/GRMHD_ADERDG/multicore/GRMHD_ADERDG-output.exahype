@@ -73,34 +73,6 @@ exahype-project GRMHD
       repeat    = 0.000666667
       output    = ./vtk-output/conserved
     end plot
-
-    plot Carpet::Cartesian::Vertices::HDF5 ConservedWriter
-      variables const = 19
-      time = 0.0
-      repeat = 0.00001
-      output = ./hdf5-carpet/conserved
-    end plot
-
-    plot hdf5::flash ConservedWriter
-      variables const = 19
-      time = 0.0
-      repeat = 0.00001
-      output = ./hdf5-flash/conserved
-    end plot
-
-    plot user::defined SphereIntegrals
-      variables const = 0
-      time = 0.0
-      repeat = 0.000666667  /*0.129329*/
-      output = ./global-sphere-integrals
-    end plot
-
-    plot vtk::Cartesian::cells::ascii IntegralsWriter
-      variables const = 0
-      time = 0.0
-      repeat = 0.000001
-      output = ./output/global-integrals
-    end plot
     
   end solver
 
