@@ -142,6 +142,7 @@ void exahype::mappings::GlobalRollback::enterCell(
         ) {
           auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
+          limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(), element);
           limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
           if (!exahype::State::fuseADERDGPhases()) {
             limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
