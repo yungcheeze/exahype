@@ -47,7 +47,7 @@ class SpaceTimePredictorGenerator:
         self.m_context['gemm_gradQ_x'] = gemmName+'_gradQ_x'
         self.m_context['gemm_gradQ_y'] = gemmName+'_gradQ_y'
         self.m_context['gemm_gradQ_z'] = gemmName+'_gradQ_z'
-        self.m_context['gemm_lqh']   = gemmName+'_lqh'
+        self.m_context['gemm_lqi']   = gemmName+'_lqi'
         
         TemplatingUtils.renderAsFile('spaceTimePredictor_picard_cpp.template', self.m_filename_picard, self.m_context)
         if(self.m_context['noTimeAveraging']):  
@@ -246,7 +246,7 @@ class SpaceTimePredictorGenerator:
                                     # alignment C
                                     1,                                                 \
                                     # name
-                                    "lqh",                                             \
+                                    "lqi",                                             \
                                     # prefetching
                                     "nopf",                                            \
                                     # type
