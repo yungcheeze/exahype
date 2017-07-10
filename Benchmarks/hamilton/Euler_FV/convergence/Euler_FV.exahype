@@ -40,6 +40,7 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::godunov
     language const    = C
+    constants         = reference:sod,suppressvely:true
     
     plot user::defined ErrorWriter
       variables const = 5

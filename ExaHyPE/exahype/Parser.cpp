@@ -1132,10 +1132,13 @@ bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
   std::string value = getValue(key);
 
   // We use 'on' and 'off' for multiple switches in the specification file
-  if (value.compare("on") == 0) {
+  // which would lead the java parser to object
+  if (value.compare("true") == 0 ||
+      value.compare("1") == 0) {
     return true;
   }
-  else if (value.compare("off") == 0) {
+  else if (value.compare("false") == 0 ||
+           value.compare("0") == 0) {
     return false;
   } else {
     assertion(!isValueValidBool(key));
@@ -1208,10 +1211,10 @@ bool exahype::Parser::ParserView::isValueValidBool(
   std::string value = getValue(key);
 
   // We use 'on' and 'off' for multiple switches in the specification file
-  if (
-   value.compare("on") == 0
-   || value.compare("off") == 0
-  ) {
+  if (value.compare("true")  == 0 ||
+      value.compare("false") == 0 ||
+      value.compare("1") == 0 ||
+      value.compare("0") == 0) {
     return true;
   } else {
     return false;
