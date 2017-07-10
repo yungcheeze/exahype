@@ -288,14 +288,12 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
   case Reference::SodShockTube: // wall boundary conditions
-  std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
-  std::copy_n(stateIn, NumberOfVariables, stateOut);
-
-  stateOut[1+direction] =  -stateOut[1+direction];
-  //    stateOut[1+direction] =  0; // TODO(Dominic): Check this.
-  break;
+    std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
+    std::copy_n(stateIn, NumberOfVariables, stateOut);
+    stateOut[1+direction] =  -stateOut[1+direction];
+    break;
   case Reference::SphericalExplosion:
-  case Reference::RarefactionWave: // outflow boundary conditions
+  case Reference::RarefactionWave: // copy boundary conditions (works with outflowing waves)
     std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
     std::copy_n(stateIn, NumberOfVariables, stateOut);
     break;

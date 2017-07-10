@@ -273,13 +273,13 @@ void Euler::EulerSolver_FV::boundaryValues(
     const double* const stateInside,
     double* stateOutside) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
+  case Reference::SodShockTube: // wall boundary conditions
     std::copy_n(stateInside, NumberOfVariables, stateOutside);
     stateOutside[1+direction] =  -stateOutside[1+direction];
-    //    stateOutside[1+direction] =  0; // TODO(Dominic): Try this
     break;
-  case Reference::SphericalExplosion:
+  case Reference::SphericalExplosion: // copy boundary conditions (works with outflowing waves)
   case Reference::RarefactionWave:
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
     break;
   case Reference::EntropyWave: // Dirichlet conditons
     referenceSolution(x,t,stateOutside);

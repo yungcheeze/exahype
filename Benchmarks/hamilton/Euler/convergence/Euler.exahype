@@ -19,7 +19,7 @@ exahype-project Euler
     dimension const         = 2
     width                   = 1.0, 1.0
     offset                  = 0.0, 0.0
-    end-time                = 0.1
+    end-time                = 0.21
   end computational-domain
   
   shared-memory
@@ -41,19 +41,19 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 7
-    maximum-mesh-size        = 0.038
+    order const              = 3
+    maximum-mesh-size        = 0.12
     maximum-mesh-depth       = 2
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
-    limiter-kernel const     = generic::godunov
+    limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
     dmp-observables          = 5
-    dmp-relaxation-parameter = 1e-4
+    dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 1
-    // reference in {smooth,sod}
+    steps-till-cured         = 10
+    // reference in {sod,entropywave,explosion,rarefactionwave}
     constants                = reference:sod
     
     plot user::defined ErrorWriter
@@ -74,7 +74,7 @@ exahype-project Euler
     plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
       variables const = 5
       time      = 0.0
-      repeat    = 1e-2
+      repeat    = 1e-0
       output    = ./fv
     end plot
     
