@@ -333,7 +333,7 @@ void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
 
   const double gamma = 1.4;
   const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
-  observables[4]=p; //extract pressure
+  observables[4]=vars.E(); //extract pressure
 }
 
 
