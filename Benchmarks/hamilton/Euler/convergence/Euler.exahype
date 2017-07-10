@@ -41,21 +41,21 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 3
+    order const              = 9
     maximum-mesh-size        = 0.12
-    maximum-mesh-depth       = 2
+    maximum-mesh-depth       = 1
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
     limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
     dmp-observables          = 5
-    dmp-relaxation-parameter = 1e-2
+    dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 10
-    // reference in {sod,entropywave,explosion,rarefactionwave}
-    constants                = reference:sod
-    
+    constants                = reference:sod,suppressvely:on
+    /* reference either: sod,entropywave,explosion,rarefactionwave. suppressvely either: on,off */
+
     plot user::defined ErrorWriter
       variables const = 5
       time            = 0.0
@@ -74,7 +74,7 @@ exahype-project Euler
     plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
       variables const = 5
       time      = 0.0
-      repeat    = 1e-0
+      repeat    = 1e-2
       output    = ./fv
     end plot
     

@@ -22,6 +22,7 @@ class Euler::EulerSolver_ADERDG: public Euler::AbstractEulerSolver_ADERDG {
 private:
   enum class Reference { EntropyWave=0, SodShockTube=1, SphericalExplosion=2, RarefactionWave=3 };
   static Reference ReferenceChoice;
+  static bool SuppressVelocityYComponent;
 
   /**
    * (Smooth solution)

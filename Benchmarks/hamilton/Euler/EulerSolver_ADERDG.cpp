@@ -26,6 +26,7 @@
 tarch::logging::Log Euler::EulerSolver_ADERDG::_log("Euler::EulerSolver_ADERDG");
 
 Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice = Euler::EulerSolver_ADERDG::Reference::EntropyWave;
+bool Euler::EulerSolver_ADERDG::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
   std::string reference = constants.getValueAsString("reference");
@@ -43,11 +44,15 @@ void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exah
     ReferenceChoice = Reference::SphericalExplosion;
   }
   else {
-    logError("init(...)","ERROR: Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
+    logError("init(...)","Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
             "'rarefactionwave', 'sod', or 'explosion'.");
     std::abort();
   }
-  logInfo("init(...)","EulerSolver_ADERDG: Use initial condition '" << reference << "'.");
+  logInfo("init(...)","Use initial condition '" << reference << "'.");
+
+  SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
+  logInfo("init(...)","Suppress velocity y-component when running Sod shock tube: '" <<
+      ( SuppressVelocityYComponent ? "on" : "off" ) << "'.");
 }
 
 void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
@@ -90,24 +95,24 @@ void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, doub
   const double gamma     = 1.4;
   constexpr double width = 0.3;
 
-#if DIMENSIONS==2
-    tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
-    tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
-    tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
-#else
-    tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
-    tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
-    tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
-#endif
-    const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
+  #if DIMENSIONS==2
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
+  #else
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
+  #endif
+  const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
 
-    Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
-    Q[1] = Q[0] * v0[0];
-    Q[2] = Q[0] * v0[1];
-    Q[3] = 0.0;
-    // total energy = internal energy + kinetic energy
-    const double p = 1.;
-    Q[4] = p / (gamma-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
+  Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
+  Q[1] = Q[0] * v0[0];
+  Q[2] = Q[0] * v0[1];
+  Q[3] = 0.0;
+  // total energy = internal energy + kinetic energy
+  const double p = 1.;
+  Q[4] = p / (gamma-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
 void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double t, double* Q) {
@@ -264,6 +269,10 @@ void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x,double t
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   //  return AdjustSolutionValue::PointWisely; // comment in for vel_y cleaning; do the same in the FV solver
+  if (ReferenceChoice==Reference::SodShockTube &&
+      SuppressVelocityYComponent) {
+    return AdjustSolutionValue::PointWisely;
+  }
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
@@ -271,6 +280,10 @@ void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
     const double w,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     referenceSolution(x,0.0,Q);
+  }
+  if (ReferenceChoice==Reference::SodShockTube &&
+      SuppressVelocityYComponent) {
+    Q[2] = 0; // suppress velocity y-component
   }
 }
 
@@ -287,10 +300,19 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     const double* const fluxIn,const double* const stateIn,
     double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube: // wall boundary conditions
-    std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
-    std::copy_n(stateIn, NumberOfVariables, stateOut);
-    stateOut[1+direction] =  -stateOut[1+direction];
+  case Reference::SodShockTube:
+    if (direction==1) { // wall boundary conditions in y
+      std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
+      std::copy_n(stateIn, NumberOfVariables, stateOut);
+      stateOut[1+direction] =  -stateOut[1+direction];
+    }
+    else if (direction==0) { // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
+       referenceSolution(x,0.0,stateOut);
+       double _F[3][NumberOfVariables]={0.0};
+       double* F[3] = {_F[0], _F[1], _F[2]};
+       flux(stateOut,F);
+       std::copy_n(F[direction],NumberOfVariables,fluxOut);
+    }
     break;
   case Reference::SphericalExplosion:
   case Reference::RarefactionWave: // copy boundary conditions (works with outflowing waves)
@@ -307,7 +329,6 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     std::fill_n(fluxOut,  NumberOfVariables, 0.0);
     for (int i=0; i<Order+1; i++) {
       const double ti = t + dt * kernels::gaussLegendreNodes[Order][i];
-
       referenceSolution(x,ti,Q);
       flux(Q,F);
       for (int v=0; v<NumberOfVariables; v++) {
@@ -346,7 +367,7 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
   // FV subgrid. We thus prescribe the initial FV domain manually here.
   if (ReferenceChoice == Reference::SodShockTube &&
       tarch::la::equals(t,0.0) &&
-      std::abs(center[0]-0.5) < 2*dx[0]) {
+      std::abs(center[0]-0.5) < 0.66*dx[0]) {
     return false;
   }
 
