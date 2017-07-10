@@ -1073,16 +1073,16 @@ std::string exahype::Parser::ParserView::getValue(const std::string& key) const 
   std::regex  COLON_SEPARATED(R"((.+):(.+))");
   std::smatch match;
 
-  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1);
+  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1, 0);
   std::regex_search(token, match, COLON_SEPARATED);
 
   int i = 1;
   while (match.size() > 1) {
     if (match.str(1).compare(key)==0) {
-      logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2) << "'.");
+      logDebug("getValue()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2) << "'.");
       return match.str(2);
     }
-    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
+    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1, i++);
     std::regex_search(token, match, COLON_SEPARATED);
   }
   logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": cannot find constant '" << key << "'.");
@@ -1096,7 +1096,7 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   std::regex  COLON_SEPARATED(R"(.+):(.+))");
   std::smatch match;
 
-  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1);
+  token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1, 0);
   std::regex_search(token, match, COLON_SEPARATED);
 
   int i = 1;
@@ -1105,7 +1105,7 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
       logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": found constant '" << key << "' with value '" << match.str(2) << "'.");
       return true;
     }
-    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", i++);
+    token = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile + 1, "constants", 1, i++);
     std::regex_search(token, match, COLON_SEPARATED);
   }
   logDebug("hasKey()", "solver " << _solverNumberInSpecificationFile + 1 << ": cannot find constant '" << key << "'.");
@@ -1131,16 +1131,16 @@ int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
 bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
   std::string value = getValue(key);
 
-  bool result;
-  std::istringstream ss(value);
-  ss >> result;
-
-  if (ss) {
+  // We use 'on' and 'off' for multiple switches in the specification file
+  if (value.compare("on") == 0) {
     return true;
+  }
+  else if (value.compare("off") == 0) {
+    return false;
   } else {
     assertion(!isValueValidBool(key));
     assertionMsg(false, "shall not happen. Please call isValueValidXXX before");
-    return -1;
+    return false;
   }
 }
 
@@ -1207,11 +1207,11 @@ bool exahype::Parser::ParserView::isValueValidBool(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(key);
 
-  bool result;
-  std::istringstream ss(value);
-  ss >> result;
-
-  if (ss) {
+  // We use 'on' and 'off' for multiple switches in the specification file
+  if (
+   value.compare("on") == 0
+   || value.compare("off") == 0
+  ) {
     return true;
   } else {
     return false;
