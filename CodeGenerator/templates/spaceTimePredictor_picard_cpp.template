@@ -104,7 +104,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::copy(&lQi[0], &lQi[0]+{{nDof**(nDim+1)*nVarPad}}, lQi_old);
+    //std::copy(&lQi[0], &lQi[0]+{{nDof**(nDim+1)*nVarPad}}, lQi_old);
     
 {% if useNCP and not useSource %} 
     //initialize lShi to 0 if used for ncp but not initialized by source terms
@@ -345,8 +345,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    std::memset(lQi, 0, {{(nDof**nDim) * nDof * nVarPad}} * sizeof(double));
+    //std::memset(lQi, 0, {{(nDof**nDim) * nDof * nVarPad}} * sizeof(double));
     ijk=0;
+    double sq_res = 0.0;
     for (int i = 0; i < {{nDof3D}}; i++) {
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
@@ -369,19 +370,24 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = iweight * iK1[it];
           }
+          
+          std::memset(lQi_old, 0, {{nDof*nVarPad}} * sizeof(double));
           #pragma forceinline
-          {{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &lQi[{{nVarPad*nDof}}*ijk]);
+          //{{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &lQi[{{nVarPad*nDof}}*ijk]);
+          {{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], lQi_old);
+          
+          for (int l = 0; l < {{nDof*nVarPad}}; l++) {
+            sq_res += (lQi_old[l] - lQi[l+{{nDof*nVarPad}}*ijk]) * (lQi_old[l] - lQi[l+{{nDof*nVarPad}}*ijk]);
+          }
+          std::copy(&lQi_old[0], &lQi_old[0]+{{nDof*nVarPad}}, &lQi[{{nDof*nVarPad}}*ijk]);
+          
           ijk++;
         }
       }
     }
 
     // 5. Exit condition
-    const double tol = 1e-7;
-    double sq_res = 0.0;
-    for (int i = 0; i < {{nDof**(nDim+1)*nVarPad}}; i++) {
-      sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
-    }
+    constexpr double tol = 1e-7;
     if (sq_res < tol * tol) {
       break;
     }
