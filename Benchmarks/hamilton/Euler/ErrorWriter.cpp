@@ -90,7 +90,7 @@ void Euler::ErrorWriter::plotFiniteVolumesPatch(
      }
 
      double uAna[numberOfVariables];
-     EulerSolver_ADERDG::referenceSolution(x,timeStamp,uAna);
+     EulerSolver_FV::referenceSolution(x,timeStamp,uAna);
 
      const double* uNum = u +
          idx ( (DIMENSIONS==3) ? i(2)+ghostLayerWidth : 0, i(1)+ghostLayerWidth, i(0)+ghostLayerWidth, 0);

@@ -23,24 +23,31 @@
 
 #include "kernels/GaussLegendreQuadrature.h"
 
+tarch::logging::Log Euler::EulerSolver_ADERDG::_log("Euler::EulerSolver_ADERDG");
+
 Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice = Euler::EulerSolver_ADERDG::Reference::EntropyWave;
 
 void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
   std::string reference = constants.getValueAsString("reference");
 
-  if (reference.compare("smooth")==0) {
+  if (reference.compare("entropywave")==0) {
     ReferenceChoice = Reference::EntropyWave;
+  }
+  if (reference.compare("rarefactionwave")==0) {
+    ReferenceChoice = Reference::RarefactionWave;
   }
   else if (reference.compare("sod")==0){
     ReferenceChoice = Reference::SodShockTube;
   }
   else if (reference.compare("explosion")==0){
-      ReferenceChoice = Reference::SphericalExplosion;
-    }
+    ReferenceChoice = Reference::SphericalExplosion;
+  }
   else {
-    std::cout <<"ERROR: Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'smooth' or 'sod'." << std::endl;
+    logError("init(...)","ERROR: Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
+            "'rarefactionwave', 'sod', or 'explosion'.");
     std::abort();
   }
+  logInfo("init(...)","EulerSolver_ADERDG: Use initial condition '" << reference << "'.");
 }
 
 void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
@@ -52,9 +59,9 @@ void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
       0, 1, 0,
       0, 0, 1;
 
-  const double GAMMA = 1.4;
+  const double gamma = 1.4;
   const double irho = 1./vars.rho();
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   f.rho ( vars.j()                                 );
   f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
@@ -62,51 +69,45 @@ void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
 }
 
 void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
-                                       const int direction,
-                                       double* lambda) {
+    const int direction,
+    double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
-  const double GAMMA = 1.4;
+  const double gamma = 1.4;
   const double irho = 1./vars.rho();
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   double u_n = Q[direction + 1] * irho;
-  double c  = std::sqrt(GAMMA * p * irho);
+  double c  = std::sqrt(gamma * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
   eigs.j(u_n,u_n,u_n);
 }
 
-
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  //  return AdjustSolutionValue::PointWisely; // comment in for vel_y cleaning; do the same in the FV solver
-  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
-
 void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, double* Q) {
-  const double GAMMA     = 1.4;
+  const double gamma     = 1.4;
   constexpr double width = 0.3;
 
-  #if DIMENSIONS==2
-  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
-  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
-  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
-  #else
-  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
-  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
-  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
-  #endif
-  const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
+#if DIMENSIONS==2
+    tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
+    tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
+    tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
+#else
+    tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
+    tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
+    tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
+#endif
+    const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
 
-  Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
-  Q[1] = Q[0] * v0[0];
-  Q[2] = Q[0] * v0[1];
-  Q[3] = 0.0;
-  // total energy = internal energy + kinetic energy
-  const double p = 1.;
-  Q[4] = p / (GAMMA-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
+    Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
+    Q[1] = Q[0] * v0[0];
+    Q[2] = Q[0] * v0[1];
+    Q[3] = 0.0;
+    // total energy = internal energy + kinetic energy
+    const double p = 1.;
+    Q[4] = p / (gamma-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
 void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double t, double* Q) {
@@ -191,11 +192,11 @@ void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double
 
 void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double t, double* Q) {
   // Velocities are set to zero (initially).
-  if (t==0) {
+  if (tarch::la::equals(t,0.0)) {
     Q[1] = 0.0;
     Q[2] = 0.0;
     Q[3] = 0.0;
-    #if DIMENSIONS==2
+#if DIMENSIONS==2
     // Circular shaped pressure jump at centre of domain.
     if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
       Q[0] = 1.0;
@@ -204,7 +205,7 @@ void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double 
       Q[0] = 0.125;
       Q[4] = 0.1; // total energy
     }
-    #else
+#else
     // Circular shaped pressure jump at centre of domain.
     if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < (x[2] -0.5) *(x[2] -0.5) < 0.1) {
       Q[0] = 1.0;
@@ -213,35 +214,64 @@ void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double 
       Q[0] = 0.125;
       Q[4] = 0.1; // total energy
     }
-    #endif
+#endif
   } else {
     std::fill_n(Q, NumberOfVariables, 0.0);
-    // We then compute the norm in our error writers.
+    // We then compute the norm in our error writers for t>0.
+  }
+}
+
+void Euler::EulerSolver_ADERDG::rarefactionWave(const double* const x,double t, double* Q) {
+  constexpr double gamma = 1.4;
+  constexpr double width = 0.25;
+  constexpr double x0[3] = { 0.5, 0.5, 0.5 };
+
+  if (tarch::la::equals(t,0.0)) {
+    Q[0] = 1.;
+    Q[1] = 0.;
+    Q[2] = 0.;
+    Q[3] = 0.;
+#if DIMENSIONS==2
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
+#else
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) * (x[2]-x0[2])*(x[2]-x0[2]);
+#endif
+    Q[4] = 1. / (gamma - 1) + // pressure is set to one
+        exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;
+  }
+  else {
+    std::fill_n(Q, NumberOfVariables, 0.0);
+    // We then compute the norm in our error writers for t>0.
   }
 }
 
 void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x,double t, double* Q) {
   switch (ReferenceChoice) {
-    case Reference::SodShockTube:
-      sodShockTube(x,t,Q);
-      break;
-    case Reference::EntropyWave:
-      entropyWave(x,t,Q);
-      break;
-    case Reference::SphericalExplosion:
-      sphericalExplosion(x,t,Q);
-      break;
+  case Reference::SodShockTube:
+    sodShockTube(x,t,Q);
+    break;
+  case Reference::EntropyWave:
+    entropyWave(x,t,Q);
+    break;
+  case Reference::SphericalExplosion:
+    sphericalExplosion(x,t,Q);
+    break;
+  case Reference::RarefactionWave:
+    rarefactionWave(x,t,Q);
+    break;
   }
 }
 
+exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  //  return AdjustSolutionValue::PointWisely; // comment in for vel_y cleaning; do the same in the FV solver
+  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
+}
+
 void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
-                                                  const double w,const double t,const double dt, double* Q) {
+    const double w,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     referenceSolution(x,0.0,Q);
   }
-  //  else {
-  //     Q[2] = 0.0;
-  //   } // comment in for vel_y cleaning; do the same in the FV solver
 }
 
 exahype::solvers::Solver::RefinementControl
@@ -253,21 +283,23 @@ Euler::EulerSolver_ADERDG::refinementCriterion(
 }
 
 void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const double t,const double dt,
-                                          const int faceIndex,const int direction,
-                                          const double* const fluxIn,const double* const stateIn,
-                                          double* fluxOut, double* stateOut) {
+    const int faceIndex,const int direction,
+    const double* const fluxIn,const double* const stateIn,
+    double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
+  case Reference::SodShockTube: // wall boundary conditions
+  std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
+  std::copy_n(stateIn, NumberOfVariables, stateOut);
+
+  stateOut[1+direction] =  -stateOut[1+direction];
+  //    stateOut[1+direction] =  0; // TODO(Dominic): Check this.
+  break;
   case Reference::SphericalExplosion:
+  case Reference::RarefactionWave: // outflow boundary conditions
     std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
     std::copy_n(stateIn, NumberOfVariables, stateOut);
-
-    stateOut[1+direction] =  -stateOut[1+direction];
-    //  fluxOut[1+direction]  =  -fluxOut[1+direction];
-    //  stateOut[1+direction] =-stateOut[1+direction];
     break;
-  case Reference::EntropyWave:
-    // Dirichlet conditions
+  case Reference::EntropyWave: // Dirichlet conditions
     double Q[NumberOfVariables]     = {0.0};
     double _F[3][NumberOfVariables] = {0.0};
     double* F[3] = {_F[0],_F[1],_F[2]};
@@ -301,17 +333,17 @@ void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
   observables[2]=irho*vars.j(1)*0;
   observables[3]=irho*vars.j(2)*0;
 
-  const double GAMMA = 1.4;
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+  const double gamma = 1.4;
+  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
   observables[4]=p; //extract pressure
 }
 
 
 bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
-  const double* const solution,
-  const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
-  const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
-  const double t, const double dt) const {
+    const double* const solution,
+    const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+    const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const double t, const double dt) const {
   // Higher-order ADER-DG methods tend to "oversee" the shock on the
   // FV subgrid. We thus prescribe the initial FV domain manually here.
   if (ReferenceChoice == Reference::SodShockTube &&
