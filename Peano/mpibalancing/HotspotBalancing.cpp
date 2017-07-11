@@ -28,10 +28,16 @@ int                  mpibalancing::HotspotBalancing::_loadBalancingTag = -1;
 bool                        mpibalancing::HotspotBalancing::_forkHasFailed = false;
 std::map<int,double>        mpibalancing::HotspotBalancing::_weightMap;
 std::map<int,bool>          mpibalancing::HotspotBalancing::_workerCouldNotEraseDueToDecomposition;
+std::map<int,bool>          mpibalancing::HotspotBalancing::_workerShouldBecomeAdministrativeRank;
 int                         mpibalancing::HotspotBalancing::_regularLevelAlongBoundary = 0;
+int                         mpibalancing::HotspotBalancing::_finestLevelWhereRanksArePurelyAdministrative = -1;
 
 
-mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
+mpibalancing::HotspotBalancing::HotspotBalancing(
+  bool joinsAllowed,
+  int coarsestRegularInnerAndOuterGridLevel,
+  int maxRanksThatCanBeUsedAsAdministors
+):
   _joinsAllowed(joinsAllowed),
   _criticalWorker(),
   _maxForksOnCriticalWorker(THREE_POWER_D) {
@@ -41,8 +47,36 @@ mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsest
   if (_loadBalancingTag<0) {
     _loadBalancingTag = tarch::parallel::Node::reserveFreeTag("mpibalancing::HotspotBalancing");
     assertion(_loadBalancingTag>=0);
-    logInfo( "HotspotBalancing(bool,int)", "reserved tag " << _loadBalancingTag << " for load balancing" );
+    logInfo( "HotspotBalancing(bool,int,int)", "reserved tag " << _loadBalancingTag << " for load balancing" );
   }
+
+  if (_finestLevelWhereRanksArePurelyAdministrative<=0) {
+    int administrativeRanks = 1;
+    _finestLevelWhereRanksArePurelyAdministrative = 0;
+
+    while (
+      _finestLevelWhereRanksArePurelyAdministrative < _regularLevelAlongBoundary-1
+      &&
+      administrativeRanks < maxRanksThatCanBeUsedAsAdministors
+    ) {
+      _finestLevelWhereRanksArePurelyAdministrative++;
+      administrativeRanks *= THREE_POWER_D;
+    }
+    logInfo(
+      "HotspotBalancing(bool,int,int)",
+      "up to level " << _finestLevelWhereRanksArePurelyAdministrative <<
+      " all ranks shall become purely administrative ranks as up to " <<
+      maxRanksThatCanBeUsedAsAdministors << " were allowed to be admins"
+    );
+  }
+}
+
+
+mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed):
+  _joinsAllowed(joinsAllowed),
+  _criticalWorker(),
+  _maxForksOnCriticalWorker(THREE_POWER_D) {
+  _workerCouldNotEraseDueToDecomposition.insert( std::pair<int,bool>(tarch::parallel::Node::getInstance().getRank(), false) );
 }
 
 
@@ -111,17 +145,13 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
 
     if ( _maxForksOnCriticalWorker>static_cast<int>(commandFromMaster) ) {
       _maxForksOnCriticalWorker = static_cast<int>(commandFromMaster);
-      logDebug( "computeMaxForksOnCriticalWorker(LoadBalancingFlag)", "manually reduced forks to " << _maxForksOnCriticalWorker << " due to restriction from master" );
+      logDebug( "receivedStartCommand(LoadBalancingFlag)", "manually reduced forks to " << _maxForksOnCriticalWorker << " due to restriction from master" );
     }
-    else if (
-      _maxForksOnCriticalWorker>static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy)
-    ) {
-      _maxForksOnCriticalWorker = static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy);
-      logDebug( "computeMaxForksOnCriticalWorker(LoadBalancingFlag)", "manually set forks to " << _maxForksOnCriticalWorker << " due to restriction from master" );
+    else if (_maxForksOnCriticalWorker>static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy)) {
+      _maxForksOnCriticalWorker = static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy)/2;
     }
     else if (_maxForksOnCriticalWorker<=0) {
       _maxForksOnCriticalWorker = 1;
-      logDebug( "computeMaxForksOnCriticalWorker(LoadBalancingFlag)", "manually default forks to " << _maxForksOnCriticalWorker << " due to restriction from master" );
     }
 
     if (_maxForksOnCriticalWorker>0 && !_forkHasFailed) {
@@ -144,7 +174,7 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
         msg << " (" << p << "," << _weightMap[p] << ")";
       }
       msg << ". local weight= " << _weightMap[tarch::parallel::Node::getInstance().getRank()];
-      logInfo( "computeMaxForksOnCriticalWorker(LoadBalancingFlag)", msg.str() );
+      logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
     }
   }
   else {
@@ -193,6 +223,16 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
     assertion( result!=peano::parallel::loadbalancing::LoadBalancingFlag::UndefinedLoadBalancingFlag );
   }
   else if (
+    _workerShouldBecomeAdministrativeRank.count(workerRank) > 0 &&
+    _workerShouldBecomeAdministrativeRank[workerRank] &&
+    _criticalWorker.count(workerRank)>0 &&
+    forkIsAllowed &&
+    !_forkHasFailed
+  ) {
+    logInfo( "getCommandForWorker(int)", "worker " << workerRank << " is responsible for coarse level and thus should become purely administrative rank" );
+    result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkAllChildrenAndBecomeAdministrativeRank;
+  }
+  else if (
     _criticalWorker.count(workerRank)>0 &&
     forkIsAllowed &&
     !_forkHasFailed
@@ -209,10 +249,18 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
 
 void mpibalancing::HotspotBalancing::mergeWithMaster(
   int     workerRank,
-  bool    workerCouldNotEraseDueToDecomposition
+  bool    workerCouldNotEraseDueToDecomposition,
+  int     coarsestWorkerRankLevel
 ) {
   #ifdef Parallel
-  logDebug( "HotspotBalancing(bool,int)", "receive load balancing information on tag " << _loadBalancingTag << " from worker " << workerRank );
+  logDebug( "mergeWithMaster(int,bool,int)", "receive load balancing information on tag " << _loadBalancingTag << " from worker " << workerRank );
+
+  if (coarsestWorkerRankLevel<=_finestLevelWhereRanksArePurelyAdministrative) {
+    _workerShouldBecomeAdministrativeRank[workerRank] = true;
+  }
+  else {
+    _workerShouldBecomeAdministrativeRank[workerRank] = false;
+  }
 
   double workerWeight;
 
@@ -328,7 +376,7 @@ void mpibalancing::HotspotBalancing::plotStatistics() {
 
 
 peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::HotspotBalancing::createNewOracle(int adapterNumber) const {
-  return new HotspotBalancing(_joinsAllowed, _regularLevelAlongBoundary);
+  return new HotspotBalancing(_joinsAllowed);
 }
 
 

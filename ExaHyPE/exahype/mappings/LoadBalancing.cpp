@@ -110,7 +110,8 @@ void exahype::mappings::LoadBalancing::mergeWithMaster(
   if (_loadBalancingAnalysis==LoadBalancingAnalysis::Hotspot) {
     mpibalancing::HotspotBalancing::mergeWithMaster(
       worker,
-      workerState.getCouldNotEraseDueToDecompositionFlag()
+      workerState.getCouldNotEraseDueToDecompositionFlag(),
+      coarseGridVerticesEnumerator.getLevel()+1
     );
   }
 

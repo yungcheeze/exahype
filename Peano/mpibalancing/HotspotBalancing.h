@@ -60,6 +60,8 @@ peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
 void boxmg::mappings::CreateGrid::beginIteration(
   boxmg::State&  solverState
 ) {
+  srand(time(NULL));
+
   _numberOfInnerCells = 0;
 }
 
@@ -128,7 +130,7 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
    </pre>
  *
  *
- * <h2> Troubleshooting </h2>
+ * <h2> Troubshooting </h2>
  *
  * I sometimes run into the situation that the grid is correctly balanced for
  * small(er) grids but that the load balancing degenerates into something
@@ -139,20 +141,6 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
  * fork-off unfortunately leads to the situation that refine instructions
  * along the domain boundary are postponed by one iteration while others
  * run through straight ahead.
- *
- *
- * <h2>Impact on vertical data exchange</h2>
- *
- * The hotspot balancing obviously has to exchange data vertically. Otherwise,
- * it cannot function. It requires worker-master data exchange have to be
- * enabled. This exchange solely transfers cell counters. It is therefore
- * sufficient to pass
-
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
-
- * as arguments.
- *
  *
  *
  * <h2>Behaviour</h2>
@@ -182,7 +170,7 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
  * This operation triggers the critical path analysis which consists of two
  * steps:
  *
- * - Determine the critical path
+ * - Determine the critial path
  * - Compute the number of forks along the critical paths
  *
  * If its command from its master is unequal to fork, there's no analysis to
@@ -236,12 +224,14 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      *
      * @param coarsestRegularInnerAndOuterGridLevel If you use this balancing,
      *                     the grid is refined regularly up to level
-     *                     coarsestRegularInnerAndOuterGridLevel - indepenent
+     *                     coarsestRegularInnerAndOuterGridLevel - independent
      *                     of whether grid elements are inside or outside of
      *                     the domain. Too regular grids facilitate a
-     *                     proper load balancing in several cases.
+     *                     proper load balancing in several cases. The value
+     *                     has however no direct impact on the load balancing.
+     *                     It solely controls the grid refinement pattern.
      */
-    HotspotBalancing( bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel = 3 );
+    HotspotBalancing( bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel, int maxRanksThatCanBeUsedAsAdministors = std::numeric_limits<int>::max() );
 
     virtual ~HotspotBalancing();
 
@@ -269,7 +259,8 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      */
     static void mergeWithMaster(
       int     workerRank,
-      bool    workerCouldNotEraseDueToDecomposition
+      bool    workerCouldNotEraseDueToDecomposition,
+      int     coarsestWorkerLevel
     );
 
     /**
@@ -284,6 +275,8 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
     );
 
   private:
+    HotspotBalancing( bool joinsAllowed );
+
     /**
      * Runs an analysis on the _weightMap. This operation returns consistent
      * data if it is used within receivedStartCommand() and if all children
@@ -329,6 +322,8 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
 
     static int                  _regularLevelAlongBoundary;
 
+    static int                  _finestLevelWhereRanksArePurelyAdministrative;
+
     static int                  _loadBalancingTag;
 
     /**
@@ -347,6 +342,8 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      * domain decomposition.
      */
     static std::map<int,bool>          _workerCouldNotEraseDueToDecomposition;
+
+    static std::map<int,bool>          _workerShouldBecomeAdministrativeRank;
 
     /**
      * Set of critical workers

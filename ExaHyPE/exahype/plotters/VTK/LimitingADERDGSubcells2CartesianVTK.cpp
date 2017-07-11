@@ -202,7 +202,7 @@ void exahype::plotters::LimitingADERDGSubcells2CartesianVTK::plotPatch(const int
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
+    //typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
     int limiterStatus         = solverPatch.getLimiterStatus();
     int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
 

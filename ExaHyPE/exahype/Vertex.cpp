@@ -538,7 +538,7 @@ void exahype::Vertex::dropNeighbourMetadata(
     dfor2(mySrc)
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
       tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
-      int destScalar = TWO_POWER_D - myDestScalar - 1;
+      //int destScalar = TWO_POWER_D - myDestScalar - 1;
 
       if (hasToReceiveMetadata(src,dest,fromRank)) {
         logDebug("dropNeighbourMetadata(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
