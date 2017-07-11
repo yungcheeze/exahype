@@ -436,7 +436,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
     int level = coarsestUserMeshLevel;
     while (boundingBoxMeshSpacing > coarsestUserMeshSpacing) {
-      const double boundingBoxMeshCells = std::pow(3,boundingBoxMeshLevel-1);
+      const double boundingBoxMeshCells = std::pow(3,level-1);
       boundingBoxScaling                = boundingBoxMeshCells / ( boundingBoxMeshCells - 2 );
       boundingBoxExtent                 = boundingBoxScaling * maxDomainExtent;
       boundingBoxMeshSpacing            = boundingBoxExtent/boundingBoxMeshCells;
