@@ -41,7 +41,7 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 4
+    order const              = 3
     maximum-mesh-size        = 0.038
     maximum-mesh-depth       = 0
     time-stepping            = global

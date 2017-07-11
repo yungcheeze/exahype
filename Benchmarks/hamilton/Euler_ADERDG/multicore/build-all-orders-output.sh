@@ -1,5 +1,8 @@
 exe=ExaHyPE-Euler
-spec=multicore/Euler-output.exahype
+spec=multicore/Euler_ADERDG-output.exahype
+
+# save originial file
+cp $spec ${spec}_tmp
 
 for m in 1 2
 do
@@ -14,12 +17,16 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
-  for p in 3 5 7 9
+  for p in 9 7 5 3
   do 
     rm *.o
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
+    cat $spec
+    multicore/configure-output.sh
     make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done
 
+# restore original file
+mv ${spec}_tmp $spec

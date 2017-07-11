@@ -59,7 +59,7 @@ exahype-project Euler
 
   solver ADER-DG EulerSolver_ADERDG
     variables const   = rho:1,j:3,E:1
-    order const       = 5
+    order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.038
     time-stepping     = global
@@ -70,7 +70,7 @@ exahype-project Euler
     plot user::defined ErrorWriter
       variables const = 5
       time            = 0.0
-      repeat          = 1e-10
+      repeat          = 1e-2
       output          = not-available
     end plot
    

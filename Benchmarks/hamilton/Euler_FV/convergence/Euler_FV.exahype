@@ -35,7 +35,7 @@ exahype-project Euler
  
   solver Finite-Volumes EulerSolver_FV
     variables const   = rho:1,j:3,E:1
-    patch-size const  = 11
+    patch-size const  = 7
     maximum-mesh-size = 0.038
     time-stepping     = global
     kernel const      = generic::godunov

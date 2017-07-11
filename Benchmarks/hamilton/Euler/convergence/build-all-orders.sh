@@ -1,6 +1,9 @@
 exe=ExaHyPE-Euler
 spec=convergence/Euler.exahype
 
+# save original file
+cp $spec ${spec}_tmp
+
 for m in 1 2
 do
   if (( m == 1 )); then
@@ -18,8 +21,12 @@ do
   do 
     rm *.o
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
+    cat $spec
+    convergence/configure.sh
     make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done
 
+# restore original file
+mv ${spec}_tmp $spec
