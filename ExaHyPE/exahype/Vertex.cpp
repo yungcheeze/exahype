@@ -292,11 +292,15 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
     const bool validIndexNextToBoundaryIndex =
         (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
             &&
-            cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)
+            (cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+            ||
+            cellDescriptionsIndex2==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex))
             ||
             (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)
                 &&
-                cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex);
+                (cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+                ||
+                cellDescriptionsIndex1==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex));
 
     if (validIndexNextToBoundaryIndex) {
       const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
