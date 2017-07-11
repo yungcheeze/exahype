@@ -27,7 +27,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
         const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
-        double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
+        double* restrict lQi, double* restrict rhs,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used //TODO JMG BGradQ not used anymore
 {% if useDeepProfiler %}
@@ -37,9 +37,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
 #ifdef __INTEL_COMPILER
   __assume_aligned(lQi, ALIGNMENT);
-  __assume_aligned(lQi_old, ALIGNMENT);
   __assume_aligned(rhs, ALIGNMENT);
-  __assume_aligned(rhs_0, ALIGNMENT);
   __assume_aligned(lFi, ALIGNMENT);
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
@@ -80,7 +78,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
 
   // 2. Compute the contribution of the initial condition uh to the time update
-  // //we compute rhs on the fly, no need for rhs_0, TODO JMG clean legacy
+  // we compute rhs on the fly, TODO JMG clean legacy
   
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};

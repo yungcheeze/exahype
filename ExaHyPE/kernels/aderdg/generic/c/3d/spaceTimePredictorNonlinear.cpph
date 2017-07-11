@@ -43,7 +43,7 @@ namespace {
   void aderPicardLoopNonlinear(SolverType& solver,
                                const double* luh, const double dt,
                                const tarch::la::Vector<DIMENSIONS, double>& dx,
-                               double* lQi, double *lQi_old, double* rhs,
+                               double* lQi, double* rhs,
                                double* lFi, double* gradQ) {
     constexpr int numberOfVariables  = SolverType::NumberOfVariables;
     constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -88,8 +88,6 @@ namespace {
     idx6 idx_gradQ(basisSize, basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
 
     for (int iter = 0; iter < MaxIterations; iter++) {
-      // Save old space-time DOF
-      std::memcpy(lQi_old, lQi, basisSize4 * numberOfData * sizeof(double));
 
       for (int i = 0; i < basisSize; i++) {  // time DOF
         // Compute the fluxes
@@ -253,55 +251,41 @@ namespace {
         }
       }  // end time dof
 
-      // Zero out variables in lQi
-      if (numberOfParameters==0) {
-        std::memset(lQi, 0, basisSize4 * numberOfVariables * sizeof(double));
-      } else {
-        for (int i = 0; i < basisSize; i++) { // i == z
-          for (int j = 0; j < basisSize; j++) { // j == y
-            for (int k = 0; k < basisSize; k++) { // k == x
-              for (int l = 0; l < basisSize; l++) { // l==t
-                std::fill_n (lQi + idx_lQi(i, j, k, l, 0), numberOfVariables, 0.0);
-              }
-            }
-          }
-        }
-      }
 
       // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
       // discrete Picard iteration
-      auto grainSizeDiscreteTimeIntegral = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsDiscreteTimeIntegral);
-      //for (int i = 0; i < basisSize; i++) {
-      pfor(i,0,basisSize,grainSizeDiscreteTimeIntegral.getGrainSize())
-      for (int j = 0; j < basisSize; j++) {
-        for (int k = 0; k < basisSize; k++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-              kernels::gaussLegendreWeights[order][j] *
-              kernels::gaussLegendreWeights[order][k];
-          const double iweight = 1.0 / weight;
+      double sq_res = 0.0;
+      for (int i = 0; i < basisSize; i++) {
+        for (int j = 0; j < basisSize; j++) {
+          for (int k = 0; k < basisSize; k++) {
+            const double weight = kernels::gaussLegendreWeights[order][i] *
+                kernels::gaussLegendreWeights[order][j] *
+                kernels::gaussLegendreWeights[order][k];
+            const double iweight = 1.0 / weight;
 
-          // Matrix operation
-          for (int l = 0; l < basisSize; l++) { // time
-            for (int m = 0; m < numberOfVariables; m++) {
-              for (int n = 0; n < basisSize; n++) { // time
-                lQi[idx_lQi(i, j, k, l, m)] += iweight *
-                    rhs[idx_rhs(n, i, j, k, m)] *
-                    kernels::iK1[order][l][n];
-                // TODO: Check if we store iK1 or rather its transpose
+            // Matrix operation
+            for (int l = 0; l < basisSize; l++) { // time
+              for (int m = 0; m < numberOfVariables; m++) {
+                double lQi_new = 0;
+                for (int n = 0; n < basisSize; n++) { // time
+                  lQi_new += iweight *
+                      rhs[idx_rhs(n, i, j, k, m)] *
+                      kernels::iK1[order][l][n];
+                  // TODO: Check if we store iK1 or rather its transpose
+                }
+                sq_res += (lQi_new - lQi[idx_lQi(i, j, k, l, m)]) * (lQi_new - lQi[idx_lQi(i, j, k, l, m)]);
+                assertion3( !std::isnan(lQi[idx_lQi(i, j, k, l, m)]), idx_lQi(i, j, k, l, m), dt, dx );
+                assertion3( !std::isnan(lQi_new), idx_lQi(i, j, k, l, m), dt, dx );
+                lQi[idx_lQi(i, j, k, l, m)] = lQi_new;
               }
             }
           }
         }
       }
-      endpfor
-      grainSizeDiscreteTimeIntegral.parallelSectionHasTerminated();
+      
 
       // 5. Exit condition
       constexpr double tol = 1e-7;
-      double sq_res = 0.0;
-      for (int i = 0; i < basisSize4 * numberOfData; i++) {
-        sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
-      }
       if (sq_res < tol * tol) {
         break;
       }
@@ -665,8 +649,7 @@ void spaceTimePredictorNonlinear(
   constexpr int basisSize          = SolverType::Order+1;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
-  double* lQi_old = tempSpaceTimeUnknowns[1];
-  double* rhs     = tempSpaceTimeUnknowns[2];
+  double* rhs     = tempSpaceTimeUnknowns[1];
 
   // Give nullptrs in case certain PDE features are not used in order to detect
   // wrong memory access patterns more quickly.
@@ -675,7 +658,7 @@ void spaceTimePredictorNonlinear(
   double* gradQ   = useNCP ? tempSpaceTimeFluxUnknowns[1] : nullptr; // size: basisSize3 * DIMENSIONS * numberOfVariables
 
   aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
-      solver, luh, dt, dx, lQi, lQi_old, rhs, lFi, gradQ
+      solver, luh, dt, dx, lQi, rhs, lFi, gradQ
   );
   
 #ifdef NO_TIME_AVERAGING
