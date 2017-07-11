@@ -7,7 +7,7 @@
 // ========================
 #include "ErrorWriter.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_FV.h"
 
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/KernelUtils.h"
@@ -20,18 +20,18 @@
 
 #include <iomanip>
 
-Euler_FV::ErrorWriter::ErrorWriter() : exahype::plotters::FiniteVolumes2UserDefined::FiniteVolumes2UserDefined(){
+Euler::ErrorWriter::ErrorWriter() : exahype::plotters::FiniteVolumes2UserDefined::FiniteVolumes2UserDefined(){
   // @TODO Please insert your code here.
 }
 
 
-void Euler_FV::ErrorWriter::plotPatch(
+void Euler::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
-  constexpr int basisSize         = AbstractEulerSolver::PatchSize;
-  constexpr int ghostLayerWidth   = AbstractEulerSolver::GhostLayerWidth;
+  constexpr int numberOfVariables = AbstractEulerSolver_FV::NumberOfVariables;
+  constexpr int basisSize         = AbstractEulerSolver_FV::PatchSize;
+  constexpr int ghostLayerWidth   = AbstractEulerSolver_FV::GhostLayerWidth;
 
   double x[DIMENSIONS];
 
@@ -45,7 +45,7 @@ void Euler_FV::ErrorWriter::plotPatch(
      }
 
      double uAna[numberOfVariables];
-     EulerSolver::sodShockTube(x,timeStamp,uAna);
+     EulerSolver_FV::referenceSolution(x,timeStamp,uAna);
 
      const double* uNum = u +
          idx ( (DIMENSIONS==3) ? i(2)+ghostLayerWidth : 0, i(1)+ghostLayerWidth, i(0)+ghostLayerWidth, 0);
@@ -63,27 +63,27 @@ void Euler_FV::ErrorWriter::plotPatch(
   }
 }
 
-void Euler_FV::ErrorWriter::startPlotting( double time) {
+void Euler::ErrorWriter::startPlotting( double time) {
   _timeStamp = time;
 
-  std::fill_n(errorL1,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(errorL2,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(errorLInf,AbstractEulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(errorL1,  AbstractEulerSolver_FV::NumberOfVariables, 0.0);
+  std::fill_n(errorL2,  AbstractEulerSolver_FV::NumberOfVariables, 0.0);
+  std::fill_n(errorLInf,AbstractEulerSolver_FV::NumberOfVariables, 0.0);
   
-  std::fill_n(normL1Ana,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(normL2Ana,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(normLInfAna,AbstractEulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(normL1Ana,  AbstractEulerSolver_FV::NumberOfVariables, 0.0);
+  std::fill_n(normL2Ana,  AbstractEulerSolver_FV::NumberOfVariables, 0.0);
+  std::fill_n(normLInfAna,AbstractEulerSolver_FV::NumberOfVariables, 0.0);
 }
 
-void Euler_FV::ErrorWriter::finishPlotting() {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+void Euler::ErrorWriter::finishPlotting() {
+  constexpr int numberOfVariables = AbstractEulerSolver_FV::NumberOfVariables;
 
   for (int v=0; v<numberOfVariables; v++) {
     errorL2[v]   = sqrt(errorL2[v]);
     normL2Ana[v] = sqrt(normL2Ana[v]);
   }
 
-  std::cout << "**Errors for FV solver with patch size="<<AbstractEulerSolver::PatchSize<<"**" << std::endl;
+  std::cout << "**Errors for FV solver with patch size="<<AbstractEulerSolver_FV::PatchSize<<"**" << std::endl;
   std::cout << "t_eval : "<<_timeStamp << std::endl;
   std::cout << "variable     : ";
   for (int v=0; v<numberOfVariables; v++) {

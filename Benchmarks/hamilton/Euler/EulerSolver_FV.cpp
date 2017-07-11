@@ -141,7 +141,11 @@ void Euler::EulerSolver_FV::sodShockTube(const double* const x, const double t, 
   }
 }
 
-void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, double* Q) {
+void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, double* Q) { 
+   constexpr double x0[3]   = {0, 0, 0};
+   constexpr double radius  = 0.5;
+   constexpr double radius2 = radius*radius;
+
   // Velocities are set to zero (initially).
   if (tarch::la::equals(t,0.0)) {
     Q[1] = 0.0;
@@ -149,7 +153,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     Q[3] = 0.0;
     #if DIMENSIONS==2
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
+    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -158,7 +162,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     }
     #else
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < (x[2] -0.5) *(x[2] -0.5) < 0.1) {
+    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < (x[2] -x0[2]) *(x[2] -x0[2]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {

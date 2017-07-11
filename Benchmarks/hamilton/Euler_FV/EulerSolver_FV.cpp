@@ -5,23 +5,62 @@
 #include "EulerSolver_FV.h"
 #include "EulerSolver_FV_Variables.h"
 
-void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs) {
+tarch::logging::Log Euler::EulerSolver_FV::_log("Euler::EulerSolver_FV");
+
+Euler::EulerSolver_FV::Reference Euler::EulerSolver_FV::ReferenceChoice = Euler::EulerSolver_FV::Reference::EntropyWave;
+bool Euler::EulerSolver_FV::SuppressVelocityYComponent = false;
+
+void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
+  std::string reference = constants.getValueAsString("reference");
+
+  if (reference.compare("entropywave")==0) {
+    ReferenceChoice = Reference::EntropyWave;
+  }
+  if (reference.compare("rarefactionwave")==0) {
+    ReferenceChoice = Reference::RarefactionWave;
+  }
+  else if (reference.compare("sod")==0){
+    ReferenceChoice = Reference::SodShockTube;
+  }
+  else if (reference.compare("explosion")==0){
+    ReferenceChoice = Reference::SphericalExplosion;
+  }
+  else {
+    logError("init(...)","do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
+            "'rarefactionwave', 'sod', or 'explosion'.");
+    std::abort();
+  }
+  logInfo("init(...)","use initial condition: " << reference << "");
+
+  SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
+  logInfo("init(...)","suppress velocity y-component when running Sod shock tube: " <<
+      ( SuppressVelocityYComponent ? "on" : "off" ) << "");
 }
 
+void Euler::EulerSolver_FV::entropyWave(const double* const x,double t, double* Q) {
+  const double gamma     = 1.4;
+  constexpr double width = 0.3;
 
-bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  return tarch::la::equals(t,0.0);
+  #if DIMENSIONS==2
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5);
+  #else
+  tarch::la::Vector<DIMENSIONS,double> xVec(x[0],x[1],x[2]);
+  tarch::la::Vector<DIMENSIONS,double> v0(0.5,0.0,0.0);
+  tarch::la::Vector<DIMENSIONS,double> x0(0.5,0.5,0.5);
+  #endif
+  const double distance  = tarch::la::norm2( xVec - x0 - v0 * t );
+
+  Q[0] = 0.5 + 0.3 * std::exp(-distance / std::pow(width, DIMENSIONS));
+  Q[1] = Q[0] * v0[0];
+  Q[2] = Q[0] * v0[1];
+  Q[3] = 0.0;
+  // total energy = internal energy + kinetic energy
+  const double p = 1.;
+  Q[4] = p / (gamma-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
-/**
- * to solve Sod's Shock Tube problem
- * reference: "http://www.phys.lsu.edu/~tohline/PHYS7412/sod.html"
- *   |             |         |       |
- *   |             |         |       |
- *   | rarefaction | contact | shock |
- *___|_____________|___++____|_______|_________
- *   x1           x2   x0   x3      x4
- */
 void Euler::EulerSolver_FV::sodShockTube(const double* const x, const double t, double* Q) {
   // Initial data
   constexpr double gamma     =1.39999999999999991118;
@@ -102,12 +141,104 @@ void Euler::EulerSolver_FV::sodShockTube(const double* const x, const double t, 
   }
 }
 
+void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, double* Q) { 
+   constexpr double x0[3]   = {0, 0, 0};
+   constexpr double radius  = 0.5;
+   constexpr double radius2 = radius*radius;
+
+  // Velocities are set to zero (initially).
+  if (tarch::la::equals(t,0.0)) {
+    Q[1] = 0.0;
+    Q[2] = 0.0;
+    Q[3] = 0.0;
+    #if DIMENSIONS==2
+    // Circular shaped pressure jump at centre of domain.
+    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < radius2) {
+      Q[0] = 1.0;
+      Q[4] = 1.0;
+    } else {
+      Q[0] = 0.125;
+      Q[4] = 0.1; // total energy
+    }
+    #else
+    // Circular shaped pressure jump at centre of domain.
+    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < (x[2] -x0[2]) *(x[2] -x0[2]) < radius2) {
+      Q[0] = 1.0;
+      Q[4] = 1.0;
+    } else {
+      Q[0] = 0.125;
+      Q[4] = 0.1; // total energy
+    }
+    #endif
+  } else {
+    std::fill_n(Q, NumberOfVariables, 0.0);
+    // We then compute the norm in our error writers for t>0.
+  }
+}
+
+void Euler::EulerSolver_FV::rarefactionWave(const double* const x,double t, double* Q) {
+  constexpr double gamma = 1.4;
+  constexpr double width = 0.25;
+  constexpr double x0[3] = { 0.5, 0.5, 0.5 };
+
+  if (tarch::la::equals(t,0.0)) {
+    Q[0] = 1.;
+    Q[1] = 0.;
+    Q[2] = 0.;
+    Q[3] = 0.;
+    #if DIMENSIONS==2
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
+    #else
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) * (x[2]-x0[2])*(x[2]-x0[2]);
+    #endif
+    Q[4] = 1. / (gamma - 1) + // pressure is set to one
+        exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;
+  }
+  else {
+    std::fill_n(Q, NumberOfVariables, 0.0);
+    // We then compute the norm in our error writers for t>0.
+  }
+}
+
+void Euler::EulerSolver_FV::referenceSolution(const double* const x,double t, double* Q) {
+  switch (ReferenceChoice) {
+  case Reference::SodShockTube:
+    sodShockTube(x,t,Q);
+    break;
+  case Reference::EntropyWave:
+    entropyWave(x,t,Q);
+    break;
+  case Reference::SphericalExplosion:
+    sphericalExplosion(x,t,Q);
+    break;
+  case Reference::RarefactionWave:
+    rarefactionWave(x,t,Q);
+    break;
+  }
+}
+
+bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
+  //    return true; // comment in for vel_y cleaning; do the same in the ADER-DG solver
+  if (ReferenceChoice==Reference::SodShockTube &&
+      SuppressVelocityYComponent) {
+    return true;
+  }
+
+  return tarch::la::equals(t, 0.0);
+}
+
 void Euler::EulerSolver_FV::adjustSolution(
     const double* const x,
     const double w,
     const double t,
     const double dt, double* Q) {
-  sodShockTube(x,t,Q);
+  if (tarch::la::equals(t,0.0)) {
+    EulerSolver_FV::referenceSolution(x,t,Q);
+  }
+  if (ReferenceChoice==Reference::SodShockTube &&
+      SuppressVelocityYComponent) {
+    Q[2] = 0; // suppress velocity y-component
+  }
 }
 
 
@@ -159,9 +290,22 @@ void Euler::EulerSolver_FV::boundaryValues(
     const int direction,
     const double* const stateInside,
     double* stateOutside) {
-  ReadOnlyVariables varsInside(stateInside);
-  Variables         varsOutside(stateOutside);
-
-  varsOutside = varsInside;
-  varsOutside[1+direction] =  -varsOutside[1+direction];
+  switch (ReferenceChoice) {
+  case Reference::SodShockTube:
+    if (direction==1) {
+      std::copy_n(stateInside, NumberOfVariables, stateOutside);
+      stateOutside[1+direction] =  -stateOutside[1+direction]; // wall boundary conditions in y
+    }
+    else if (direction==0) {  // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
+      referenceSolution(x,0.0,stateOutside);
+    }
+    break;
+  case Reference::SphericalExplosion: // copy boundary conditions (works with outflowing waves)
+  case Reference::RarefactionWave:
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
+    break;
+  case Reference::EntropyWave: // Dirichlet conditons
+    referenceSolution(x,t,stateOutside);
+    break;
+  }
 }

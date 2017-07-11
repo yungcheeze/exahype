@@ -34,7 +34,7 @@ void Euler::ErrorPlotter::mapQuantities(
   constexpr int numberOfVariables = AbstractEulerSolver_ADERDG::NumberOfVariables;
 
   double QAna[numberOfVariables];
-  EulerSolver_ADERDG::entropyWave(x.data(),timeStamp,QAna);
+  EulerSolver_ADERDG::referenceSolution(x.data(),timeStamp,QAna);
 
   for (int i=0; i<numberOfVariables; i++){ 
     outputQuantities[i] =std::abs( QAna[i] - Q[i] );

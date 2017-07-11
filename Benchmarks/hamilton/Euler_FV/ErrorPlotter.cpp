@@ -1,28 +1,28 @@
 #include "ErrorPlotter.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_FV.h"
 
-Euler_FV::ErrorPlotter::ErrorPlotter(EulerSolver&  solver) {
+Euler::ErrorPlotter::ErrorPlotter(EulerSolver_FV&  solver) {
   // @todo Please insert your code here
 }
 
 
-Euler_FV::ErrorPlotter::~ErrorPlotter() {
+Euler::ErrorPlotter::~ErrorPlotter() {
   // @todo Please insert your code here
 }
 
 
-void Euler_FV::ErrorPlotter::startPlotting(double time) {
+void Euler::ErrorPlotter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void Euler_FV::ErrorPlotter::finishPlotting() {
+void Euler::ErrorPlotter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void Euler_FV::ErrorPlotter::mapQuantities(
+void Euler::ErrorPlotter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -31,10 +31,10 @@ void Euler_FV::ErrorPlotter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+  constexpr int numberOfVariables = AbstractEulerSolver_FV::NumberOfVariables;
 
   double QAna[numberOfVariables];
-  EulerSolver::sodShockTube(x.data(),timeStamp,QAna);
+  EulerSolver_FV::referenceSolution(x.data(),timeStamp,QAna);
 
   for (int i=0; i<numberOfVariables; i++){ 
     outputQuantities[i] =std::abs( QAna[i] - Q[i] );

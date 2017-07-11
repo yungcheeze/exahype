@@ -44,7 +44,7 @@ void Euler::ErrorWriter::plotPatch(
      }
 
      double uAna[numberOfVariables];
-     EulerSolver_ADERDG::entropyWave(x,timeStamp,uAna);
+     EulerSolver_ADERDG::referenceSolution(x,timeStamp,uAna);
 
      const double* uNum = u + idx ( (DIMENSIONS==3) ? i(2) : 0, i(1), i(0), 0);
 

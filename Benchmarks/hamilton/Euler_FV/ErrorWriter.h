@@ -9,23 +9,23 @@
 
 #include "exahype/plotters/FiniteVolumes2UserDefined.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_FV.h"
 
-namespace Euler_FV {
+namespace Euler {
   class ErrorWriter;
 }
 
-class Euler_FV::ErrorWriter : public exahype::plotters::FiniteVolumes2UserDefined {
+class Euler::ErrorWriter : public exahype::plotters::FiniteVolumes2UserDefined {
  private:
    double _timeStamp;
 
-   double errorL1  [EulerSolver::NumberOfVariables]; 
-   double errorL2  [EulerSolver::NumberOfVariables]; 
-   double errorLInf[EulerSolver::NumberOfVariables];
+   double errorL1  [EulerSolver_FV::NumberOfVariables]; 
+   double errorL2  [EulerSolver_FV::NumberOfVariables]; 
+   double errorLInf[EulerSolver_FV::NumberOfVariables];
    
-   double normL1Ana  [EulerSolver::NumberOfVariables];  
-   double normL2Ana  [EulerSolver::NumberOfVariables];  
-   double normLInfAna[EulerSolver::NumberOfVariables]; 
+   double normL1Ana  [EulerSolver_FV::NumberOfVariables];  
+   double normL2Ana  [EulerSolver_FV::NumberOfVariables];  
+   double normLInfAna[EulerSolver_FV::NumberOfVariables]; 
 
  public:
   /**

@@ -17,8 +17,8 @@ exahype-project Euler
 
   computational-domain
     dimension const         = 2
-    width                   = 1.0, 1.0
-    offset                  = 0.0, 0.0
+    width                   = 2.0, 2.0
+    offset                  = -1.0, -1.0
     end-time                = 0.221
   end computational-domain
   
@@ -41,7 +41,7 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 9
+    order const              = 4
     maximum-mesh-size        = 0.12
     maximum-mesh-depth       = 1
     time-stepping            = global
@@ -54,7 +54,7 @@ exahype-project Euler
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 2
     // reference either: sod,entropywave,explosion,rarefactionwave. suppressvely either: on,off
-    constants                = reference:sod,suppressvely:true
+    constants                = reference:explosion,suppressvely:false
 
 
     plot user::defined ErrorWriter
