@@ -29,30 +29,36 @@ Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice 
 bool Euler::EulerSolver_ADERDG::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  std::string reference = constants.getValueAsString("reference");
+  if (constants.isValueValidBool("reference")) {
+    std::string reference = constants.getValueAsString("reference");
+    
+    if (reference.compare("entropywave")==0) {
+      ReferenceChoice = Reference::EntropyWave;
+    }
+    else if (reference.compare("rarefactionwave")==0) {
+      ReferenceChoice = Reference::RarefactionWave;
+    }
+    else if (reference.compare("sod")==0){
+      ReferenceChoice = Reference::SodShockTube;
+    }
+    else if (reference.compare("explosion")==0){
+      ReferenceChoice = Reference::SphericalExplosion;
+    }
+    else {
+      logError("init(...)","do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
+              "'rarefactionwave', 'sod', or 'explosion'.");
+      std::abort();
+    }
+    logInfo("init(...)","use initial condition '" << reference << "'.");
+  } else {
+    logInfo("init(...)","use initial condition 'entropyWave' (default value).");
+  }
 
-  if (reference.compare("entropywave")==0) {
-    ReferenceChoice = Reference::EntropyWave;
+  if (constants.isValueValidBool("suppressvely")) {
+    SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
+    logInfo("init(...)","suppress velocity y-component when running Sod shock tube: '" <<
+        ( SuppressVelocityYComponent ? "on" : "off" ) << "'.");
   }
-  else if (reference.compare("rarefactionwave")==0) {
-    ReferenceChoice = Reference::RarefactionWave;
-  }
-  else if (reference.compare("sod")==0){
-    ReferenceChoice = Reference::SodShockTube;
-  }
-  else if (reference.compare("explosion")==0){
-    ReferenceChoice = Reference::SphericalExplosion;
-  }
-  else {
-    logError("init(...)","Do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
-            "'rarefactionwave', 'sod', or 'explosion'.");
-    std::abort();
-  }
-  logInfo("init(...)","Use initial condition '" << reference << "'.");
-
-  SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
-  logInfo("init(...)","Suppress velocity y-component when running Sod shock tube: '" <<
-      ( SuppressVelocityYComponent ? "on" : "off" ) << "'.");
 }
 
 void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
