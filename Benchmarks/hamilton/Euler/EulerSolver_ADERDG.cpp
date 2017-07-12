@@ -29,7 +29,7 @@ Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice 
 bool Euler::EulerSolver_ADERDG::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  if (constants.isValueValidBool("reference")) {
+  if (constants.isValueValidString("reference")) {
     std::string reference = constants.getValueAsString("reference");
     
     if (reference.compare("entropywave")==0) {
@@ -310,19 +310,19 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     const double* const fluxIn,const double* const stateIn,
     double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube: // wall boundary conditions (trick)
+  case Reference::SodShockTube: { // wall boundary conditions (trick)
     std::copy_n(stateIn, NumberOfVariables, stateOut);
     stateOut[1+direction] =  -stateOut[1+direction];
     double _F[3][NumberOfVariables]={0.0};
     double* F[3] = {_F[0], _F[1], _F[2]};
     flux(stateOut,F);
-    break;
+  } break;
   case Reference::SphericalExplosion:
   case Reference::RarefactionWave: // copy boundary conditions (works with outflowing waves)
     std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
     std::copy_n(stateIn, NumberOfVariables, stateOut);
     break;
-  case Reference::EntropyWave: // Dirichlet conditions
+  case Reference::EntropyWave: {// Dirichlet conditions
     double Q[NumberOfVariables]     = {0.0};
     double _F[3][NumberOfVariables] = {0.0};
     double* F[3] = {_F[0],_F[1],_F[2]};
@@ -339,7 +339,7 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
         fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
       }
     }
-    break;
+  } break;
   }
 }
 

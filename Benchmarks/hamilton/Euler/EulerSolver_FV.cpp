@@ -11,7 +11,7 @@ Euler::EulerSolver_FV::Reference Euler::EulerSolver_FV::ReferenceChoice = Euler:
 bool Euler::EulerSolver_FV::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  if (constants.isValueValidBool("reference")) {
+  if (constants.isValueValidString("reference")) {
     std::string reference = constants.getValueAsString("reference");
     
     if (reference.compare("entropywave")==0) {
