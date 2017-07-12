@@ -77,7 +77,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // This musclhancock does not yet use 2. ghostlayer.
 
   // slopex
-  for (int j = patchBegin; j < patchEnd; j++) { // y
+//  for (int j = patchBegin; j < patchEnd; j++) { // y TODO(Dominic): Previous. Takes no ghost layer corners into account.
+  for (int j = patchBegin-1; j < patchEnd+1; j++) { // y TODO(Dominic): New. Takes corners of ghost layers into account. Assumes them to be set to zero.
     for (int k = patchBegin-1; k < patchEnd+1; k++) { // x
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 0, l)] = 
@@ -88,7 +89,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   }
   // slopey
   for (int j = patchBegin-1; j < patchEnd+1; j++) { // y
-    for (int k = patchBegin; k < patchEnd; k++) { // x
+//    for (int k = patchBegin; k < patchEnd; k++) { // x TODO(Dominic): Previous. Takes no ghost layer corners into account.
+    for (int k = patchBegin-1; k < patchEnd+1; k++) { // x TODO(Dominic): New. Takes corners of ghost layers into account. Assumes them to be set to zero.
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 1, l)] = 
             minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],

@@ -310,19 +310,12 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     const double* const fluxIn,const double* const stateIn,
     double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
-    if (direction==1) { // wall boundary conditions in y
-      std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
-      std::copy_n(stateIn, NumberOfVariables, stateOut);
-      stateOut[1+direction] =  -stateOut[1+direction];
-    }
-    else if (direction==0) { // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
-       referenceSolution(x,0.0,stateOut);
-       double _F[3][NumberOfVariables]={0.0};
-       double* F[3] = {_F[0], _F[1], _F[2]};
-       flux(stateOut,F);
-       std::copy_n(F[direction],NumberOfVariables,fluxOut);
-    }
+  case Reference::SodShockTube: // wall boundary conditions (trick)
+    std::copy_n(stateIn, NumberOfVariables, stateOut);
+    stateOut[1+direction] =  -stateOut[1+direction];
+    double _F[3][NumberOfVariables]={0.0};
+    double* F[3] = {_F[0], _F[1], _F[2]};
+    flux(stateOut,F);
     break;
   case Reference::SphericalExplosion:
   case Reference::RarefactionWave: // copy boundary conditions (works with outflowing waves)
@@ -353,18 +346,19 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
 void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
     double* observables,const int numberOfObservables,
     const double* const Q) const {
-  assertion(numberOfObservables==5);
-  ReadOnlyVariables vars(Q);
+    std::copy_n(Q, NumberOfVariables, observables);
+//  assertion(numberOfObservables==5);
+//  ReadOnlyVariables vars(Q);
 
-  observables[0]=vars.rho(); //extract density
-  const double irho = 1./vars.rho();
-  observables[1]=irho*vars.j(0)*0;
-  observables[2]=irho*vars.j(1)*0;
-  observables[3]=irho*vars.j(2)*0;
+//  observables[0]=vars.rho(); //extract density
+//  const double irho = 1./vars.rho();
+//  observables[1]=irho*vars.j(0);
+//  observables[2]=irho*vars.j(1);
+//  observables[3]=irho*vars.j(2);
 
-  const double gamma = 1.4;
-  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
-  observables[4]=vars.E(); //extract pressure
+//  const double gamma = 1.4;
+//  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+//  observables[4]=vars.E(); //extract pressure
 }
 
 

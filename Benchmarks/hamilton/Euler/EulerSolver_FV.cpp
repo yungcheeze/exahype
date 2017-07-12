@@ -297,14 +297,9 @@ void Euler::EulerSolver_FV::boundaryValues(
     const double* const stateInside,
     double* stateOutside) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
-    if (direction==1) {
-      std::copy_n(stateInside, NumberOfVariables, stateOutside);
-      stateOutside[1+direction] =  -stateOutside[1+direction]; // wall boundary conditions in y
-    }
-    else if (direction==0) {  // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
-      referenceSolution(x,0.0,stateOutside);
-    }
+  case Reference::SodShockTube: // wall boundary conditions
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
+    stateOutside[1+direction] =  -stateOutside[1+direction]; 
     break;
   case Reference::SphericalExplosion: // copy boundary conditions (works with outflowing waves)
   case Reference::RarefactionWave:
