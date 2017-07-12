@@ -26,10 +26,9 @@
 tarch::logging::Log Euler::EulerSolver_ADERDG::_log("Euler::EulerSolver_ADERDG");
 
 Euler::EulerSolver_ADERDG::Reference Euler::EulerSolver_ADERDG::ReferenceChoice = Euler::EulerSolver_ADERDG::Reference::EntropyWave;
-bool Euler::EulerSolver_ADERDG::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  if (constants.isValueValidBool("reference")) {
+  if (constants.isValueValidString("reference")) {
     std::string reference = constants.getValueAsString("reference");
     
     if (reference.compare("entropywave")==0) {
@@ -52,12 +51,6 @@ void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exah
     logInfo("init(...)","use initial condition '" << reference << "'.");
   } else {
     logInfo("init(...)","use initial condition 'entropyWave' (default value).");
-  }
-
-  if (constants.isValueValidBool("suppressvely")) {
-    SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
-    logInfo("init(...)","suppress velocity y-component when running Sod shock tube: '" <<
-        ( SuppressVelocityYComponent ? "on" : "off" ) << "'.");
   }
 }
 
@@ -90,7 +83,7 @@ void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
   const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   double u_n = Q[direction + 1] * irho;
-  double c  = std::sqrt(gamma * p * irho);
+  double c   = std::sqrt(gamma * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
@@ -118,13 +111,13 @@ void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, doub
   Q[3] = 0.0;
   // total energy = internal energy + kinetic energy
   const double p = 1.;
-  Q[4] = p / (gamma-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
+  Q[4] = p / (gamma-1)  +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
 void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double t, double* Q) {
   // Initial data
   constexpr double gamma     =1.39999999999999991118;
-  constexpr double x_0       =0.50000000000000000000;
+  constexpr double x_0       =0.00000000000000000000;
 
   constexpr double rho_5     =0.12500000000000000000; // right states
   constexpr double P_5       =0.10000000000000000555;
@@ -278,11 +271,6 @@ void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x,double t
 }
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  //  return AdjustSolutionValue::PointWisely; // comment in for vel_y cleaning; do the same in the FV solver
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    return AdjustSolutionValue::PointWisely;
-  }
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
@@ -290,10 +278,6 @@ void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
     const double w,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     referenceSolution(x,0.0,Q);
-  }
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    Q[2] = 0; // suppress velocity y-component
   }
 }
 
@@ -310,26 +294,20 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
     const double* const fluxIn,const double* const stateIn,
     double* fluxOut, double* stateOut) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
-    if (direction==1) { // wall boundary conditions in y
-      std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
-      std::copy_n(stateIn, NumberOfVariables, stateOut);
-      stateOut[1+direction] =  -stateOut[1+direction];
-    }
-    else if (direction==0) { // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
-       referenceSolution(x,0.0,stateOut);
-       double _F[3][NumberOfVariables]={0.0};
-       double* F[3] = {_F[0], _F[1], _F[2]};
-       flux(stateOut,F);
-       std::copy_n(F[direction],NumberOfVariables,fluxOut);
-    }
-    break;
+  case Reference::SodShockTube: { // wall boundary conditions (trick)
+    std::copy_n(stateIn, NumberOfVariables, stateOut);
+    stateOut[1+direction] =  -stateOut[1+direction];
+    double _F[3][NumberOfVariables]={0.0};
+    double* F[3] = {_F[0], _F[1], _F[2]};
+    flux(stateOut,F);
+    std::copy_n(F[direction], NumberOfVariables, fluxOut);
+  } break;
   case Reference::SphericalExplosion:
   case Reference::RarefactionWave: // copy boundary conditions (works with outflowing waves)
     std::copy_n(fluxIn,  NumberOfVariables, fluxOut);
     std::copy_n(stateIn, NumberOfVariables, stateOut);
     break;
-  case Reference::EntropyWave: // Dirichlet conditions
+  case Reference::EntropyWave: {// Dirichlet conditions
     double Q[NumberOfVariables]     = {0.0};
     double _F[3][NumberOfVariables] = {0.0};
     double* F[3] = {_F[0],_F[1],_F[2]};
@@ -346,25 +324,14 @@ void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const doub
         fluxOut[v]  += F[direction][v] * kernels::gaussLegendreWeights[Order][i];
       }
     }
-    break;
+  } break;
   }
 }
 
 void Euler::EulerSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
     double* observables,const int numberOfObservables,
     const double* const Q) const {
-  assertion(numberOfObservables==5);
-  ReadOnlyVariables vars(Q);
-
-  observables[0]=vars.rho(); //extract density
-  const double irho = 1./vars.rho();
-  observables[1]=irho*vars.j(0)*0;
-  observables[2]=irho*vars.j(1)*0;
-  observables[3]=irho*vars.j(2)*0;
-
-  const double gamma = 1.4;
-  const double p = (gamma-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
-  observables[4]=vars.E(); //extract pressure
+    std::copy_n(Q, NumberOfVariables, observables);
 }
 
 
@@ -373,15 +340,7 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
     const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
     const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
     const double t, const double dt) const {
-  // Higher-order ADER-DG methods tend to "oversee" the shock on the
-  // FV subgrid. We thus prescribe the initial FV domain manually here.
-  if (ReferenceChoice == Reference::SodShockTube &&
-      tarch::la::equals(t,0.0) &&
-      std::abs(center[0]-0.5) < 0.66*dx[0]) {
-    return false;
-  }
-
   if (observablesMin[0] <= 0.0) return false;
-  if (observablesMin[1] < 0.0) return false;
+  if (observablesMin[4] < 0.0) return false;
   return true;
 }

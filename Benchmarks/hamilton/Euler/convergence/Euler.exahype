@@ -17,8 +17,8 @@ exahype-project Euler
 
   computational-domain
     dimension const         = 2
-    width                   = 2.0, 2.0
-    offset                  = -1.0, -1.0
+    width                   = 1.0, 1.0, 1.0
+    offset                  = -0.5, -0.5, -0.5
     end-time                = 0.221
   end computational-domain
   
@@ -43,18 +43,18 @@ exahype-project Euler
     variables const          = rho:1,j:3,E:1
     order const              = 3
     maximum-mesh-size        = 0.12
-    maximum-mesh-depth       = 1
+    maximum-mesh-depth       = 2
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
     limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
     dmp-observables          = 5
-    dmp-relaxation-parameter = 1e-4
+    dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 2
     // reference either: sod,entropywave,explosion,rarefactionwave. suppressvely either: on,off
-    constants                = reference:explosion,suppressvely:false
+    constants                = reference:sod
 
 
     plot user::defined ErrorWriter

@@ -8,10 +8,9 @@
 tarch::logging::Log Euler::EulerSolver_FV::_log("Euler::EulerSolver_FV");
 
 Euler::EulerSolver_FV::Reference Euler::EulerSolver_FV::ReferenceChoice = Euler::EulerSolver_FV::Reference::EntropyWave;
-bool Euler::EulerSolver_FV::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  if (constants.isValueValidBool("reference")) {
+  if (constants.isValueValidString("reference")) {
     std::string reference = constants.getValueAsString("reference");
     
     if (reference.compare("entropywave")==0) {
@@ -34,12 +33,6 @@ void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype:
     logInfo("init(...)","use initial condition '" << reference << "'.");
   } else {
     logInfo("init(...)","use initial condition 'entropyWave' (default value).");
-  }
-
-  if (constants.isValueValidBool("suppressvely")) {
-    SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
-    logInfo("init(...)","suppress velocity y-component when running Sod shock tube: '" <<
-        ( SuppressVelocityYComponent ? "on" : "off" ) << "'.");
   }
 }
 
@@ -70,7 +63,7 @@ void Euler::EulerSolver_FV::entropyWave(const double* const x,double t, double* 
 void Euler::EulerSolver_FV::sodShockTube(const double* const x, const double t, double* Q) {
   // Initial data
   constexpr double gamma     =1.39999999999999991118;
-  constexpr double x_0       =0.50000000000000000000;
+  constexpr double x_0       =0.00000000000000000000;
 
   constexpr double rho_5     =0.12500000000000000000; // right states
   constexpr double P_5       =0.10000000000000000555;
@@ -224,12 +217,6 @@ void Euler::EulerSolver_FV::referenceSolution(const double* const x,double t, do
 }
 
 bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  //    return true; // comment in for vel_y cleaning; do the same in the ADER-DG solver
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    return true;
-  }
-
   return tarch::la::equals(t, 0.0);
 }
 
@@ -240,10 +227,6 @@ void Euler::EulerSolver_FV::adjustSolution(
     const double dt, double* Q) {
   if (tarch::la::equals(t,0.0)) {
     EulerSolver_FV::referenceSolution(x,t,Q);
-  }
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    Q[2] = 0; // suppress velocity y-component
   }
 }
 
@@ -297,14 +280,9 @@ void Euler::EulerSolver_FV::boundaryValues(
     const double* const stateInside,
     double* stateOutside) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
-    if (direction==1) {
-      std::copy_n(stateInside, NumberOfVariables, stateOutside);
-      stateOutside[1+direction] =  -stateOutside[1+direction]; // wall boundary conditions in y
-    }
-    else if (direction==0) {  // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
-      referenceSolution(x,0.0,stateOutside);
-    }
+  case Reference::SodShockTube: // wall boundary conditions
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
+    stateOutside[1+direction] =  -stateOutside[1+direction]; 
     break;
   case Reference::SphericalExplosion: // copy boundary conditions (works with outflowing waves)
   case Reference::RarefactionWave:
