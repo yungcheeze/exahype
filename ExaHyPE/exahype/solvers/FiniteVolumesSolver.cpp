@@ -577,17 +577,12 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 }
 
 
-void exahype::solvers::FiniteVolumesSolver::rollbackSolution(
-    const int cellDescriptionsIndex,
-    const int element) {
-  swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
+void exahype::solvers::FiniteVolumesSolver::rollbackSolution(CellDescription& cellDescription) {
+  swapSolutionAndPreviousSolution(cellDescription);
 }
 
 void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
-    const int cellDescriptionsIndex,
-    const int element) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
+    CellDescription& cellDescription) const {
   // Simply swap the heap indices
   const int previousSolution = cellDescription.getPreviousSolution();
   cellDescription.setPreviousSolution(cellDescription.getSolution());

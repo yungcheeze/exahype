@@ -2223,23 +2223,15 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
-void exahype::solvers::ADERDGSolver::rollbackSolution(
-    const int cellDescriptionsIndex,
-    const int element) {
-  // reset helper variables
-  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-
+void exahype::solvers::ADERDGSolver::rollbackSolution(CellDescription& cellDescription) const {
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-    swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
+    swapSolutionAndPreviousSolution(cellDescription);
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
-void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(
-    const int cellDescriptionsIndex,
-    const int element) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(CellDescription& cellDescription) const {
   assertion(cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell);
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 
