@@ -34,20 +34,20 @@ SUBROUTINE ADERDGInit
     ! Here, you need to define the computational domain and the number of cells. 
     ! This is typically read from a parameter file 
     !
-    xL = (/ -1.0, -1.0, -1.0 /)                                     ! lower-left corner of the domain 
-    xR = (/ +1.0, +1.0, +1.0 /)                                     ! upper right corner of the domain 
-    !xL = (/  0.0,  0.0, -1.0 /)                                     ! lower-left corner of the domain 
-    !xR = (/ 10.0, 10.0, +1.0 /)                                     ! upper right corner of the domain 
-    IMAX = 50                                                       ! Number of elements in x,y,z direction 
-    JMAX = 50  
+    xL = (/ -0.5, +0.0, +0.0 /)                                     ! lower-left corner of the domain
+    xR = (/ +0.5, +0.3, +1.0 /)                                     ! upper right corner of the domain
+    !xL = (/  0.0,  0.0, -1.0 /)                                     ! lower-left corner of the domain
+    !xR = (/ 10.0, 10.0, +1.0 /)                                     ! upper right corner of the domain
+    IMAX = 27                                                       ! Number of elements in x,y,z direction
+    JMAX = 9
     KMAX = 1  
     VMAX = (/ IMAX, JMAX, KMAX /)                                   ! Vector of the number of elements in each space dimension 
     dx = (xR-xL)/VMAX                                               ! Mesh spacing 
     NMAX = 100000                                                   ! Max. number of time steps 
     timestep = 0                                                    ! initial time step number 
     time = 0.                                                       ! initial time 
-    tend = 1.0                                                      ! final time 
-    !ICType = 'Sod'                                                  ! type of initial condition 'ShuVortex2D'      
+    tend = 0.21                                                     ! final time
+    ICType = 'Sod'                                                  ! type of initial condition 'ShuVortex2D'
     Basefile = 'Test'                                                ! Base filename for writing results 
     !tend = 1.0                                                     ! final time 
     !ICType = 'ShuVortex2D'                                         ! type of initial condition 'ShuVortex2D'      

@@ -57,18 +57,16 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
     if (
         solverPatch.getLimiterStatus()>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
-      auto* limiter =
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->getLimiter().get();
-      const int limiterElement = limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
-      auto& limiterPatch = limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+      auto& limiterPatch = static_cast<exahype::solvers::LimitingADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
+              getLimiterPatchForSolverPatch(cellDescriptionsIndex,solverPatch);
 
       double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
 
       plotFiniteVolumesPatch(
-          solverPatch.getOffset(),
-          solverPatch.getSize(), limiterSolution,
-          solverPatch.getCorrectorTimeStamp()); // The limiter time stamp might not be valid at the time of the plotting
+          limiterPatch.getOffset(),
+          limiterPatch.getSize(), limiterSolution,
+          limiterPatch.getTimeStamp()); // The limiter time stamp might not be valid at the time of the plotting
     } else { // solverPatch.getLimiterStatus()<exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch
       double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 

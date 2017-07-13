@@ -14,8 +14,12 @@ void registerinitialdata_(const char* const id_name, int* id_name_len);
 void pdencp_(double* BgradQ, const double* const Q, const double* const gradQ);
 void pdematrixb_(double* Bn, const double* const Q, double* nv);
 
-void pdecons2prim_(double* V, const double* const Q, int* iErr);
-void pdeprim2cons_(double* Q, const double* const V);
+// C2P-GRMHD.f90
+void pdeprim2cons_(double* /* OUT */ Q, double* /* IN */ V);
+void pdecons2prim_(double* /* OUT */ V, double* /* IN */ Q, int* iErr);
+
+// InitialDataAlfenWave.f90
+void alfenwave_(const double* x,const double* const t,  double* Q);
 
 
 }/* extern "C" */

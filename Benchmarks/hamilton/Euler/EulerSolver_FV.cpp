@@ -8,33 +8,32 @@
 tarch::logging::Log Euler::EulerSolver_FV::_log("Euler::EulerSolver_FV");
 
 Euler::EulerSolver_FV::Reference Euler::EulerSolver_FV::ReferenceChoice = Euler::EulerSolver_FV::Reference::EntropyWave;
-bool Euler::EulerSolver_FV::SuppressVelocityYComponent = false;
 
 void Euler::EulerSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
-  std::string reference = constants.getValueAsString("reference");
-
-  if (reference.compare("entropywave")==0) {
-    ReferenceChoice = Reference::EntropyWave;
+  if (constants.isValueValidString("reference")) {
+    std::string reference = constants.getValueAsString("reference");
+    
+    if (reference.compare("entropywave")==0) {
+      ReferenceChoice = Reference::EntropyWave;
+    }
+    else if (reference.compare("rarefactionwave")==0) {
+      ReferenceChoice = Reference::RarefactionWave;
+    }
+    else if (reference.compare("sod")==0){
+      ReferenceChoice = Reference::SodShockTube;
+    }
+    else if (reference.compare("explosion")==0){
+      ReferenceChoice = Reference::SphericalExplosion;
+    }
+    else {
+      logError("init(...)","do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
+              "'rarefactionwave', 'sod', or 'explosion'.");
+      std::abort();
+    }
+    logInfo("init(...)","use initial condition '" << reference << "'.");
+  } else {
+    logInfo("init(...)","use initial condition 'entropyWave' (default value).");
   }
-  if (reference.compare("rarefactionwave")==0) {
-    ReferenceChoice = Reference::RarefactionWave;
-  }
-  else if (reference.compare("sod")==0){
-    ReferenceChoice = Reference::SodShockTube;
-  }
-  else if (reference.compare("explosion")==0){
-    ReferenceChoice = Reference::SphericalExplosion;
-  }
-  else {
-    logError("init(...)","do not recognise value '"<<reference<<"' for constant 'reference'. Use either 'entropywave', "
-            "'rarefactionwave', 'sod', or 'explosion'.");
-    std::abort();
-  }
-  logInfo("init(...)","use initial condition: " << reference << "");
-
-  SuppressVelocityYComponent = constants.getValueAsBool("suppressvely");
-  logInfo("init(...)","suppress velocity y-component when running Sod shock tube: " <<
-      ( SuppressVelocityYComponent ? "on" : "off" ) << "");
 }
 
 void Euler::EulerSolver_FV::entropyWave(const double* const x,double t, double* Q) {
@@ -64,7 +63,7 @@ void Euler::EulerSolver_FV::entropyWave(const double* const x,double t, double* 
 void Euler::EulerSolver_FV::sodShockTube(const double* const x, const double t, double* Q) {
   // Initial data
   constexpr double gamma     =1.39999999999999991118;
-  constexpr double x_0       =0.50000000000000000000;
+  constexpr double x_0       =0.00000000000000000000;
 
   constexpr double rho_5     =0.12500000000000000000; // right states
   constexpr double P_5       =0.10000000000000000555;
@@ -153,7 +152,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     Q[3] = 0.0;
     #if DIMENSIONS==2
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < radius2) {
+    if((x[0] -x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -162,7 +161,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     }
     #else
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < (x[2] -x0[2]) *(x[2] -x0[2]) < radius2) {
+    if((x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -189,7 +188,7 @@ void Euler::EulerSolver_FV::rarefactionWave(const double* const x,double t, doub
     #if DIMENSIONS==2
     const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
     #else
-    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) * (x[2]-x0[2])*(x[2]-x0[2]);
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]);
     #endif
     Q[4] = 1. / (gamma - 1) + // pressure is set to one
         exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;
@@ -218,12 +217,6 @@ void Euler::EulerSolver_FV::referenceSolution(const double* const x,double t, do
 }
 
 bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  //    return true; // comment in for vel_y cleaning; do the same in the ADER-DG solver
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    return true;
-  }
-
   return tarch::la::equals(t, 0.0);
 }
 
@@ -234,10 +227,6 @@ void Euler::EulerSolver_FV::adjustSolution(
     const double dt, double* Q) {
   if (tarch::la::equals(t,0.0)) {
     EulerSolver_FV::referenceSolution(x,t,Q);
-  }
-  if (ReferenceChoice==Reference::SodShockTube &&
-      SuppressVelocityYComponent) {
-    Q[2] = 0; // suppress velocity y-component
   }
 }
 
@@ -291,14 +280,9 @@ void Euler::EulerSolver_FV::boundaryValues(
     const double* const stateInside,
     double* stateOutside) {
   switch (ReferenceChoice) {
-  case Reference::SodShockTube:
-    if (direction==1) {
-      std::copy_n(stateInside, NumberOfVariables, stateOutside);
-      stateOutside[1+direction] =  -stateOutside[1+direction]; // wall boundary conditions in y
-    }
-    else if (direction==0) {  // Dirichlet conditions in x (solution is assumed time-indepedent at x boundaries)
-      referenceSolution(x,0.0,stateOutside);
-    }
+  case Reference::SodShockTube: // wall boundary conditions
+    std::copy_n(stateInside, NumberOfVariables, stateOutside);
+    stateOutside[1+direction] =  -stateOutside[1+direction]; 
     break;
   case Reference::SphericalExplosion: // copy boundary conditions (works with outflowing waves)
   case Reference::RarefactionWave:

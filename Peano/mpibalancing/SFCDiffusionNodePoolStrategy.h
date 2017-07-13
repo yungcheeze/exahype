@@ -12,10 +12,18 @@
 #include "tarch/logging/Log.h"
 
 #include <vector>
+#include <map>
 
 
 namespace mpibalancing {
   class SFCDiffusionNodePoolStrategy;
+
+  namespace tests {
+    /**
+     * Forward declaration.
+     */
+    class SFCDiffusionNodePoolStrategyTest;
+  }
 }
 
 
@@ -49,6 +57,8 @@ namespace mpibalancing {
  */
 class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
   private:
+    friend class mpibalancing::tests::SFCDiffusionNodePoolStrategyTest;
+
     /**
      * Copy from FCFS but enriched by counter how many rank have already
      * requested an update.
@@ -162,10 +172,20 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      */
     static tarch::logging::Log _log;
 
+    std::string nodePoolStateToString() const;
+
     /**
      * Tag on which the node pool works
      */
     int _tag;
+
+    /**
+     * This field equals tarch::parallel::Node::getInstance().getNumberOfNodes()
+     * usually, so we could always analyse it on-the-fly. However, I wanna be
+     * able to run unit tests on a single node, so I make it a variable
+     * initialised once that I can override in the unit tests.
+     */
+    int _totalNumberOfRanks;
 
     /**
      * The list the list of active nodes. Every entry corresponds to one node.
@@ -188,10 +208,24 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
     const int     _primaryMPIRanksPerNode;
 
     int           _numberOfPrimaryRanksPerNodeThatAreCurrentlyDeployed;
+    int           _numberOfNodesToSkipPerRequestPlusOne;
 
     NodePoolState _nodePoolState;
 
-    bool continueToFillRequestQueue(int queueSize) const;
+    struct DeploymentPriority {
+      int _priority;
+      int _maxNumberOfSecondaryRanksToBeDeployed;
+    };
+
+    std::map<int, DeploymentPriority> _priorities;
+
+    /**
+     * This routine is called once when the node pool's status
+     * switches from DeployingIdlePrimaryRanks into DeployingAlsoSecondaryRanks.
+     * From hereon, it acts as guidance to the actual sorting of the queue.
+     * The rank deployment might change entries.
+     */
+    void buildUpPriorityMap(const RequestQueue& queue);
 
     int getNumberOfIdlePrimaryRanks() const;
 
@@ -211,16 +245,25 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      */
     RequestQueue sortRequestQueue( const RequestQueue& queue );
 
+    bool hasCompleteIdleNode() const;
+
     bool isPrimaryMPIRank(int rank) const;
-    bool isFirstOrLastPrimaryMPIRankOnANode(int rank) const;
+    bool isFirstOrLastRankInQueueAlongSFC(int rank, const RequestQueue& queue) const;
+
+    void configureForPrimaryRanksDelivery(int numberOfRequestedRanks);
+
+    void haveReservedSecondaryRank(int masterRank, int workerRank);
+
+    int deployIdlePrimaryRank(int forMaster);
+    int deployIdleSecondaryRank(int forMaster);
   public:
-  /**
-   * Constructor
-   *
-   * @param mpiRanksPerNode       Number of ranks per node.
-   * @param waitTimeOutSec        How long shall the node wait for more
-   *   messages dropping in before it starts to answer them.
-   */
+    /**
+     * Constructor
+     *
+     * @param mpiRanksPerNode       Number of ranks per node.
+     * @param waitTimeOutSec        How long shall the node wait for more
+     *   messages dropping in before it starts to answer them.
+     */
     SFCDiffusionNodePoolStrategy(int mpiRanksPerNode, int primaryMPIRanksPerNode, double waitTimeOutSec = 1e-5);
     virtual ~SFCDiffusionNodePoolStrategy();
 

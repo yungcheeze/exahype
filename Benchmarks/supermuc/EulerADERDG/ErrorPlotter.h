@@ -6,21 +6,21 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace EulerADERDG{
+namespace Euler{
   class ErrorPlotter;
 
   /**
    * Forward declaration
    */
-  class EulerSolver;
+  class EulerSolver_ADERDG;
 }
 
 
 
 
-class EulerADERDG::ErrorPlotter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class Euler::ErrorPlotter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  ErrorPlotter(EulerSolver&  solver);
+  ErrorPlotter(EulerSolver_ADERDG&  solver);
   virtual ~ErrorPlotter();
   void startPlotting(double time) override;
   void finishPlotting() override;

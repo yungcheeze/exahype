@@ -14,8 +14,9 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include <string>
-#include <limits>
 #include <iomanip>
+#include <limits>
+#include <algorithm>
 
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
@@ -367,6 +368,12 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 
         cellDescription.setSolution(DataHeap::getInstance().createData(size, size, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
         cellDescription.setPreviousSolution(DataHeap::getInstance().createData(size, size, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+
+        // Zero out the solution and previous solution arrays. For our MUSCL-Hancock implementation which
+        // does not take the corner neighbours into account e.g., it is important that the values in
+        // the corner cells of the first ghost layer are set to zero.
+        std::fill_n( DataHeap::getInstance().getData(cellDescription.getSolution()).data(),         size, 0.0 );
+        std::fill_n( DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data(), size, 0.0 );
       }
       break;
     case CellDescription::Erased:
@@ -570,17 +577,12 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 }
 
 
-void exahype::solvers::FiniteVolumesSolver::rollbackSolution(
-    const int cellDescriptionsIndex,
-    const int element) {
-  swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
+void exahype::solvers::FiniteVolumesSolver::rollbackSolution(CellDescription& cellDescription) {
+  swapSolutionAndPreviousSolution(cellDescription);
 }
 
 void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
-    const int cellDescriptionsIndex,
-    const int element) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
+    CellDescription& cellDescription) const {
   // Simply swap the heap indices
   const int previousSolution = cellDescription.getPreviousSolution();
   cellDescription.setPreviousSolution(cellDescription.getSolution());

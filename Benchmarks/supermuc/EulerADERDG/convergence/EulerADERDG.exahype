@@ -65,6 +65,8 @@ exahype-project EulerADERDG
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
+    // reference in {entropywave, rarefactionwave}
+    constants         = reference:entropywave
 
     plot user::defined ErrorWriter
       variables const = 5

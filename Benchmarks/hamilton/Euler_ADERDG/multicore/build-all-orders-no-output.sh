@@ -1,5 +1,7 @@
+directory=multicore
+
 exe=ExaHyPE-Euler
-spec=multicore/Euler_ADERDG-no-output.exahype
+spec=$directory/Euler_ADERDG-no-output.exahype
 
 # save original file
 cp $spec ${spec}_tmp
@@ -22,7 +24,7 @@ do
     rm *.o
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
     cat $spec
-    multicore/configure-no-output.sh
+    $directory/configure-no-output.sh
     make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done

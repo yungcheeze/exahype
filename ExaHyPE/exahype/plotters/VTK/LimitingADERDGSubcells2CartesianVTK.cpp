@@ -202,7 +202,7 @@ void exahype::plotters::LimitingADERDGSubcells2CartesianVTK::plotPatch(const int
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
+    //typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
     int limiterStatus         = solverPatch.getLimiterStatus();
     int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
 
@@ -216,12 +216,10 @@ void exahype::plotters::LimitingADERDGSubcells2CartesianVTK::plotPatch(const int
     }
 
     if (limiterStatus>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
-      const int limiterElement =
+      auto& limiterPatch =
           static_cast<exahype::solvers::LimitingADERDGSolver*>(
               exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
-              tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-      auto& limiterPatch =
-          exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
+              getLimiterPatchForSolverPatch(cellDescriptionsIndex,solverPatch);
 
       double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
       plotFiniteVolumesPatch(

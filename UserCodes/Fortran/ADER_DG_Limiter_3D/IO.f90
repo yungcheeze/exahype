@@ -106,11 +106,11 @@ SUBROUTINE WriteData
   WRITE(ScratchDir,'(a)') '.'//C_NULL_CHAR 
   SELECT CASE(nDim)
   CASE(1)
-   WRITE(VarString,*) 'x ' 
-   ZoneType = 1 ! FEM Line seg   
+   WRITE(VarString,*) 'x '
+   ZoneType = 1 ! FEM Line seg
   CASE(2)
-   WRITE(VarString,*) 'x y ' 
-   ZoneType = 3 ! FEM Quad  
+   WRITE(VarString,*) 'x y '
+   ZoneType = 3 ! FEM Quad
   CASE(3)
    WRITE(VarString,*) 'x y z ' 
    ZoneType = 5 ! FEM Brick 
@@ -137,4 +137,3 @@ SUBROUTINE WriteData
 END SUBROUTINE WriteData 
     
 
-    

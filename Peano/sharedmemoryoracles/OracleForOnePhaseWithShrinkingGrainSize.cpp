@@ -426,7 +426,15 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     _measurementsAreAccurate         = false;
   }
 
-  if (_currentGrainSize>_biggestProblemSize/2) {
+  if (
+    (_currentGrainSize>_biggestProblemSize/2)
+    &&
+    (_searchDelta < _biggestProblemSize/2)
+  ) {
+    *this = DatabaseEntry( _biggestProblemSize, true );
+    logInfo( "learn()", "restart search for " << toString() << " with halving the intervals");
+  }
+  else if (_currentGrainSize>_biggestProblemSize/2) {
     _searchDelta      = 0;
     _currentGrainSize = _biggestProblemSize;
     logInfo( "learn()", "stop search for " << toString() << " as it searches in non-scaling regime");
@@ -536,13 +544,17 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(int problemSize) {
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(
+  int problemSize, bool enforceThatCodeStartsWithHalfTheProblemSize
+) {
   assertion(problemSize>0);
 
   if (
     problemSize < tarch::multicore::Core::getInstance().getNumberOfThreads()*2
     ||
     tarch::multicore::Core::getInstance().getNumberOfThreads() <= 2
+    ||
+    enforceThatCodeStartsWithHalfTheProblemSize
   ) {
     _searchDelta       = problemSize/2;
     _currentGrainSize  = problemSize/2;

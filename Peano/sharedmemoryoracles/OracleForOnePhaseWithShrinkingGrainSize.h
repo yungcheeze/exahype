@@ -233,7 +233,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
          * aggressively right from the start. If this is not a good idea, the
          * code will reduce the search step size anyway.
          */
-        DatabaseEntry(int problemSize);
+        DatabaseEntry(int problemSize, bool enforceThatCodeStartsWithHalfTheProblemSize = false);
 
         /**
          * Constructs entry from string. String should be written through

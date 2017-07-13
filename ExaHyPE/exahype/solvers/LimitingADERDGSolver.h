@@ -597,9 +597,52 @@ public:
   int tryGetLimiterElementFromSolverElement(
       const int cellDescriptionsIndex,
       const int solverElement) const {
-    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+    SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
     return _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
   }
+
+  /**
+   * If a limiter patch is allocated for the solver patch,
+   * ensure that it's time step data is consistent
+   * with the solver patch's time step data.
+   */
+  void ensureLimiterPatchTimeStepDataIsConsistent(
+        const int cellDescriptionsIndex,
+        const int solverElement) const;
+
+  /**
+   * Copies the time stamp and the time step sizes from the solver patch
+   * to the limiter patch.
+   */
+  static void copyTimeStepDataFromSolverPatch(
+      const SolverPatch& solverPatch, const int cellDescriptionsIndex, const int limiterElement);
+
+  /**
+   * Copies the time stamp and the time step sizes from the solver patch
+   * to the limiter patch.
+   */
+  static void copyTimeStepDataFromSolverPatch(
+      const SolverPatch& solverPatch, LimiterPatch& limiterPatch);
+
+  /**
+   * Looks up the limiter patch for the given solver patch.
+   *
+   * Further copies the time step sizes from the solver patch
+   * to the limiter patch.
+   *
+   * Assumes that \p solverPatch has a limiter status > 0 and thus
+   * has a limiter patch assigned.
+   */
+  LimiterPatch& getLimiterPatchForSolverPatch(const int cellDescriptionsIndex, const SolverPatch& solverPatch) const;
+
+  /**
+   * Similar to ::getLimiterPatchforSolverPatch but does not lookup the
+   * \p limiterElement by itself.
+   *
+   * Assumes that \p limiterElement is valid.
+   */
+  LimiterPatch& getLimiterPatchForSolverPatch(
+      const SolverPatch& solverPatch, const int cellDescriptionsIndex, const int limiterElement) const;
 
   /**
     * \see exahype::amr::computeSubcellPositionOfCellOrAncestor

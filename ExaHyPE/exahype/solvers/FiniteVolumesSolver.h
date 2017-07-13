@@ -631,13 +631,9 @@ public:
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
    */
-  void rollbackSolution(
-      const int cellDescriptionsIndex,
-      const int element);
+  void rollbackSolution(CellDescription& cellDescription);
 
-  void swapSolutionAndPreviousSolution(
-      const int cellDescriptionsIndex,
-      const int element) const;
+  void swapSolutionAndPreviousSolution(CellDescription& cellDescription) const;
 
   void preProcess(
       const int cellDescriptionsIndex,
