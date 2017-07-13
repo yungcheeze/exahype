@@ -62,7 +62,6 @@ do
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
 
   sed -i 's,p3,p'$order',g' $newScript
 

@@ -22,7 +22,7 @@ exahype-project Euler
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/Euler_ADERDG
+  output-directory const  = ./Benchmarks/hamilton/Euler_ADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
@@ -65,6 +65,7 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
+    constants         = reference:entropywave
 
 	plot user::defined ErrorWriter
       variables const = 5

@@ -21,8 +21,8 @@ project=Euler_ADERDG
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.12 0.038 0.0124)
-T=(0.11 0.11 0.11)
+hMax=(0.34 0.12 0.038 0.0124) # for smooth problems
+T=(0.02 0.02 0.02 0.02)
 
 kernels=gen
 
@@ -51,7 +51,7 @@ do
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
-    for i in 0 1  2
+    for i in 0 1 2
     do
       mesh=regular-$i
       h=${hMax[i]}

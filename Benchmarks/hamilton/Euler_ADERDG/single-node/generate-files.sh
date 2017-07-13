@@ -20,6 +20,7 @@
 #   1 x Intel OmniPath 100 Gb InfiniBand interconnect
 
 # PREAMBLE
+project=Euler_ADERDG
 order=5
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
@@ -58,7 +59,7 @@ do
 
   for nodes in 1
   do
-    for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 # ham7
+    for tasksPerNode in 1 2 4 6 8 12 24 # ham7
     #for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 # ham6
     do 
       let tasks=$nodes*$tasksPerNode
@@ -72,10 +73,10 @@ do
      
       sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
-      sed -i 's,Euler_ADERDG-no-output,Euler_ADERDG-'$io',g' $newScript
+    
+      sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
 
       sed -i 's,p3,p'$order',g' $newScript
-      sed -i 's,regular-0,'$mesh',g' $newScript
 
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
@@ -84,8 +85,8 @@ do
 
       # Create spec file
       spec=single-node/Euler_ADERDG-$io.exahype
-      prefix=single-node/$prefix-p$order-t$tasksPerNode-c$coresPerTask
-      newSpec=$prefix'.exahype'
+      filename=single-node/$prefix-p$order-t$tasksPerNode-c$coresPerTask
+      newSpec=$filename'.exahype'
       cp $spec $newSpec
 
       sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
