@@ -7,7 +7,7 @@
 // ========================
 #include "ErrorWriter.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_ADERDG.h"
 
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/KernelUtils.h"
@@ -20,17 +20,17 @@
 
 #include <iomanip>
 
-EulerADERDG::ErrorWriter::ErrorWriter() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
+Euler::ErrorWriter::ErrorWriter() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
   // @TODO Please insert your code here.
 }
 
 
-void EulerADERDG::ErrorWriter::plotPatch(
+void Euler::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
-  constexpr int basisSize         = AbstractEulerSolver::Order+1;
+  constexpr int numberOfVariables = AbstractEulerSolver_ADERDG::NumberOfVariables;
+  constexpr int basisSize         = AbstractEulerSolver_ADERDG::Order+1;
   constexpr int order             = basisSize-1;
 
   double x[DIMENSIONS];
@@ -44,7 +44,7 @@ void EulerADERDG::ErrorWriter::plotPatch(
      }
 
      double uAna[numberOfVariables];
-     EulerSolver::entropyWave(x,timeStamp,uAna);
+     EulerSolver_ADERDG::entropyWave(x,timeStamp,uAna);
 
      const double* uNum = u + idx ( (DIMENSIONS==3) ? i(2) : 0, i(1), i(0), 0);
 
@@ -61,27 +61,27 @@ void EulerADERDG::ErrorWriter::plotPatch(
   }
 }
 
-void EulerADERDG::ErrorWriter::startPlotting( double time) {
+void Euler::ErrorWriter::startPlotting( double time) {
   _timeStamp = time;
 
-  std::fill_n(errorL1,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(errorL2,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(errorLInf,AbstractEulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(errorL1,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(errorL2,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(errorLInf,AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
   
-  std::fill_n(normL1Ana,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(normL2Ana,  AbstractEulerSolver::NumberOfVariables, 0.0);
-  std::fill_n(normLInfAna,AbstractEulerSolver::NumberOfVariables, 0.0);
+  std::fill_n(normL1Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(normL2Ana,  AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
+  std::fill_n(normLInfAna,AbstractEulerSolver_ADERDG::NumberOfVariables, 0.0);
 }
 
-void EulerADERDG::ErrorWriter::finishPlotting() {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+void Euler::ErrorWriter::finishPlotting() {
+  constexpr int numberOfVariables = AbstractEulerSolver_ADERDG::NumberOfVariables;
 
   for (int v=0; v<numberOfVariables; v++) {
     errorL2[v]   = sqrt(errorL2[v]);
     normL2Ana[v] = sqrt(normL2Ana[v]);
   }
 
-  std::cout << "**Errors for ADER-DG solver with order="<<AbstractEulerSolver::Order<<"**" << std::endl;
+  std::cout << "**Errors for ADER-DG solver with order="<<AbstractEulerSolver_ADERDG::Order<<"**" << std::endl;
   std::cout << "t_eval : "<<_timeStamp << std::endl;
   std::cout << "variable     : ";
   for (int v=0; v<numberOfVariables; v++) {

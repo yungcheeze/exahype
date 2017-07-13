@@ -310,7 +310,6 @@ void exahype::mappings::Plot::enterCell(
     for (auto* plotter : exahype::plotters::RegisteredPlotters) {
       for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
         if (plotter->plotDataFromSolver(solverNumber)) {
           int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
           if (element!=exahype::solvers::Solver::NotFound) {

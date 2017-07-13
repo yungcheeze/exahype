@@ -4,7 +4,7 @@ MODULE typesDef
   !
   ! ================================== This part of the typesDef can be modified by the user.  ================================== 
   !
-  INTEGER, PARAMETER :: N = 4                               ! Polynomial degree of our approximation in space and time 
+  INTEGER, PARAMETER :: N = 4                               ! Polynomial degree of our approximation in space and time
   INTEGER, PARAMETER :: nDim = 2                            ! The number of space dimensions that we actually want to simulate 
   REAL, PARAMETER    :: CFL = 0.9                           ! The Courant-Friedrichs-Lewy number < 1 
 #ifdef EULER
@@ -120,7 +120,6 @@ MODULE typesDef
   
   !
 END MODULE typesDef 
-    
     
     
     

@@ -144,7 +144,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	else
-	  COMPILER_CFLAGS   += -fno-rtti  
+	  COMPILER_CFLAGS   +=# -fno-rtti  
 	  COMPILER_LFLAGS   += -lrt
 	endif
 	
@@ -219,7 +219,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  COMPILER_CFLAGS += 
 	  COMPILER_LFLAGS += 
 	else
-	  COMPILER_CFLAGS   += -fno-rtti
+	  COMPILER_CFLAGS   += #-fno-rtti
 	  COMPILER_LFLAGS   += -lrt
 	endif
 

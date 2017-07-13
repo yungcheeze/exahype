@@ -156,7 +156,7 @@ void exahype::mappings::Reinitialisation::enterCell(
               ==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
           auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          // TODO(Dominc): Add to docu Rollback is performed here in GlobalRollback mapping
+          // TODO(Dominc): Add to docu: Rollback is performed here in GlobalRollback mapping
           limitingADERDGSolver->reinitialiseSolversGlobally(fineGridCell.getCellDescriptionsIndex(),element);
 
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->

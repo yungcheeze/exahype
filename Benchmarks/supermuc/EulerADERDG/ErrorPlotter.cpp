@@ -1,28 +1,28 @@
 #include "ErrorPlotter.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_ADERDG.h"
 
-EulerADERDG::ErrorPlotter::ErrorPlotter(EulerSolver&  solver) {
+Euler::ErrorPlotter::ErrorPlotter(EulerSolver_ADERDG&  solver) {
   // @todo Please insert your code here
 }
 
 
-EulerADERDG::ErrorPlotter::~ErrorPlotter() {
+Euler::ErrorPlotter::~ErrorPlotter() {
   // @todo Please insert your code here
 }
 
 
-void EulerADERDG::ErrorPlotter::startPlotting(double time) {
+void Euler::ErrorPlotter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void EulerADERDG::ErrorPlotter::finishPlotting() {
+void Euler::ErrorPlotter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void EulerADERDG::ErrorPlotter::mapQuantities(
+void Euler::ErrorPlotter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -31,10 +31,10 @@ void EulerADERDG::ErrorPlotter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  constexpr int numberOfVariables = AbstractEulerSolver::NumberOfVariables;
+  constexpr int numberOfVariables = AbstractEulerSolver_ADERDG::NumberOfVariables;
 
   double QAna[numberOfVariables];
-  EulerSolver::entropyWave(x.data(),timeStamp,QAna);
+  EulerSolver_ADERDG::entropyWave(x.data(),timeStamp,QAna);
 
   for (int i=0; i<numberOfVariables; i++){ 
     outputQuantities[i] =std::abs( QAna[i] - Q[i] );

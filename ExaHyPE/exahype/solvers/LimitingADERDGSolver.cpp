@@ -507,27 +507,6 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
       fineGridPositionOfCell,solverNumber);
-
-  // Project DG solution onto FV patch; TODO(Dominic): Put in its own method?
-  // We need to perform this action every time we have performed a mesh update.
-  // Do not remove!
-  const int solverElement =
-      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-  if (solverElement!=exahype::solvers::Solver::NotFound) {
-    SolverPatch& solverPatch =
-        _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
-    if (
-        solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()
-        &&
-        !tarch::la::equals(solverPatch.getCorrectorTimeStepSize(),0.0) // this excludes the initial grid setup
-        &&
-        solverPatch.getLimiterStatus()>0 &&
-        solverPatch.getPreviousLimiterStatus()==0
-    ) {
-      LimiterPatch& limiterPatch = getLimiterPatchForSolverPatch(fineGridCell.getCellDescriptionsIndex(),solverPatch);
-      projectDGSolutionOnFVSpace(solverPatch,limiterPatch);
-    }
-  }
 }
 
 ///////////////////////////////////
@@ -1253,10 +1232,7 @@ void exahype::solvers::LimitingADERDGSolver::rollbackSolverSolutionsGlobally(
     const int cellDescriptionsIndex, const int solverElement) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
-  // 0. Update the limiter status (do not overwrite the previous limiter status)
-  solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
-  ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
-
+  // 1. Rollback solution to previous time step
   if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()) {
 
     if (solverPatch.getPreviousLimiterStatus()>=ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
@@ -1276,10 +1252,15 @@ void exahype::solvers::LimitingADERDGSolver::rollbackSolverSolutionsGlobally(
         projectDGSolutionOnFVSpace(solverPatch,limiterPatch);
       }
     }
+
   }
   else { // solverPatch.getLevel()!=getMaximumAdaptiveMeshLevel()
     _solver->rollbackSolution(solverPatch);
   }
+
+  // 2. Update the limiter status (do not overwrite the previous limiter status)
+  solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
+  ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
 }
 
 void exahype::solvers::LimitingADERDGSolver::reinitialiseSolversGlobally(

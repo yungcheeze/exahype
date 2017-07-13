@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include "EulerSolver.h"
-#include "EulerSolver_Variables.h"
+#include "EulerSolver_ADERDG.h"
+#include "EulerSolver_ADERDG_Variables.h"
 #include "tarch/la/MatrixVectorOperations.h"
 
 #include <algorithm>
@@ -21,10 +21,10 @@
 
 #include "kernels/GaussLegendreQuadrature.h"
 
-void EulerADERDG::EulerSolver::init(std::vector<std::string>& cmdlineargs) {
+void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
 }
 
-void EulerADERDG::EulerSolver::flux(const double* const Q, double** F) {
+void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
   Fluxes f(F);
 
@@ -42,7 +42,7 @@ void EulerADERDG::EulerSolver::flux(const double* const Q, double** F) {
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
-void EulerADERDG::EulerSolver::eigenvalues(const double* const Q,
+void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
                                        const int direction,
                                        double* lambda) {
   ReadOnlyVariables vars(Q);
@@ -61,11 +61,11 @@ void EulerADERDG::EulerSolver::eigenvalues(const double* const Q,
 }
 
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue EulerADERDG::EulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, double* Q) {
+void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, double* Q) {
   const double GAMMA     = 1.4;
   constexpr double width = 0.3;
 
@@ -89,7 +89,7 @@ void EulerADERDG::EulerSolver::entropyWave(const double* const x,double t, doubl
   Q[4] = p / (GAMMA-1)   +  0.5*Q[0] * (v0[0]*v0[0]+v0[1]*v0[1]); // v*v; assumes: v0[2]=0
 }
 
-void EulerADERDG::EulerSolver::adjustPointSolution(const double* const x,
+void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
                                                   const double w,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     entropyWave(x,0.0,Q);
@@ -97,14 +97,14 @@ void EulerADERDG::EulerSolver::adjustPointSolution(const double* const x,
 }
 
 exahype::solvers::Solver::RefinementControl
-EulerADERDG::EulerSolver::refinementCriterion(
+Euler::EulerSolver_ADERDG::refinementCriterion(
     const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-void EulerADERDG::EulerSolver::boundaryValues(const double* const x, const double t,const double dt,
+void Euler::EulerSolver_ADERDG::boundaryValues(const double* const x, const double t,const double dt,
                                           const int faceIndex,const int direction,
                                           const double* const fluxIn,const double* const stateIn,
                                           double* fluxOut, double* stateOut) {

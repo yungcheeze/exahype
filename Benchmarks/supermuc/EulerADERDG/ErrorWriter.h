@@ -9,23 +9,23 @@
 
 #include "exahype/plotters/ADERDG2UserDefined.h"
 
-#include "EulerSolver.h"
+#include "EulerSolver_ADERDG.h"
 
-namespace EulerADERDG {
+namespace Euler {
   class ErrorWriter;
 }
 
-class EulerADERDG::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
+class Euler::ErrorWriter : public exahype::plotters::ADERDG2UserDefined {
  private:
    double _timeStamp;
 
-   double errorL1  [EulerSolver::NumberOfVariables]; 
-   double errorL2  [EulerSolver::NumberOfVariables]; 
-   double errorLInf[EulerSolver::NumberOfVariables];
+   double errorL1  [EulerSolver_ADERDG::NumberOfVariables]; 
+   double errorL2  [EulerSolver_ADERDG::NumberOfVariables]; 
+   double errorLInf[EulerSolver_ADERDG::NumberOfVariables];
    
-   double normL1Ana  [EulerSolver::NumberOfVariables];  
-   double normL2Ana  [EulerSolver::NumberOfVariables];  
-   double normLInfAna[EulerSolver::NumberOfVariables]; 
+   double normL1Ana  [EulerSolver_ADERDG::NumberOfVariables];  
+   double normL2Ana  [EulerSolver_ADERDG::NumberOfVariables];  
+   double normLInfAna[EulerSolver_ADERDG::NumberOfVariables]; 
 
  public:
   /**

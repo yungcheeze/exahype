@@ -964,8 +964,9 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
   } // LocalRecomputation is done here
 
-  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
-      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+  assertion(!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() ||
+            !exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
     logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
