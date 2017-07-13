@@ -21,7 +21,7 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD
+  output-directory const           = ./Benchmarks/hamilton/GRMHD
   architecture const               = noarch
   log-file                         = whatever.log
 
@@ -71,43 +71,13 @@ exahype-project GRMHD
     dmp-difference-scaling         = 1e-3 
     steps-till-cured               = 0
 
-    constants  = foo:bar,blo:dez
+    constants  = foo:bar
 
-    plot vtk::Cartesian::vertices::limited::binary ConservedWriter
-      variables const = 19
-      time      = 0.0
-      repeat    = 0.00166667
-      output    = ./vtk-output/conserved
-    end plot
-
-    plot hdf5::Cartesian::vertices ConservedWriter
-      variables const = 19
-      time = 0.0
-      repeat = 0.00001
-      output = ./hdf5-output/all3d
-    end plot
-
-    plot hdf5::Cartesian::vertices ConservedWriter
-      variables const = 19
-      time = 0.0
-      repeat = 0.00001
-      output = ./hdf5-output/all2d
-      select = z:0.0
-    end plot
-
-    plot hdf5::Cartesian::vertices ConservedWriter
-      variables const = 19
-      time = 0.0
-      repeat = 0.000001
-      output = ./hdf5-output/all1d
-      select = z:0.0,y:0.0
-    end plot
-
-    plot vtk::Legendre::vertices::ascii IntegralsWriter
+    plot vtk::Legendre::vertices::ascii GRMHDBenchmarkNormWriter
       variables const = 0
       time = 0.0
-      repeat = 0.00166667
-      output = ./global-integrals
+      repeat = 0.00001
+      output = ./look-into-sourcecode
     end plot
   end solver
 

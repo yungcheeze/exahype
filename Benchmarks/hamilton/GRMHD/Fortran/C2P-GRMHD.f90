@@ -199,9 +199,9 @@ RECURSIVE SUBROUTINE PDECons2Prim(V,Q,iErr)
      vx   = 0.0
      vy   = 0.0
      vz   = 0.0
-     bx   = bx
-     by   = by
-     bz   = bz
+     bx   = 0.0
+     by   = 0.0
+     bz   = 0.0
   ELSE
      den  = 1.0/(w+b2)
      vb   = sb/w
