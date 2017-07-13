@@ -152,7 +152,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     Q[3] = 0.0;
     #if DIMENSIONS==2
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < radius2) {
+    if((x[0] -x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -161,7 +161,7 @@ void Euler::EulerSolver_FV::sphericalExplosion(const double* const x,double t, d
     }
     #else
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < (x[2] -x0[2]) *(x[2] -x0[2]) < radius2) {
+    if((x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -188,7 +188,7 @@ void Euler::EulerSolver_FV::rarefactionWave(const double* const x,double t, doub
     #if DIMENSIONS==2
     const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
     #else
-    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) * (x[2]-x0[2])*(x[2]-x0[2]);
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]);
     #endif
     Q[4] = 1. / (gamma - 1) + // pressure is set to one
         exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;

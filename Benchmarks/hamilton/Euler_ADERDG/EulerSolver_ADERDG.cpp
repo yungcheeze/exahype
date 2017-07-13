@@ -206,7 +206,7 @@ void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double 
     Q[3] = 0.0;
     #if DIMENSIONS==2
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < radius2) {
+    if((x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -215,7 +215,7 @@ void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double 
     }
     #else
     // Circular shaped pressure jump at centre of domain.
-    if((x[0] -x0[0]) *(x[0] -x0[0]) + (x[1] -x0[1]) *(x[1] -x0[1]) < (x[2] -x0[2]) *(x[2] -x0[2]) < radius2) {
+    if((x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]) < radius2) {
       Q[0] = 1.0;
       Q[4] = 1.0;
     } else {
@@ -242,7 +242,7 @@ void Euler::EulerSolver_ADERDG::rarefactionWave(const double* const x,double t, 
 #if DIMENSIONS==2
     const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
 #else
-    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) * (x[2]-x0[2])*(x[2]-x0[2]);
+    const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]);
 #endif
     Q[4] = 1. / (gamma - 1) + // pressure is set to one
         exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;
@@ -340,6 +340,7 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
     const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
     const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
     const double t, const double dt) const {
+  return false;
   if (observablesMin[0] <= 0.0) return false;
   if (observablesMin[4] < 0.0) return false;
   return true;
