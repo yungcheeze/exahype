@@ -26,6 +26,7 @@
  #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
@@ -71,6 +72,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LocalRecomputationAndTimeStepSizeComputation> _gridWithLocalRecomputationAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalRollback> _gridWithGlobalRollback;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
@@ -95,6 +97,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
     tarch::timing::Measurement _measureReinitialisationCPUTime;
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measureGlobalRollbackCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
@@ -116,6 +119,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
     tarch::timing::Measurement _measureReinitialisationCalendarTime;
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measureGlobalRollbackCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
@@ -175,6 +179,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToLimiterStatusSpreading();    
     virtual void switchToReinitialisation();    
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation();    
+    virtual void switchToGlobalRollback();    
     virtual void switchToNeighbourDataMerging();    
     virtual void switchToSolutionUpdate();    
     virtual void switchToTimeStepSizeComputation();    
@@ -196,6 +201,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
     virtual bool isActiveAdapterReinitialisation() const;
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterGlobalRollback() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterSolutionUpdate() const;
     virtual bool isActiveAdapterTimeStepSizeComputation() const;

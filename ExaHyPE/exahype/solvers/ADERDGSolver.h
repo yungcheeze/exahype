@@ -76,6 +76,19 @@ public:
    */
   static int MinimumAugmentationStatusForAugmentation;
 
+  /**
+   * Minimum limiter status a troubled cell can have.
+   */
+  static int MinimumLimiterStatusForTroubledCell;
+  /**
+   * The minimum limiter status a cell must have
+   * to allocate an active FV patch.
+   *
+   * All patches with nonzero limiter status smaller than this value,
+   * hold a passive FV patch.
+   */
+  static int MinimumLimiterStatusForActiveFVPatch;
+
   #ifdef Asserts
   static double PipedUncompressedBytes;
   static double PipedCompressedBytes;
@@ -1348,6 +1361,18 @@ public:
   void startNewTimeStep() override;
 
   /**
+   * In contrast to startNewTimeStep(), this
+   * method does not shift the time stamps.
+   *
+   * It simply updates the time step sizes
+   * and adjusts the predictor time step size.
+   *
+   * This method is used in the context of
+   * global recomputations.
+   */
+  void updateTimeStepSizes();
+
+  /**
    * Zero predictor and corrector time step size.
    */
   void zeroTimeStepSizes() override;
@@ -1408,21 +1433,6 @@ public:
    * equivalents.
    */
   void reconstructStandardTimeSteppingData();
-
-  /**
-   * After the mesh has been updated,
-   * reset the predictor time stamp to
-   * the value corrector time stamp plus
-   * nextPredictorTimeStepSize which is
-   * the newly computed time step size.
-   * Furthermore, set the predictor time
-   * step size to nextPredictorTimeStepSize.
-   *
-   * This whole procedure is a little confusing but
-   * necessary due to the shift
-   * of the ADER-DG phases in our implementation.
-   */
-  void reinitialiseTimeStepData() override;
 
   /**
    * Update predictor time step size
@@ -1606,7 +1616,16 @@ public:
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
-      const std::string& methodTraceOfCaller);
+      const std::string& methodTraceOfCaller) const;
+
+  /**
+   * Computes a time step size based on the solution
+   * values. Does not advance the cell descriptions
+   * time stamps forward.
+   */
+  double computeTimeStepSize(
+      CellDescription& cellDescription,
+      double*   tempEigenvalues);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
@@ -1731,15 +1750,9 @@ public:
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
    */
-  void rollbackSolution(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+  void rollbackSolution(CellDescription& cellDescription) const;
 
-  void swapSolutionAndPreviousSolution(
-      const int cellDescriptionsIndex,
-      const int element) const;
+  void swapSolutionAndPreviousSolution(CellDescription& cellDescription) const;
 
   void preProcess(
       const int cellDescriptionsIndex,

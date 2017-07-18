@@ -489,8 +489,6 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reinitialiseTimeStepData() override;
-
   double getMinNextTimeStepSize() const override;
 
   bool isValidCellDescriptionIndex(
@@ -633,15 +631,9 @@ public:
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
    */
-  void rollbackSolution(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+  void rollbackSolution(CellDescription& cellDescription);
 
-  void swapSolutionAndPreviousSolution(
-      const int cellDescriptionsIndex,
-      const int element) const;
+  void swapSolutionAndPreviousSolution(CellDescription& cellDescription) const;
 
   void preProcess(
       const int cellDescriptionsIndex,

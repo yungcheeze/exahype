@@ -18,6 +18,18 @@
 #include "tarch/la/Matrix.h"
 
 /**
+ * Generic information about the variable string as it was declared in the
+ * specification file
+ **/
+struct {{Project}}::Abstract{{Solver}}::VariableMetrics {
+  static constexpr int numDistinctVariables = {{variablesMapSize}};
+  static constexpr int SizeVariables = {{NumberOfVariables}}; 
+  static constexpr int SizeParameters = {{NumberOfParameters}};
+  static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
+  static constexpr int Dimensions    = DIMENSIONS;
+};
+
+/**
  * Positions of fields in the vector of unkonwns.
  *
  * With these constants, you can write Q[g11], Q[K22] and Q[B33] instead of
@@ -27,16 +39,34 @@
  * You might want to use a typedef to shorten the notation or create 
  * an instance of this class.
  **/
-class {{Project}}::Abstract{{Solver}}::VariableShortcuts {
+class {{Project}}::Abstract{{Solver}}::VariableShortcuts : public {{Project}}::Abstract{{Solver}}::VariableMetrics {
 public:
-  static constexpr int _Q[] = { {{VariableShortcutsArray}} };
+  /// positions of fields inside the unknown vector (solution vector) Q
+  int _Q[numDistinctVariables + 1] = { {{VariableShortcutsArray}} };
 
 {{VariableShortcuts}}
 
-  static const int* asArray() { return _Q; }
+  const int* asArray() const { return _Q; }
   int operator [] (int index) const { return _Q[index]; }
   int operator () (int index) const { return _Q[index]; }
 }; // end of VariableShortcuts
+
+/**
+ * Lengths (multplicities) of each field inside the unknown vector Q.
+ * For instance, 0 means "scalar field" while any value >0 may mean a vector field or
+ * even a "linearized" tensor field
+ **/
+class {{Project}}::Abstract{{Solver}}::VariableMultiplicities : public {{Project}}::Abstract{{Solver}}::VariableMetrics {
+public:
+  /// positions of fields inside the unknown vector (solution vector) Q
+  int _Q[numDistinctVariables + 1] = { {{VariableMultiplicitiesArray}} };
+
+{{VariableMultiplicities}}
+
+  const int* asArray() const { return _Q; }
+  int operator [] (int index) const { return _Q[index]; }
+  int operator () (int index) const { return _Q[index]; }
+}; // end of VariableMultiplicities
 
 /**
  * Variable names as strings as given in the toolkit.
@@ -44,19 +74,52 @@ public:
  * These names might want to be used for plotting, output, etc.
  *
  **/
-class {{Project}}::Abstract{{Solver}}::VariableNames {
+class {{Project}}::Abstract{{Solver}}::VariableNames : public {{Project}}::Abstract{{Solver}}::VariableMetrics {
 public:
-  static constexpr char const *_Q[] = { {{VariableNamesArray}} };
+  char const *_Q[numDistinctVariables + 1] = { {{VariableNamesArray}} };
 
 {{VariableNames}}
 
-  static const char* const* asArray() { return _Q; } // type: whatever
+  const char* const* asArray() const { return _Q; } // type: whatever
   const char* operator [] (int index) const { return _Q[index]; }
   const char* operator () (int index) const { return _Q[index]; }
 }; // end of VariableNames
 
+/**
+ * Positions of fields in the vector of unknowns,
+ * available as namespace constants.
+ * 
+ * You can use this namespace similar to the class "VariableShortcuts"
+ * but you don't need an object, ie. your notation can get slimmer.
+ * 
+ * Usage is like:
+ * 
+ *    void somewhere() {
+ *       using namespace {{Project}}::{{Solver}}_Variables::shortcuts;
+ *       Q[foo] = 17;
+ *    }
+ *
+ * instead of
+ * 
+ *    void somewhere() {
+ *       {{Project}}::Abstract{{Solver}}::VariableNames q;
+ *       Q[q.foo] = 17;
+ *    }
+ *
+ **/
+namespace {{Project}} {
+	namespace {{Solver}}_Variables {
+		namespace shortcuts {
+			{{VariableShortcuts}}
+		} // namespace shortcuts
+		namespace names {
+			{{VariableNames}}
+		} // namespace names
+	} // end of namespace {{Project}}::{{Solver}}_Variables 
+} // end of namespace {{Project}}
+
 /*
- * NEW CLASS IDEA:
+ * Another class idea:
  * 
  * class ....::VariablePointers {
  *   private:   double* Q;
@@ -71,14 +134,10 @@ public:
  */
 
 
-class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
+class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables : public {{Project}}::Abstract{{Solver}}::VariableMetrics {
   private:
     const double* const _Q;
   public:
-    static constexpr int SizeVariables  = {{NumberOfVariables}};
-    static constexpr int SizeParameters = {{NumberOfParameters}};
-    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
-    
     ReadOnlyVariables(const double* const Q) : _Q(Q) {}
     
     double operator [] (int index) const {
@@ -106,13 +165,14 @@ class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
     int parameters() const {
       return SizeParameters;
     }
-    
+
+    // Java-generated code for VariablesGetters:
 
 {{VariablesGetters}}
 }; // end of ReadOnlyVariables
 
 
-class {{Project}}::Abstract{{Solver}}::Variables {
+class {{Project}}::Abstract{{Solver}}::Variables : public {{Project}}::Abstract{{Solver}}::VariableMetrics{
   private:
     double* _Q;
   public:
@@ -158,21 +218,21 @@ class {{Project}}::Abstract{{Solver}}::Variables {
     int parameters() const {
       return SizeParameters;
     }
-    
+
+    // Java-generated code for VariablesGetters:
 
 {{VariablesGetters}}
+
+    // Java-generated code for VariablesSetters:
 
 {{VariablesSetters}}
 }; // end of Variables
 
 
-class {{Project}}::Abstract{{Solver}}::Fluxes {
+class {{Project}}::Abstract{{Solver}}::Fluxes : public {{Project}}::Abstract{{Solver}}::VariableMetrics {
   private:
     double** _F;
   public:
-    static constexpr int SizeVariables = {{NumberOfVariables}}; 
-    static constexpr int Dimensions    = DIMENSIONS;
-  
     Fluxes(double** F) : _F(F) {}
     
     /** The rows of the flux tensor. */
@@ -184,9 +244,13 @@ class {{Project}}::Abstract{{Solver}}::Fluxes {
     int dimensions() const {
       return Dimensions;
     }
-    
+
+
+    // Java-generated code for FluxGetters:
 
 {{FluxesGetters}}
+
+    // Java-generated code for FluxSetters:
 
 {{FluxesSetters}}
 }; // end of Fluxes

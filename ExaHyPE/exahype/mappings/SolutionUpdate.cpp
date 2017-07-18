@@ -166,15 +166,12 @@ void exahype::mappings::SolutionUpdate::enterCell(
                         !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
                         _solverFlags._meshUpdateRequest[i]);
             } break;
-            case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend: {
-              limitingADERDGSolver->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
-            } break;
             case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
             case exahype::records::State::AlgorithmSection::MeshRefinement:
             case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
             case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
             case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
-            case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
+            case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend:
             case exahype::records::State::AlgorithmSection::PredictionRerunAllSend: {
               // do nothing
             } break;

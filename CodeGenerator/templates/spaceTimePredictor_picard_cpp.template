@@ -29,7 +29,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
-        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
+        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used //TODO JMG BGradQ not used anymore
 {% if useDeepProfiler %}
         , exahype::profilers::Profiler* profiler
 {% endif %}
@@ -51,22 +51,18 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
 {% if useNCP %}
   __assume_aligned(gradQ, ALIGNMENT);
-  __assume_aligned(BGradQ, ALIGNMENT);
 {% endif %}
  
 #endif
 
   // 0. Allocate local variable
   double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT))); //for the gemms with alpha*Kxi or alpha*iK1
+  double new_lQi_slice[{{nDof*nVarPad}}] __attribute__((aligned(ALIGNMENT))); //for step 4 (computing new lQi value)
   const double dtBydx = inverseDx[0] * dt; //Assume dx[0] == dx[1] == dx[2]
-  int ijk; //helper counter
+  int ijk_; //helper counter
   
 {% if useNCP %}
   double dudxT_by_dx[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
-
-  // 0. Ensure padded BGradQ has a zero padding
-  std::memset(BGradQ, 0, {{nVarPad}} * sizeof(double));
-
   
   // 0. precompute 1/dx * dudx_T. Assume dx[0] == dx[1] == dx[2]
   #pragma simd
@@ -76,41 +72,20 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
 
   // 1. Trivial initial guess
-  for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+  for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
     for (int l = 0; l < {{nDof}}; l++) {
       std::copy(&luh[{{nVar}}*ijk], &luh[{{nVar}}*ijk]+{{nVar}}, &lQi[{{nVarPad}}*(l+{{nDof}}*ijk)]);
     }
   }
 
-/* //we compute rhs on the fly, no need for rhs_0, TODO JMG clean legacy
 
   // 2. Compute the contribution of the initial condition uh to the time update
-  for (int i = 0; i < {{nDof3D}}; i++) {
-    for (int j = 0; j < {{nDof}}; j++) {
-      for (int k = 0; k < {{nDof}}; k++) {
-        const double weight = {{'weights1[i] * ' if nDim == 3 else ''}} weights1[j] * weights1[k];
-        #pragma simd
-        for (int n = 0; n < {{nVar}}; n++) {
-{% for m in nDof_seq %}
-          rhs_0[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D*m}})))] = weight * F0[{{m}}] * luh[n+{{nVar}}*(k+{{nDof}}*(j+{{nDof}}*i))];
-{% endfor %}
-        }
-      }
-    }
-  }
-*/
+  // //we compute rhs on the fly, no need for rhs_0, TODO JMG clean legacy
+  
   // 3. Discrete Picard iterations
   const int MaxIterations = {{2 * nDof}};
 
   for (int iter = 0; iter < MaxIterations; iter++) {
-    // Save old space-time DOF
-    std::copy(&lQi[0], &lQi[0]+{{nDof**(nDim+1)*nVarPad}}, lQi_old);
-    
-{% if useNCP and not useSource %} 
-    //initialize lShi to 0 if used for ncp but not initialized by source terms
-    std::memset(lSi, 0, {{(nDof**nDim)*nDof*nVarPad}} * sizeof(double));
-{% endif %}
-
     for (int i = 0; i < {{nDof}}; i++) {  // time DOF
     
       // Compute the fluxes
@@ -134,18 +109,6 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if useDeepProfiler %}
         profiler->stop("spaceTimePredictor_PDEflux");
 {% endif %}
-{% if useSource %}
-{% if useDeepProfiler %}
-        profiler->start("spaceTimePredictor_PDEsource");
-{% endif %}
-#ifdef USE_IPO
-        #pragma forceinline recursive
-#endif
-        solver.{{solverName}}::algebraicSource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
-{% if useDeepProfiler %}
-        profiler->stop("spaceTimePredictor_PDEsource");
-{% endif %}
-{% endif %}
 {% if useDeepProfiler %}
         profiler->start("spaceTimePredictor_overhead");
         profiler->stop("spaceTimePredictor_overhead"); 
@@ -153,13 +116,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
       }
 
-      // Copy rhs0 -> rhs for slice at i
-      //std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]); //rhs is computed on the fly, TODO JMG clean legacy
-      for (ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
-        const double weight = weights3[ijk] * F0[i];
+      // Compute the contribution of the initial condition uh to the right-hand side (rhs)
+      for (int jkl = 0; jkl < {{nDof**nDim}}; jkl++) {
+        const double weight = weights3[jkl] * F0[i];
         #pragma simd
         for (int n = 0; n < {{nVar}}; n++) {
-          rhs[n+{{nVarPad}}*(ijk+{{nDof*nDof*nDof3D}}*i)] = weight * luh[n+{{nVar}}*ijk];
+          rhs[n+{{nVarPad}}*(jkl+{{nDof**nDim}}*i)] = weight * luh[n+{{nVar}}*jkl];
         }
       }
       
@@ -171,10 +133,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
       // Compute the "derivatives" (contributions of the stiffness matrix)      
       // x direction (independent from the y and z derivatives)
-      ijk=i*{{nDof*nDof3D}};
+      ijk_=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dtBydx;
+          const double updateSize = weights3[ijk_] * dtBydx;
 
           // Matrix operation
           /*
@@ -210,15 +172,15 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
 {% endif %}
-          ijk++;       
+          ijk_++;       
         }
       }
 
       // y direction (independent from the x and z derivatives)
-      ijk=i*{{nDof*nDof3D}};
+      ijk_=i*{{nDof*nDof3D}};
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dtBydx;
+          const double updateSize = weights3[ijk_] * dtBydx;
 
           // Matrix operation
           /*
@@ -254,16 +216,16 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
 {% endif %}
-          ijk++;
+          ijk_++;
         }
       }
        
 {% if nDim==3 %}
       // z direction (independent from the x and y derivatives)
-      ijk=i*{{nDof*nDof3D}};
+      ijk_=i*{{nDof*nDof}};
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
-          const double updateSize = weights3[ijk] * dtBydx;
+          const double updateSize = weights3[ijk_] * dtBydx;
 
           // Matrix operation
           /*
@@ -299,43 +261,39 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           #pragma forceinline
           {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
 {% endif %}
-          ijk++;
+          ijk_++;
         }
       }
 {% endif %}
      
 {% if useSourceOrNCP %}
+      // Compute the Nonconservative part NCP + Source
       for(int jkl = 0; jkl < {{nDof**nDim}}; jkl++) { //zyx
         const double updateSize = weights1[i] * weights3[jkl] * dt;
+        const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
+        const int it = i+{{nDof}}*jkl;
 
-{% if useNCP %}
-        // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
         double gradQNoPad[{{nVar*nDim}}]; //remove padding to use the same user function as generic kernel
-        std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVar}}], &gradQNoPad[0]); //x
-        std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVarPad}}], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVarPad+nVar}}], &gradQNoPad[{{nVar}}]); //y
+        std::copy(&gradQ[{{nVarPad*nDim}}*it]              , &gradQ[{{nVarPad*nDim}}*it+{{0*nVarPad+nVar}}], &gradQNoPad[{{0*nVar}}]); //x
+        std::copy(&gradQ[{{nVarPad*nDim}}*it+{{1*nVarPad}}], &gradQ[{{nVarPad*nDim}}*it+{{1*nVarPad+nVar}}], &gradQNoPad[{{1*nVar}}]); //y
 {% if nDim==3 %}
-        std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad}}],&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
+        std::copy(&gradQ[{{nVarPad*nDim}}*it+{{2*nVarPad}}], &gradQ[{{nVarPad*nDim}}*it+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
 {% endif %}
+
 {% if useDeepProfiler %}
         profiler->stop("spaceTimePredictor");
-        profiler->start("spaceTimePredictor_PDEncp");
+        profiler->start("spaceTimePredictor_PDEfusedSource");
 {% endif %}
 #ifdef USE_IPO
         #pragma forceinline recursive
-#endif
-        solver.{{solverName}}::nonConservativeProduct(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
+#endif   
+        solver.{{solverName}}::fusedSource(&lQi[{{nVarPad}}*it], &gradQNoPad[0], &lSi[shift]);
 {% if useDeepProfiler %}
-        profiler->stop("spaceTimePredictor_PDEncp");
+        profiler->stop("spaceTimePredictor_PDEfusedSource");
         profiler->start("spaceTimePredictor");
 {% endif %}
-{% endif %}
-        
-        const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
         #pragma simd
-        for (int n = 0; n < {{nVarPad}}; n++) { //BgradQ is zero padded
-{% if useNCP %}
-          lSi[n+shift] -= BGradQ[n];
-{% endif %}
+        for (int n = 0; n < {{nVarPad}}; n++) {
           rhs[n+shift] += updateSize * lSi[n+shift];
         }
       }
@@ -345,43 +303,26 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    std::memset(lQi, 0, {{(nDof**nDim) * nDof * nVarPad}} * sizeof(double));
-    ijk=0;
-    for (int i = 0; i < {{nDof3D}}; i++) {
-      for (int j = 0; j < {{nDof}}; j++) {
-        for (int k = 0; k < {{nDof}}; k++) {
-          const double iweight = 1.0 / weights3[ijk];
+    double sq_res = 0.0;
+    for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+      const double iweight = 1.0 / weights3[ijk];
 
-          // Matrix operation
-          /*
-          for (int l = 0; l < {{nDof}}; l++) {
-            for (int m = 0; m < {{nDof}}; m++) {
-              #pragma simd
-              for (int n = 0; n < {{nVar}}; n++) {
-                lQi[n+{{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*i)))] += iweight *
-                                               rhs[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] *
-                                               iK1[m+{{nDofPad}}*l];
-              }
-            }
-          }
-          */
-          #pragma vector aligned
-          for(int it=0;it<{{nDof*nDofPad}};it++) {
-            s_m[it] = iweight * iK1[it];
-          }
-          #pragma forceinline
-          {{gemm_lqh}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &lQi[{{nVarPad*nDof}}*ijk]);
-          ijk++;
-        }
+      #pragma vector aligned
+      for(int it=0;it<{{nDof*nDofPad}};it++) {
+        s_m[it] = iweight * iK1[it];
       }
+      
+      #pragma forceinline
+      {{gemm_lqi}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &new_lQi_slice[0]); //Note: the gemm performs C = A*B, no need to initialize C to 0
+      
+      for (int l = 0; l < {{nDof*nVarPad}}; l++) {
+        sq_res += (new_lQi_slice[l] - lQi[l+{{nDof*nVarPad}}*ijk]) * (new_lQi_slice[l] - lQi[l+{{nDof*nVarPad}}*ijk]);
+      }
+      std::copy(&new_lQi_slice[0], &new_lQi_slice[0]+{{nDof*nVarPad}}, &lQi[{{nDof*nVarPad}}*ijk]);
     }
 
     // 5. Exit condition
-    const double tol = 1e-7;
-    double sq_res = 0.0;
-    for (int i = 0; i < {{nDof**(nDim+1)*nVarPad}}; i++) {
-      sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
-    }
+    constexpr double tol = 1e-7;
     if (sq_res < tol * tol) {
       break;
     }

@@ -42,10 +42,12 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     int constexpr_getOrder()              const override { return Order; };
     double constexpr_getCFLNumber()       const override { return CFL; };
   
+    class VariableMetrics;
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
     class VariableShortcuts;
+    class VariableMultiplicities;
     class VariableNames;
     {{NamingSchemes}}
     

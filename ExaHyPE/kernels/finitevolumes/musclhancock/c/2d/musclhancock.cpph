@@ -74,13 +74,12 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   //double slopey[variablesPerPatch] = {0.0};
   double slope[variablesPerPatch*DIMENSIONS] = {0.0};
 
-  // This musclhancock does not yet use 2. ghostlayer.
-
   // slopex
-  for (int j = patchBegin; j < patchEnd; j++) { // y
+  //  for (int j = patchBegin; j < patchEnd; j++) { // y TODO(Dominic): Previous. Takes no ghost layer corners into account.
+  for (int j = patchBegin-1; j < patchEnd+1; j++) { // y TODO(Dominic): New. Takes corners of ghost layers into account. Assumes them to be set to zero.
     for (int k = patchBegin-1; k < patchEnd+1; k++) { // x
       for (int l = 0; l < numberOfVariables; l++) {
-        slope[idx_slope(j, k, 0, l)] = 
+        slope[idx_slope(j, k, 0, l)] =
             minmod(luh[idx(j, k + 1, l)] - luh[idx(j, k, l)],
                 luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) / cellSize[0];
       }
@@ -88,9 +87,10 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   }
   // slopey
   for (int j = patchBegin-1; j < patchEnd+1; j++) { // y
-    for (int k = patchBegin; k < patchEnd; k++) { // x
+  //    for (int k = patchBegin; k < patchEnd; k++) { // x TODO(Dominic): Previous. Takes no ghost layer corners into account.
+    for (int k = patchBegin-1; k < patchEnd+1; k++) { // x TODO(Dominic): New. Takes corners of ghost layers into account. Assumes them to be set to zero.
       for (int l = 0; l < numberOfVariables; l++) {
-        slope[idx_slope(j, k, 1, l)] = 
+        slope[idx_slope(j, k, 1, l)] =
             minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],
                 luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) / cellSize[1];
       }
@@ -105,7 +105,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   double wRy[variablesPerPatch] = {0.0};
 
   // wx
-  for (int j = patchBegin; j < patchEnd; j++) {
+//  for (int j = patchBegin; j < patchEnd; j++) { TODO previous
+  for (int j = patchBegin-1; j < patchEnd+1; j++) { // TODO new
     for (int k = patchBegin-1; k < patchEnd+1; k++) {
       for (int l = 0; l < numberOfVariables; l++) {
         wLx[idx_w(j, k, l)] = luh[idx(j, k, l)] - 0.5 * cellSize[0] * slope[idx_slope(j, k, 0, l)];
@@ -115,7 +116,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   }
   // wy
   for (int j = patchBegin-1; j < patchEnd+1; j++) {
-    for (int k = patchBegin; k < patchEnd; k++) {
+//    for (int k = patchBegin; k < patchEnd; k++) { // TODO previous
+    for (int k = patchBegin-1; k < patchEnd+1; k++) { // TODO new
       for (int l = 0; l < numberOfVariables; l++) {
         wLy[idx_w(j, k, l)] = luh[idx(j, k, l)] - 0.5 * cellSize[1] * slope[idx_slope(j, k, 1, l)];
         wRy[idx_w(j, k, l)] = luh[idx(j, k, l)] + 0.5 * cellSize[1] * slope[idx_slope(j, k, 1, l)];
@@ -130,41 +132,50 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   double slopet[variablesPerPatch] = {0.0};
 
   // wx
-  for (int j = patchBegin; j < patchEnd; j++) {
-    for (int k = patchBegin; k < patchEnd; k++) {
-      double* Qt = slopet + idx(j, k, 0);
-      double* gradQ = slope + idx_slope(j, k, 0, 0);
-      if(useSource || useNCP) {
-        solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
-      }
+//  for (int j = patchBegin; j < patchEnd; j++) { // TODO previous
+//    for (int k = patchBegin; k < patchEnd; k++) {
+  for (int j = patchBegin-1; j < patchEnd+1; j++) {  // TODO new
+    for (int k = patchBegin-1; k < patchEnd+1; k++) {
+      if ((j==patchBegin-1 && k==patchBegin-1) ||
+          (j==patchBegin-1 && k==patchEnd+1) ||
+          (j==patchEnd+1 && k==patchBegin-1) ||
+          (j==patchEnd+1 && k==patchEnd+1)) {
+        // skip ghostlayer corners
+      } else {
+        double* Qt = slopet + idx(j, k, 0);
+        double* gradQ = slope + idx_slope(j, k, 0, 0);
+        if(useSource || useNCP) {
+          solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
+        }
 
-      if(useFlux) {
-        // x fluxes
-        solver.flux(wLx + idx_w(j, k, 0), F); // FLx
-        for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] += F[0][l] / cellSize[0];
+        if(useFlux) {
+          // x fluxes
+          solver.flux(wLx + idx_w(j, k, 0), F); // FLx
+          for (int l = 0; l < numberOfVariables; l++) {
+            Qt[l] += F[0][l] / cellSize[0];
+          }
+          solver.flux(wRx + idx_w(j, k, 0), F); // FRx
+          for (int l = 0; l < numberOfVariables; l++) {
+            Qt[l] -= F[0][l] / cellSize[0];
+          }
+          // y fluxes
+          solver.flux(wLy + idx_w(j, k, 0), F); // FLy
+          for (int l = 0; l < numberOfVariables; l++) {
+            Qt[l] += F[1][l] / cellSize[1];
+          }
+          solver.flux(wRy + idx_w(j, k, 0), F); // FRy
+          for (int l = 0; l < numberOfVariables; l++) {
+            Qt[l] -= F[1][l] / cellSize[1];
+          }
         }
-        solver.flux(wRx + idx_w(j, k, 0), F); // FRx
-        for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] -= F[0][l] / cellSize[0];
-        }
-        // y fluxes
-        solver.flux(wLy + idx_w(j, k, 0), F); // FLy
-        for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] += F[1][l] / cellSize[1];
-        }
-        solver.flux(wRy + idx_w(j, k, 0), F); // FRy
-        for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] -= F[1][l] / cellSize[1];
-        }
-      }
 
-      // evolve boundary states
-      for (int l = 0; l < numberOfVariables; l++) {
-        wLx[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
-        wRx[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
-        wLy[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
-        wRy[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
+        // evolve boundary states
+        for (int l = 0; l < numberOfVariables; l++) {
+          wLx[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
+          wRx[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
+          wLy[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
+          wRy[idx_w(j, k, l)] += 0.5 * dt * Qt[l];
+        }
       }
     }
   }

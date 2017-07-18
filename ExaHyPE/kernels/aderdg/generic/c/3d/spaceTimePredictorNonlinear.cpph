@@ -61,7 +61,8 @@ namespace {
     idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfData);
 
     idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1, numberOfVariables);
-
+    // (t,z,y,x,dim,var)
+    
     // 1. Trivial initial guess
     auto grainSizeTrivialGuess = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsTrivialGuessLoop);
     //for (int i = 0; i < basisSize; i++) { // i == z
@@ -401,20 +402,17 @@ namespace {
                                  const double* lFhi_y, const double* lFhi_z, double* lQhbnd, double* lFhbnd) {
     // Compute the boundary-extrapolated values for Q and F*n
     constexpr int basisSize2 = basisSize * basisSize;
-    constexpr int order = basisSize - 1;
+    constexpr int order      = basisSize - 1;
 
     constexpr int numberOfData = numberOfVariables+numberOfParameters;
 
     idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfData);
-
     idx4 idx_lFhi(basisSize, basisSize, basisSize, numberOfVariables);
 
-
     idx4 idx_lQhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfData);
-
     idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
-    std::fill_n(lQhbnd, 2 * DIMENSIONS * basisSize2 *  numberOfData, 0.0);
+    std::fill_n(lQhbnd, 2 * DIMENSIONS * basisSize2 * numberOfData, 0.0);
     // in princple, we should ignore the lFhbnd but we can also zero them out.
     // zeroing them keeps CCZ4 GaugeWave stable for more time steps but not
     // for long time.
@@ -517,6 +515,135 @@ namespace {
       }
     }
   }
+  
+  template <int numberOfVariables,int numberOfParameters,int basisSize>
+  void aderTimeAveragingExtrapolatorNonlinear(
+      const double* lQi, const double* lFi,
+      double* lQhbnd, double* lFhbnd) {
+    // Compute the boundary-extrapolated values for Q and F*n
+
+    const int order      = basisSize - 1;
+    const int basisSize2 = basisSize*basisSize;
+    
+    constexpr int numberOfData = numberOfVariables+numberOfParameters;
+
+    idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfData);                   // (z,y,x,t,var/param)
+    idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,z,y,x,flux/source,var)
+
+    idx4 idx_lQhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfData);
+    idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
+    
+    std::fill_n(lQhbnd, 2 * DIMENSIONS * basisSize2 * numberOfData,      0.0);
+    std::fill_n(lFhbnd, 2 * DIMENSIONS * basisSize2 * numberOfVariables, 0.0);
+    // x-faces: (z,y,var/par)
+    // y-faces: (z,x,var/par)
+    // z-faces: (y,x,var/par)
+
+    for (int i=0; i < basisSize; i++) { // loop over time dof
+      // x-direction: face 0 (left) and face 1 (right)
+      for (int j = 0; j < basisSize; j++) { // z
+        for (int k = 0; k < basisSize; k++) { // y 
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfVariables; l++) {
+            for (int n = 0; n < basisSize; n++) { // x
+              lFhbnd[idx_lFhbnd(0, j, k, l)] += 
+                  lFi[idx_lFi(i, j, k, n, 0, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lFhbnd[idx_lFhbnd(1, j, k, l)] += 
+                  lFi[idx_lFi(i, j, k, n, 0, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+            }
+          }
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfData; l++) {
+            for (int n = 0; n < basisSize; n++) { // x
+              lQhbnd[idx_lQhbnd(0, j, k, l)] += 
+                  lQi[idx_lQi(j, k, n, i, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lQhbnd[idx_lQhbnd(1, j, k, l)] += 
+                  lQi[idx_lQi(j, k, n, i, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+            }
+          }
+        }
+      }
+
+      // y-direction: face 2 (front) and face 3 (back)
+      for (int j = 0; j < basisSize; j++) { // z
+        for (int k = 0; k < basisSize; k++) { // x 
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfVariables; l++) {
+            for (int n = 0; n < basisSize; n++) { // y  
+              lFhbnd[idx_lFhbnd(2, j, k, l)] +=  
+                  lFi[idx_lFi(i, j, n, k, 1, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lFhbnd[idx_lFhbnd(3, j, k, l)] += 
+                  lFi[idx_lFi(i, j, n, k, 1, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+            }
+          }
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfData; l++) {
+            for (int n = 0; n < basisSize; n++) { // y
+              lQhbnd[idx_lQhbnd(2, j, k, l)] += 
+                  lQi[idx_lQi(j, n, k, i, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lQhbnd[idx_lQhbnd(3, j, k, l)] += 
+                  lQi[idx_lQi(j, n, k, i, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+            }
+          }
+        }
+      }
+
+      // z-direction: face 4 (front) and face 5 (back)
+      for (int j = 0; j < basisSize; j++) { // y
+        for (int k = 0; k < basisSize; k++) { // x 
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfVariables; l++) {
+            for (int n = 0; n < basisSize; n++) { // z
+              lFhbnd[idx_lFhbnd(4, j, k, l)] +=
+                  lFi[idx_lFi(i, n, j, k, 2, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lFhbnd[idx_lFhbnd(5, j, k, l)] +=
+                  lFi[idx_lFi(i, n, j, k, 2, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+            }
+          }
+          // Matrix-Vector Products
+          for (int l = 0; l < numberOfData; l++) {
+            for (int n = 0; n < basisSize; n++) { // z
+              lQhbnd[idx_lQhbnd(4, j, k, l)] +=
+                  lQi[idx_lQi(n, j, k, i, l)] * 
+                  kernels::FLCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+
+              lQhbnd[idx_lQhbnd(5, j, k, l)] +=
+                  lQi[idx_lQi(n, j, k, i, l)] * 
+                  kernels::FRCoeff[order][n] * 
+                  kernels::gaussLegendreWeights[order][i];
+            }
+          }
+        }
+      }
+    }
+  } // time dof loop
 
 }  // namespace
 
@@ -536,8 +663,6 @@ void spaceTimePredictorNonlinear(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
-  constexpr int basisSize2         = basisSize * basisSize;
-  constexpr int basisSize3         = basisSize2 * basisSize;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];
@@ -549,16 +674,21 @@ void spaceTimePredictorNonlinear(
   double* lFi     = tempSpaceTimeFluxUnknowns[0]; // lFi also stores the source
   double* gradQ   = useNCP ? tempSpaceTimeFluxUnknowns[1] : nullptr; // size: basisSize3 * DIMENSIONS * numberOfVariables
 
-  double *lQhi    = tempUnknowns;
-
-  double *lFhi    = tempFluxUnknowns;
-
-  // BgradQ is no more needed since we have the fusedSource. = AlgebraicSource - NCP
-  //double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
-
   aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
       solver, luh, dt, dx, lQi, lQi_old, rhs, lFi, gradQ
   );
+  
+#ifdef NO_TIME_AVERAGING
+  aderTimeAveragingExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
+      lQi,
+      lFi,
+      lQhbnd, lFhbnd);
+#else
+  constexpr int basisSize2         = basisSize * basisSize;
+  constexpr int basisSize3         = basisSize2 * basisSize;
+  
+  double *lQhi    = tempUnknowns;
+  double *lFhi    = tempFluxUnknowns;
 
   aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(
       lQi, lFi, lQhi,
@@ -574,6 +704,88 @@ void spaceTimePredictorNonlinear(
       &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
       &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
       lQhbnd, lFhbnd);
+#endif
+  
+  // TODO(Dominic): Keep a while for debugging
+//  double* lQhbnd2 = new double[2 * DIMENSIONS * basisSize2 *  (numberOfVariables+numberOfParameters)];
+//  double* lFhbnd2 = new double[2 * DIMENSIONS * basisSize2 *  numberOfVariables];
+  
+  // TODO(Dominic): Keep a while for debugging
+//  idx4 idx_lFhbnd(2*DIMENSIONS,basisSize,basisSize,numberOfVariables);
+//  
+//  std::cout << "lFhbnd2={" <<std::endl;
+//  for (int d=0; d<6; d++) {
+//    for (int v=0; v<1; v++) {
+//      for (int i=0; i<basisSize; i++) {
+//        for (int j=0; j<basisSize; j++) {
+//          std::cout << lFhbnd2[idx_lFhbnd(d,i,j,v)] << ",";
+//        }
+//        std::cout << std::endl;
+//      }
+//    }
+//    std::cout << "\\" << std::endl;
+//  }
+//  std::cout << "}" << std::endl;
+//  
+//  std::cout << "lFhbnd={" <<std::endl;
+//  for (int d=0; d<6; d++) {
+//    for (int v=0; v<1; v++) {
+//      for (int i=0; i<basisSize; i++) {
+//        for (int j=0; j<basisSize; j++) {
+//          std::cout << lFhbnd[idx_lFhbnd(d,i,j,v)] << ",";
+//        }
+//        std::cout << std::endl;
+//      }
+//    }
+//    std::cout << "\\" << std::endl;
+//  }
+//  std::cout << "}" << std::endl;
+  
+  //
+  
+//  std::cout << "lQhbnd2={" <<std::endl;
+//  for (int d=0; d<6; d++) {
+//    for (int v=0; v<1; v++) {
+//      for (int i=0; i<basisSize; i++) {
+//        for (int j=0; j<basisSize; j++) {
+//          std::cout << lQhbnd2[idx_lFhbnd(d,i,j,v)] << ",";
+//        }
+//        std::cout << std::endl;
+//      }
+//    }
+//    std::cout << "\\" << std::endl;
+//  }
+//  std::cout << "}" << std::endl;
+//  
+//  std::cout << "lQhbnd={" <<std::endl;
+//  for (int d=0; d<6; d++) {
+//    for (int v=0; v<1; v++) {
+//      for (int i=0; i<basisSize; i++) {
+//        for (int j=0; j<basisSize; j++) {
+//          std::cout << lQhbnd[idx_lFhbnd(d,i,j,v)] << ",";
+//        }
+//        std::cout << std::endl;
+//      }
+//    }
+//    std::cout << "\\" << std::endl;
+//  }
+//  std::cout << "}" << std::endl;
+  
+//  for (int i=0; i<2 * DIMENSIONS * basisSize2 *  numberOfVariables; i++) { 
+//    assertion3(tarch::la::equals(lFhbnd2[i],lFhbnd[i]),i,lFhbnd2[i],lFhbnd[i]);
+//  }
+//  
+//  for (int i=0; i<2 * DIMENSIONS * basisSize2 *  (numberOfVariables+numberOfParameters); i++) {
+//    assertion3(tarch::la::equals(lQhbnd2[i],lQhbnd[i]),i,lQhbnd2[i],lQhbnd[i]);
+//  }
+  
+  // 80,80, 80,80, 80,80
+  // numberOfVariables=5
+  // basisSize=4
+  // basisSize2=16
+  
+//  delete[] lQhbnd2;
+//  delete[] lFhbnd2;
 }
 
 }  // namespace c

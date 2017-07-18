@@ -88,6 +88,9 @@ l_parser.add_argument("--useNCP",
 l_parser.add_argument("--useSource",
                       action="store_true",
                       help="enable source terms")
+l_parser.add_argument("--noTimeAveraging",
+                      action="store_true",
+                      help="disable time averaging in the spacetimepredictor (less memory usage, more computation)")
 # l_parser.add_argument("--precision",
                       # type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
                       # default="DP",
@@ -108,6 +111,7 @@ useDeepProfiler        = l_commandLineArguments.deepProfiling
 useFlux                = l_commandLineArguments.useFlux
 useNCP                 = l_commandLineArguments.useNCP
 useSource              = l_commandLineArguments.useSource
+noTimeAveraging        = l_commandLineArguments.noTimeAveraging
 
 config = { 
            "solverName"        : solverName,
@@ -119,7 +123,8 @@ config = {
            "useFlux"           : useFlux,
            "useNCP"            : useNCP,
            "useSource"         : useSource,
-           "useSourceOrNCP"    : (useSource or useNCP)
+           "useSourceOrNCP"    : (useSource or useNCP),
+           "noTimeAveraging"   : noTimeAveraging
           }
 
 # configure global setup of the code generator

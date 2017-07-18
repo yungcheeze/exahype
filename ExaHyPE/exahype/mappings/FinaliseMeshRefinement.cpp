@@ -131,6 +131,7 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined19);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
       const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
           fineGridCell.getCellDescriptionsIndex(),solverNumber);
       if (solver->getMeshUpdateRequest()) {
@@ -144,16 +145,11 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
             fineGridPositionOfCell,
             solverNumber);
 
-        // TODO(Dominic): Add to docu. Only determine the new min and max if
-        // and only if no recomputation was requested. Otherwise, some cells are
-        // not correctly initialised.
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            &&
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-            ==exahype::solvers::LimiterDomainChange::Regular
-        ) {
+            ==exahype::solvers::LimiterDomainChange::Regular) {
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+                        determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
 

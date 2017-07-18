@@ -68,10 +68,9 @@ class exahype::Parser {
 
     /**
      * @return Value for given key. Returns the empty string if there is no
-     *         value. Returns std::npos if the key does not exist.
+     *         value. Returns empty string "" if the key does not exist.
      */
-    std::string getValue(const std::string selector,
-                         const std::string& key) const;
+    std::string getValue(const std::string& key) const;
 
    public:
     ParserView(Parser& parser, int solverNumberInSpecificationFile);

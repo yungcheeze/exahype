@@ -273,7 +273,7 @@ SUBROUTINE DMP(dmpresult,arguh,argLimiter,argmax)
    !return
    CALL GetSubcellData( lim, arguh )  
    CALL GetLobattoData( lob, arguh )  
-   DO iVar = 1, nVar 
+   DO iVar = 1, nVar, 5 ! 1, nVar 
         lmin(iVar) = MIN( MINVAL(arguh(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))), MINVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2),1:nSubLimV(3))), MINVAL(lob(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))) )  
         lmax(iVar) = MAX( MAXVAL(arguh(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))), MAXVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2),1:nSubLimV(3))), MAXVAL(lob(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))) )  
         ldiff = MAX( 1e-4, 1e-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)), argmax )   ! *(argLimiter%lmax(iVar) - argLimiter%lmin(iVar))

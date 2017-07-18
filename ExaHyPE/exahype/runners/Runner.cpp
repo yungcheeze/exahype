@@ -68,7 +68,13 @@
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
-exahype::runners::Runner::Runner(Parser& parser) : _parser(parser), _boundingBoxSize(0.0) {}
+exahype::runners::Runner::Runner(Parser& parser) :
+    _parser(parser),
+    _boundingBoxSize(0.0),
+    _meshRefinements(0),
+    _localRecomputations(0),
+    _globalRecomputations(0),
+    _predictorReruns(0) {}
 
 exahype::runners::Runner::~Runner() {}
 
@@ -430,7 +436,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
     int level = coarsestUserMeshLevel;
     while (boundingBoxMeshSpacing > coarsestUserMeshSpacing) {
-      const double boundingBoxMeshCells = std::pow(3,boundingBoxMeshLevel-1);
+      const double boundingBoxMeshCells = std::pow(3,level-1);
       boundingBoxScaling                = boundingBoxMeshCells / ( boundingBoxMeshCells - 2 );
       boundingBoxExtent                 = boundingBoxScaling * maxDomainExtent;
       boundingBoxMeshSpacing            = boundingBoxExtent/boundingBoxMeshCells;
@@ -761,12 +767,28 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
     }
 
+    printStatistics();
     repository.logIterationStatistics(false);
   }
 
   repository.terminate();
 
   return 0;
+}
+
+void exahype::runners::Runner::updateStatistics() {
+  _meshRefinements      += (!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() &&
+                           exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) ? 1 : 0;
+  _localRecomputations  +=  (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) ? 1 : 0;
+  _globalRecomputations +=  (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) ? 1 : 0;
+  _predictorReruns     +=  (exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated()) ? 1 : 0;
+}
+
+void exahype::runners::Runner::printStatistics() {
+  logInfo("printStatistics(...)","number of mesh refinements      = "<<_meshRefinements);
+  logInfo("printStatistics(...)","number of local recomputations  = "<<_localRecomputations);
+  logInfo("printStatistics(...)","number of global recomputations = "<<_globalRecomputations);
+  logInfo("printStatistics(...)","number of predictor reruns      = "<<_predictorReruns);
 }
 
 void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const {
@@ -902,7 +924,9 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
-    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
+    logInfo("updateMeshFusedTimeStepping(...)","global recomputation requested by at least one solver");
+    repository.switchToGlobalRollback();
+    repository.iterate();
   }
 
   // 2. Perform a grid update for those solvers that requested refinement
@@ -919,6 +943,8 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
 
+    // TODO(Dominic): Only overwrite the current time step size with the previous values if global recomputation
+    // Rename Reinitialisation to LocalReinitialisation. Do only call reinitialiseSolversLocally
     logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
     repository.getState().switchToReinitialisationContext();
     repository.switchToFinaliseMeshRefinementAndReinitialisation();
@@ -931,33 +957,27 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
       repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
     }
 
+    // TODO(Dominic): Think about something in order to not shift the time step size if global recomputation
     logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
-    repository.switchToLocalRecomputationAndTimeStepSizeComputation();
+    repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
     repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
   } // LocalRecomputation is done here
 
-  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
-      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation);
-    if (!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementAllSend);
-    }
+  assertion(!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() ||
+            !exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
+
     logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
     repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
     repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
-  }  // MeshUpdate is done here
-
-  // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
-    logInfo("updateMeshFusedTimeStepping(...)","recompute solution and predictor globally");
-    repository.getState().switchToADERDGTimeStepContext();
-    repository.switchToADERDGTimeStep();
-    repository.iterate();
-  }
+    if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      logInfo("updateMeshFusedTimeStepping(...)","redo time step since mesh was not prepared");
+    }
+  } // MeshUpdate and GlobalRecomputation is done here
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository) {
@@ -1065,7 +1085,6 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   #endif
 }
 
-
 void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
   logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","run "<<numberOfStepsToRun<< " iterations with fused algorithmic steps");
@@ -1119,6 +1138,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.iterate();
   }
 
+  updateStatistics();
   // ---- reduction/broadcast barrier ----
 }
 

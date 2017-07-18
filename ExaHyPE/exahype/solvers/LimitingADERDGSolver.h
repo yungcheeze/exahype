@@ -323,6 +323,11 @@ private:
    * Depending on the finest adaptive mesh level and the given level,
    * compute the minimum limiter status for which we need to refine
    * a cell.
+   *
+   * If we have FV layer of width 1, refine if the limiter status is at least 1.
+   * If we have a FV layer of width 2, do some telescoping:
+   * On the second finest level, refine if the limiter status is at least 2.
+   * On coarser levels, refine if the limiter status is at least 3.
    */
   int computeMinimumLimiterStatusForRefinement(int level) const;
 
@@ -517,6 +522,8 @@ public:
    */
   void startNewTimeStep() override;
 
+  void updateTimeStepSizes();
+
   void zeroTimeStepSizes() override;
 
   /**
@@ -545,8 +552,6 @@ public:
   void rollbackToPreviousTimeStep();
 
   void reconstructStandardTimeSteppingDataAfterRollback();
-
-  void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
   void updateNextMaxCellSize(double maxCellSize) override;
@@ -592,9 +597,52 @@ public:
   int tryGetLimiterElementFromSolverElement(
       const int cellDescriptionsIndex,
       const int solverElement) const {
-    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+    SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
     return _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
   }
+
+  /**
+   * If a limiter patch is allocated for the solver patch,
+   * ensure that it's time step data is consistent
+   * with the solver patch's time step data.
+   */
+  void ensureLimiterPatchTimeStepDataIsConsistent(
+        const int cellDescriptionsIndex,
+        const int solverElement) const;
+
+  /**
+   * Copies the time stamp and the time step sizes from the solver patch
+   * to the limiter patch.
+   */
+  static void copyTimeStepDataFromSolverPatch(
+      const SolverPatch& solverPatch, const int cellDescriptionsIndex, const int limiterElement);
+
+  /**
+   * Copies the time stamp and the time step sizes from the solver patch
+   * to the limiter patch.
+   */
+  static void copyTimeStepDataFromSolverPatch(
+      const SolverPatch& solverPatch, LimiterPatch& limiterPatch);
+
+  /**
+   * Looks up the limiter patch for the given solver patch.
+   *
+   * Further copies the time step sizes from the solver patch
+   * to the limiter patch.
+   *
+   * Assumes that \p solverPatch has a limiter status > 0 and thus
+   * has a limiter patch assigned.
+   */
+  LimiterPatch& getLimiterPatchForSolverPatch(const int cellDescriptionsIndex, const SolverPatch& solverPatch) const;
+
+  /**
+   * Similar to ::getLimiterPatchforSolverPatch but does not lookup the
+   * \p limiterElement by itself.
+   *
+   * Assumes that \p limiterElement is valid.
+   */
+  LimiterPatch& getLimiterPatchForSolverPatch(
+      const SolverPatch& solverPatch, const int cellDescriptionsIndex, const int limiterElement) const;
 
   /**
     * \see exahype::amr::computeSubcellPositionOfCellOrAncestor
@@ -677,6 +725,10 @@ public:
    *
    * Dellocate the limiter patch on helper cells.
    *
+   * \note !!! Do not deallocate any limiter patches on compute cells
+   * during the limiter status spreading. They might be still necessary
+   * for a global recomputation.
+   *
    * \note We overwrite the facewise limiter status values with the new value
    * in order to use the updateLimiterStatusAfterSetInitialConditions function
    * afterwards which calls determineLimiterStatus(...) again.
@@ -743,6 +795,25 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+  /**
+   * Computes a new time step size and overwrites
+   * the ADER-DG patches predictor and corrector time
+   * step size with it.
+   *
+   * In contrast to startNewTimeStep(int,int), this
+   * method does not shift the time stamps.
+   *
+   * It simply updates the time step sizes
+   * and adjusts the predictor time step size.
+   *
+   * This method is used in the context of
+   * global recomputations.
+   */
+  double updateTimeStepSizes(
+        const int cellDescriptionsIndex,
+        const int element,
+        double*   tempEigenvalues) const;
 
   void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
@@ -899,6 +970,24 @@ public:
            const int cellDescriptionsIndex,
            const int solverElement) const;
 
+
+   /**
+    * TODO(Dominic): Add docu.
+    */
+   void rollbackSolverSolutionsGlobally(
+          const int cellDescriptionsIndex,
+          const int element) const;
+
+   /**
+    * Overwrite the new limiter status by the previous one.
+    * Deallocate unneeded limiter patches.
+    * Set iterations to cure troubled cells
+    * to the maximum level.
+    */
+   void reinitialiseSolversGlobally(
+       const int cellDescriptionsIndex,
+       const int element) const;
+
   /**
    * Reinitialises cells that have been subject to a limiter status change.
    * This method is invoked (during and??) after the limiter status spreading.
@@ -939,12 +1028,9 @@ public:
    * Helper cell limiter patches can be deallocated during
    * the mesh refinement iterations.
    */
-  void reinitialiseSolvers(
+  void reinitialiseSolversLocally(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
+      const int element) const;
 
   /**
    * Recompute the solution in cells that have been subject to a limiter status change
@@ -965,7 +1051,7 @@ public:
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourOfTroubled1..2, NNT: NeighbourOfTroubled3..4
    */
-  void recomputeSolution(
+  void recomputeSolutionLocally(
       const int cellDescriptionsIndex,
       const int element,
       exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
@@ -994,7 +1080,7 @@ public:
    * We compute the new limiter status based on the merged limiter statuses associated
    * with the faces.
    */
-  void recomputePredictor(
+  void recomputePredictorLocally(
       const int cellDescriptionsIndex,
         const int element,
         exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,

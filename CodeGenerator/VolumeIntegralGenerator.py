@@ -57,7 +57,10 @@ class VolumeIntegralGenerator:
             self.m_context['j_seq'] = range(0,self.m_context['nDof']) if (self.m_context['nDim'] >= 3) else [0]
             
             # render template
-            TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
+            if(self.m_context['noTimeAveraging']):
+                TemplatingUtils.renderAsFile('volumeIntegralNonLinear_noTimeAveraging_cpp.template', self.m_filename, self.m_context)
+            else:
+                TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
 
 
     def generateNonlinearGemms(self):

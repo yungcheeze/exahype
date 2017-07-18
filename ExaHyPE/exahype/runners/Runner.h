@@ -67,6 +67,21 @@ class exahype::runners::Runner {
   tarch::la::Vector<DIMENSIONS,double> _boundingBoxSize;
 
   /**
+   * Statistics.
+   */
+  int _meshRefinements;
+  int _localRecomputations;
+  int _globalRecomputations;
+  int _predictorReruns;
+
+  /**
+   * Updates the statistics.
+   */
+  void updateStatistics();
+
+  void printStatistics();
+
+  /**
    * Setup the oracles for the shared memory parallelisation. Different
    * oracles can be employed:
    *

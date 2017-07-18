@@ -1,0 +1,121 @@
+{# /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/ #}
+
+// Solve the volume integral 
+
+#include <cstring>
+
+#include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/DGMatrices.h"
+#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+
+#include "kernels/aderdg/optimised/asm_volumeIntegral.c"
+
+void kernels::aderdg::optimised::volumeIntegral( 
+  double* restrict lduh, 
+  const double* restrict const lFi,
+  const double* restrict const lSi, //nullptr if not used
+  const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+) {
+
+  
+#ifdef __INTEL_COMPILER
+  __assume_aligned(lFi, ALIGNMENT);
+  __assume_aligned(Kxi_T, ALIGNMENT);
+  __assume_aligned(weights3, ALIGNMENT);
+  __assume_aligned(weights2, ALIGNMENT);
+  __assume_aligned(weights1, ALIGNMENT);
+  __assume_aligned(lduh, ALIGNMENT); //lduh should be aligned, see Solver.h
+{% if useSourceOrNCP %}
+  __assume_aligned(lSi, ALIGNMENT);
+{% endif %}
+#endif
+
+  memset(lduh, 0, sizeof(lduh)*{{nVar*(nDof**nDim)}});
+  //double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
+  double lFhi_loc[{{nDof*nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+  
+  // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
+{% for j in j_seq %} {# if nDim == 2 then j_seq == [0] #}
+{% for i in i_seq %}
+  // #pragma vector aligned
+  // for(int it=0;it<{{nDof*nDofPad}};it++) 
+    // s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
+
+  //x
+  std::memset(lFhi_loc, 0, {{nDof*nVarPad}} * sizeof(double));
+  // Matrix-Vector Products
+  for (int m = 0; m < {{nDof}}; m++) {
+    const double weight = weights3[m+{{nDof*(i+j*nDof)}}] * inverseDx[0];
+    for (int k = 0; k < {{nDof}}; k++) {
+      #pragma simd
+      for (int n = 0; n < {{nVarPad}}; n++) {
+        // Fortran: lFhi_x(:,k,j,i) = lFh(:,1,k,j,i,:) * wGPN(:)
+        lFhi_loc[n+{{nVarPad}}*k] += weight * lFi[n+{{nVarPad}}*(k+{{nDof}}*({{i+nDof*j}}+{{nDof*nDof3D}}*m))];
+      }  
+    }
+  }
+  #pragma forceinline
+  {{gemm_x}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
+  
+  //y
+  std::memset(lFhi_loc, 0, {{nDof*nVarPad}} * sizeof(double));
+  // Matrix-Vector Products
+  for (int m = 0; m < {{nDof}}; m++) {
+    const double weight = weights3[m+{{nDof*(i+j*nDof)}}] * inverseDx[1];
+    for (int k = 0; k < {{nDof}}; k++) {
+      #pragma simd
+      for (int n = 0; n < {{nVarPad}}; n++) {
+        // Fortran: lFhi_x(:,k,j,i) = lFh(:,1,k,j,i,:) * wGPN(:)
+        lFhi_loc[n+{{nVarPad}}*k] += weight * lFi[n+{{nVarPad}}*({{i+nDof*nDof*j}}+{{nDof}}*(k+{{nDof*nDof3D}}*m))+{{1*(nDof**nDim)*nDof*nVarPad}}];
+      }  
+    }
+  }
+  #pragma forceinline
+  {{gemm_y}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
+{% if nDim == 3 %} 
+
+  //z
+  std::memset(lFhi_loc, 0, {{nDof*nVarPad}} * sizeof(double));
+  // Matrix-Vector Products
+  for (int m = 0; m < {{nDof}}; m++) {
+    const double weight = weights3[m+{{nDof*(i+j*nDof)}}] * inverseDx[2];
+    for (int k = 0; k < {{nDof}}; k++) {
+      #pragma simd
+      for (int n = 0; n < {{nVarPad}}; n++) {
+        // Fortran: lFhi_x(:,k,j,i) = lFh(:,1,k,j,i,:) * wGPN(:)
+        lFhi_loc[n+{{nVarPad}}*k] += weight * lFi[n+{{nVarPad}}*({{i+nDof*j}}+{{nDof*nDof}}*(k+{{nDof}}*m))+{{2*(nDof**nDim)*nDof*nVarPad}}];
+      }  
+    }
+  }
+  #pragma forceinline
+  {{gemm_z}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar}}]);
+{% endif %}  
+{% endfor %}
+{% endfor %}
+
+{% if useSourceOrNCP %}
+  // source
+  for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+    // Fortran: lduh(:,k,j,i) += w * lShi(:,k,j,i)
+    for(int m=0; m<{{nDof}}; m++) {
+      const double weight = weights3[ijk] * weights1[m];
+      #pragma simd
+      for (int n = 0; n < {{nVar}}; n++) {
+        lduh[n+{{nVar}}*ijk] += weight * lSi[n+{{nVarPad}}*(ijk+{{nDof**nDim}}*m)];
+      }
+    }  
+  }
+{% endif %}
+}
+

@@ -80,25 +80,13 @@ exahype::mappings::Reinitialisation::descendSpecification(int level) const {
 tarch::logging::Log exahype::mappings::Reinitialisation::_log(
     "exahype::mappings::Reinitialisation");
 
-exahype::mappings::Reinitialisation::Reinitialisation()
-  #ifdef Debug
-  :
-  _interiorFaceMerges(0),
-  _boundaryFaceMerges(0)
-  #endif
-{
+exahype::mappings::Reinitialisation::Reinitialisation() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Reinitialisation::Reinitialisation(
-    const Reinitialisation& masterThread)
-#ifdef Debug
-  :
-  _interiorFaceMerges(0),
-  _boundaryFaceMerges(0)
-  #endif
-{
+    const Reinitialisation& masterThread) {
   // do nothing
 }
 void exahype::mappings::Reinitialisation::mergeWithWorkerThread(
@@ -109,10 +97,7 @@ void exahype::mappings::Reinitialisation::mergeWithWorkerThread(
 
 void exahype::mappings::Reinitialisation::beginIteration(
     exahype::State& solverState) {
-  #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
-  _interiorFaceMerges = 0;
-  _boundaryFaceMerges = 0;
-  #endif
+  // do nothing
 }
 
 void exahype::mappings::Reinitialisation::endIteration(
@@ -121,23 +106,17 @@ void exahype::mappings::Reinitialisation::endIteration(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
         static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-        !=exahype::solvers::LimiterDomainChange::Regular
+        ==exahype::solvers::LimiterDomainChange::Irregular
     ) {
       logInfo("endIteration(...)","meshUpdateRequest="<< solver->getMeshUpdateRequest());
 
       static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->rollbackToPreviousTimeStep();
-
       if (!exahype::State::fuseADERDGPhases()) {
         static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
             reconstructStandardTimeSteppingDataAfterRollback();
       }
     }
   }
-
-  #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
-  logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
-  logInfo("endIteration(...)","boundary face merges: " << _boundaryFaceMerges);
-  #endif
 }
 
 void exahype::mappings::Reinitialisation::enterCell(
@@ -159,10 +138,9 @@ void exahype::mappings::Reinitialisation::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-           &&
+        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-           !=exahype::solvers::LimiterDomainChange::Regular
+           ==exahype::solvers::LimiterDomainChange::Irregular
         ) {
           auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
@@ -171,8 +149,18 @@ void exahype::mappings::Reinitialisation::enterCell(
             limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
           }
 
-          limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
-              fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
+          limitingADERDGSolver->reinitialiseSolversLocally(fineGridCell.getCellDescriptionsIndex(),element);
+        }
+        else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+              ==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
+          auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
+          // TODO(Dominc): Add to docu: Rollback is performed here in GlobalRollback mapping
+          limitingADERDGSolver->reinitialiseSolversGlobally(fineGridCell.getCellDescriptionsIndex(),element);
+
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
 
         solver->prepareNextNeighbourMerging(

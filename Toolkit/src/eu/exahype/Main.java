@@ -34,6 +34,13 @@ public class Main {
     }
   }
 
+  /*
+  // expose global variables.
+  // This is ugly. Main should be a singleton instead.
+  public static boolean interactive;
+  public static String inputFileName;
+  */
+
   public static void main(String[] args) {
     //
     // Usually, I write the header directly before a new algorithm phase, but
@@ -155,7 +162,7 @@ public class Main {
     // Create the kernel calls
     try {
       GenerateSolverRegistration generateKernelCalls =
-          new GenerateSolverRegistration(directoryAndPathChecker);
+          new GenerateSolverRegistration(directoryAndPathChecker, inputFileName);
 
       document.apply(generateKernelCalls);
 

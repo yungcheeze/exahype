@@ -17,8 +17,8 @@ F90 = ifort
 #------------------------------------------------------------------------------
 
 # supermuc:
-LTEC   = $(TECPLOT_BASE)/tecplot360/lib/libtecio.a
-#LTEC   = libtecio.a
+#LTEC   = $(TECPLOT_BASE)/tecplot360/lib/libtecio.a
+LTEC   = libtecio.a
 
 LFLAGS = $(LTEC) -cxxlib
 

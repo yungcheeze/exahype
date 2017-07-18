@@ -206,25 +206,16 @@ class exahype::dastgen::State {
      * which perform a global recomputation.
      */
     MeshRefinementOrGlobalRecomputation,
-   	
+    
     /**
-     * This marks an end point of the side branch.
-     * It is sure here that no solver performs
-     * a global recomputation.
+     * In this section, the  runner
+     * triggers operations for solvers that
+     * have performed mesh refinement or
+     * which perform a global recomputation.
      * 
      * Triggers a send for all registered solvers.
      */
-    MeshRefinementAllSend,
-    
-   	/**
-   	 * In this section, solvers finalise their 
-   	 * global recomputation by doing a complete
-   	 * ADERDGTimeStep. Furthermore
-   	 * since this is the last adapter call
-   	 * in the side branch, all solvers are ask
-   	 * to send out data.
-   	 */
-   	GlobalRecomputationAllSend,
+    MeshRefinementOrGlobalRecomputationAllSend,
    	
    	/**
    	 * In this section, all solver have to drop

@@ -86,14 +86,21 @@ double exahype::solvers::ADERDGSolver::PipedUncompressedBytes = 0;
 double exahype::solvers::ADERDGSolver::PipedCompressedBytes = 0;
 #endif
 
-
-
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
 double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
-
 bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
+
+// helper status
+int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
+int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
+// augmentation status
+int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
+int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
+// limiter status
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 5;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 3;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
@@ -588,9 +595,34 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
+void exahype::solvers::ADERDGSolver::updateTimeStepSizes() {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
+      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+
+      _minPredictorTimeStamp    =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+
+      _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+      break;
+    case TimeStepping::GlobalFixed:
+      _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
+      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+
+      _minPredictorTimeStamp =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+      break;
+  }
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+}
+
 void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
-  _minCorrectorTimeStepSize = 0;
-  _minPredictorTimeStepSize = 0;
+  _previousMinCorrectorTimeStepSize = 0;
+  _minCorrectorTimeStepSize         = 0;
+  _minPredictorTimeStepSize         = 0;
 
   _minPredictorTimeStamp = _minCorrectorTimeStamp;
 }
@@ -603,18 +635,6 @@ void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
 
   assertionEquals(_minCorrectorTimeStamp,_minPredictorTimeStamp);
   assertionEquals(_minCorrectorTimeStepSize,_minPredictorTimeStepSize);
-}
-
-void exahype::solvers::ADERDGSolver::reinitialiseTimeStepData() {
-  switch (_timeStepping) {
-    case TimeStepping::Global:
-      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
-      _minPredictorTimeStamp    = _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
-      break;
-    case TimeStepping::GlobalFixed:
-      //do nothing
-      break;
-  }
 }
 
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
@@ -776,19 +796,16 @@ bool exahype::solvers::ADERDGSolver::isSending(
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending = getMeshUpdateRequest();
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
-      isSending = true;
-      break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
       isSending = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend:
+      isSending = true;
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
       isSending = getMeshUpdateRequest();
       break;
     case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
-      isSending = true;
-      break;
-    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
       isSending = true;
       break;
     case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
@@ -812,19 +829,16 @@ bool exahype::solvers::ADERDGSolver::isComputing(
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isComputing = getMeshUpdateRequest();
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
       isComputing = getMeshUpdateRequest();
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend:
       isComputing = getMeshUpdateRequest();
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
       isComputing = getMeshUpdateRequest();
       break;
     case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
-      isComputing = false;
-      break;
-    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
       isComputing = false;
       break;
     case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
@@ -1435,8 +1449,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 
   // TODO Dominic: This is a little inconsistent since I orignially tried to hide
   // the limiting from the pure ADER-DG scheme
-  fineGridCellDescription.setPreviousLimiterStatus(CellDescription::LimiterStatus::Ok);
-  fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
+  fineGridCellDescription.setPreviousLimiterStatus(0);
+  fineGridCellDescription.setLimiterStatus(0);
 
   // TODO Dominic:
   // Add to docu. We disregarded the following since it can lead to inconsistencies.
@@ -1446,8 +1460,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   //
   if (!initialGrid
       &&
-      coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
-    fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
+      coarseGridCellDescription.getLimiterStatus()>=MinimumLimiterStatusForTroubledCell) {
+    fineGridCellDescription.setLimiterStatus(MinimumLimiterStatusForTroubledCell);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
   }
   overwriteFacewiseLimiterStatus(fineGridCellDescription);
@@ -1665,7 +1679,7 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
 //  assertion1(coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
 //      coarseGridCellDescription.toString()); // TODO(Dominic): Does not always apply see veto
-  assertion1(fineGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
+  assertion1(fineGridCellDescription.getLimiterStatus()==0,
         fineGridCellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(
       fineGridCellDescription.getSolution()),fineGridCellDescription.toString());
@@ -1745,8 +1759,7 @@ void exahype::solvers::ADERDGSolver::finaliseStateUpdates(
 ////////////////////////////////////////
 void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
   const CellDescription& cellDescription,
-  const std::string& methodTraceOfCaller
-) {
+  const std::string& methodTraceOfCaller) const {
   int dataPerCell             = 0;
   int unknownsPerCell         = 0;
   int dataPerCellBoundary     = 0;
@@ -1880,8 +1893,13 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       lFhbnd,
       tempSpaceTimeUnknowns,
       tempSpaceTimeFluxUnknowns,
+#ifdef NO_TIME_AVERAGING
+      nullptr,
+      nullptr,
+#else
       tempUnknowns,
       tempFluxUnknowns,
+#endif
       tempStateSizedVector,
       luh,
       &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
@@ -1896,7 +1914,11 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // Remove the tempFluxUnkowns and tempUnknowns.
   volumeIntegral(
       lduh,
+#ifdef NO_TIME_AVERAGING
+      tempSpaceTimeFluxUnknowns[0],
+#else
       tempFluxUnknowns,
+#endif
       &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
 #else 
   spaceTimePredictor(
@@ -1904,8 +1926,13 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       lFhbnd,
       tempSpaceTimeUnknowns,
       tempSpaceTimeFluxUnknowns,
+#ifdef NO_TIME_AVERAGING
+      nullptr,
+      nullptr,
+#else
       tempUnknowns,
       tempFluxUnknowns,
+#endif
       tempStateSizedVector,
       luh,
       cellDescription.getSize(),
@@ -1918,9 +1945,14 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // the extrpolated fluxes. Here, we can also perform the
   // time averaging on the fly.
   // Remove the tempFluxUnkowns and tempUnknowns.
+//  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
   volumeIntegral(
       lduh,
+#ifdef NO_TIME_AVERAGING
+      tempSpaceTimeFluxUnknowns[0],
+#else
       tempFluxUnknowns,
+#endif
       cellDescription.getSize());
 #endif
 
@@ -1935,28 +1967,23 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   if(usePaddedData_nVar()) {
     //TODO JMG add assert ignoring padding
   } else {
-    for (int i=0; i<getDataPerCell(); i++) {
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
-      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//    for (int i=0; i<getDataPerCell(); i++) {
+//    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
+//      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   #endif
 }
 
-double exahype::solvers::ADERDGSolver::startNewTimeStep(
-    const int cellDescriptionsIndex,
-    const int element,
-    double*   tempEigenvalues) {
-  CellDescription& cellDescription =
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
-
+double exahype::solvers::ADERDGSolver::computeTimeStepSize(
+    CellDescription& cellDescription, double*   tempEigenvalues) {
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
     const double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    validateNoNansInADERDGSolver(cellDescription,"startNewTimeStep(...)");
+    validateNoNansInADERDGSolver(cellDescription,"computeTimeStepSizes(...)");
 //TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
 #ifdef OPT_KERNELS
     double* dx = &cellDescription.getSize()[0];
@@ -1977,6 +2004,23 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     assertion2(admissibleTimeStepSize>0,admissibleTimeStepSize,cellDescription.toString());
     assertion3(admissibleTimeStepSize<std::numeric_limits<double>::max(),std::numeric_limits<double>::max(),admissibleTimeStepSize,cellDescription.toString());
     assertion2(std::isfinite(admissibleTimeStepSize),admissibleTimeStepSize,cellDescription.toString());
+
+    return admissibleTimeStepSize;
+  }
+
+  return std::numeric_limits<double>::max();
+}
+
+double exahype::solvers::ADERDGSolver::startNewTimeStep(
+    const int cellDescriptionsIndex,
+    const int element,
+    double*   tempEigenvalues) {
+  CellDescription& cellDescription =
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
+    double admissibleTimeStepSize =
+        computeTimeStepSize(cellDescription,tempEigenvalues);
 
     // Direct update of the cell description time steps
     // Note that these local quantities might
@@ -2004,6 +2048,7 @@ void exahype::solvers::ADERDGSolver::zeroTimeStepSizes(const int cellDescription
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
+    cellDescription.setPreviousCorrectorTimeStepSize(0.0);
     cellDescription.setCorrectorTimeStepSize(0.0);
     cellDescription.setPredictorTimeStepSize(0.0);
 
@@ -2178,25 +2223,15 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
-void exahype::solvers::ADERDGSolver::rollbackSolution(
-    const int cellDescriptionsIndex,
-    const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  // reset helper variables
-  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-
+void exahype::solvers::ADERDGSolver::rollbackSolution(CellDescription& cellDescription) const {
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-    swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
+    swapSolutionAndPreviousSolution(cellDescription);
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
-void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(
-    const int cellDescriptionsIndex,
-    const int element) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(CellDescription& cellDescription) const {
   assertion(cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell);
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 
@@ -2477,8 +2512,7 @@ exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
 exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
   assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
   const int newLimiterStatusAsInt=std::min(
-      limiterStatusAsInt,
-      static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+      limiterStatusAsInt, MinimumLimiterStatusForTroubledCell );
 
   return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
 }
@@ -2490,12 +2524,12 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
   const int croppedOtherLimiterStatus =
       std::min(
           otherLimiterStatus,
-          static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+          MinimumLimiterStatusForTroubledCell );
 
   int limiterStatus =
       std::min(
         cellDescription.getFacewiseLimiterStatus(faceIndex),
-        static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+        MinimumLimiterStatusForTroubledCell );
   limiterStatus =
       std::max( limiterStatus, croppedOtherLimiterStatus );
 
@@ -2543,10 +2577,6 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursLimiterStatus(
   mergeWithLimiterStatus(cellDescription1,faceIndex1,limiterStatus2);
   mergeWithLimiterStatus(cellDescription2,faceIndex2,limiterStatus1);
 }
-
-// helper status
-int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
-int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
 
 void
 exahype::solvers::ADERDGSolver::updateHelperStatus(
@@ -2611,10 +2641,6 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursHelperStatus(
   mergeWithHelperStatus(cellDescription1,2*direction+orientation1,helperStatus2);
   mergeWithHelperStatus(cellDescription2,2*direction+orientation2,helperStatus1);
 }
-
-// augmentation status
-int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
-int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
 
 void
 exahype::solvers::ADERDGSolver::updateAugmentationStatus(
@@ -3279,7 +3305,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoi
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
@@ -3424,7 +3450,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         peano::heap::MessageType::NeighbourCommunication);
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
-    std::vector<double> emptyMessage(0);
+    DataHeap::HeapEntries emptyMessage(0);
 
     for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
       DataHeap::getInstance().sendData(
@@ -3440,7 +3466,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
 
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
@@ -3741,7 +3767,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
   logDebug("sendEmptyDataToMaster(...)","empty data for solver sent to rank "<<masterRank<<
            ", cell: "<< x << ", level: " << level);
 
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, masterRank, x, level,
@@ -4041,7 +4067,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, workerRank, x, level,

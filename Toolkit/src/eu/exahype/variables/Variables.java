@@ -361,7 +361,7 @@ public class Variables {
    **/
   private String createVariableShortcuts() {
     String indent="  ";
-    String type="static constexpr int ";
+    String type="const int ";
 
     String shortcuts = "";
     int offset = 0;
@@ -398,13 +398,52 @@ public class Variables {
 
     return shortcutArray;
   }
+  
+  /**
+   * Generate length information
+   **/
+  private String createVariableMultiplicitiesArray() {
+    String mArray = "";
+    if (_variablesMap!=null) {
+      for (String identifier : _variablesMap.keySet()) {
+        int multiplicity = _variablesMap.get(identifier);
+        mArray += String.valueOf(multiplicity) + ", ";
+      }
+    }
+
+    // finish the array with a negative value
+    mArray += "-1";
+
+    return mArray;
+  }
+  
+  private String createVariableMultiplicities() {
+    String indent="  ";
+    String type="const int ";
+
+    String shortcuts = "";
+    if (_variablesMap!=null) {
+      // poor mans max identifier length for a nicer code layout
+      int maxIdentifierLength = 0;
+      for (String identifier : _variablesMap.keySet()) {
+          maxIdentifierLength = Math.max(identifier.length(), maxIdentifierLength);
+      }
+    
+      for (String identifier : _variablesMap.keySet()) {
+        int multiplicity = _variablesMap.get(identifier);
+        shortcuts += indent + type + " " + fixedLengthString(identifier, maxIdentifierLength) + " = " + String.valueOf(multiplicity) + ";\n";
+      }
+    }
+
+    return shortcuts;
+  }
 
   /**
    * Generate the names as strings
    **/
   private String createVariableNames() {
     String indent="  ";
-    String type="static constexpr char const *";
+    String type="char const *";
 
     String names = "";
     if (_variablesMap!=null) {
@@ -765,8 +804,12 @@ public class Variables {
     
     content = content.replaceAll("\\{\\{VariableShortcuts\\}\\}", createVariableShortcuts());
     content = content.replaceAll("\\{\\{VariableShortcutsArray\\}\\}", createVariableShortcutArray());
+    content = content.replaceAll("\\{\\{VariableMultiplicities\\}\\}", createVariableMultiplicities());
+    content = content.replaceAll("\\{\\{VariableMultiplicitiesArray\\}\\}", createVariableMultiplicitiesArray());
     content = content.replaceAll("\\{\\{VariableNames\\}\\}", createVariableNames());
     content = content.replaceAll("\\{\\{VariableNamesArray\\}\\}", createVariableNamesArray());
+    
+    content = content.replaceAll("\\{\\{variablesMapSize\\}\\}", String.valueOf(_variablesMap.size()) );
     
     writer.write(content);
   }

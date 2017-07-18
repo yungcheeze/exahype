@@ -56,6 +56,9 @@ event-mapping:
   
 event-mapping:
   name: LocalRecomputation
+  
+event-mapping:
+  name: GlobalRollback
 
 // GridUpdate   
 event-mapping:
@@ -180,7 +183,13 @@ adapter:
   merge-with-user-defined-mapping: LocalRecomputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused)
-  merge-with-user-defined-mapping: PostProcessing 
+  merge-with-user-defined-mapping: PostProcessing
+  
+adapter:
+  name: GlobalRollback
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: GlobalRollback
+  merge-with-user-defined-mapping: PostProcessing    
  
 // Additional adapters for 4 phase time stepping
 adapter: 

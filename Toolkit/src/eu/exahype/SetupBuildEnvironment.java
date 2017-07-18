@@ -13,6 +13,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   private boolean _requiresFortran;
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
+  private boolean _opt_noTimeAveraging = false; 
 
   private String _likwidInc;
   private String _likwidLib;
@@ -176,6 +177,10 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
                             || (node.getLanguage().getText().trim().equals("C") 
                                 && (node.getKernel().toString().trim().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
     
+    if (_useOptimisedKernels)  {  
+      _opt_noTimeAveraging = node.getKernel().toString().trim().contains( eu.exahype.solvers.OptimisedADERDG.noTimeAveragingOptionId );
+    }
+    
   }
 
   @Override
@@ -233,6 +238,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
       if (_ipcmLib != null) {
         _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");
+      }
+      if (_opt_noTimeAveraging) {
+         _writer.write("PROJECT_CFLAGS+=-DNO_TIME_AVERAGING \n");
       }
       _writer.write("\n\n");
       if (_useOptimisedKernels) {

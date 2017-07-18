@@ -51,11 +51,6 @@ class exahype::mappings::Reinitialisation {
    */
   static tarch::logging::Log _log;
 
-  #ifdef Debug
-  int _interiorFaceMerges;
-  int _boundaryFaceMerges;
-  #endif
-
 #ifdef Parallel
   /**
    * We only send empty data for LimitingADERDGSolvers

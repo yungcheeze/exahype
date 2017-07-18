@@ -19,26 +19,29 @@
 #if DIMENSIONS == 3
 
 template <int numberOfVariables, int basisSize>
-void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
+void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const double *const lFhbnd,
                               const tarch::la::Vector<DIMENSIONS, double> &dx) {
   constexpr int order = basisSize - 1;
 
-  idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
-  idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
-
+  idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables); // (z,y,x,var/par)
+  idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
+  // x-faces: (z,y,var/par)
+  // y-faces: (z,x,var/par)
+  // z-faces: (y,x,var/par)
+  
   // x faces
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
+  for (int i = 0; i < basisSize; i++) { // z
+    for (int j = 0; j < basisSize; j++) { // y
       const double weight = kernels::gaussLegendreWeights[order][i] *
                             kernels::gaussLegendreWeights[order][j];
       const double updateSize = weight / dx[0];
 
-      for (int k = 0; k < basisSize; k++) {
+      for (int k = 0; k < basisSize; k++) { // x
         // left flux minus right flux
         for (int l = 0; l < numberOfVariables; l++) {
           lduh[idx_lduh(i, j, k, l)] -=
-              (lFbnd[idx_lFbnd(1, i, j, l)] * kernels::FRCoeff[order][k] -
-               lFbnd[idx_lFbnd(0, i, j, l)] * kernels::FLCoeff[order][k]) *
+              (lFhbnd[idx_lFhbnd(1, i, j, l)] * kernels::FRCoeff[order][k] -
+               lFhbnd[idx_lFhbnd(0, i, j, l)] * kernels::FLCoeff[order][k]) *
               updateSize;
         }
       }
@@ -46,9 +49,9 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
   }
 
   // y faces
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
+  for (int i = 0; i < basisSize; i++) { // z
+    for (int j = 0; j < basisSize; j++) { // y
+      for (int k = 0; k < basisSize; k++) { // x
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][k];
         const double updateSize = weight / dx[1];
@@ -56,8 +59,8 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
         // back flux minus front flux
         for (int l = 0; l < numberOfVariables; l++) {
           lduh[idx_lduh(i, j, k, l)] -=
-              (lFbnd[idx_lFbnd(3, i, k, l)] * kernels::FRCoeff[order][j] -
-               lFbnd[idx_lFbnd(2, i, k, l)] * kernels::FLCoeff[order][j]) *
+              (lFhbnd[idx_lFhbnd(3, i, k, l)] * kernels::FRCoeff[order][j] -
+               lFhbnd[idx_lFhbnd(2, i, k, l)] * kernels::FLCoeff[order][j]) *
               updateSize;
         }
       }
@@ -65,9 +68,9 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
   }
 
   // z faces
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
+  for (int i = 0; i < basisSize; i++) { // z 
+    for (int j = 0; j < basisSize; j++) { // y
+      for (int k = 0; k < basisSize; k++) { // x
         const double weight = kernels::gaussLegendreWeights[order][j] *
                               kernels::gaussLegendreWeights[order][k];
         const double updateSize = weight / dx[2];
@@ -75,8 +78,8 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
         // bottom flux minus top flux
         for (int l = 0; l < numberOfVariables; l++) {
           lduh[idx_lduh(i, j, k, l)] -=
-              (lFbnd[idx_lFbnd(5, j, k, l)] * kernels::FRCoeff[order][i] -
-               lFbnd[idx_lFbnd(4, j, k, l)] * kernels::FLCoeff[order][i]) *
+              (lFhbnd[idx_lFhbnd(5, j, k, l)] * kernels::FRCoeff[order][i] -
+               lFhbnd[idx_lFhbnd(4, j, k, l)] * kernels::FLCoeff[order][i]) *
               updateSize;
         }
       }

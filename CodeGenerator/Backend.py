@@ -50,7 +50,6 @@ import ConverterGenerator
 import string
 import re
 
-
 m_architecture           = ''
 m_precision              = ''
 m_config                 = {}
