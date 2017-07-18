@@ -66,6 +66,7 @@ void exahype::pingPongTest() {
 
       logInfo( "run()", "send one vertex" );
       sendVertex[0].send(1,100,false,-1);
+      sendVertex[0].send(1,100,true,-1);
       logInfo( "run()", "vertex left system" );
 
       logInfo( "run()", "send three vertices from call stack" );
@@ -75,7 +76,17 @@ void exahype::pingPongTest() {
     if (tarch::parallel::Node::getInstance().getRank()==1) {
       logInfo( "run()", "start to receive single vertex " );
       exahype::Vertex receivedVertex;
+
       receivedVertex.receive(0,100,false,-1);
+      logInfo( "run()", "received vertex " << receivedVertex.toString() );
+      assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
+      #ifdef Dim3
+      assertion1( receivedVertex.getX()(2)==2.0, receivedVertex.toString() );
+      #endif
+
+      receivedVertex.receive(0,100,true,-1);
       logInfo( "run()", "received vertex " << receivedVertex.toString() );
       assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
       assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
@@ -86,8 +97,9 @@ void exahype::pingPongTest() {
 
       exahype::Vertex receivedVertices[5];
       logInfo( "run()", "start to receive three vertices on call stack" );
-      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 100, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-      logInfo( "run()", "received vertices" );
+      MPI_Status status;
+      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 100, tarch::parallel::Node::getInstance().getCommunicator(), &status );
+      logInfo( "run()", "received vertices:" );
       assertion3( receivedVertices[0].getLevel()==4,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(0)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(1)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
