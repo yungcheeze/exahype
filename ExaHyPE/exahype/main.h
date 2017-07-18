@@ -4,7 +4,7 @@
 #include <string>
 
 namespace exahype {
-	void pingPoingTest();
+	void pingPongTest();
 
 	/**
 	 * Dump Version information and similiar information about compile time constants
