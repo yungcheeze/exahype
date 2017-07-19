@@ -371,10 +371,10 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
     dfor2(myDest)
       dfor2(mySrc)
-        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest; // "invert" points
         tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
 
-        int destScalar = TWO_POWER_D - myDestScalar - 1;
+        int destScalar = TWO_POWER_D - myDestScalar - 1; // "invert" point indices
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {

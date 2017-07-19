@@ -1097,8 +1097,6 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   DataHeap::HeapEntries emptyMessage(0);
