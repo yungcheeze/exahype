@@ -358,11 +358,10 @@ public class Variables {
   
   /**
    * Generate the position shortcuts.
+   *   TYPE should be one like "const int"
+   *   INDENT should be something like "  "
    **/
-  private String createVariableShortcuts() {
-    String indent="  ";
-    String type="const int ";
-
+  private String createVariableShortcuts(String type, String indent) {
     String shortcuts = "";
     int offset = 0;
     if (_variablesMap!=null) {
@@ -417,10 +416,11 @@ public class Variables {
     return mArray;
   }
   
-  private String createVariableMultiplicities() {
-    String indent="  ";
-    String type="const int ";
-
+  /**
+   *  TYPE one like "const int"
+   *  INDENT one like "  "
+   **/
+  private String createVariableMultiplicities(String type, String indent) {
     String shortcuts = "";
     if (_variablesMap!=null) {
       // poor mans max identifier length for a nicer code layout
@@ -439,11 +439,14 @@ public class Variables {
   }
 
   /**
-   * Generate the names as strings
+   * Generate the names as strings.
+   *  TYPE like "char const*" and SUFFIX ""
+   *  or TYPE   "constexpr char" and SUFFIX "[]"
+   *  INDENT like "  "
    **/
-  private String createVariableNames() {
-    String indent="  ";
-    String type="char const *";
+  private String createVariableNames(String type, String suffix, String indent) {
+    // Method 1: constexpr char constString[]
+    // Method 2: char const* constString  OR  char const constString[]
 
     String names = "";
     if (_variablesMap!=null) {
@@ -454,7 +457,7 @@ public class Variables {
       }
     
       for (String identifier : _variablesMap.keySet()) {
-        names += indent + type + " " + fixedLengthString(identifier, maxIdentifierLength) + " = \"" + identifier  + "\";\n";
+        names += indent + type + " " + fixedLengthString(identifier, maxIdentifierLength) + suffix + " = \"" + identifier  + "\";\n";
       }
     }
 
@@ -802,11 +805,14 @@ public class Variables {
     
     content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
     
-    content = content.replaceAll("\\{\\{VariableShortcuts\\}\\}", createVariableShortcuts());
+    String indent = "  ";
+    content = content.replaceAll("\\{\\{VariableShortcuts\\}\\}", createVariableShortcuts("const int", indent));
+    content = content.replaceAll("\\{\\{ConstexprVariableShortcuts\\}\\}", createVariableShortcuts("constexpr int", indent));
     content = content.replaceAll("\\{\\{VariableShortcutsArray\\}\\}", createVariableShortcutArray());
-    content = content.replaceAll("\\{\\{VariableMultiplicities\\}\\}", createVariableMultiplicities());
+    content = content.replaceAll("\\{\\{VariableMultiplicities\\}\\}", createVariableMultiplicities("const int", indent));
     content = content.replaceAll("\\{\\{VariableMultiplicitiesArray\\}\\}", createVariableMultiplicitiesArray());
-    content = content.replaceAll("\\{\\{VariableNames\\}\\}", createVariableNames());
+    content = content.replaceAll("\\{\\{VariableNames\\}\\}", createVariableNames("const char*", "", indent));
+    content = content.replaceAll("\\{\\{ConstexprVariableNames\\}\\}", createVariableNames("constexpr char", "[]", indent));
     content = content.replaceAll("\\{\\{VariableNamesArray\\}\\}", createVariableNamesArray());
     
     content = content.replaceAll("\\{\\{variablesMapSize\\}\\}", String.valueOf(_variablesMap.size()) );

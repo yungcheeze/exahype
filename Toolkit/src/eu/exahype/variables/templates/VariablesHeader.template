@@ -110,10 +110,10 @@ public:
 namespace {{Project}} {
 	namespace {{Solver}}_Variables {
 		namespace shortcuts {
-			{{VariableShortcuts}}
+			{{ConstexprVariableShortcuts}}
 		} // namespace shortcuts
 		namespace names {
-			{{VariableNames}}
+			{{ConstexprVariableNames}}
 		} // namespace names
 	} // end of namespace {{Project}}::{{Solver}}_Variables 
 } // end of namespace {{Project}}
