@@ -3431,15 +3431,6 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         cellDescription.getFluctuation()).data() +
         (faceIndex * dofPerFace);
 
-    logDebug(
-        "sendDataToNeighbour(...)",
-        "send "<<DataMessagesPerNeighbourCommunication<<" arrays to rank " <<
-        toRank << " for cell="<<cellDescription.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
-        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
-        ", src=" << src << ", dest=" << dest <<
-        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
-    );
-
     #ifdef Asserts
     const int lQhbndMessageIndex = DataHeap::getInstance().createData(dataPerFace+DIMENSIONS+2, dataPerFace+2*DIMENSIONS+2);
     const int lFhbndMessageIndex = DataHeap::getInstance().createData(dofPerFace+DIMENSIONS+2, dofPerFace+2*DIMENSIONS+2);
@@ -3467,6 +3458,11 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     *(lQhbndMessage+dataPerFace+2*DIMENSIONS+1) = 0; // predictor
     *(lFhbndMessage+dofPerFace+2*DIMENSIONS+1 ) = 1; // flux
 
+    logInfo(
+            "sendDataToNeighbour(...)", "send "<<DataMessagesPerNeighbourCommunication<<" msgs to rank " <<
+            toRank << " vertex="<<x.toString()<<" face=" << faceBarycentre.toString());
+
+
     // Send order: lQhbnd,lFhbnd
     // Receive order: lFhbnd,lQhbnd
     DataHeap::getInstance().sendData(
@@ -3478,7 +3474,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
 
     DataHeap::getInstance().deleteData(lQhbndMessageIndex,true);
     DataHeap::getInstance().deleteData(lFhbndMessageIndex,true);
-#else
+    #else
     // Send order: lQhbnd,lFhbnd
     // Receive order: lFhbnd,lQhbnd
     DataHeap::getInstance().sendData(
@@ -3487,7 +3483,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     DataHeap::getInstance().sendData(
         lFhbnd, dofPerFace, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
-#endif
+    #endif
 
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
@@ -3564,20 +3560,13 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     assertion(!DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
     assertion4(!cellDescription.getNeighbourMergePerformed(faceIndex),
         faceIndex,cellDescriptionsIndex,cellDescription.getOffset().toString(),cellDescription.getLevel());
-    logDebug(
-        "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
-        fromRank << " for vertex x=" << x << ", level=" << level <<
-        ", src type=" << cellDescription.getType() <<
-        ", src=" << src << ", dest=" << dest <<
-        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
-    );
 
     double* lQhbnd = DataHeap::getInstance().getData(receivedlQhbndIndex).data();
     double* lFhbnd = DataHeap::getInstance().getData(receivedlFhbndIndex).data();
 
     // Send order: lQhbnd,lFhbnd
     // Receive order: lFhbnd,lQhbnd
-#ifdef Asserts
+    #ifdef Asserts
     DataHeap::getInstance().receiveData(
         lFhbnd,dofPerFace+2*DIMENSIONS+2,
         fromRank, x, level,peano::heap::MessageType::NeighbourCommunication);
@@ -3589,9 +3578,9 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     std::stringstream otherPredictorMetadata;
     std::stringstream otherFluxMetadata;
 
-    myMetadata             << "offset=";
-    otherPredictorMetadata << "offset=";
-    otherFluxMetadata      << "offset=";
+    myMetadata             << "rank="<<tarch::parallel::Node::getInstance().getRank()<<"; offset=";
+    otherPredictorMetadata << "rank="<<fromRank<<"; offset=";
+    otherFluxMetadata      << "rank="<<fromRank<<"; offset=";
     for (int i=0; i < DIMENSIONS; i++) {
       myMetadata             << cellDescription.getOffset()[i] << " ";
       otherPredictorMetadata << *(lQhbnd+dataPerFace+i) << " ";
@@ -3611,18 +3600,22 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
 
     otherPredictorMetadata << ";array (0:predictor,1:flux)="<<*(lQhbnd+dataPerFace+2*DIMENSIONS+1) << " ";
     otherFluxMetadata      << ";array (0:predictor,1:flux)="<<*(lFhbnd+dofPerFace +2*DIMENSIONS+1) << " ";
-#else
+
+    logInfo(
+        "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" msgs from rank " <<
+        fromRank << " vertex="<<x.toString()<<" face=" << faceBarycentre.toString());
+    #else
     DataHeap::getInstance().receiveData(
         lFhbnd,dofPerFace,
         fromRank, x, level,peano::heap::MessageType::NeighbourCommunication);
     DataHeap::getInstance().receiveData(
         lQhbnd,dataPerFace,
         fromRank, x, level, peano::heap::MessageType::NeighbourCommunication);
-#endif
+    #endif
     
     for (int i=0; i<DIMENSIONS; i++) {
-      assertionNumericalEquals3(faceBarycentre[i], *(lQhbnd+dataPerFace+DIMENSIONS+i),myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
-      assertionNumericalEquals3(faceBarycentre[i], *(lFhbnd+dofPerFace+DIMENSIONS+i), myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
+      assertion3(tarch::la::equals(faceBarycentre[i], *(lQhbnd+dataPerFace+DIMENSIONS+i),1e-3),myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
+      assertion3(tarch::la::equals(faceBarycentre[i], *(lFhbnd+dofPerFace+DIMENSIONS+i), 1e-3), myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
     }
     assertionNumericalEquals3(cellDescription.getSolverNumber(), *(lQhbnd+dataPerFace+2*DIMENSIONS),myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
     assertionNumericalEquals3(cellDescription.getSolverNumber(), *(lFhbnd+dofPerFace+2*DIMENSIONS), myMetadata.str(),otherPredictorMetadata.str(),otherFluxMetadata.str());
