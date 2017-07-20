@@ -1483,8 +1483,6 @@ class exahype::solvers::Solver {
    */
   virtual void sendEmptyDataToNeighbour(
       const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
 

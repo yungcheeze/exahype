@@ -1882,7 +1882,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
 
     if (solverPatch.getLimiterStatus()==0) {
       _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+      _limiter->sendEmptyDataToNeighbour(toRank,x,level); // !!! Receive order must be inverted in neighbour comm.
     }
     else if (solverPatch.getLimiterStatus()>0 &&
              solverPatch.getLimiterStatus()<ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
@@ -1901,7 +1901,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
     else { // solverPatch.getLimiterStatus()>=ADERDGSolver::MinimumLimiterStatusForTroubledCell
       const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
       assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
-      _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      _solver->sendEmptyDataToNeighbour(toRank,x,level);
       _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
     }
 
@@ -1940,8 +1940,6 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
 
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   // send an empty minAndMax message
@@ -1954,9 +1952,9 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
           peano::heap::MessageType::NeighbourCommunication);
   }
 
-  _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  _solver->sendEmptyDataToNeighbour(toRank,x,level);
   if (level==getMaximumAdaptiveMeshLevel()) {
-    _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+    _limiter->sendEmptyDataToNeighbour(toRank,x,level);
   }
 }
 
@@ -2142,8 +2140,8 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptySolverAndLimiterDataToNeig
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
-  _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-  _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  _solver->sendEmptyDataToNeighbour(toRank,x,level);
+  _limiter->sendEmptyDataToNeighbour(toRank,x,level);
 }
 
 void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(

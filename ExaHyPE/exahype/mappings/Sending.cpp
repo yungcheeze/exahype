@@ -245,7 +245,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const int                                     level) const {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->isSending(_localState.getAlgorithmSection())) {
-      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      solver->sendEmptyDataToNeighbour(toRank,x,level);
     }
   }
 
@@ -274,7 +274,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
       if (element!=exahype::solvers::Solver::NotFound) {
         solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
       } else {
-        solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+        solver->sendEmptyDataToNeighbour(toRank,x,level);
       }
     }
   }
