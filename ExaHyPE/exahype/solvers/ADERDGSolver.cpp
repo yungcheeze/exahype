@@ -1874,9 +1874,9 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   if(usePointSource()) { //disable kernel if not needed
-      pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
-      // luh, t, dt, cell cell center, cell size, data allocation for forceVect
-    }
+    pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
+    // luh, t, dt, cell cell center, cell size, data allocation for forceVect
+  }
 //TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
 #ifdef OPT_KERNELS
   double* dx = &cellDescription.getSize()[0];
@@ -2221,6 +2221,11 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
+
+  // update helper status // TODO(Dominic): Check if we can work with the reduced values in the neighbour exchange
+  updateHelperStatus(cellDescription);
+  // marking for augmentation
+  updateAugmentationStatus(cellDescription);
 }
 
 void exahype::solvers::ADERDGSolver::rollbackSolution(CellDescription& cellDescription) const {
@@ -2571,8 +2576,8 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursLimiterStatus(
   const int faceIndex1 = 2*direction+orientation1;
   const int faceIndex2 = 2*direction+orientation2;
 
-  const int limiterStatus1 = cellDescription1.getFacewiseLimiterStatus(faceIndex1);
-  const int limiterStatus2 = cellDescription2.getFacewiseLimiterStatus(faceIndex2);
+  const int limiterStatus1 = cellDescription1.getLimiterStatus(); // TODO(Dominic): Add to docu: Is merged multiple times; no counters
+  const int limiterStatus2 = cellDescription2.getLimiterStatus();
 
   mergeWithLimiterStatus(cellDescription1,faceIndex1,limiterStatus2);
   mergeWithLimiterStatus(cellDescription2,faceIndex2,limiterStatus1);
@@ -2635,11 +2640,11 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursHelperStatus(
   const int faceIndex1 = 2*direction+orientation1;
   const int faceIndex2 = 2*direction+orientation2;
 
-  const int helperStatus1 = cellDescription1.getFacewiseHelperStatus(faceIndex1);
-  const int helperStatus2 = cellDescription2.getFacewiseHelperStatus(faceIndex2);
+  const int helperStatus1 = cellDescription1.getHelperStatus(); // TODO(Dominic): Add to docu: Is merged multiple times; no counters
+  const int helperStatus2 = cellDescription2.getHelperStatus();
 
-  mergeWithHelperStatus(cellDescription1,2*direction+orientation1,helperStatus2);
-  mergeWithHelperStatus(cellDescription2,2*direction+orientation2,helperStatus1);
+  mergeWithHelperStatus(cellDescription1,faceIndex1,helperStatus2);
+  mergeWithHelperStatus(cellDescription2,faceIndex2,helperStatus1);
 }
 
 void
@@ -2700,11 +2705,11 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursAugmentationStatus(
   const int faceIndex1 = 2*direction+orientation1;
   const int faceIndex2 = 2*direction+orientation2;
 
-  const int augmentationStatus1 = cellDescription1.getFacewiseAugmentationStatus(faceIndex1);
-  const int augmentationStatus2 = cellDescription2.getFacewiseAugmentationStatus(faceIndex2);
+  const int augmentationStatus1 = cellDescription1.getAugmentationStatus(); // TODO(Dominic): Add to docu: Is merged multiple times; no counters
+  const int augmentationStatus2 = cellDescription2.getAugmentationStatus(); // TODO(Dominic): Add to docu: Is merged multiple times; no counters
 
-  mergeWithAugmentationStatus(cellDescription1,2*direction+orientation1,augmentationStatus2);
-  mergeWithAugmentationStatus(cellDescription2,2*direction+orientation2,augmentationStatus1);
+  mergeWithAugmentationStatus(cellDescription1,faceIndex1,augmentationStatus2);
+  mergeWithAugmentationStatus(cellDescription2,faceIndex2,augmentationStatus1);
 }
 
 // merge metadata
@@ -3360,14 +3365,10 @@ exahype::solvers::ADERDGSolver::appendNeighbourCommunicationMetadata(
     CellDescription& cellDescription =
         getCellDescription(cellDescriptionsIndex,element);
 
-    const int direction   = tarch::la::equalsReturnIndex(src, dest);
-    const int orientation = (1 + dest(direction) - src(direction))/2;
-    const int faceIndex   = 2*direction+orientation;
-
     metadata.push_back(static_cast<int>(cellDescription.getType()));
-    metadata.push_back(cellDescription.getFacewiseAugmentationStatus(faceIndex));
-    metadata.push_back(cellDescription.getFacewiseHelperStatus(faceIndex));
-    metadata.push_back(cellDescription.getFacewiseLimiterStatus(faceIndex));
+    metadata.push_back(cellDescription.getAugmentationStatus()); // TODO(Dominic): Add to docu: Might be merged multiple times!
+    metadata.push_back(cellDescription.getHelperStatus());
+    metadata.push_back(cellDescription.getLimiterStatus());
   } else {
     for (int i = 0; i < exahype::NeighbourCommunicationMetadataPerSolver; ++i) {
       metadata.push_back(exahype::InvalidMetadataEntry); // implicit conversion
