@@ -3432,8 +3432,8 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         (faceIndex * dofPerFace);
 
     #ifdef Asserts
-    const int lQhbndMessageIndex = DataHeap::getInstance().createData(dataPerFace+DIMENSIONS+2, dataPerFace+2*DIMENSIONS+2);
-    const int lFhbndMessageIndex = DataHeap::getInstance().createData(dofPerFace+DIMENSIONS+2, dofPerFace+2*DIMENSIONS+2);
+    const int lQhbndMessageIndex = DataHeap::getInstance().createData(dataPerFace+2*DIMENSIONS+2, dataPerFace+2*DIMENSIONS+2);
+    const int lFhbndMessageIndex = DataHeap::getInstance().createData(dofPerFace+2*DIMENSIONS+2, dofPerFace+2*DIMENSIONS+2);
     assertion(!DataHeap::getInstance().getData(lQhbndMessageIndex).empty());
     assertion(!DataHeap::getInstance().getData(lFhbndMessageIndex).empty());
 
