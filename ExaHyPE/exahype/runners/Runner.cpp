@@ -491,9 +491,13 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
 void exahype::runners::Runner::initHeaps() {
   exahype::DataHeap::getInstance().setName("DataHeap");
+  logInfo("initHeaps()","initialise DataHeap="<<exahype::DataHeap::getInstance().toString());
   exahype::MetadataHeap::getInstance().setName("MetadataHeap");
+  logInfo("initHeaps()","initialise MetadataHeap="<<exahype::MetadataHeap::getInstance().toString());
   exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
+  logInfo("initHeaps()","initialise ADERDGSolver::Heap="<<exahype::solvers::ADERDGSolver::Heap::getInstance().toString());
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
+  logInfo("initHeaps()","initialise FiniteVolumesSolver::Heap="<<exahype::solvers::FiniteVolumesSolver::Heap::getInstance().toString());
 }
 
 void exahype::runners::Runner::initHPCEnvironment() {
@@ -504,6 +508,8 @@ void exahype::runners::Runner::initHPCEnvironment() {
 int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
+    initHeaps();
+
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().disableInheritingOfCoarseGridIndices();
 
     exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
@@ -545,7 +551,6 @@ int exahype::runners::Runner::run() {
     initSharedMemoryConfiguration();
     initDataCompression();
     initHPCEnvironment();
-    initHeaps();
 
     exahype::mappings::MeshRefinement::IsInitialMeshRefinement=true;
     #ifdef Parallel
