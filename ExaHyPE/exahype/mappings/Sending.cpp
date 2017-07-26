@@ -222,6 +222,10 @@ void exahype::mappings::Sending::prepareSendToNeighbour(
       dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {
         vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+
+        #ifdef Asserts
+        logInfo("prepareSendToNeighbour(...)","to rank "<<toRank <<" vertex="<<x.toString()<<" src="<<src.toString()<<" dest="<<dest.toString());
+        #endif
         if (vertex.hasToSendDataToNeighbour(src,dest)) {
           sendSolverDataToNeighbour(
               toRank,src,dest,

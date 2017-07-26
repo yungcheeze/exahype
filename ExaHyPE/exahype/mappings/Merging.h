@@ -340,9 +340,8 @@ public:
    * after touchVertexLastTime(...) was invoked.
    *
    * <h2>Send</h2>
-   * Sending out data corresponds logically to a projection of cell data onto
-   * the faces. Therefore, I realise it within
-   * SpaceTimePredictor::prepareSendToNeighbour().
+   * We realise sends within
+   * Sending::prepareSendToNeighbour().
    *
    *
    * <h2>Min max analysis</h2>
@@ -354,7 +353,7 @@ public:
    * Cell::isInside() does not imply that all adjacent vertices are
    * inside. If we count down the counter only on
    * vertices that are inside we might not send out all faces
-   * of a cell that is close to the boundary.
+   * of cells adjacent to the boundary.
    * @see Prediction::countListingsOfRemoteRankByInsideVerticesAtFace.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
