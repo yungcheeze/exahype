@@ -88,7 +88,7 @@ namespace exahype {
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
-    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::SendReceiveTask<double> >
+    peano::heap::PlainBoundaryDataExchanger< double, false, peano::heap::SendReceiveTask<double> >
   >     DataHeap;
   #endif
 
@@ -102,7 +102,7 @@ namespace exahype {
       peano::heap::records::IntegerHeapData,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
-      peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
+      peano::heap::PlainBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
   >     MetadataHeap;
 
   /**
@@ -150,7 +150,7 @@ namespace exahype {
    * for each FiniteVolumesCellDescription associated with this cell
    * (description).
    */
-  exahype::MetadataHeap::HeapEntries encodeNeighbourCommunicationMetadata(
+  exahype::MetadataHeap::HeapEntries gatherNeighbourCommunicationMetadata(
       const int cellDescriptionsIndex,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest);
@@ -158,7 +158,7 @@ namespace exahype {
   /**
    * TODO(Dominic): Add docu.
    */
-  exahype::MetadataHeap::HeapEntries encodeMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
+  exahype::MetadataHeap::HeapEntries gatherMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
 
   /**
    * Creates a sequence of \p InvalidMetadataEntry with length
