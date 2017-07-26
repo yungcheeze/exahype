@@ -489,6 +489,12 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   );
 }
 
+void exahype::runners::Runner::initHeaps() {
+  exahype::DataHeap::getInstance().setName("DataHeap");
+  exahype::MetadataHeap::getInstance().setName("MetadataHeap");
+  exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
+  exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
+}
 
 void exahype::runners::Runner::initHPCEnvironment() {
   peano::performanceanalysis::Analysis::getInstance().enable(false);
@@ -539,6 +545,7 @@ int exahype::runners::Runner::run() {
     initSharedMemoryConfiguration();
     initDataCompression();
     initHPCEnvironment();
+    initHeaps();
 
     exahype::mappings::MeshRefinement::IsInitialMeshRefinement=true;
     #ifdef Parallel
