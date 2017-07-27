@@ -109,7 +109,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
       #ifdef Parallel
       int listingsOfRemoteRank =
-          countListingsOfRemoteRankByInsideVerticesAtFace(
+          countListingsOfRemoteRankAtFace(
               faceIndex,fineGridVertices,fineGridVerticesEnumerator);
       if (listingsOfRemoteRank==0) {
         listingsOfRemoteRank = TWO_POWER_D;
@@ -168,11 +168,23 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * TODO(Dominic): We currently check for uniqueness of the
    * remote rank. This might however not be necessary.
    */
-  static int countListingsOfRemoteRankByInsideVerticesAtFace(
+  static int countListingsOfRemoteRankAtFace(
       const int faceIndex,
       exahype::Vertex* const verticesAroundCell,
       const peano::grid::VertexEnumerator& verticesEnumerator);
   #endif
+
+  /**
+   * Computes the barycentre of a face of a cell.
+   *
+   * \param[in] cellDescription cell description where we get the geometry information from
+   * \param[in] direction       coordinate direction the face's outward directed normal vector is aligned with (0:x, 1:y, 2: z)
+   * \param[in] orientation     orientation of the face's outward directed normal vector (0: -1, 1: +1)
+   */
+  static tarch::la::Vector<DIMENSIONS,double> computeFaceBarycentre(
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const int direction, const int orientation);
 
   /**
    * Returns meta data describing the surrounding cell descriptions. The
