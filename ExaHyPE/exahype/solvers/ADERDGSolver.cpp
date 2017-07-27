@@ -3430,8 +3430,11 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     tarch::la::Vector<DIMENSIONS,double> faceBarycentre =
         exahype::Cell::computeFaceBarycentre(
             cellDescription.getOffset(),cellDescription.getSize(),direction,orientation);
+
+    #ifdef Asserts
     logInfo("sendDataToNeighbour(...)", "send "<<DataMessagesPerNeighbourCommunication<<" msgs to rank " <<
             toRank << " vertex="<<x.toString()<<" face=" << faceBarycentre.toString());
+    #endif
 
     // Send order: lQhbnd,lFhbnd
     // Receive order: lFhbnd,lQhbnd
@@ -3513,9 +3516,11 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     tarch::la::Vector<DIMENSIONS,double> faceBarycentre =
         exahype::Cell::computeFaceBarycentre(
             cellDescription.getOffset(),cellDescription.getSize(),direction,orientation);
-    logInfo(
-        "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" msgs from rank " <<
+
+    #ifdef Asserts
+    logInfo("mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" msgs from rank " <<
         fromRank << " vertex="<<x.toString()<<" face=" << faceBarycentre.toString());
+    #endif
 
     DataHeap::getInstance().receiveData(
         lFhbnd,dofPerFace,
