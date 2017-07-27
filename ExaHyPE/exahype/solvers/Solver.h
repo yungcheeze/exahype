@@ -88,7 +88,7 @@ namespace exahype {
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
-    peano::heap::PlainBoundaryDataExchanger< double, false, peano::heap::SendReceiveTask<double> >
+    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::SendReceiveTask<double> >
   >     DataHeap;
   #endif
 
@@ -102,7 +102,7 @@ namespace exahype {
       peano::heap::records::IntegerHeapData,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
-      peano::heap::PlainBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
+      peano::heap::PlainBoundaryDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
   >     MetadataHeap;
 
   /**
