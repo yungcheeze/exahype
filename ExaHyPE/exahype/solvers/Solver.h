@@ -60,26 +60,32 @@ namespace exahype {
    * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
+   *
+   * !!! CreateCopiesOfSentData
+   *
+   * The code crashes if this flag is set to false.
+   * We are not sure what the cause for this problem is
+   * since we read the messages directly from persistent arrays.
    */
   #if ALIGNMENT==16
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<16> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<16> >,
-    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<16> >,
+    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<16> >,
     std::vector< double, peano::heap::HeapAllocator<double, 16 > >
   >     DataHeap;
   #elif ALIGNMENT==32
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<32> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<32> >,
-    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<32> >,
+    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<32> >,
     std::vector< double, peano::heap::HeapAllocator<double, 32 > >
   >     DataHeap;
   #elif ALIGNMENT==64
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<64> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<64> >,
-    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<64> >,
+    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<64> >,
     std::vector< double, peano::heap::HeapAllocator<double, 64 > >
   >     DataHeap;
   #elif defined(ALIGNMENT)
@@ -97,6 +103,11 @@ namespace exahype {
   /**
    * We abuse this heap to send and receive metadata from one MPI rank to the other.
    * We never actually store data on this heap.
+   *
+   * !!! CreateCopiesOfSentData
+   *
+   * It is assumed by the metadata send routines of the solvers that
+   * all data exchangers of the MetadataHeap create copies of the data to send.
    */
   typedef peano::heap::Heap<
       peano::heap::records::IntegerHeapData,
