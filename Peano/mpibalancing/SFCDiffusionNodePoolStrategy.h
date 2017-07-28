@@ -33,9 +33,9 @@ namespace mpibalancing {
  * <h2> User pitfalls </h2>
  * The strategy tries to book solely the primary MPI nodes. Therefore,
  * statements alike
-
+ * <pre>
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
-
+   </pre>
  * are doomed to fail.
  *
  *
@@ -53,7 +53,7 @@ namespace mpibalancing {
  *
  *
  * @author Tobias Weinzierl
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
   private:
@@ -64,7 +64,7 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      * requested an update.
      *
      * @author Tobias Weinzierl
-     * @version $Revision: 1.1 $
+     * @version $Revision: 1.2 $
      */
     class NodePoolListEntry {
       public:
@@ -282,6 +282,9 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      * ranks. The calling operation therefrom derives whether all nodes have
      * successfully registered. So we may not only return the number of primary
      * ranks, but we have to return the total number of ranks.
+     *
+     * Once the node pool's status changes into NoNodesLeft, i.e. ranks have been
+     * deployed successfully, this operation returns 0.
      */
     int getNumberOfIdleNodes() const override;
     void setNodeIdle( int rank ) override;
