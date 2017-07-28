@@ -491,13 +491,15 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
 void exahype::runners::Runner::initHeaps() {
   exahype::DataHeap::getInstance().setName("DataHeap");
-  logInfo("initHeaps()","initialise DataHeap="<<exahype::DataHeap::getInstance().toString());
-  exahype::MetadataHeap::getInstance().setName("MetadataHeap");
-  logInfo("initHeaps()","initialise MetadataHeap="<<exahype::MetadataHeap::getInstance().toString());
+  logInfo("initHeaps()","initialised DataHeap="<<exahype::DataHeap::getInstance().toString());
   exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
-  logInfo("initHeaps()","initialise ADERDGSolver::Heap="<<exahype::solvers::ADERDGSolver::Heap::getInstance().toString());
+  logInfo("initHeaps()","initialised ADERDGSolver::Heap="<<exahype::solvers::ADERDGSolver::Heap::getInstance().toString());
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
-  logInfo("initHeaps()","initialise FiniteVolumesSolver::Heap="<<exahype::solvers::FiniteVolumesSolver::Heap::getInstance().toString());
+  logInfo("initHeaps()","initialised FiniteVolumesSolver::Heap="<<exahype::solvers::FiniteVolumesSolver::Heap::getInstance().toString());
+  #ifdef Parallel
+  exahype::MetadataHeap::getInstance().setName("MetadataHeap");
+  logInfo("initHeaps()","initialised MetadataHeap="<<exahype::MetadataHeap::getInstance().toString());
+  #endif
 }
 
 void exahype::runners::Runner::initHPCEnvironment() {
