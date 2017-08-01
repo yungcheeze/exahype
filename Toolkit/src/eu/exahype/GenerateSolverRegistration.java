@@ -1,6 +1,8 @@
 package eu.exahype;
 
 import java.util.LinkedList;
+import java.util.AbstractMap;
+import java.util.List;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
@@ -33,14 +35,16 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   private String _projectName;
   
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
+  private AbstractMap<String, List<String>> _optDirectories = null;
 
   private boolean _inALimitingADERDGSolver;
 
-  public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker, String inputFileName) {
+  public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker, String inputFileName, AbstractMap<String, List<String>> optDirectories) {
     _directoryAndPathChecker = directoryAndPathChecker;
     _inputFileName           = inputFileName;
     _kernelNumber            = 0;
     _couplingNumber          = 0;
+    _optDirectories          = optDirectories;
   }
 
   /// Write a single line to the toolkit registration information
@@ -115,8 +119,14 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n");
       _writer.write("#include \"buildinfo.h\"\n\n");
       if(_useOptimisedKernels) {
-        _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
-        _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
+        if(_optDirectories != null && _optDirectories.containsKey(_projectName) && _optDirectories.get(_projectName) != null) {      
+          for(String subpath : _optDirectories.get(_projectName)) {
+            _writer.write("#include \""+subpath+"/GaussLegendreQuadrature.h\"\n");
+            _writer.write("#include \""+subpath+"/DGMatrices.h\"\n");
+          }
+        } else {
+          throw new IllegalArgumentException("No optimised kernels were generated for this project: "+_projectName+"!"); //not expected to happen
+        }
         writeVersionString("useOptimisedKernels", "YES");
       } else {
         writeVersionString("useOptimisedKernels", "no");

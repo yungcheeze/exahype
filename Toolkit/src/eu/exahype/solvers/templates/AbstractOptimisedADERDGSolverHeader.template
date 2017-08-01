@@ -13,7 +13,7 @@
 #include <algorithm>
 
 #include "exahype/solvers/ADERDGSolver.h"
-#include "kernels/aderdg/optimised/Kernels.h"
+#include "{{optKernelPath}}/Kernels.h"
 
 /**
  * We include Peano's assertion collection here.

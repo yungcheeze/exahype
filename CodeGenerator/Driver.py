@@ -56,6 +56,8 @@ if(requiredVersion > currentVersion):
 # --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description="This is the front end of the ExaHyPE code generator.")
 
+l_parser.add_argument("pathToOptKernel",
+                      help="Desired path to the generated code")
 l_parser.add_argument("solverName",
                       help="Name of the user-solver")
 l_parser.add_argument("numberOfVariables", 
@@ -99,6 +101,7 @@ l_parser.add_argument("--noTimeAveraging",
 
 l_commandLineArguments = l_parser.parse_args()
 
+pathToOptKernel        = l_commandLineArguments.pathToOptKernel
 solverName             = l_commandLineArguments.solverName
 numberOfVariables      = l_commandLineArguments.numberOfVariables
 order                  = l_commandLineArguments.order
@@ -114,6 +117,7 @@ useSource              = l_commandLineArguments.useSource
 noTimeAveraging        = l_commandLineArguments.noTimeAveraging
 
 config = { 
+           "pathToOptKernel"   : pathToOptKernel,
            "solverName"        : solverName,
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
@@ -140,7 +144,7 @@ Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 # used for testing as standalone tool
 
 dir = os.path.dirname(__file__)
-pathToOutputDirectory = os.path.join(dir,"../ExaHyPE/kernels/aderdg/optimised")
+pathToOutputDirectory = os.path.join(dir,"../ExaHyPE/"+pathToOptKernel)
 prepareOutputDirectory(pathToOutputDirectory)
 
 # --------------------------------------------------------

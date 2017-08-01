@@ -14,11 +14,11 @@
 #include <cstring>
 #include <algorithm>
 
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/DGMatrices.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/DGMatrices.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-#include "kernels/aderdg/optimised/asm_picard.c"
+#include "{{pathToOptKernel}}/asm_picard.c"
 
 #include "{{solverHeader}}"
 

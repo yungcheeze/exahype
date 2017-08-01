@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#include "kernels/aderdg/optimised/converter.h"
+#include "{{pathToOptKernel}}/converter.h"
 
 void kernels::aderdg::optimised::converter::Bnd_optimised2generic(const double* const opt, double* gen) {
   for(int d=0; d<{{2 * nDim}}; d++) {

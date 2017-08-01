@@ -59,13 +59,12 @@ class DGMatrixGenerator:
     m_sourceName = "DGMatrices.cpp"
     m_headerName = "DGMatrices.h"
 
-
     def __init__(self, i_config, i_numerics):
         self.m_order     = i_config['nDof']-1
         self.m_config    = i_config
         self.m_nDim      = i_config['nDim']
         self.m_numerics  = i_numerics
-
+        
         # compute the Gauss-Legendre weights
         x, w = np.polynomial.legendre.leggauss(self.m_order+1)
         # map onto [0,1]
@@ -189,7 +188,7 @@ class DGMatrixGenerator:
 
     def __writeToFile(self, i_matrices):
         l_sourceFile = open(self.m_sourceName, 'a')
-        l_sourceFile.write('#include "kernels/aderdg/optimised/'+self.m_headerName+'"\n' \
+        l_sourceFile.write('#include "'+self.m_config['pathToOptKernel']+'/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
         l_sourceFile.write('double* kernels::aderdg::optimised::Kxi;\n'     \
                            'double* kernels::aderdg::optimised::Kxi_T;\n'   \

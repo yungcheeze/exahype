@@ -144,10 +144,10 @@ namespace kernels {
 
 {# //TODO JMG implement/remove
 {% if isLinear %}
-#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"
+#include "{{pathToOptKernel}}/cauchyKovalewski.cpph"
 {% endif %}
 #}
 
-#include "kernels/aderdg/optimised/ConfigurationParameters.cpph"
+#include "{{pathToOptKernel}}/ConfigurationParameters.cpph"
 
 #endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_
