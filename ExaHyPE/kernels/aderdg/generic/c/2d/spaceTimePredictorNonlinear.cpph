@@ -44,7 +44,7 @@ template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void aderPicardLoopNonlinear(SolverType& solver,
                              const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             double* lQi, double* lQi_old, double* rhs,
+                             double* lQi, double* rhs,
                              double* lFi, double* gradQ, double* BGradQ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -87,8 +87,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
   idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables); // idx_gradQ(y,x,t,nDim,nVar)
 
   for (int iter = 0; iter < MaxIterations; iter++) {
-    // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, basisSize3 * numberOfData * sizeof(double));
 
     for (int i = 0; i < basisSize; i++) {  // time DOF
       // Compute the fluxes
@@ -205,24 +203,10 @@ void aderPicardLoopNonlinear(SolverType& solver,
     }  // end time dof
 
 
-    // Zero out variables in lQi
-    if (numberOfParameters==0) {
-      std::memset(lQi, 0, basisSize3 * numberOfVariables * sizeof(double));
-    } else {
-      for (int j = 0; j < basisSize; j++) { // j == y
-        for (int k = 0; k < basisSize; k++) { // k == x
-          for (int l = 0; l < basisSize; l++) { // l == t
-            std::fill_n (lQi + idx_lQi(j, k, l, 0), numberOfVariables, 0.0);
-          }
-        }
-      }
-    }
-    
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    auto grainSizeDiscreteTimeIntegral = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsDiscreteTimeIntegral);
-    //for (int j = 0; j < basisSize; j++) { // j == y
-    pfor(j,0,basisSize,grainSizeDiscreteTimeIntegral.getGrainSize())
+    double sq_res = 0.0;
+    for (int j = 0; j < basisSize; j++) { // j == y
       for (int k = 0; k < basisSize; k++) { // k == x
         const double weight = kernels::gaussLegendreWeights[order][j] *
             kernels::gaussLegendreWeights[order][k];
@@ -231,16 +215,20 @@ void aderPicardLoopNonlinear(SolverType& solver,
         // Matrix operation
         for (int l = 0; l < basisSize; l++) { // lQi time
           for (int m = 0; m < numberOfVariables; m++) {
+            double lQi_new = 0;
             for (int n = 0; n < basisSize; n++) { // matmul time
-              lQi[idx_lQi(j, k, l, m)] += iweight * rhs[idx_rhs(n, j, k, m)] *
+              lQi_new += iweight * rhs[idx_rhs(n, j, k, m)] *
                   kernels::iK1[order][l][n];
               // TODO: Check if we store iK1 or rather its transpose
             }
+            sq_res += (lQi_new - lQi[idx_lQi(j, k, l, m)]) * (lQi_new - lQi[idx_lQi(j, k, l, m)]);
+            assertion3( !std::isnan(lQi[idx_lQi(j, k, l, m)]), idx_lQi(j, k, l, m), dt, dx );
+            assertion3( !std::isnan(lQi_new), idx_lQi(j, k, l, m), dt, dx );
+            lQi[idx_lQi(j, k, l, m)] = lQi_new;
           }
         }
       }
-    endpfor
-    grainSizeDiscreteTimeIntegral.parallelSectionHasTerminated();
+    }
 
     // Qt is fundamental for debugging, do not remove this.
     /*
@@ -268,12 +256,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
     // 5. Exit condition
     constexpr double tol = 1e-7;
-    double sq_res = 0.0;
-    for (int i = 0; i < basisSize3 * (numberOfData); i++) {
-      sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
-      assertion3( !std::isnan(lQi[i]), i, dt, dx );
-      assertion3( !std::isnan(lQi_old[i]), i, dt, dx );
-    }
     if (sq_res < tol * tol) {
       iter = MaxIterations + 1; // break
     }
@@ -542,8 +524,7 @@ void spaceTimePredictorNonlinear(
   constexpr int basisSize          = SolverType::Order+1;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
-  double* lQi_old = tempSpaceTimeUnknowns[1];
-  double* rhs     = tempSpaceTimeUnknowns[2];
+  double* rhs     = tempSpaceTimeUnknowns[1];
 
   // if fluxes are not computed, make sure wrong access patterns result in a crash, thus
   // the nullptr:
@@ -554,7 +535,7 @@ void spaceTimePredictorNonlinear(
   
   aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
         solver, luh, dt, dx,
-        lQi, lQi_old, rhs, lFi, gradQ, BGradQ);
+        lQi, rhs, lFi, gradQ, BGradQ);
   
 #ifdef NO_TIME_AVERAGING
   aderTimeAveragingExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
