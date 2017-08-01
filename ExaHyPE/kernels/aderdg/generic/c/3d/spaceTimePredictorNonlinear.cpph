@@ -105,6 +105,12 @@ namespace {
               F[2] = lFi + idx_lFi(i, j, k, l, 2, 0);
               solver.flux(Q, F);
 
+              for (int m=0; m<numberOfVariables; m++) {
+                assertion4( std::isfinite(lFi[idx_lFi(i, j, k, l, 0, m)]), lFi[idx_lFi(i, j, k, l, 0, m)], m, dt, dx );
+                assertion4( std::isfinite(lFi[idx_lFi(i, j, k, l, 1, m)]), lFi[idx_lFi(i, j, k, l, 1, m)], m, dt, dx );
+                assertion4( std::isfinite(lFi[idx_lFi(i, j, k, l, 1, m)]), lFi[idx_lFi(i, j, k, l, 2, m)], m, dt, dx );
+              }
+
               // the algebraic source call moved together with ncp products
               // to the end.
             }
@@ -125,6 +131,7 @@ namespace {
             for (int m = 0; m < numberOfVariables; m++) {
               rhs[idx_rhs(i, j, k, l, m)] =
                   weight * kernels::F0[order][i] * luh[idx_luh(j, k, l, m)];
+              assertion3( std::isfinite(rhs[idx_rhs(i, j, k, l, m)]), rhs[idx_rhs(i, j, k, l, m)], dt, dx );
             }
           }
         }
@@ -156,6 +163,7 @@ namespace {
                   rhs[idx_rhs(i, j, k, l, m)] -= updateSize *
                       lFi[idx_lFi(i, j, k, n, 0, m)] *
                       kernels::Kxi[order][n][l];
+                  assertion3( std::isfinite(rhs[idx_rhs(i, j, k, l, m)]), rhs[idx_rhs(i, j, k, l, m)], dt, dx );
                 }
                 if(useNCP) {
                   gradQ[idx_gradQ(j, k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
@@ -184,6 +192,7 @@ namespace {
                   rhs[idx_rhs(i, j, l, k, m)] -= updateSize *
                       lFi[idx_lFi(i, j, n, k, 1, m)] *
                       kernels::Kxi[order][n][l];
+                  assertion3( std::isfinite(rhs[idx_rhs(i, j, l, k, m)]), rhs[idx_rhs(i, j, l, k, m)], dt, dx );
                 }
                 if(useNCP) {
                   gradQ[idx_gradQ(j, l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
@@ -212,6 +221,7 @@ namespace {
                   rhs[idx_rhs(i, l, j, k, m)] -= updateSize *
                       lFi[idx_lFi(i, n, j, k, 2, m)] *
                       kernels::Kxi[order][n][l];
+                  assertion3( std::isfinite(rhs[idx_rhs(i, l, j, k, m)]), rhs[idx_rhs(i, l, j, k, m)], dt, dx );
                 }
                 if(useNCP) {
                   gradQ[idx_gradQ(l, j, k, i, /*z*/2, m)] += 1.0 / dx[2] *
@@ -243,6 +253,7 @@ namespace {
 
               for (int m = 0; m < numberOfVariables; m++) {
                 rhs[idx_rhs(i, j, k, l, m)] += updateSize * S[m];
+                assertion5( std::isfinite(rhs[idx_rhs(i, j, k, l, m)]), rhs[idx_rhs(i, j, k, l, m)], m, S[m], dt, dx );
               }
             }
           }
@@ -271,11 +282,13 @@ namespace {
                   lQi_new += iweight *
                       rhs[idx_rhs(n, i, j, k, m)] *
                       kernels::iK1[order][l][n];
+
+                  assertion3( std::isfinite(rhs[idx_rhs(n, i, j, k, m)]), rhs[idx_rhs(n, i, j, k, m)], dt, dx );
                   // TODO: Check if we store iK1 or rather its transpose
                 }
                 sq_res += (lQi_new - lQi[idx_lQi(i, j, k, l, m)]) * (lQi_new - lQi[idx_lQi(i, j, k, l, m)]);
-                assertion3( !std::isnan(lQi[idx_lQi(i, j, k, l, m)]), idx_lQi(i, j, k, l, m), dt, dx );
-                assertion3( !std::isnan(lQi_new), idx_lQi(i, j, k, l, m), dt, dx );
+                assertion3( std::isfinite(lQi[idx_lQi(i, j, k, l, m)]), idx_lQi(i, j, k, l, m), dt, dx );
+                assertion3( std::isfinite(lQi_new), idx_lQi(i, j, k, l, m), dt, dx );
                 lQi[idx_lQi(i, j, k, l, m)] = lQi_new;
               }
             }
