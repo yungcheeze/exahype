@@ -371,15 +371,18 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
     dfor2(myDest)
       dfor2(mySrc)
-        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest; // "invert" points
         tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
 
-        int destScalar = TWO_POWER_D - myDestScalar - 1;
+        int destScalar = TWO_POWER_D - myDestScalar - 1; // "invert" point indices
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-          // logDebug("mergeWithNeighbour(...)","hasToReceiveMetadata");
+          #ifdef Asserts
+          logInfo("mergeWithNeighbour(...)","from rank "<<fromRank <<" vertex="<<fineGridX.toString()<<" src="<<src.toString()<<" dest="<<dest.toString());
+          #endif
 
+          // TODO(Dominic)
           const int receivedMetadataIndex =
           exahype::receiveNeighbourCommunicationMetadata(
               fromRank, fineGridX, level);
@@ -413,6 +416,16 @@ void exahype::mappings::Merging::mergeWithNeighbour(
             vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
             vertex.setMergePerformed(src,dest,true);
           } else {
+
+            #ifdef Asserts
+            exahype::MetadataHeap::HeapEntries expectedMetadata =
+                            exahype::createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
+            #endif
+            for (int i=0; i<exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver; i++) {
+              assertionEquals3(expectedMetadata[i].getU(),receivedMetadata[i].getU(),
+                               i,expectedMetadata[i].getU(),receivedMetadata[i].getU());
+            }
+
             dropNeighbourData(
                 fromRank,
                 vertex.getCellDescriptionsIndex()[srcScalar],
@@ -449,6 +462,24 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
         exahype::MetadataHeap::HeapEntries metadataPortion(
             receivedMetadata.begin()+offset,
             receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
+
+        #ifdef Asserts
+        exahype::MetadataHeap::HeapEntries expectedMetadata;
+        expectedMetadata.reserve(4);
+        expectedMetadata.push_back(static_cast<int>(exahype::records::ADERDGCellDescription::Type::Cell));
+        expectedMetadata.push_back(0); // augmentation status
+        expectedMetadata.push_back(2); // helper status
+        expectedMetadata.push_back(0); // limiter status
+        #endif
+        assertionEquals(exahype::NeighbourCommunicationMetadataPerSolver,4);
+        for (int i=0; i<4; i++) {
+          assertion3(
+              solver->getType()!=exahype::solvers::Solver::Type::ADERDG ||
+              solver->getType()!=exahype::solvers::Solver::Type::LimitingADERDG ||
+              solver->getMaximumAdaptiveMeshDepth()!=0 ||
+              tarch::la::equals(expectedMetadata[i].getU(),metadataPortion[i].getU()),
+              i,expectedMetadata[i].getU(),metadataPortion[i].getU());
+        }
 
         logDebug(
             "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<

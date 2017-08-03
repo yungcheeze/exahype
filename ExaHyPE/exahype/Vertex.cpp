@@ -571,10 +571,9 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
     return false; // !!! Make sure to consider all solver types here
   }
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+  const int direction   = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation = (1 + dest(direction) - src(direction))/2;
+  const int faceIndex   = 2*direction+orientation;
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
@@ -614,10 +613,9 @@ bool exahype::Vertex::hasToMergeWithNeighbourData(
     return false; // !!! Make sure to consider all solver types here
   }
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+  const int direction   = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation = (1 + src(direction) - dest(direction))/2;
+  const int faceIndex   = 2*direction+orientation;
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionsIndex)) {
@@ -659,10 +657,9 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
       isValidIndex(srcCellDescriptionsIndex),
       srcCellDescriptionsIndex);
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+  const int direction   = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation = (1 + dest(direction) - src(direction))/2;
+  const int faceIndex   = 2*direction+orientation;
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
@@ -692,10 +689,9 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex),destCellDescriptionsIndex);
   assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex),destCellDescriptionsIndex);
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+  const int direction   = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation = (1 + src(direction) - dest(direction))/2;
+  const int faceIndex   = 2*direction+orientation;
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionsIndex)) {

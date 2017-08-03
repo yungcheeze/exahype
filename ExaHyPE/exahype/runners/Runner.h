@@ -153,6 +153,13 @@ class exahype::runners::Runner {
   void initHPCEnvironment();
 
   /**
+   * Initialise the heaps for storing and exchanging
+   * degrees of freedom, solver metadata, and solver
+   * patches.
+   */
+  void initHeaps();
+
+  /**
    * Print minimum of current solver time stamps and time step sizes.
    *
    * The solver time stamp and step sizes are computed as

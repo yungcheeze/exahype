@@ -10,7 +10,7 @@ bool prepare_id(std::string idname) {
 		return true;
 	}
 	
-	if(idname == "AlfenWave") {
+	if(idname == "Fortran") {
 		id = new fortranid();
 		return true;
 	} else if(idname == "PizzaTOV") {

@@ -73,8 +73,14 @@ java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.spec
 
 ## Build a new release ##
 
-I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Release. 
+I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Release.
 
+0. Ensure that your ExaHyPE Release folder is up to date 
+   - Usually, git pull should do 
+   - If in doubt, try
+     git fetch origin
+     git reset --hard origin/master
+     
 1. Update the guidebook
     - Change into the directory holding your guidebook and build with `make release`.
       The release target builds the PDF without annotations.
@@ -127,3 +133,8 @@ cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
     - Add the tars to the release (at least the two ExaHyPE tars plus the toolkit. And then probably the demonstrators, too.
 
 
+x. Demonstrators
+  The demonstrators are not part of the above description. If you want to 
+  release new demonstrators, too, you have to change into the respective 
+  directory and create the demonstrator snapshot manually.
+  

@@ -124,13 +124,14 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
 ) {
   mpibalancing::HotspotBalancing::mergeWithMaster(
     worker,
-    workerState.getCouldNotEraseDueToDecompositionFlag()
+    workerState.getCouldNotEraseDueToDecompositionFlag(),
+    fineGridVerticesEnumerator.getLevel()
   );
 }
    </pre>
  *
  *
- * <h2> Troubshooting </h2>
+ * <h2> Troubleshooting </h2>
  *
  * I sometimes run into the situation that the grid is correctly balanced for
  * small(er) grids but that the load balancing degenerates into something
@@ -170,7 +171,7 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
  * This operation triggers the critical path analysis which consists of two
  * steps:
  *
- * - Determine the critial path
+ * - Determine the critical path
  * - Compute the number of forks along the critical paths
  *
  * If its command from its master is unequal to fork, there's no analysis to

@@ -10,7 +10,7 @@
 
 #include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
 
-#include "BoundaryConditions.h"
+#include "BoundaryConditions/BoundaryConditions_ADERDG.h"
 
 
 const double excision_radius = 1.0;
@@ -21,19 +21,22 @@ constexpr int nDim = DIMENSIONS;
 
 tarch::logging::Log GRMHD::GRMHDSolver_ADERDG::_log("GRMHDSolver_ADERDG");
 
-typedef ADERDGBoundaryConditions<GRMHD::GRMHDSolver_ADERDG> ADERDG_BC;
+typedef BoundaryConditions<GRMHD::GRMHDSolver_ADERDG> ADERDG_BC;
 ADERDG_BC* abc;
 
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView constants) {
   // Todo: Move this to specfile once we have working constants.
-  std::string id_alfenwave = "AlfenWave";
-  std::string bc_alfenwave = "left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact";
+  std::string id_default = "Fortran";
+  std::string bc_default = "left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact";
 
-  std::string id_RNSID = "RNSID";
-  std::string bc_RNSID_octant = "left:refl,right:exact,bottom:refl,top:exact,front:refl,back:exact";
+  // alternatives:
+  //std::string id_RNSID = "RNSID";
+  //std::string bc_RNSID_octant = "left:refl,right:exact,bottom:refl,top:exact,front:refl,back:exact";
 
-  std::string tid = id_alfenwave;
-  std::string tbc = bc_alfenwave;
+  // try to obtain requested initial data and boundary conditions from the
+  // environment variables, as the specfile parameter system is still broken.
+  std::string tid = getenv("EXAHYPE_ID") ? getenv("EXAHYPE_ID") : id_default;
+  std::string tbc = getenv("EXAHYPE_BC") ? getenv("EXAHYPE_BC") : bc_default;
 
   if(!prepare_id(tid)) {
 	  logError("prepare_id", "Could not setup Initial Data '" << tid << "', probably misspelled.");
@@ -49,8 +52,9 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahy
 }
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue  __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
-  insideExcisionBall = false;
+ // disable this in 2D:
+ // bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
+  bool insideExcisionBall = false;
   bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
   return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
@@ -90,7 +94,8 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
 	std::memset(stateOut, snan, nVar * sizeof(double));
 	std::memset(fluxOut,  snan, nVar * sizeof(double));
 	
-	abc->apply(ADERDG_BOUNDARY_CALL);
+	//abc->apply(ADERDG_BOUNDARY_CALL);
+	abc->exact(ADERDG_BOUNDARY_CALL);
 }
 
 
@@ -123,9 +128,9 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(
   // ie. at the star crust
   //if ( QMin[0] != 0.0 && QMax[0]/QMin[0] > 1e3 ) return false;
 
-  if (observablesMin[0] <= 0.0) return false;
+  if (observablesMin[0] < 0.0) return false;
   if (observablesMin[1] < 0.0) return false;
-  
+
   // what about this kind of check?
   /*
 

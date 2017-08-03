@@ -325,13 +325,18 @@ bool mpibalancing::SFCDiffusionNodePoolStrategy::hasIdleNode(int forMaster) cons
 
 
 int mpibalancing::SFCDiffusionNodePoolStrategy::getNumberOfIdleNodes() const {
-  int result = 0;
-  for (auto node: _nodes) {
-    if (node.isIdlePrimaryRank() || node.isIdleSecondaryRank()) {
-      result++;
-    }
+  if (_nodePoolState==NodePoolState::NoNodesLeft) {
+    return 0;
   }
-  return result;
+  else {
+    int result = 0;
+    for (auto node: _nodes) {
+      if (node.isIdlePrimaryRank() || node.isIdleSecondaryRank()) {
+        result++;
+      }
+    }
+    return result;
+  }
 }
 
 

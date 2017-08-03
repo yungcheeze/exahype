@@ -2,3 +2,9 @@
 pizza_tovfront
 pizza_tovlib
 rnsid
+
+# Output directories
+hdf5-*/
+
+# Peano stuff
+sharedmemory.properties

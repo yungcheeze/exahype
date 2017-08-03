@@ -222,6 +222,10 @@ void exahype::mappings::Sending::prepareSendToNeighbour(
       dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {
         vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+
+        #ifdef Asserts
+        logInfo("prepareSendToNeighbour(...)","to rank "<<toRank <<" vertex="<<x.toString()<<" src="<<src.toString()<<" dest="<<dest.toString());
+        #endif
         if (vertex.hasToSendDataToNeighbour(src,dest)) {
           sendSolverDataToNeighbour(
               toRank,src,dest,
@@ -245,7 +249,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const int                                     level) const {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->isSending(_localState.getAlgorithmSection())) {
-      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      solver->sendEmptyDataToNeighbour(toRank,x,level);
     }
   }
 
@@ -274,7 +278,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
       if (element!=exahype::solvers::Solver::NotFound) {
         solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
       } else {
-        solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+        solver->sendEmptyDataToNeighbour(toRank,x,level);
       }
     }
   }

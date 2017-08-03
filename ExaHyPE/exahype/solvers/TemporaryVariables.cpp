@@ -33,7 +33,7 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
   assertion(temporaryVariables._tempPointForceSources    ==nullptr);
 
   int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
-  temporaryVariables._tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, lQi_old, rhs, rhs_0 (unchanged by optimisation)
+  temporaryVariables._tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, rhs
   temporaryVariables._tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers]; // == lFi, gradQ
   temporaryVariables._tempUnknowns              = new double* [numberOfSolvers]; // == lQhi
   temporaryVariables._tempFluxUnknowns          = new double* [numberOfSolvers]; // == lFhi
@@ -58,8 +58,8 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
 
     if (aderdgSolver!=nullptr) {
       if(aderdgSolver->alignTempArray()) {
-        temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[4];
-        for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+        temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[2];
+        for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
           #ifdef ALIGNMENT
           temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] =
               (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
@@ -104,8 +104,8 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
           temporaryVariables._tempPointForceSources    [solverNumber] = nullptr;
         }
       } else {
-        temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[4];
-        for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+        temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[2];
+        for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
           temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] =
               new double[aderdgSolver->getTempSpaceTimeUnknownsSize()]();
         }
@@ -168,7 +168,7 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
       if (aderdgSolver!=nullptr) {
         if(aderdgSolver->alignTempArray()) {
           //
-          for (int i=0; i<4; ++i) {
+          for (int i=0; i<2; ++i) {
             _mm_free(temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i]);
           }
           delete[] temporaryVariables._tempSpaceTimeUnknowns[solverNumber];
@@ -195,7 +195,7 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
           }
         } else {
           //
-          for (int i=0; i<4; ++i) {
+          for (int i=0; i<2; ++i) {
             delete[] temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i];
           }
           delete[] temporaryVariables._tempSpaceTimeUnknowns[solverNumber];

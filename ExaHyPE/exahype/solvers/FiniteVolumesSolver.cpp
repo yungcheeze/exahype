@@ -964,7 +964,7 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorkerOrMasterDueToFo
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
@@ -1085,11 +1085,11 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
 
     DataHeap::getInstance().deleteData(boundaryLayerToSendIndex,true);
   } else {
-    std::vector<double> emptyArray(0,0);
+    DataHeap::HeapEntries emptyMessage(0);
 
     for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
       DataHeap::getInstance().sendData(
-          emptyArray, toRank, x, level,
+          emptyMessage, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
     }
   }
@@ -1097,11 +1097,9 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
@@ -1240,7 +1238,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> timeStepDataToReduce(0,4);
+  DataHeap::HeapEntries timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minTimeStepSize);
   timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0);
   timeStepDataToReduce.push_back(_minCellSize);
@@ -1279,7 +1277,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(4);
+  DataHeap::HeapEntries receivedTimeStepData(4);
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1322,7 +1320,7 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, masterRank, x, level,
@@ -1532,7 +1530,7 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, workerRank, x, level,

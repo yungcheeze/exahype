@@ -87,7 +87,7 @@ bool exahype::Cell::isAdjacentToRemoteRank(
   return false;
 }
 
-int exahype::Cell::countListingsOfRemoteRankByInsideVerticesAtFace(
+int exahype::Cell::countListingsOfRemoteRankAtFace(
     const int faceIndex,
     exahype::Vertex* const verticesAroundCell,
     const peano::grid::VertexEnumerator& verticesEnumerator) {
@@ -102,29 +102,49 @@ int exahype::Cell::countListingsOfRemoteRankByInsideVerticesAtFace(
   int faceNeighbourRank = -1; // This variable is introduced to make sure that the adjacent remote rank is unique.
   // TODO(Dominic): Uniqueness is probably guaranteed by the SFC based DD.
   dfor2(v) // Loop over vertices.
-    if (verticesAroundCell[ verticesEnumerator(v) ].isAdjacentToRemoteRank()) {
-      dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-        if (tarch::la::equals(v+a,pos) &&
-            verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
-            tarch::parallel::Node::getInstance().getRank()) {
-          // Increment
-          if (faceNeighbourRank==-1) {
-            faceNeighbourRank = verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar];
-          }
-          if (verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]==faceNeighbourRank) {
-            result++;
-          }
+    dfor2(a) // Loop over adjacent ranks. Does also include own rank.
+      if (tarch::la::equals(v+a,pos) &&
+          verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
+          tarch::parallel::Node::getInstance().getRank()) {
+        // Increment
+        if (faceNeighbourRank==-1) {
+          faceNeighbourRank = verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar];
         }
-      enddforx // a
-    }
+        if (verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]==faceNeighbourRank) {
+          result++;
+        }
+      }
+    enddforx // a
   enddforx // v
 
   // result must be either no connection, edge connection, or whole face connection.
-  assertion2(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO/2||result==TWO_POWER_D_DIVIDED_BY_TWO,result,faceIndex);
+  #ifdef Asserts
+  std::stringstream message;
+  message << std::endl;
+  dfor2(v)
+    message << "v="<<v.toString()<<": adjacentRanks="<<verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks().toString() << std::endl;
+  enddforx
+  #endif
+  assertion5(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO/2||result==TWO_POWER_D_DIVIDED_BY_TWO,result,pos.toString(),faceIndex,tarch::parallel::Node::getInstance().getRank(),message.str());
 
   return result;
 }
 #endif
+
+tarch::la::Vector<DIMENSIONS,double> exahype::Cell::computeFaceBarycentre(
+    const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+    const int direction, const int orientation) {
+  tarch::la::Vector<DIMENSIONS,double> faceBarycentre = cellOffset;
+  faceBarycentre[direction] += orientation * cellSize[direction];
+  for (int i=0; i<DIMENSIONS; i++) {
+    if (i!=direction) {
+      faceBarycentre[i] += 0.5 * cellSize[i];
+    }
+  }
+
+  return faceBarycentre;
+}
 
 void exahype::Cell::setupMetaData() {
   assertion1(!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),toString());

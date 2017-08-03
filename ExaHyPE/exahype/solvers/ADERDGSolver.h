@@ -1043,8 +1043,8 @@ public:
    * @param[in]    tempFaceUnknownsArray        Temporary array of the size of a face unknowns array.
    * @param[in]    tempStateSizedVectors        Five (5) state sized (=number of variables) temporary variables.
    * @param[in]    tempStateSizedSquareMatrices Three (3) temporary variables of the size number of variables squared.
-   * @param[in]    normalNonZero  Index of the nonzero normal vector component,
-   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
+   * @param[in]    direction  Index of the nonzero normal vector component,
+   *               i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void riemannSolver(double* FL, double* FR, const double* const QL,
                              const double* const QR,
@@ -1052,7 +1052,7 @@ public:
                              double**  tempStateSizedVectors,
                              double**  tempStateSizedSquareMatrices,
                              const double dt,
-                             const int normalNonZero,
+                             const int direction,
                              bool isBoundaryFace) = 0;
 
   /**
@@ -1068,7 +1068,7 @@ public:
    * @param[in]    cellSize      Cell size.
    * @param[in]    t             The time.
    * @param[in]    dt            A time step size.
-   * @param[in]    normalNonZero Index of the nonzero normal vector component,
+   * @param[in]    direction Index of the nonzero normal vector component,
    *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void boundaryConditions(double* fluxOut,
@@ -1080,7 +1080,7 @@ public:
                                   double>& cellSize,
                                   const double t,const double dt,
                                   const int faceIndex,
-                                  const int normalNonZero) = 0;
+                                  const int direction) = 0;
 
 
   /**
@@ -1138,7 +1138,7 @@ public:
    * \param dt The time step size that was used to update the solution.
    *           This time step size was computed based on the old solution.
    *           If we impose initial conditions, i.e, t=0, this value
-   *           equals std::numeric_limits<double>::max().
+   *           equals 0.
    */
   virtual void adjustSolution(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -1957,8 +1957,6 @@ public:
 
   void sendEmptyDataToNeighbour(
       const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 

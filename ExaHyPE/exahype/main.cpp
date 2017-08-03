@@ -40,9 +40,9 @@ tarch::logging::Log _log("");
  * The ping pong test has to be triggered by main very very early. There should
  * be no other message in the MPI subsystem.
  */
-void exahype::pingPoingTest() {
+void exahype::pingPongTest() {
   #if defined(Asserts) && defined(Parallel)
-  logInfo( "run()", "start ping-pong test" );
+  logInfo( "run()", "start ping pong test .... if test fails, please retranslate with -DnoPackedRecords" );
   exahype::Vertex::initDatatype();
   exahype::Vertex sendVertex[5];
 
@@ -64,19 +64,22 @@ void exahype::pingPoingTest() {
       sendVertex[2].setAdjacentRank( 2, 32 );
       sendVertex[2].setAdjacentRank( 3, 33 );
 
-      logInfo( "run()", "send one vertex" );
       sendVertex[0].send(1,100,false,-1);
-      logInfo( "run()", "vertex left system" );
-
-      logInfo( "run()", "send three vertices from call stack" );
-      MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
-      logInfo( "run()", "vertices left system" );
+      sendVertex[0].send(1,100,true,-1);
+      MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 100, tarch::parallel::Node::getInstance().getCommunicator() );
     }
     if (tarch::parallel::Node::getInstance().getRank()==1) {
-      logInfo( "run()", "start to receive single vertex " );
       exahype::Vertex receivedVertex;
+
       receivedVertex.receive(0,100,false,-1);
-      logInfo( "run()", "received vertex " << receivedVertex.toString() );
+      assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
+      #ifdef Dim3
+      assertion1( receivedVertex.getX()(2)==2.0, receivedVertex.toString() );
+      #endif
+
+      receivedVertex.receive(0,100,true,-1);
       assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
       assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
       assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
@@ -85,9 +88,8 @@ void exahype::pingPoingTest() {
       #endif
 
       exahype::Vertex receivedVertices[5];
-      logInfo( "run()", "start to receive three vertices on call stack" );
-      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-      logInfo( "run()", "received vertices" );
+      MPI_Status status;
+      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 100, tarch::parallel::Node::getInstance().getCommunicator(), &status );
       assertion3( receivedVertices[0].getLevel()==4,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(0)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(1)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
@@ -108,16 +110,13 @@ void exahype::pingPoingTest() {
       #ifdef Dim3
       assertion3( receivedVertices[2].getX()(2)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       #endif
-      logInfo( "run()", "first part of ping pong test ok" );
     }
     MPI_Barrier( tarch::parallel::Node::getInstance().getCommunicator() );
 
     if (tarch::parallel::Node::getInstance().getRank()==0) {
       //exahype::Vertex* heapVertices = new exahype::Vertex[5];
       exahype::Vertex heapVertices[5];
-      logInfo( "run()", "wait for three vertices to arrive on heap" );
       MPI_Recv( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-      logInfo( "run()", "vertices have arrived" );
 
       assertion3( heapVertices[0].getLevel()==4,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       assertion3( heapVertices[0].getX()(0)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
@@ -139,22 +138,19 @@ void exahype::pingPoingTest() {
       #ifdef Dim3
       assertion3( heapVertices[2].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       #endif
-
-      //delete[] heapVertices;
-      logInfo( "run()", "second part of ping-poing test ok" );
     }
     if (tarch::parallel::Node::getInstance().getRank()==1) {
       exahype::Vertex* heapVertices = new exahype::Vertex[5];
       heapVertices[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
       heapVertices[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
       heapVertices[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
-      logInfo( "run()", "send out three vertices from heap" );
       MPI_Send( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator() );
       delete[] heapVertices;
-      logInfo( "run()", "vertices have left the system" );
     }
     MPI_Barrier( tarch::parallel::Node::getInstance().getCommunicator() );
   }
+
+  logInfo( "run()", " ping pong test ok" );
   #endif
 }
 
@@ -187,7 +183,7 @@ int exahype::main(int argc, char** argv) {
     return sharedMemorySetup;
   }
 
-//  pingPoingTest();
+  pingPongTest();
 
   //
   //   Parse config file

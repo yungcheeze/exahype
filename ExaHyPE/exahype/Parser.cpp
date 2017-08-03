@@ -167,15 +167,15 @@ void exahype::Parser::readFile(const std::string& filename) {
     _interpretationErrorOccured = true;
   }
 
-  checkValidity();
-
   //  For debugging purposes
   if(std::getenv("EXAHYPE_VERBOSE_PARSER")) { // runtime debugging
-	std::cout << "Parser _tokenStream=" << std::endl;
-	for (std::string str : _tokenStream) {
-		std::cout << "["<<str<<"]" << std::endl;
-	}
+  std::cout << "Parser _tokenStream=" << std::endl;
+  for (std::string str : _tokenStream) {
+    std::cout << "["<<str<<"]" << std::endl;
   }
+  }
+
+  checkValidity();
   //  std::string configuration = getMPIConfiguration();
   //  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
   //  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
