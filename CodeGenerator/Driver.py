@@ -117,6 +117,7 @@ useSource              = l_commandLineArguments.useSource
 noTimeAveraging        = l_commandLineArguments.noTimeAveraging
 
 config = { 
+           "numerics"          : numerics,
            "pathToOptKernel"   : pathToOptKernel,
            "solverName"        : solverName,
            "nVar"              : numberOfVariables,
