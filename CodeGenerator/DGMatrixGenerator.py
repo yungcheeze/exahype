@@ -52,17 +52,12 @@ class DGMatrixGenerator:
 
         # [FLCoeff 0...0]; [FRCoeff 0...0];
         # right now FLCoeff, FRCoeff no pad (gives no benefit w.r.t libxsmm)
-        FLCoeff, _ = np.array(self.BaseFunc1d(0.0, self.m_xGPN, self.m_order))
+        FLCoeff, _ = np.array(self.BaseFunc1d(0.0, self.m_xGPN, self.m_order)) #is also F0
         FRCoeff, _ = np.array(self.BaseFunc1d(1.0, self.m_xGPN, self.m_order))
         l_paddedFLCoeff = np.pad(FLCoeff, (0, l_padSize), 'constant')
         l_paddedFRCoeff = np.pad(FRCoeff, (0, l_padSize), 'constant')
         self.m_context['FLCoeff'] = l_paddedFLCoeff
         self.m_context['FRCoeff'] = l_paddedFRCoeff
-
-        # F0 with padding for DSCAL
-        F0, _ = np.array(self.BaseFunc1d(0.0, self.m_xGPN, self.m_order))
-        l_paddedF0 = np.pad(F0, (0, l_padSize), 'constant')
-        self.m_context['F0'] = l_paddedF0
         
         # Matrices are stored in column major order (so the padding should be on the bottom rows)
         # [ Mat ]

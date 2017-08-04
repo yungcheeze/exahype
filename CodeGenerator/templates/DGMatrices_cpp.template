@@ -21,7 +21,6 @@ double* kernels::aderdg::optimised::Kxi_T;
 double* kernels::aderdg::optimised::iK1;
 double* kernels::aderdg::optimised::dudx;
 double* kernels::aderdg::optimised::dudx_T;
-double* kernels::aderdg::optimised::F0;
 double* kernels::aderdg::optimised::FLCoeff;
 double* kernels::aderdg::optimised::FRCoeff;
 double*** kernels::aderdg::optimised::equidistantGridProjector1d;
@@ -29,7 +28,6 @@ double**** kernels::aderdg::optimised::fineGridProjector1d;
 
 
 void kernels::aderdg::optimised::freeDGMatrices() {
-  _mm_free(F0);
   _mm_free(FLCoeff);
   _mm_free(FRCoeff);
   _mm_free(dudx);
@@ -60,9 +58,9 @@ void kernels::aderdg::optimised::freeDGMatrices() {
 
 void kernels::aderdg::optimised::initDGMatrices() {
   
-  F0      = (double *) _mm_malloc(sizeof(double)*{{nDofPad}}, ALIGNMENT);
   FLCoeff = (double *) _mm_malloc(sizeof(double)*{{nDofPad}}, ALIGNMENT);
   FRCoeff = (double *) _mm_malloc(sizeof(double)*{{nDofPad}}, ALIGNMENT);
+  //note: FLCoeff is also F0
   
   dudx    = (double *) _mm_malloc(sizeof(double)*{{nDofPad*nDof}}, ALIGNMENT);
   dudx_T  = (double *) _mm_malloc(sizeof(double)*{{nDofPad*nDof}}, ALIGNMENT);
@@ -70,9 +68,6 @@ void kernels::aderdg::optimised::initDGMatrices() {
   Kxi     = (double *) _mm_malloc(sizeof(double)*{{nDofPad*nDof}}, ALIGNMENT);
   Kxi_T   = (double *) _mm_malloc(sizeof(double)*{{nDofPad*nDof}}, ALIGNMENT);
 
-{% for i in nDofPad_seq %}
-  F0[{{i}}] = {{"{:.12e}".format(F0[i])}};
-{% endfor %}
 
 {% for i in nDofPad_seq %}
   FLCoeff[{{i}}] = {{"{:.12e}".format(FLCoeff[i])}};
