@@ -29,8 +29,9 @@ public class OptimisedADERDG implements Solver {
   private boolean _useSource;
   private boolean _useNCP;
   private boolean _noTimeAveraging;
+  private String  _optKernelPath;
 
-  public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
+  public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
@@ -47,7 +48,15 @@ public class OptimisedADERDG implements Solver {
     _useFlux            = options.contains("fluxes");
     _useSource          = options.contains("sources");
     _useNCP             = options.contains("ncp");
-    _noTimeAveraging    = options.contains(noTimeAveragingOptionId);    
+    _noTimeAveraging    = options.contains(noTimeAveragingOptionId); 
+
+    //generate the optimised kernel
+    try {
+      _optKernelPath   = Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+    } catch(IOException e) {
+      _optKernelPath = null;
+    }
   }
   
   private String getAbstractSolverName(String solverName) {
@@ -98,9 +107,10 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-        
-    Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+    
+    if(_optKernelPath == null) {
+      throw new IOException("Optimised kernel generation failed.");
+    }
         
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
@@ -132,6 +142,7 @@ public class OptimisedADERDG implements Solver {
       namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
     }
     content.put("NamingSchemes", namingSchemes);
+    content.put("optKernelPath", _optKernelPath);
     
     writer.write(content.toString());
   }
@@ -139,6 +150,10 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeAbstractImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
+        
+    if(_optKernelPath == null) {
+      throw new IOException("Optimised kernel generation failed.");
+    }
         
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
@@ -228,6 +243,7 @@ public class OptimisedADERDG implements Solver {
 	  content.put("ProfilerInclude",profilerInclude);
 	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 	  content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
+    content.put("optKernelPath", _optKernelPath);
 	  
 	  writer.write(content.toString());
   }
@@ -360,5 +376,9 @@ public class OptimisedADERDG implements Solver {
   @Override
   public boolean supportsVariables() {
     return true;
+  }
+  
+  public String getOptKernelPath() {
+    return _optKernelPath;
   }
 }

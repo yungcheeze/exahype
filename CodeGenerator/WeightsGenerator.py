@@ -29,6 +29,8 @@ import Backend
 import re
 
 class WeightsGenerator:
+    m_config = {}
+
     # order of the approximation polynomial
     m_order      = -1
 
@@ -49,7 +51,8 @@ class WeightsGenerator:
     def __init__(self, i_config):
         self.m_order     = i_config['nDof']-1
         self.m_nDim      = i_config['nDim']
-
+        self.m_config    = i_config
+        
         # compute the Gauss-Legendre weights
         _, w = np.polynomial.legendre.leggauss(self.m_order+1)
         # map onto [0,1]
@@ -157,7 +160,7 @@ class WeightsGenerator:
 
     def __writeToFile(self):
         l_sourceFile = open(self.m_sourceName, 'a')
-        l_sourceFile.write('#include "kernels/aderdg/optimised/'+self.m_headerName+'"\n' \
+        l_sourceFile.write('#include "'+self.m_config['pathToOptKernel']+'/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
         l_sourceFile.write('double** kernels::aderdg::optimised::gaussLegendreWeights;\n'  \
                            'double** kernels::aderdg::optimised::gaussLegendreNodes;\n'    \

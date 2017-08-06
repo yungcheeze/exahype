@@ -66,7 +66,7 @@ RECURSIVE SUBROUTINE PDEFlux(f,g,hz,Q)
   vxB(2) = vf_cov(3)*BV(1) - vf_cov(1)*BV(3)
   vxB(3) = vf_cov(1)*BV(2) - vf_cov(2)*BV(1)
   vxB_contr = MATMUL(g_contr,vxB(1:3))
-  BV_contr = MATMUL(g_contr,BV(1:3))
+  BV_contr  = MATMUL(g_contr,BV(1:3))
   !
   !v2     = vx**2 + vy**2 + vz**2
   !b2     = bx**2 + by**2 + bz**2
@@ -156,7 +156,7 @@ RECURSIVE SUBROUTINE PDEFlux(f,g,hz,Q)
 END SUBROUTINE PDEFlux
 
 
-RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ) 
+RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
    USE Parameters, ONLY :  nVar, nDim, gamma
    IMPLICIT NONE
    REAL :: AQx(nVar), BQy(nVar), CQz(nVar), Qx(nVar), Qy(nVar), Qz(nVar) 
@@ -165,7 +165,7 @@ RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
    REAL, PARAMETER :: epsilon = 1e-14
    ! 11. Oct 21:40: This was a matrix BGradQ(nVar, nDim) but is a vector in spaceTimePredictorNonlinear
    REAL, INTENT(OUT) :: BgradQ(nVar)
-   REAL, INTENT(IN)  :: gradQ(nVar, nDim)
+   REAL, INTENT(IN)  :: gradQ(nVar, nDim) ! C/C++ order: gradQ[nDim][nVar]
    REAL, INTENT(IN)  :: Q(nVar)
    REAL :: p, ih,h,pg, A(3,3), u(3)   
    REAL :: vx,vy,cs,cl,k3,ff,fa 
@@ -174,16 +174,15 @@ RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
    REAL :: vf_cov(3),vf(3),BV(3),delta(3,3),Vc(nVar),Wim,W_ij
    REAL :: Qv_contr(3),QB_contr(3),vxB(3),vxB_contr(3),BV_contr(3)
    REAL :: v2,b2,e2,lf,LF2,w,wwx,wwy,wwz,uem,gamma1
-
    
   ! BgradQ = 0
   ! RETURN
   Qx = gradQ(:,1)
   Qy = gradQ(:,2)
   IF(nDim==3) THEN
-	Qz = gradQ(:,3)
+  Qz = gradQ(:,3)
   ELSE
-	Qz = 0.0 
+  Qz = 0.0 
   ENDIF 
   !
   !psi = Q(9)
@@ -240,7 +239,7 @@ RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
   uem    = 0.5*(b2 + e2) 
   !
   !
-  vf     = MATMUL(g_contr,vf_cov)
+  vf      = MATMUL(g_contr,vf_cov)
   S_contr = MATMUL(g_contr,Q(2:4))
   !gv_contr = MATMUL(g_contr,gv)
   lf     = 1.0/sqrt(1.0 - v2)
@@ -251,81 +250,81 @@ RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
   AQx = 0.
   BQy = 0.
   CQz = 0.
-      count=0
-      DO i=1,3 
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=1
-                !------ 
-                W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-                !
-                AQx(1+j) = AQx(1+j) - Q(1+i)*Qx(10+i)  ! Q(11:13)  shift(i) or shift_contr(i)
-                AQx(5) = AQx(5) - gp*W_ij*Qx(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
-                !
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=2
-                !------ 
-                W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-                !
-                BQy(1+j) = BQy(1+j) - Q(1+i)*Qy(10+i)   ! Q(11:13)  shift(i) or shift_contr(i)
-                BQy(5) = BQy(5) - gp*W_ij*Qy(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
-                !
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=3
-                !------
-                W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-                !
-                CQz(1+j) = CQz(1+j) - Q(1+i)*Qz(10+i)   ! Q(11:13)  shift(i) or shift_contr(i)
-                CQz(5) = CQz(5) - gp*W_ij*Qz(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
-                !
-          DO m=1,3
-            IF(m.GE.i) THEN  
-                count=count+1
-                !
-                Wim = ww*vf(i)*vf(m)-vxB_contr(i)*vxB_contr(m)-BV_contr(i)*BV_contr(m)+(p+uem)*g_contr(i,m)
-                Wim = Wim + (1.0 - delta(i,m))*(ww*vf(m)*vf(i)-vxB_contr(m)*vxB_contr(i)- &
-		      BV_contr(m)*BV_contr(i)+(p+uem)*g_contr(m,i))
-		      ! account also of the remaining symmetric components of gamma for i.NE.m.
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=1
-                !------ 
-                AQx(1+j) = AQx(1+j) - 0.5*gp*lapse*Wim*Qx(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                AQx(5) = AQx(5) - 0.5*gp*Wim*shift(j)*Qx(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                !
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=2
-                !------ 
-                BQy(1+j) = BQy(1+j) - 0.5*gp*lapse*Wim*Qy(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                BQy(5) = BQy(5) - 0.5*gp*Wim*shift(j)*Qy(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                !
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=3
-                !------
-                CQz(1+j) = CQz(1+j) - 0.5*gp*lapse*Wim*Qz(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                CQz(5) = CQz(5) - 0.5*gp*Wim*shift(j)*Qz(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                !
-            ENDIF
-          ENDDO
-      ENDDO
+  count=0
+  DO i=1,3 
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=1
     !------ 
-    AQx(1+j) = AQx(1+j) + (Q(5)+Q(1))*Qx(10)    ! Q(10) or lapse
-    AQx(5) = AQx(5) + S_contr(j)*Qx(10)         !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
+    !
+    AQx(1+j) = AQx(1+j) - Q(1+i)*Qx(10+i)  ! Q(11:13)  shift(i) or shift_contr(i)
+    AQx(5) = AQx(5) - gp*W_ij*Qx(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
     !
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=2
     !------ 
-    BQy(1+j) = BQy(1+j) + (Q(5)+Q(1))*Qy(10)    ! Q(10) or lapse
-    BQy(5) = BQy(5) + S_contr(j)*Qy(10)         !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
+    !
+    BQy(1+j) = BQy(1+j) - Q(1+i)*Qy(10+i)   ! Q(11:13)  shift(i) or shift_contr(i)
+    BQy(5) = BQy(5) - gp*W_ij*Qy(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
     !
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=3
     !------
-    CQz(1+j) = CQz(1+j) + (Q(5)+Q(1))*Qz(10)    ! Q(10) or lapse
-    CQz(5) = CQz(5) + S_contr(j)*Qz(10)         !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
     !
+    CQz(1+j) = CQz(1+j) - Q(1+i)*Qz(10+i)   ! Q(11:13)  shift(i) or shift_contr(i)
+    CQz(5) = CQz(5) - gp*W_ij*Qz(10+i)     ! Q(11:13)  shift(i) or shift_contr(i)
+    !
+    DO m=1,3
+      IF(m.GE.i) THEN  
+        count=count+1
+        !
+        Wim = ww*vf(i)*vf(m)-vxB_contr(i)*vxB_contr(m)-BV_contr(i)*BV_contr(m)+(p+uem)*g_contr(i,m)
+        Wim = Wim + (1.0 - delta(i,m))*(ww*vf(m)*vf(i)-vxB_contr(m)*vxB_contr(i)- &
+              BV_contr(m)*BV_contr(i)+(p+uem)*g_contr(m,i))
+             ! account also of the remaining symmetric components of gamma for i.NE.m.
+             !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        j=1
+        !------ 
+        AQx(1+j) = AQx(1+j) - 0.5*gp*lapse*Wim*Qx(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        AQx(5) = AQx(5) - 0.5*gp*Wim*shift(j)*Qx(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        !
+        !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        j=2
+        !------ 
+        BQy(1+j) = BQy(1+j) - 0.5*gp*lapse*Wim*Qy(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        BQy(5) = BQy(5) - 0.5*gp*Wim*shift(j)*Qy(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        !
+        !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        j=3
+        !------
+        CQz(1+j) = CQz(1+j) - 0.5*gp*lapse*Wim*Qz(13+count)  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        CQz(5) = CQz(5) - 0.5*gp*Wim*shift(j)*Qz(13+count)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        !
+      ENDIF
+    ENDDO
+  ENDDO
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=1
+  !------ 
+  AQx(1+j) = AQx(1+j) + (Q(5)+Q(1))*Qx(10)    ! Q(10) or lapse
+  AQx(5) = AQx(5) + S_contr(j)*Qx(10)         !  Q(10) or lapse
+  !
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=2
+  !------ 
+  BQy(1+j) = BQy(1+j) + (Q(5)+Q(1))*Qy(10)    ! Q(10) or lapse
+  BQy(5) = BQy(5) + S_contr(j)*Qy(10)         !  Q(10) or lapse
+  !
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=3
+  !------
+  CQz(1+j) = CQz(1+j) + (Q(5)+Q(1))*Qz(10)    ! Q(10) or lapse
+  CQz(5) = CQz(5) + S_contr(j)*Qz(10)         !  Q(10) or lapse
+  !
 
-    BgradQ = AQx + BQy + CQz
+  BgradQ = AQx + BQy + CQz
 END SUBROUTINE PDENCP
 
 
@@ -413,16 +412,16 @@ RECURSIVE SUBROUTINE PDEMatrixB(An,Q,nv)
   REAL :: An(nVar,nVar)
   REAL :: Q(nVar), nv(nDim) 
   INTENT(IN)  :: Q,nv
-  INTENT(OUT) :: An  
+  INTENT(OUT) :: An
   ! Local variables
   INTEGER :: i,j,m, count, iErr
   REAL :: A(nVar,nVar), B(nVar,nVar), C(nVar,nVar), Vp(nVar) 
-REAL :: BQ(3), g_cov(3,3), g_contr(3,3), Fij(3,3), Vtr(3)
-   REAL :: S_contr(3),psi,gammaij(6),lapse,shift(3),gv(3),gv_contr(3),gp,gm,ComputeDet
-   REAL :: vf_cov(3),vf(3),BV(3),delta(3,3),Vc(nVar),Wim,W_ij
-   REAL :: Qv_contr(3),QB_contr(3),vxB(3),vxB_contr(3),BV_contr(3)
-   REAL :: v2,b2,e2,lf,LF2,w,ww,wwx,wwy,wwz,uem,gamma1
-   REAL :: rho, p
+  REAL :: BQ(3), g_cov(3,3), g_contr(3,3), Fij(3,3), Vtr(3)
+  REAL :: S_contr(3),psi,gammaij(6),lapse,shift(3),gv(3),gv_contr(3),gp,gm,ComputeDet
+  REAL :: vf_cov(3),vf(3),BV(3),delta(3,3),Vc(nVar),Wim,W_ij
+  REAL :: Qv_contr(3),QB_contr(3),vxB(3),vxB_contr(3),BV_contr(3)
+  REAL :: v2,b2,e2,lf,LF2,w,ww,wwx,wwy,wwz,uem,gamma1
+  REAL :: rho, p
 
   !An = 0
   !RETURN
@@ -490,82 +489,82 @@ REAL :: BQ(3), g_cov(3,3), g_contr(3,3), Fij(3,3), Vtr(3)
   A = 0.
   B = 0.
   C = 0.
-    !lapse
+  !lapse
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=1
+  !------ 
+  A(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
+  A(5,10) =  S_contr(j)     !  Q(10) or lapse
+  !
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=2
+  !------ 
+  B(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
+  B(5,10) =  S_contr(j)     !  Q(10) or lapse
+  ! 
+  !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  j=3
+  !------
+  C(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
+  C(5,10) =  S_contr(j)     !  Q(10) or lapse
+  ! 
+  count=0
+  DO i=1,3
+    ! shift
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=1
     !------ 
-    A(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
-    A(5,10) =  S_contr(j)     !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
+    !
+    A(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
+    A(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
     !
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=2
     !------ 
-    B(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
-    B(5,10) =  S_contr(j)     !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
+    !
+    B(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
+    B(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
     ! 
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     j=3
     !------
-    C(1+j,10) = + (Q(5)+Q(1))   ! Q(10) or lapse
-    C(5,10) =  S_contr(j)     !  Q(10) or lapse
+    W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
+    !
+    C(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
+    C(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
     ! 
-    count=0
-    DO i=1,3
-        ! shift
+    DO m=1,3
+      IF(m.GE.i) THEN  
+        !metric
+        count=count+1
+        !
+        Wim = ww*vf(i)*vf(m)-vxB_contr(i)*vxB_contr(m)-BV_contr(i)*BV_contr(m)+(p+uem)*g_contr(i,m)
+        Wim = Wim + (1.0 - delta(i,m))*(ww*vf(m)*vf(i)-vxB_contr(m)*vxB_contr(i)-&
+           BV_contr(m)*BV_contr(i)+(p+uem)*g_contr(m,i)) 
+           ! account also of the remaining symmetric components of gamma for i.NE.m.
         !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         j=1
         !------ 
-        W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-        !
-        A(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
-        A(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
+        A(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        A(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
         !
         !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         j=2
         !------ 
-        W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-        !
-        B(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
-        B(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
+        B(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        B(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
         ! 
         !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         j=3
         !------
-        W_ij = ww*vf_cov(i)*vf(j)-vxB(i)*vxB_contr(j)-BV(i)*BV_contr(j)+(p+uem)*delta(i,j)
-        !
-        C(1+j,10+i) = - Q(1+i)  ! Q(11:13)  shift(i) or shift_contr(i)
-        C(5,10+i) = - gp*W_ij    ! Q(11:13)  shift(i) or shift_contr(i)
+        C(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
+        C(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
         ! 
-          DO m=1,3
-            IF(m.GE.i) THEN  
-                !metric
-                count=count+1
-                !
-                Wim = ww*vf(i)*vf(m)-vxB_contr(i)*vxB_contr(m)-BV_contr(i)*BV_contr(m)+(p+uem)*g_contr(i,m)
-                Wim = Wim + (1.0 - delta(i,m))*(ww*vf(m)*vf(i)-vxB_contr(m)*vxB_contr(i)-&
-                   BV_contr(m)*BV_contr(i)+(p+uem)*g_contr(m,i)) 
-                   ! account also of the remaining symmetric components of gamma for i.NE.m.
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=1
-                !------ 
-                A(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                A(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                !
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=2
-                !------ 
-                B(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                B(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                ! 
-                !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                j=3
-                !------
-                C(1+j,13+count) = - 0.5*gp*lapse*Wim  ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                C(5,13+count) = - 0.5*gp*Wim*shift(j)   ! Q(14:19) gammaij(count) or  g_cov(i,m)
-                ! 
-            ENDIF
-          ENDDO
-      ENDDO
+      ENDIF
+    ENDDO
+  ENDDO
   !ENDDO 
   !
   IF(nDim == 3) THEN
@@ -575,5 +574,3 @@ REAL :: BQ(3), g_cov(3,3), g_contr(3,3), Fij(3,3), Vtr(3)
   ENDIF
   
 END SUBROUTINE PDEMatrixB
-
-

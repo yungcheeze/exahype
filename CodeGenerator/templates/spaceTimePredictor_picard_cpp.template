@@ -14,11 +14,11 @@
 #include <cstring>
 #include <algorithm>
 
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/DGMatrices.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/DGMatrices.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-#include "kernels/aderdg/optimised/asm_picard.c"
+#include "{{pathToOptKernel}}/asm_picard.c"
 
 #include "{{solverHeader}}"
 
@@ -39,7 +39,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(lQi, ALIGNMENT);
   __assume_aligned(rhs, ALIGNMENT);
   __assume_aligned(lFi, ALIGNMENT);
-  __assume_aligned(F0, ALIGNMENT);
+  __assume_aligned(FLCoeff, ALIGNMENT); // == F0
   __assume_aligned(Kxi, ALIGNMENT);
   __assume_aligned(iK1, ALIGNMENT);
   __assume_aligned(weights3, ALIGNMENT);
@@ -116,7 +116,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
       // Compute the contribution of the initial condition uh to the right-hand side (rhs)
       for (int jkl = 0; jkl < {{nDof**nDim}}; jkl++) {
-        const double weight = weights3[jkl] * F0[i];
+        const double weight = weights3[jkl] * FLCoeff[i];
         #pragma simd
         for (int n = 0; n < {{nVar}}; n++) {
           rhs[n+{{nVarPad}}*(jkl+{{nDof**nDim}}*i)] = weight * luh[n+{{nVar}}*jkl];

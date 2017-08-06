@@ -9,7 +9,7 @@
 // Please do not change the implementations below
 // =============================---==============
 #include "{{AbstractSolver}}.h"
-#include "kernels/aderdg/optimised/Kernels.h"
+#include "{{optKernelPath}}/Kernels.h"
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 

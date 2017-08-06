@@ -388,7 +388,7 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
 ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/optimised' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(OPT_KERNEL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
 
 ffiles.mk:

@@ -15,11 +15,11 @@
 
 #include <cstring>
 
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/DGMatrices.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/DGMatrices.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-#include "kernels/aderdg/optimised/asm_volumeIntegral.c"
+#include "{{pathToOptKernel}}/asm_volumeIntegral.c"
 
 void kernels::aderdg::optimised::volumeIntegral( 
   double* restrict lduh, 
