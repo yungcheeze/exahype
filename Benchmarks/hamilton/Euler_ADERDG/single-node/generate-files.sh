@@ -1,7 +1,5 @@
 #!/bin/bash
-# TODO(Dominic): Output file names are not up-to-date yet!
-#
-# Perform multicore speedup tests on Hamilton.
+# Perform speedup tests on Hamilton using a single node.
 #
 # Hamilton uses SLURM. SLURM supports array jobs.
 #

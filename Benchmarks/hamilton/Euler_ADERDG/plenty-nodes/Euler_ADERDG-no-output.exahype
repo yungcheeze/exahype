@@ -22,7 +22,7 @@ exahype-project Euler
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/Euler_ADERDG
+  output-directory const  = ./Benchmarks/hamilton/Euler_ADERDG
   architecture const      = noarch
   log-file                = mylogfile.log
 
@@ -59,11 +59,12 @@ exahype-project Euler
 
   solver ADER-DG EulerSolver_ADERDG
     variables const   = rho:1,j:3,E:1
-    order const       = 3
+    order const       = 9
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.05
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
+    constants         = reference:entropywave
   end solver
 end exahype-project
