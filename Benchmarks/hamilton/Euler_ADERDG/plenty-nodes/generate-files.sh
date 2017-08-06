@@ -56,7 +56,7 @@ do
   fi
   prefix+="-$mesh"
 
-  for nodes in 1
+  for nodes in 1 10 28 82
   do
     for tasksPerNode in 1 2 4 6 8 12 24 # ham7
     #for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 # ham6
@@ -77,6 +77,7 @@ do
 
       sed -i 's,p3,p'$order',g' $newScript
 
+      sed -i 's,nodes=1,nodes='$nodes',' $newScript
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
 
