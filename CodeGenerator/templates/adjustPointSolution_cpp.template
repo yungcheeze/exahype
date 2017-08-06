@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 #include "{{solverHeader}}"
 

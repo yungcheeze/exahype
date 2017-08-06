@@ -1,5 +1,8 @@
 package eu.exahype;
 
+import java.util.AbstractMap;
+import java.util.List;
+
 public class Main {
   public static void printHeader() {
     System.out.println("================================");
@@ -116,6 +119,9 @@ public class Main {
       System.exit(-5);
     }
 
+    //used to put the paths to the optimised kernel (defined when creating the solver) in the makefile
+    AbstractMap<String, List<String>> optDirectories = null; //Key = project name, Value = list of paths
+    
     // Create the solvers
     try {
       CreateSolverClasses createSolverClasses = new CreateSolverClasses(directoryAndPathChecker);
@@ -128,6 +134,7 @@ public class Main {
         System.err.println("ExaHyPE script failed ");
         System.exit(-6);
       }
+      optDirectories = createSolverClasses.getOptDirectories();
       System.out.println("generate application-specific solver classes ... ok");
       waitForInteraction(interactive);
     } catch (Exception e) {
@@ -162,7 +169,7 @@ public class Main {
     // Create the kernel calls
     try {
       GenerateSolverRegistration generateKernelCalls =
-          new GenerateSolverRegistration(directoryAndPathChecker, inputFileName);
+          new GenerateSolverRegistration(directoryAndPathChecker, inputFileName, optDirectories);
 
       document.apply(generateKernelCalls);
 
@@ -186,7 +193,7 @@ public class Main {
     //
     try {
       SetupBuildEnvironment setupBuildEnvironment =
-          new SetupBuildEnvironment(directoryAndPathChecker);
+          new SetupBuildEnvironment(directoryAndPathChecker, optDirectories);
 
       document.apply(setupBuildEnvironment);
 

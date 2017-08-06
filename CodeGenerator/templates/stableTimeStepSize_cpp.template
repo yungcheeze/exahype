@@ -13,7 +13,7 @@
 
 #include <limits>
 
-#include "kernels/aderdg/optimised/Kernels.h"
+#include "{{pathToOptKernel}}/Kernels.h"
 #include "tarch/la/Vector.h" 
 
 #include "{{solverHeader}}"

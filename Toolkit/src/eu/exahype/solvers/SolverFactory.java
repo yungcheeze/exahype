@@ -5,35 +5,31 @@ import java.util.List;
 import java.util.Arrays;
 
 public class SolverFactory {
+  private String _projectName;
+  private String _solverName;
   private int _dimensions;
   private boolean _enableProfiler;
   private boolean _enableDeepProfiler;
   private String _microarchitecture;
   private String _pathToLibxsmm;
 
-  public SolverFactory(
-      int dimensions,
-      boolean enableProfiler,
-      String microarchitecture,
-      String pathToLibxsmm) {
-    _dimensions = dimensions;
-    _enableProfiler = enableProfiler;
-    _microarchitecture = microarchitecture;
-    _pathToLibxsmm = pathToLibxsmm;
-    _enableDeepProfiler = false;
-  }
   
   public SolverFactory(
+      String projectName,
+      String solverName,
       int dimensions,
       boolean enableProfiler,
       boolean enableDeepProfiler,
       String microarchitecture,
       String pathToLibxsmm) {
+    _projectName = projectName;
+    _solverName = solverName;    
     _dimensions = dimensions;
     _enableProfiler = enableProfiler;
     _enableDeepProfiler = enableDeepProfiler;
     _microarchitecture = microarchitecture;
     _pathToLibxsmm = pathToLibxsmm;
+    
   }
   
   public Solver createADERDGSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
@@ -57,7 +53,7 @@ public class SolverFactory {
           _enableProfiler, hasConstants);
     }
     else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
-      return new eu.exahype.solvers.OptimisedADERDG(_dimensions,
+      return new eu.exahype.solvers.OptimisedADERDG(_projectName, _solverName, _dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture, _pathToLibxsmm,
           _enableProfiler, _enableDeepProfiler, hasConstants, false, Arrays.asList(generalKernel.split("::")));
     }

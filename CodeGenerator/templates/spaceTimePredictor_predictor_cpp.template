@@ -13,9 +13,8 @@
 
 #include <algorithm>
 #include <cstring>
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
-//#include "kernels/aderdg/optimised/asm_predictor.c"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 void kernels::aderdg::optimised::predictorNonlinear(
         const double* restrict const lQi, 

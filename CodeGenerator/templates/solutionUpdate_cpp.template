@@ -13,8 +13,8 @@
 
 // update the elements 
 
-#include "kernels/aderdg/optimised/Kernels.h"
-#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 void kernels::aderdg::optimised::solutionUpdate( 
   double* restrict luh, 

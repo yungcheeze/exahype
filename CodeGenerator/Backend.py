@@ -139,7 +139,7 @@ def generateContext(i_config):
     context['nVarPad'] = getSizeWithPadding(context['nVar'])
     context['nDofPad'] = getSizeWithPadding(context['nDof'])
     context['nDof3D'] = 1 if context['nDim'] == 2 else context['nDof']
-    context['isLinear'] = m_numerics == "linear"
+    context['isLinear'] = context['numerics'] == "linear"
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
     return context
@@ -164,7 +164,7 @@ def generateComputeKernels():
     stableTimeStepSizeGenerator.generateCode()
     weightsGenerator = WeightsGenerator.WeightsGenerator(m_config)
     weightsGenerator.generateCode()
-    dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
+    dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(generateContext(m_config))
     dgMatrixGenerator.generateCode()
     # no ccph anymore => not needed anymore. Legacy TODO JMG clean later
     #cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
