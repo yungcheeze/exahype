@@ -21,7 +21,6 @@ import Backend
 import TemplatingUtils
 import Utils #matrix operation and build functions
 
-import numpy as np
 
 class DGMatrixGenerator:
     m_context = {}
@@ -36,13 +35,8 @@ class DGMatrixGenerator:
 
     def __init__(self, i_context):
         self.m_context = i_context
+        self.m_wGPN, self.m_xGPN = Utils.getGaussLegendre(self.m_context['nDof'])
         
-        # compute the Gauss-Legendre weights
-        x, w = np.polynomial.legendre.leggauss(self.m_context['nDof'])
-        # map onto [0,1]
-        self.m_xGPN = 0.5*(x+1)
-        self.m_wGPN = 0.5*w
-
 
     def generateCode(self):
         l_padSize = self.m_context['nDofPad'] - self.m_context['nDof']
@@ -51,12 +45,10 @@ class DGMatrixGenerator:
 
         # [FLCoeff 0...0]; [FRCoeff 0...0];
         # right now FLCoeff, FRCoeff no pad (gives no benefit w.r.t libxsmm)
-        FLCoeff, _ = np.array(Utils.BaseFunc1d(0.0, self.m_xGPN, self.m_context['nDof'])) #is also F0
-        FRCoeff, _ = np.array(Utils.BaseFunc1d(1.0, self.m_xGPN, self.m_context['nDof']))
-        l_paddedFLCoeff = np.pad(FLCoeff, (0, l_padSize), 'constant')
-        l_paddedFRCoeff = np.pad(FRCoeff, (0, l_padSize), 'constant')
-        self.m_context['FLCoeff'] = l_paddedFLCoeff
-        self.m_context['FRCoeff'] = l_paddedFRCoeff
+        FLCoeff, _ = Utils.BaseFunc1d(0.0, self.m_xGPN, self.m_context['nDof']) #is also F0
+        FRCoeff, _ = Utils.BaseFunc1d(1.0, self.m_xGPN, self.m_context['nDof'])
+        self.m_context['FLCoeff'] = Utils.vectorPad(FLCoeff, l_padSize)
+        self.m_context['FRCoeff'] = Utils.vectorPad(FRCoeff, l_padSize)
         
         # Matrices are stored in column major order (so the padding should be on the bottom rows)
         # [ Mat ]
@@ -65,24 +57,24 @@ class DGMatrixGenerator:
         
         # Kxi
         Kxi = Utils.assembleStiffnessMatrix(self.m_xGPN, self.m_wGPN, self.m_context['nDof'])
-        self.m_context['Kxi'] = np.pad(Kxi,((0,l_padSize),(0,0)),'constant').flatten('F')
+        self.m_context['Kxi'] = Utils.matrixPadAndFlatten_ColMajor(Kxi,l_padSize)
 
         # Kxi_T
         Kxi_T = Utils.matrixTranspose(Kxi)
-        self.m_context['Kxi_T'] = np.pad(Kxi_T,((0,l_padSize),(0,0)),'constant').flatten('F')
+        self.m_context['Kxi_T'] =Utils.matrixPadAndFlatten_ColMajor(Kxi_T,l_padSize)
 
         # iK1
-        iK1 = Utils.matrixTranspose(np.linalg.inv(Utils.assembleK1(Kxi, self.m_xGPN, self.m_context['nDof'])))
-        self.m_context['iK1'] = np.pad(iK1,((0,l_padSize),(0,0)),'constant').flatten('F')
+        iK1 = Utils.matrixTranspose(Utils.matrixInverse(Utils.assembleK1(Kxi, self.m_xGPN, self.m_context['nDof'])))
+        self.m_context['iK1'] = Utils.matrixPadAndFlatten_ColMajor(iK1,l_padSize)
 
         # dudx
         MM   = Utils.assembleMassMatrix(self.m_xGPN, self.m_wGPN, self.m_context['nDof'])
         dudx = Utils.assembleDiscreteDerivativeOperator(MM,Kxi)
-        self.m_context['dudx'] = np.pad(dudx,((0,l_padSize),(0,0)),'constant').flatten('F')
+        self.m_context['dudx'] = Utils.matrixPadAndFlatten_ColMajor(dudx,l_padSize)
         
         # dudx_T
         dudx_T = Utils.matrixTranspose(dudx)
-        self.m_context['dudx_T'] = np.pad(dudx_T,((0,l_padSize),(0,0)),'constant').flatten('F')
+        self.m_context['dudx_T'] = Utils.matrixPadAndFlatten_ColMajor(dudx_T,l_padSize)
         
         
         #generate files 
