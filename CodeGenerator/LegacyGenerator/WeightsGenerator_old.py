@@ -15,29 +15,48 @@
 # Released under the BSD 3 Open Source License.
 # For the full license text, see LICENSE.txt
 #
+#
+# @section DESCRIPTION
+#
+# Generates the code for the quadrature weights
+# for a specific configuration
+#
+# @todo TODO
+# remove gaussLegendreWeights***
 
-
+import numpy as np
 import Backend
-import Utils
-
+import re
 
 class WeightsGenerator:
-    m_context = {}
+    m_config = {}
+
+    # order of the approximation polynomial
+    m_order      = -1
+
+    # number of dimensions we simulate
+    m_nDim       = -1
+
+    # quadrature weights mapped onto [0,1]
+    m_wGPN       = []
 
     # name of generated output files
     m_sourceName = "GaussLegendreQuadrature.cpp"
     m_headerName = "GaussLegendreQuadrature.h"
 
-    # quadrature weights mapped onto [0,1]
-    m_wGPN       = []
-    
     # spec file-dependent vector with weights combinations
     m_vectors = {}
 
 
-    def __init__(self, i_context):
-        self.m_context    = i_context
-        self.m_wGPN, _ = Utils.getGaussLegendre(self.m_context['nDof'])
+    def __init__(self, i_config):
+        self.m_order     = i_config['nDof']-1
+        self.m_nDim      = i_config['nDim']
+        self.m_config    = i_config
+        
+        # compute the Gauss-Legendre weights
+        _, w = np.polynomial.legendre.leggauss(self.m_order+1)
+        # map onto [0,1]
+        self.m_wGPN = 0.5*w
 
 
     def generateCode(self):
@@ -62,44 +81,53 @@ class WeightsGenerator:
         # in any case (2D/3D) we need the ordinary Gauss-Legendre weights
         # in contrast to the generic version, guarantee alignment and pad
         # weight := [wGPN + Pad]
-        l_padWidth           = self.m_context['nDofPad'] - self.m_context['nDof']
-        l_weightsVector      = Utils.vectorPad(self.m_wGPN, l_padWidth)
+        l_sizeWithoutPadding = np.size(self.m_wGPN)
+        l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+        l_weightsVector      = np.pad(self.m_wGPN, (0, l_padWidth), mode='constant')
         self.m_vectors['weights1'] = l_weightsVector
 
 
-        if(self.m_context['nDim'] == 2):
+        if(self.m_nDim == 2):
             # case (b)
             # weightsVector is wGPN itself
             # pad weights vector with zeros
-            l_weightsVector      = Utils.vectorPad(self.m_wGPN, Backend.getPadWidth(len(self.m_wGPN)))
+            l_sizeWithoutPadding = np.size(self.m_wGPN) 
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(self.m_wGPN, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
 
             # case (c)
             # all combinations of two weights, written as an 1D array
-            l_weightsVector = [self.m_wGPN[i] * self.m_wGPN[j] for i in range(self.m_context['nDof']) for j in range(self.m_context['nDof'])]
+            l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
             # pad this vector with zeros
-            l_weightsVector      = Utils.vectorPad(l_weightsVector, Backend.getPadWidth(len(l_weightsVector)))
+            l_sizeWithoutPadding = np.size(l_weightsVector)
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
 
-        elif(self.m_context['nDim'] == 3):
+        elif(self.m_nDim == 3):
             # case (b)
             # all combinations of two weights, written as an 1D array
-            l_weightsVector = [self.m_wGPN[i] * self.m_wGPN[j] for i in range(self.m_context['nDof']) for j in range(self.m_context['nDof'])]
+            l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
             # pad this vector with zeros
-            l_weightsVector      = Utils.vectorPad(l_weightsVector, Backend.getPadWidth(len(l_weightsVector)))
+            l_sizeWithoutPadding = np.size(l_weightsVector) 
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
 
             # case (c)
             # all combination of three weights, written as an 1D array
-            l_weightsVector = [self.m_wGPN[i] * self.m_wGPN[j] * self.m_wGPN[k] for i in range(self.m_context['nDof']) for j in range(self.m_context['nDof']) for k in range(self.m_context['nDof'])]
+            l_weightsVector = np.kron(np.outer(self.m_wGPN, self.m_wGPN), self.m_wGPN).flatten('F')
 
             # pad this vector with zeros
-            l_weightsVector      = Utils.vectorPad(l_weightsVector, Backend.getPadWidth(len(l_weightsVector)))
+            l_sizeWithoutPadding = np.size(l_weightsVector)
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
 
@@ -132,7 +160,7 @@ class WeightsGenerator:
 
     def __writeToFile(self):
         l_sourceFile = open(self.m_sourceName, 'a')
-        l_sourceFile.write('#include "'+self.m_context['pathToOptKernel']+'/'+self.m_headerName+'"\n' \
+        l_sourceFile.write('#include "'+self.m_config['pathToOptKernel']+'/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
         l_sourceFile.write('double** kernels::aderdg::optimised::gaussLegendreWeights;\n'  \
                            'double** kernels::aderdg::optimised::gaussLegendreNodes;\n'    \
@@ -154,13 +182,13 @@ class WeightsGenerator:
 
         l_sourceFile.write('void kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {\n')
         for weightsVector in self.m_vectors:
-            l_elemCount = len(self.m_vectors[weightsVector])
+            l_elemCount = self.m_vectors[weightsVector].size
             l_sourceFile.write('  '+str(weightsVector)+' = (double *) _mm_malloc(sizeof(double)*'+ \
                                str(l_elemCount)+', ALIGNMENT);\n')
 
         for weightsVector in self.m_vectors:
-            for idx in range(0, len(self.m_vectors[weightsVector])):
-                l_sourceFile.write('  '+str(weightsVector) + '['+str(idx)+'] = %.12e' % self.m_vectors[weightsVector][idx]+';\n')
+            for idx in range(0, self.m_vectors[weightsVector].size):
+                l_sourceFile.write('  '+str(weightsVector) + '['+str(idx)+'] = %.12e' % self.m_vectors[weightsVector].item(idx)+';\n')
 
         # for compatibility with generic code
         l_sourceFile.write('  constexpr int MAX_ORDER=9;\n'\
