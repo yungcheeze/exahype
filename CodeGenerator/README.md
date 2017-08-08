@@ -1,18 +1,42 @@
 Dependencies
 ============
 
-The CodeGenerator requires the template engine Jinja2 (http://jinja.pocoo.org/)
+The CodeGenerator uses the template engine Jinja2 (http://jinja.pocoo.org/)
 
-If not installed with your python:
+If it is not provided by your python installation you can instead use the source 
+of jinja2 directly by following these steps
 
-1) Clone the source from the git repository: 
-		git clone https://github.com/pallets/jinja.git 
- OR
-   unpack the provided archive (release 2.9.6) and rename the directory to jinja: 
-		tar -xzf jinja-2.9.6.tar.gz && mv jinja-2.9.6 jinja
+1) Either:
+
+* Clone the source from the git repository: ``git clone https://github.com/pallets/jinja.git``
+ 
+* Unpack the provided archive (release 2.9.6) and rename the directory to jinja: 
+		``tar -xzf jinja-2.9.6.tar.gz && mv jinja-2.9.6 jinja``
 		
 
 2) Modify TemplatingUtils.py to use the local version of Jinja2
+
+From: 
+```
+# 1. if jinja2 is available with Python
+from jinja2 import Template
+
+# 2. if jinja2 sources are locally available
+# import sys
+# sys.path.insert(0, 'jinja')
+# from jinja.jinja2 import Template
+```
+
+To 
+```
+# 1. if jinja2 is available with Python
+# from jinja2 import Template
+
+# 2. if jinja2 sources are locally available
+import sys
+sys.path.insert(0, 'jinja')
+from jinja.jinja2 import Template
+```
 
 Codegenerator
 =============
