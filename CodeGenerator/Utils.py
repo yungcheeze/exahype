@@ -26,7 +26,182 @@
 
 import Backend
 
+import numpy as np
 
+#****************************************
+#****************************************
+#********** Matrix operations ***********
+#****************************************
+#****************************************
+
+#transpose a square matrix M  
+def matrixTranspose(M):
+    n = len(M)
+    return [[M[j][i] for j in range(n)] for i in range(n)]
+
+
+#****************************************
+#****************************************
+#*************** ADERDG *****************
+#****************************************
+#****************************************
+
+# Code taken from:    
+# .. module:: aderdg
+# :platform: Unix, Windows, Mac
+# :synopsis: Provides routines to compute ADER-DG basis functions and operators on the unit cube.
+# .. moduleauthor:: Angelika Schwarz <angelika.schwarz@tum.de>
+# :synopsis: Provides routines to compute ADER-DG basis functions and operators on the unit cube.
+
+def BaseFunc1d(xi, xin, N):
+    """
+    Computes the ADER-DG basis functions and their first derivative.
+    
+    Args:
+       xi:
+          The reference element point the basis functions are evaluated at.
+          Here, xi refers to the greek letter that is often used as a reference element coordinate.
+       xin:
+          The reference element nodes corresponding to the nodal basis functions.
+       N:
+          Number of nodal basis functions (=order+1).
+    Returns:
+       phi:
+          Basis function values.
+       phi_xi:
+          First derivatives of the basis functions.
+    """
+    phi    = [1.]*N 
+    phi_xi = [0.]*N
+    for m in range(0,N):
+        for j in range(0,N):
+            if j == m:
+                continue 
+            phi[m] = phi[m]*(xi-xin[j])/(xin[m]-xin[j])
+        for i in range(0,N):
+            if i == m:
+                continue
+            tmp = 1.;
+            for j in range(0,N):
+                if j == i:
+                    continue
+                if j == m:
+                    continue
+                tmp = tmp*(xi-xin[j])/(xin[m]-xin[j])
+            phi_xi[m] += tmp/(xin[m]-xin[i])
+    return phi, phi_xi    
+
+def assembleStiffnessMatrix(xGPN, wGPN, N):
+    """
+    Computes the (reference) element stiffness matrix for an approximation of
+    order N.
+
+    Args:
+       xGPN:
+          Gauss-Legendre nodes (N nodes).
+       wGPN:
+          N Gauss-Legendre weights  (N weights).
+       N:
+          Number of nodal basis functions (=order+1).
+    Returns:
+       K_xi:
+          The (reference) element stiffness matrix.
+    """
+    # init matrix with zero
+    Kxi = [[0 for _ in range(N)] for _ in range(N)]
+     
+    for i in range(0,N):
+        phi, phi_xi = BaseFunc1d(xGPN[i], xGPN, N)
+        for k in range(0,N):
+            for l in range(0,N):
+                Kxi[k][l] += wGPN[i]*phi_xi[k]*phi[l] 
+        
+    return Kxi
+
+def assembleK1(Kxi, xGPN, N):
+    """
+    Computes the difference between the reference element mass operator 
+    evaluated at point xi=1.0 and the element stiffness matrix.
+    
+    Args:
+       K_xi:
+          The (reference) element stiffness matrix for a approximation of 
+          order N.
+       xGPN:
+          Number of nodal basis functions (=order+1).
+       N:
+          Order of approximation corresponding to N+1 nodal basis functions.
+    Returns:
+       K1:
+          <unknown>
+    """
+    phi1, _ = BaseFunc1d(1.0, xGPN, N)
+    FRm = [[0 for _ in range(N)] for _ in range(N)]
+    
+    for k in range(0, N):
+        for l in range(0, N):
+            FRm[k][l] = phi1[k]*phi1[l] 
+    
+    return [[FRm[i][j] - Kxi[i][j] for j in range(N)] for i in range(N)]
+    
+    
+def assembleMassMatrix(xGPN, wGPN, N):
+    """
+    Computes the (reference) element mass matrix for an approximation of
+    order N.
+
+    Args:
+       xGPN:
+          Gauss-Legendre nodes (N nodes).
+       wGPN:
+          N Gauss-Legendre weights (N weights).
+       N:
+          Number of nodal basis functions (=order+1).
+    Returns:
+       M_xi:
+          The (reference) element mass matrix.
+    """
+    # init matrix with zeros
+    MM = [[0 for _ in range(N)] for _ in range(N)]
+    
+    for i in range(0,N):
+        phi, _ = BaseFunc1d(xGPN[i], xGPN, N)
+        for k in range(0,N):
+            for l in range(0,N):
+                MM[k][l] += wGPN[i]*phi[k]*phi[l]
+      
+    return MM
+    
+    
+def assembleDiscreteDerivativeOperator(MM, Kxi):
+    """
+    Computes some derivative values for debugging purposes.
+
+    Args:
+       MM:
+          The (reference) element mass matrix for a approximation of 
+          order N.
+       Kxi:
+          The (reference) element stiffness matrix for a approximation of 
+          order N.
+       
+    Returns:
+       dudx:
+          Derivative values for debugging purposes.
+    """
+    dudx = np.dot(np.linalg.inv(MM),np.transpose(Kxi))
+    return dudx    
+    
+
+   
+#TODO JMG remove legacy others
+
+#****************************************
+#****************************************
+#*************** Others *****************
+#****************************************
+#****************************************    
+    
 def generateDSCAL(i_scalarName: str, i_inVectorName: str, i_outVectorName: str, i_vectorSize: int, i_inBaseAddr=0, i_outBaseAddr=0) -> str:
     """
     Generates code snippet that scales a vector by a constant.
