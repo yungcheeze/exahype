@@ -5,12 +5,16 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.List;
 
+import eu.exahype.CodeGeneratorHelper;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
   public static final String Identifier = "optimised"; //"optimised::options::nonlinear"
   public static final String noTimeAveragingOptionId = "notimeavg";
+  public static final String fluxOptionId = "fluxes";
+  public static final String sourceOptionId = "sources";
+  public static final String ncpOptionId = "ncp";
 
   private int     _dimensions;
   private int     _numberOfVariables;
@@ -45,17 +49,17 @@ public class OptimisedADERDG implements Solver {
     _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
     _isLinear           = isLinear;
-    _useFlux            = options.contains("fluxes");
-    _useSource          = options.contains("sources");
-    _useNCP             = options.contains("ncp");
+    _useFlux            = options.contains(fluxOptionId);
+    _useSource          = options.contains(sourceOptionId);
+    _useNCP             = options.contains(ncpOptionId);
     _noTimeAveraging    = options.contains(noTimeAveragingOptionId); 
 
     //generate the optimised kernel
     try {
-      _optKernelPath   = Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
         _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
     } catch(IOException e) {
-      _optKernelPath = null;
+      _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation
     }
   }
   
