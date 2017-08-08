@@ -1,3 +1,19 @@
+Dependencies
+============
+
+The CodeGenerator requires the template engine Jinja2 (http://jinja.pocoo.org/)
+
+If not installed with your python:
+
+1) Clone the source from the git repository: 
+		git clone https://github.com/pallets/jinja.git 
+ OR
+   unpack the provided archive (release 2.9.6) and rename the directory to jinja: 
+		tar -xzf jinja-2.9.6.tar.gz && mv jinja-2.9.6 jinja
+		
+
+2) Modify TemplatingUtils.py to use the local version of Jinja2
+
 Codegenerator
 =============
 
