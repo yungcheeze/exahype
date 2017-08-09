@@ -12,7 +12,8 @@ import java.util.Collections;
 public class CodeGeneratorHelper {
   
   //configuration parameters
-  public  static String OPT_KERNEL_PATH_PREFIX = "kernels/aderdg/optimised"; //starts from root + /ExaHyPE
+  private static String INTERNAL_EXAHYPE_PATH  = "ExaHyPE";                  //starts from root (ExaHyPE-Engine)
+  private static String OPT_KERNEL_PATH_PREFIX = "kernels/aderdg/optimised"; //starts from root + INTERNAL_EXAHYPE_PATH
   private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from root (ExaHyPE-Engine)
   
   //Singleton pattern to be able to access the instance in solvers
@@ -140,8 +141,8 @@ public class CodeGeneratorHelper {
   
   //remove all the generated opt. kernels
   public static void cleanAll() throws IOException {
-    System.out.println("Cleaning directory "+Paths.get("ExaHyPE", OPT_KERNEL_PATH_PREFIX).toString());
-    cleanDirectory(Paths.get(System.getProperty("user.dir"), "ExaHyPE", OPT_KERNEL_PATH_PREFIX));
+    System.out.println("Cleaning directory "+Paths.get(INTERNAL_EXAHYPE_PATH, OPT_KERNEL_PATH_PREFIX).toString());
+    cleanDirectory(Paths.get(System.getProperty("user.dir"), INTERNAL_EXAHYPE_PATH, OPT_KERNEL_PATH_PREFIX));
   }
   
   //Remove all the files and subdir inside the given directory
