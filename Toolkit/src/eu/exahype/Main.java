@@ -1,6 +1,11 @@
 package eu.exahype;
 
 public class Main {
+  
+  private static String CLEAN_OPT_KERNEL = "--clean-opt";
+  private static String NOT_INTERACTIVE  = "--not-interactive";
+  private static String INTERACTIVE      = "--interactive";
+  
   public static void printHeader() {
     System.out.println("================================");
     System.out.println(" ___          _  _      ___ ___");
@@ -45,27 +50,31 @@ public class Main {
     //
     // Usually, I write the header directly before a new algorithm phase, but
     // not for the first phase
-    //
+    //    
     printHeader();
+    
+    if(cleanAllOptKernel(args)) {
+      return;
+    }
 
     if (args.length != 1 && args.length != 2) {
       System.err.println("ERROR: Please provide input file as argument");
       System.exit(-1);
     };
 
-    if (args.length == 2 && args[0].compareTo("--not-interactive") != 0
-        && args[0].compareTo("--interactive") != 0) {
+    if (args.length == 2 && args[0].compareTo(Main.NOT_INTERACTIVE) != 0
+        && args[0].compareTo(Main.INTERACTIVE) != 0) {
       System.err.println(
-          "ERROR: First optional argument has to be --not-interactive or --interactive. Received \""
+          "ERROR: First optional argument has to be "+Main.NOT_INTERACTIVE+" or "+Main.INTERACTIVE+". Received \""
           + args[0] + "\"");
       System.exit(-2);
     };
 
-    boolean interactive = args.length == 1 || args[0].compareTo("--interactive") == 0;
+    boolean interactive = args.length == 1 || args[0].compareTo(Main.INTERACTIVE) == 0;
 
     if (args.length == 1) {
       System.out.println(
-          "INFO: You might want to add --not-interactive or --interactive as first command ");
+          "INFO: You might want to add "+Main.NOT_INTERACTIVE+" or "+Main.INTERACTIVE+" as first command ");
       System.out.println("      line argument to control whether script runs interactively");
     }
 
@@ -204,5 +213,17 @@ public class Main {
       e.printStackTrace();
       System.exit(-13);
     }
+  }
+  
+  private static boolean cleanAllOptKernel(String[] args) { 
+    if(args.length == 1 && args[0].contains(Main.CLEAN_OPT_KERNEL)) {
+      try {
+        CodeGeneratorHelper.cleanAll();
+      } catch(Exception e) {
+        System.err.println(e.toString());
+      }
+      return true;
+    }
+    return false;
   }
 }

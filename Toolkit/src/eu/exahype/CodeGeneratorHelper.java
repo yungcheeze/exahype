@@ -1,6 +1,8 @@
 package eu.exahype;
 
 import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
@@ -10,8 +12,8 @@ import java.util.Collections;
 public class CodeGeneratorHelper {
   
   //configuration parameters
-  public  static String optKernelPathPrefix = "kernels/aderdg/optimised/"; 
-  private static String codeGeneratorPath = "/CodeGenerator/Driver.py";
+  public  static String OPT_KERNEL_PATH_PREFIX = "kernels/aderdg/optimised"; //starts from root + /ExaHyPE
+  private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from root (ExaHyPE-Engine)
   
   //Singleton pattern to be able to access the instance in solvers
   private static volatile CodeGeneratorHelper instance = null;
@@ -60,7 +62,7 @@ public class CodeGeneratorHelper {
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
-        new java.io.File(currentDirectory + "/CodeGenerator/Driver.py");
+        new java.io.File(currentDirectory + '/' + CodeGeneratorHelper.CODEGENERATOR_PATH);
     if (!pathToCodeGenerator.exists()) {
       System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + pathToCodeGenerator.toString());
       throw new IOException();
@@ -89,7 +91,7 @@ public class CodeGeneratorHelper {
 
     String optKernelPath = getOptKernelPath(args);
         
-    String bashCommand = "env python3 " + pathToCodeGenerator + " " + optKernelPath + args;
+    String bashCommand = "env python3 "  + pathToCodeGenerator  + " " + optKernelPath + args;
 
     Runtime runtime = Runtime.getRuntime();
     System.out.println("Codegenerator command line: "+bashCommand);
@@ -133,7 +135,39 @@ public class CodeGeneratorHelper {
   public static String getOptKernelPath(String key) {
     //TODO JMG
     
-    return optKernelPathPrefix+"test_TODOJMG";
+    return OPT_KERNEL_PATH_PREFIX+"/test_TODOJMG";
   }
   
+  //remove all the generated opt. kernels
+  public static void cleanAll() throws IOException {
+    System.out.println("Cleaning directory "+Paths.get("ExaHyPE", OPT_KERNEL_PATH_PREFIX).toString());
+    cleanDirectory(Paths.get(System.getProperty("user.dir"), "ExaHyPE", OPT_KERNEL_PATH_PREFIX));
+  }
+  
+  //Remove all the files and subdir inside the given directory
+  private static void cleanDirectory(Path directory) throws IOException
+  {
+    if (Files.exists(directory))
+    {
+      Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
+      {
+        @Override
+        public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException
+        {
+          Files.delete(path);
+          return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult postVisitDirectory(Path loc_dir, IOException ioException) throws IOException
+        {
+          if(!loc_dir.equals(directory))
+            Files.delete(loc_dir);
+          
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    }
+  }
+
 }

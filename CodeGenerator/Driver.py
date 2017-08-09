@@ -22,15 +22,6 @@
 #
 # @note
 # requires python3
-#
-# For a quick test, type
-# python Driver.py Euler 5 3 2 nonlinear hsw path/to/libxsmmRepository
-#                 NoOtherOption nVar Order 2/3d NoOtherOption Architecture 
-#
-# for Jenkins this is
-# python Driver.py Euler 5 3 2 nonlinear hsw ../../libxsmm
-#
-# 
 
 import argparse
 import CodeGenArgumentParser
@@ -57,7 +48,7 @@ if(requiredVersion > currentVersion):
 l_parser = argparse.ArgumentParser(description="This is the front end of the ExaHyPE code generator.")
 
 l_parser.add_argument("pathToOptKernel",
-                      help="Desired path to the generated code")
+                      help="Desired relative path to the generated code (ExaHyPE/ as root)")
 l_parser.add_argument("solverName",
                       help="Name of the user-solver")
 l_parser.add_argument("numberOfVariables", 
