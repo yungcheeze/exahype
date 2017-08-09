@@ -1,5 +1,13 @@
+Prerequisites
+=============
+
+Python
+------
+
+Python 3.3 or more is required.
+
 Dependencies
-============
+------------
 
 The CodeGenerator uses the template engine Jinja2 (http://jinja.pocoo.org/)
 
@@ -38,8 +46,54 @@ sys.path.insert(0, 'jinja')
 from jinja.jinja2 import Template
 ```
 
+
+Paths
+-----
+
+Every path is relative to the root of the project (inside the ExaHyPE-Engine directory).
+
+The CodeGenerator assumes the following:
+
+* it is located in ``CodeGenerator/``
+* the internal ExaHyPE is at ``ExaHyPE/``
+
+If this is not the case, you may need to edit
+
+* the configuration parameters of ``Toolkit/src/eu/exahype/CodeGeneratorHelper.java``
+* the configuration parameters of ``CodeGenerator/Driver.py``
+
+The generated code will be put accordingly to the ``pathToOptKernel`` argument starting from the internal ExaHyPe, by default in a subdirectory of ``ExaHyPE/kernels/aderdg/optimised/``.
+
+
 Codegenerator
 =============
+
+To access the help: ``python3 CodeGenerator/Drivers.py -h``
+
+Usage and arguments
+-------------------
+
+positional arguments:
+*  pathToOptKernel    desired relative path to the generated code (../ExaHyPE/ as root)
+*  solverName         name of the user-solver
+*  numberOfVariables  the number of quantities
+*  order              the order of the approximation polynomial
+*  dimension          number of dimensions you want to simulate
+*  numerics           linear or nonlinear
+*  architecture       the microarchitecture of the target device
+*  pathToLibxsmm      where to find your local copy of code generator back end 'https://github.com/hfp/libxsmm'
+
+optional arguments:
+*  -h, --help         show this help message and exit
+*  --deepProfiling    enable deep-rpofiling (use only with profiler enable)
+*  --useFlux          enable flux
+*  --useNCP           enable non conservative product
+*  --useSource        enable source terms
+*  --noTimeAveraging  disable time averaging in the spacetimepredictor (less memory usage, more computation)
+
+
+Example: ``python3 CodeGenerator/Driver.py kernels/aderdg/optimised/test Euler::MyEulerSolver 5 6 2 nonlinear hsw Libxsmm --useFlux``
+
 
 Data format and padding
 -----------------------
