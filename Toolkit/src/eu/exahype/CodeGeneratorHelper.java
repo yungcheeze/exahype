@@ -146,7 +146,7 @@ public class CodeGeneratorHelper {
   }
   
   //Remove all the files and subdir inside the given directory
-  private static void cleanDirectory(Path directory) throws IOException
+  private static void cleanDirectory(final Path directory) throws IOException
   {
     if (Files.exists(directory))
     {
