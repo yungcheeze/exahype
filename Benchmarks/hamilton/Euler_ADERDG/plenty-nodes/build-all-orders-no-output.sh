@@ -19,7 +19,7 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
-  for p in 5 3 7 9
+  for p in 3 5 7 9
   do 
     rm *.o
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
@@ -31,4 +31,4 @@ do
 done
 
 # restore original file
-mv ${spec}_tmp $Spec
+mv ${spec}_tmp $spec
