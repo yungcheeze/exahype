@@ -265,10 +265,10 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
-
   if (exahype::mappings::LimiterStatusSpreading::IsFirstIteration) {
     return;
   }
+
   vertex.mergeOnlyWithNeighbourMetadata(
       fromRank,fineGridX,fineGridH,level,
       _localState.getAlgorithmSection());

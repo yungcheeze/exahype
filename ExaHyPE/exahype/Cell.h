@@ -164,6 +164,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * many vertices will try to exchange neighbour information
    * for this face.
    *
+   * <h3>Boundary vertices</h3>
+   * Boundary vertices are ignored by the counter since they are
+   * skipped in all merging and sending routines;
+   * see method exahype::Vertex::hasToCommunicate.
+   *
    * @developers:
    * TODO(Dominic): We currently check for uniqueness of the
    * remote rank. This might however not be necessary.

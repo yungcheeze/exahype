@@ -397,6 +397,19 @@ void exahype::Vertex::setMergePerformed(
 }
 
 #if Parallel
+bool exahype::Vertex::hasToCommunicate(
+    const tarch::la::Vector<DIMENSIONS, double>& h) const {
+  if (isBoundary()) {
+    return false;
+  }
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return  false;
+  }
+
+  assertion(isInside());
+  return true;
+}
+
 bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<DIMENSIONS,int>& src,
   const tarch::la::Vector<DIMENSIONS,int>& dest,
@@ -406,9 +419,7 @@ bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
-         adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
          adjacentRanks(destScalar)   == toRank &&
-         adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
          (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
          State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
 }
@@ -418,16 +429,12 @@ void exahype::Vertex::sendOnlyMetadataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h,
     int level) const {
-  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+  if (!hasToCommunicate(h)) {
     return;
   }
-  #if !defined(PeriodicBC)
-  if (isBoundary()) return;
-  #endif
 
   tarch::la::Vector<TWO_POWER_D, int> adjacentADERDGCellDescriptionsIndices =
       getCellDescriptionsIndex();
-
   dfor2(dest)
     dfor2(src)
       if (hasToSendMetadata(src,dest,toRank)) {
@@ -453,9 +460,7 @@ bool exahype::Vertex::hasToReceiveMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
-      adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
       adjacentRanks(srcScalar)    == fromRank &&
-      adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        State::isForkingRank(adjacentRanks(destScalar)));
 }
@@ -466,12 +471,9 @@ void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
     const tarch::la::Vector<DIMENSIONS, double>& h,
     const int level,
     const exahype::records::State::AlgorithmSection& section) const {
-  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+  if (!hasToCommunicate(h)) {
     return;
   }
-  #if !defined(PeriodicBC)
-    if (isBoundary()) return;
-  #endif
 
   dfor2(myDest)
     dfor2(mySrc)
@@ -531,12 +533,9 @@ void exahype::Vertex::dropNeighbourMetadata(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h,
     const int level) const {
-  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+  if (!hasToCommunicate(h)) {
     return;
   }
-  #if !defined(PeriodicBC)
-    if (isBoundary()) return;
-  #endif
 
   dfor2(myDest)
     dfor2(mySrc)
@@ -581,7 +580,8 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
         #if !defined(PeriodicBC)
         !p.getIsInside(faceIndex) ||
         #endif
-        p.getFaceDataExchangeCounter(faceIndex)!=0) {
+        p.getFaceDataExchangeCounter(faceIndex)!=0
+    ) {
       return false;
     }
   }

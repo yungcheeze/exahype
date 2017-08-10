@@ -405,6 +405,10 @@ void exahype::mappings::LocalRecomputation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+  if (!vertex.hasToCommunicate(fineGridH)) {
+    return;
+  }
+
   dfor2(myDest)
     dfor2(mySrc)
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
