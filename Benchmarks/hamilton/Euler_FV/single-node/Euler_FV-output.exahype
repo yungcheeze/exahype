@@ -53,6 +53,7 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::godunov
     language const    = C
+    constants         = reference:entropywave
     
     plot vtu::Cartesian::cells::ascii ErrorPlotter
       // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
