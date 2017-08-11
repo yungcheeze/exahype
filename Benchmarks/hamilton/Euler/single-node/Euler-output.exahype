@@ -28,6 +28,13 @@ exahype-project Euler
     properties-file          = sharedmemory.properties
   end shared-memory  
   
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:1}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
+  
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
@@ -43,9 +50,9 @@ exahype-project Euler
     variables const          = rho:1,j:3,E:1
     order const              = 3
     maximum-mesh-size        = 0.038
-    maximum-mesh-depth       = 0
+    maximum-mesh-depth       = 2
     time-stepping            = global
-    kernel const             = generic::optimised::nonlinear
+    kernel const             = generic::fluxes::nonlinear
     language const           = C
     limiter-kernel const     = generic::godunov
     limiter-language const   = C
@@ -54,6 +61,29 @@ exahype-project Euler
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 1
     // reference in {smooth,sod}
-    constants                = reference:sod    
+    constants                = reference:sod
+    
+    plot user::defined ErrorWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 1e-2
+      output          = not-available
+    end plot
+    
+    plot vtk::Cartesian::vertices::limited::ascii ErrorPlotter
+      // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
+      variables const = 15 
+      time            = 0.0
+      repeat          = 1e-2
+      output          = ./errors
+    end plot
+    
+    plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 1e-2
+      output    = ./fv
+    end plot
+
   end solver
 end exahype-project

@@ -21,8 +21,7 @@ project=Euler
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.05 0.01 0.005 0.001)
-T=(0.2 0.2 0.0005 0.0001) # p=3
+hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 io=no-output # or output
 
 kernels=gen
@@ -45,19 +44,19 @@ prefix+="-$mesh"
 
 for order in 3 5 7 9
 do
-  T=(0.01 0.002 0.0005 0.0001)   # p=3
+  # SIMULATION END TIME
+  T=( 0.01 0.00334 0.00112 0.00038 0.00013 )            # p=3
   if (( order == 5 )); then
-    T=(0.003)                    # p=5
+    T=( 0.006364 0.002126 0.000713 0.000242 0.000083 )  # p=5; (2*3+1)/(2*order+1)*T_3 ceiled with sig. 1e-6
   fi
   if (( order == 7 )); then
-    T=(0.001)                    # p=7
+    T=( 0.004667 0.001559 0.000523 0.000178 0.000061 )  # p=7
   fi
   if (( order == 9 )); then
-    T=(0.0003)                   # p=9
+    T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
   fi
   t=${T[i]}
-
-
+  
   # Create script
   script=multicore/hamilton.slurm-script
   newScript=multicore/hamilton-$prefix-p$order-n1-t1.slurm-script
@@ -65,20 +64,17 @@ do
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
 
-  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
-  
   sed -i 's,p3,p'$order',g' $newScript
-  sed -i 's,regular-0,'$mesh',g' $newScript
 
-  sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript
+  sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript 
   
   # Create spec files
   for coresPerTask in 1 12 24
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
-    spec=multicore/Euler-$io.exahype
-    filename=multicore/$prefix-p$order-t1-c$coresPerTask
+    spec=multicore/$project-$io.exahype
+    filename=multicore/$prefix-p$order-t1-c$coresPerTask 
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec

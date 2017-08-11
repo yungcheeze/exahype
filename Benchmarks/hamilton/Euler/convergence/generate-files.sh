@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Perform multicore speedup tests on Hamilton.
+# Perform convergence tests on Hamilton.
 #
 # Hamilton uses SLURM. SLURM supports array jobs.
 #
@@ -21,8 +21,8 @@ project=Euler
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.12 0.038 0.0124)
-T=(0.11 0.11 0.11)
+hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
+
 
 kernels=gen
 
@@ -34,6 +34,20 @@ do
   # regex = .+-.+-(\w+)-.+-.+-
   for order in 3 5 7 9
   do
+    # SIMULATION END TIME
+    T=( 0.01 0.00334 0.00112 0.00038 0.00013 )            # p=3
+    if (( order == 5 )); then
+      T=( 0.006364 0.002126 0.000713 0.000242 0.000083 )  # p=5; (2*3+1)/(2*order+1)*T_3 ceiled with sig. 1e-6
+    fi
+    if (( order == 7 )); then
+      T=( 0.004667 0.001559 0.000523 0.000178 0.000061 )  # p=7
+    fi
+    if (( order == 9 )); then
+      T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
+    fi
+    t=${T[i]}
+    
+    
     # Create script
     prefix=$project-$kernels
     if [ "$fuseAlgorithmicSteps" == "on" ]; then
@@ -51,7 +65,7 @@ do
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
-    for i in 0 1  2
+    for i in 0 1 2
     do
       mesh=regular-$i
       h=${hMax[i]}
@@ -61,7 +75,7 @@ do
     
       # Create spec files
       coresPerTask=24
-      spec=convergence/Euler.exahype
+      spec=convergence/$project.exahype
       filename=convergence/$specPrefix-p$order
       newSpec=$filename'.exahype'
 
