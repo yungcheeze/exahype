@@ -125,7 +125,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       }
       if ( ranksPerNode<primaryRanksPerNode ) {
         logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" is smaller than primary_ranks_per_node. Reset to 1" );
-        primary_ranks_per_node = 1;
+        primaryRanksPerNode = 1;
       }
       tarch::parallel::NodePool::getInstance().setStrategy(
         new mpibalancing::SFCDiffusionNodePoolStrategy(ranksPerNode,primaryRanksPerNode)
