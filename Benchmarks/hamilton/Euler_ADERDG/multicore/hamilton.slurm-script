@@ -10,8 +10,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mail-user=dominic.e.charrier@durham.ac.uk
 #SBATCH --mail-type=ALL
-##SBATCH --array=24
-#SBATCH --array=1,12,24
+#SBATCH --array=24
+##SBATCH --array=1,12,24
 ##SBATCH --array=1-24,48 # ham7: 1..24 cores + 48 threads (HT)
 ##SBATCH --array=1-16,32 # ham6: 1..16 cores + 32 threads (HT) 
 

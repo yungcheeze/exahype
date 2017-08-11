@@ -31,4 +31,4 @@ do
 done
 
 # restore original file
-mv ${spec}_tmp $Spec
+mv ${spec}_tmp $spec

@@ -45,7 +45,7 @@ exahype-project Euler
     maximum-mesh-size        = 0.038
     maximum-mesh-depth       = 0
     time-stepping            = global
-    kernel const             = generic::fluxes::nonlinear
+    kernel const             = generic::optimised::nonlinear
     language const           = C
     limiter-kernel const     = generic::godunov
     limiter-language const   = C

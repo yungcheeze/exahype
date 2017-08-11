@@ -21,7 +21,7 @@ project=Euler_ADERDG
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.05 0.01 0.005 0.001)
+hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 io=no-output # or output
 
 kernels=gen
@@ -44,18 +44,19 @@ prefix+="-$mesh"
 
 for order in 3 5 7 9
 do
-  T=(0.010000 0.003000 0.001000 0.000300)   # p=3
+  # SIMULATION END TIME
+  T=( 0.01 0.00334 0.00112 0.00038 0.00013 )            # p=3
   if (( order == 5 )); then
-    T=(0.006364 0.001909 0.000636 0.000191) # p=5
+    T=( 0.006364 0.002126 0.000713 0.000242 0.000083 )  # p=5; (2*3+1)/(2*order+1)*T_3 ceiled with sig. 1e-6
   fi
   if (( order == 7 )); then
-    T=(0.004667 0.001400 0.000467 0.000140) # p=7
+    T=( 0.004667 0.001559 0.000523 0.000178 0.000061 )  # p=7
   fi
   if (( order == 9 )); then
-    T=(0.003684 0.001105 0.000368 0.000111) # p=9
+    T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
   fi
   t=${T[i]}
-
+  
   # Create script
   script=multicore/hamilton.slurm-script
   newScript=multicore/hamilton-$prefix-p$order-n1-t1.slurm-script
