@@ -3304,10 +3304,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoi
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
+        exahype::EmptyDataHeapMessage, toRank, x, level,
         peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
@@ -3446,13 +3445,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
 
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
-    DataHeap::HeapEntries emptyMessage(0);
-
-    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
-      DataHeap::getInstance().sendData(
-          emptyMessage, toRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-    }
+    sendEmptyDataToNeighbour(toRank,x,level);
   }
 }
 
@@ -3460,11 +3453,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  DataHeap::HeapEntries emptyMessage(0);
-
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
+        exahype::EmptyDataHeapMessage, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
 }
 
@@ -3753,10 +3744,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
   logDebug("sendEmptyDataToMaster(...)","empty data for solver sent to rank "<<masterRank<<
            ", cell: "<< x << ", level: " << level);
 
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, masterRank, x, level,
+        exahype::EmptyDataHeapMessage, masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 
@@ -4053,10 +4043,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, workerRank, x, level,
+        exahype::EmptyDataHeapMessage, workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 
