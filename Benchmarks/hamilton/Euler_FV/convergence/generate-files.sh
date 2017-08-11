@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Perform multicore speedup tests on Hamilton.
+# Perform convergence tests on Hamilton.
 #
 # Hamilton uses SLURM. SLURM supports array jobs.
 #
@@ -21,7 +21,10 @@ project=Euler_FV
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
+hMax=( 0.11112 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
+
+# SIMULATION END TIME (must be the same for all patch sizes)
+T=( 0.03 0.01 0.00334 0.00112 0.00038 0.00013 )
 
 kernels=gengodunov # gengodunov or genmusclhancock
 
@@ -30,19 +33,7 @@ kernels=gengodunov # gengodunov or genmusclhancock
 for fuseAlgorithmicSteps in "on" "off"
 do 
   for patchSize in 7 11 15 19 # corresponds to orders=3 5 7 9
-  do
-    # SIMULATION END TIME
-    T=( 0.01 0.00334 0.00112 0.00038 0.00013 )            # p=3
-    if (( patchSize == 11 )); then
-      T=( 0.006364 0.002126 0.000713 0.000242 0.000083 )  # p=5; (2*3+1)/(2*order+1)*T_3 ceiled with sig. 1e-6
-    fi
-    if (( patchSize == 15 )); then
-      T=( 0.004667 0.001559 0.000523 0.000178 0.000061 )  # p=7
-    fi
-    if (( patchSize == 19 )); then
-      T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
-    fi
-    
+  do    
     # Create script
     prefix=$project-$kernels
     if [ "$fuseAlgorithmicSteps" == "on" ]; then
