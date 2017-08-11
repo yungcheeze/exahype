@@ -16,10 +16,10 @@ exahype-project Euler
   output-directory const           = ./Benchmarks/hamilton/Euler_FV
 
   computational-domain
-    dimension const         = 2
-    width                   = 1.0, 0.3
-    offset                  = 0.0, 0.0
-    end-time                = 0.21
+    dimension const         = 3
+    width                   = 1.0, 1.0, 1.0
+    offset                  = 0.0, 0.0, 0.0
+    end-time                = 0.22
   end computational-domain
   
   shared-memory
