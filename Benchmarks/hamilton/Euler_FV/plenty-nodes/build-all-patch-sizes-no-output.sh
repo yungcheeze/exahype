@@ -1,5 +1,7 @@
+directory=plenty-nodes
+
 exe=ExaHyPE-Euler
-spec=multicore/Euler_FV-no-output.exahype
+spec=$directory/Euler_FV-no-output.exahype
 
 # save original file
 cp $spec ${spec}_tmp
@@ -17,16 +19,16 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
-  for p in 7 11 15 19 # 3 5 7 9
+  for p in 7 11 15 19
   do 
     rm *.o
     sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$p',' $spec
     cat $spec
-    multicore/configure-no-output.sh
+    $directory/configure-no-output.sh
     make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done
 
 # restore original file
-mv ${spec}_tmp $Spec
+mv ${spec}_tmp $spec
