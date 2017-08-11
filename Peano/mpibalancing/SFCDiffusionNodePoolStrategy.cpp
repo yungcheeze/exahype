@@ -188,7 +188,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
       return _priorities[a.getSenderRank()]._priority > _priorities[b.getSenderRank()]._priority;
     }
   );
-  #endif
+//  #endif // TODO @Tobias: please check if this is fine
 
   assertionEquals( result.size(), queue.size() );
 
@@ -199,6 +199,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
     (result.begin()->getSenderRank()) << " with a priority of " <<
     _priorities[result.begin()->getSenderRank()]._priority
   );
+  #endif
 
   return result;
 }
