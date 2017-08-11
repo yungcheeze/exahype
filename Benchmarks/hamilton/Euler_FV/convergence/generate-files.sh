@@ -42,7 +42,6 @@ do
     if (( patchSize == 19 )); then
       T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
     fi
-    t=${T[i]}
     
     # Create script
     prefix=$project-$kernels
