@@ -49,7 +49,7 @@ do
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
-    for i in 0 1
+    for i in 0 1 2
     do
       mesh=regular-$i
       h=${hMax[i]}
