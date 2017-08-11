@@ -22,9 +22,7 @@ project=Euler_FV
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 hMax=( 0.11112 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
-
-# SIMULATION END TIME (must be the same for all patch sizes)
-T=( 0.03 0.01 0.00334 0.00112 0.00038 0.00013 )
+T=0.03 # SIMULATION END TIME # chosen the same for all patch and mesh sizes
 
 kernels=gengodunov # gengodunov or genmusclhancock
 
@@ -33,7 +31,7 @@ kernels=gengodunov # gengodunov or genmusclhancock
 for fuseAlgorithmicSteps in "on" "off"
 do 
   for patchSize in 7 11 15 19 # corresponds to orders=3 5 7 9
-  do    
+  do 
     # Create script
     prefix=$project-$kernels
     if [ "$fuseAlgorithmicSteps" == "on" ]; then
@@ -55,7 +53,7 @@ do
     do
       mesh=regular-$i
       h=${hMax[i]}
-      t=${T[i]}
+      t=$T
        
       specPrefix=$prefix-$mesh
     
