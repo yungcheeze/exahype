@@ -1945,10 +1945,9 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
   // send an empty minAndMax message
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables) {
-    DataHeap::HeapEntries emptyMessage(0);
     for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
       DataHeap::getInstance().sendData(
-          emptyMessage, toRank, x, level,
+          exahype::EmptyDataHeapMessage, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
   }
 

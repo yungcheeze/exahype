@@ -69,7 +69,7 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::fillWorkerRequestQueue(RequestQ
     {
       #ifdef Parallel
       assertion( _tag >= 0 );
-      std::clock_t waitTimeoutTimeStamp;
+      std::clock_t waitTimeoutTimeStamp = clock() + static_cast<std::clock_t>(std::floor(_waitTimeOut * CLOCKS_PER_SEC));
       bool continueToWait = true;
       while ( continueToWait ) {
         while (tarch::parallel::messages::WorkerRequestMessage::isMessageInQueue(_tag, true)) {
@@ -138,7 +138,7 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::buildUpPriorityMap(const Reques
       nodeToPriorityMap.insert( std::pair<int,int>(nodeNumber,0) );
     }
 
-    nodeToPriorityMap[nodeNumber] += p.getNumberOfRequestedWorkers();
+    nodeToPriorityMap[nodeNumber] += std::min( p.getNumberOfRequestedWorkers(), THREE_POWER_D-1 );
     assertion( nodeToPriorityMap[nodeNumber]>0 );
   }
   logDebug(
@@ -161,7 +161,7 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::buildUpPriorityMap(const Reques
     }
     else {
       priority._maxNumberOfSecondaryRanksToBeDeployed = 0;
-      priority._priority = std::numeric_limits<int>::max();
+      priority._priority = std::numeric_limits<double>::max();
       logInfo(
         "buildUpPriorityMap(Queue)",
         "disable " << p.getSenderRank()
@@ -191,6 +191,15 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
   #endif
 
   assertionEquals( result.size(), queue.size() );
+
+  logInfo(
+    "sortRequestQueue(RequestQueue)",
+    "(re-)sorted request queue. New first element is now "
+    << (result.begin()->toString()) << " from rank " <<
+    (result.begin()->getSenderRank()) << " with a priority of " <<
+    _priorities[result.begin()->getSenderRank()]._priority
+  );
+
   return result;
 }
 
@@ -513,11 +522,12 @@ int mpibalancing::SFCDiffusionNodePoolStrategy::deployIdleSecondaryRank(int forM
     return tarch::parallel::NodePool::NoFreeNodesMessage;
   }
   else {
-    const int NodeNumber = forMaster / _mpiRanksPerNode;
+    int sign = forMaster%_mpiRanksPerNode<=_mpiRanksPerNode/2 ? -1 : 1;
 
-    const int sign = forMaster%_mpiRanksPerNode<=_mpiRanksPerNode/2 ? -1 : 1;
+    const int relativeMasterRank = forMaster % _mpiRanksPerNode;
+    const int SearchRange = _mpiRanksPerNode<=2 ? 2 : std::max( relativeMasterRank, _mpiRanksPerNode - relativeMasterRank );
 
-    for (int i=0; i<2*_mpiRanksPerNode; i++) {
+    for (int i=0; i< SearchRange; i++) {
       const int rank = forMaster + i/2*sign;
 
       if (
@@ -525,16 +535,16 @@ int mpibalancing::SFCDiffusionNodePoolStrategy::deployIdleSecondaryRank(int forM
         &&
         (rank<_totalNumberOfRanks)
         &&
-        (rank>=(NodeNumber-1)*_mpiRanksPerNode)
-        &&
-        (rank<(NodeNumber+1)*_mpiRanksPerNode)
-        &&
         (_nodes[rank].isIdlePrimaryRank() || _nodes[rank].isIdleSecondaryRank())
+        &&
+        (forMaster / _mpiRanksPerNode != rank / _mpiRanksPerNode)
       ) {
         _nodes[rank].activate();
         haveReservedSecondaryRank(forMaster,rank);
         return rank;
       }
+
+      sign = -sign;
     }
   }
   logInfo(
@@ -572,13 +582,16 @@ void mpibalancing::SFCDiffusionNodePoolStrategy::haveReservedSecondaryRank(int m
 
   logInfo(
     "haveReservedSecondaryRank(int,int)",
-    "reserve rank " << workerRank << " for master " << masterRank <<
-    " and upgrade priorities of all requests from ranks running on the same node as " << _nodes[workerRank].getNodeName()
+    "reserve rank " << workerRank << " for master " << masterRank
   );
 
   for (auto& p: _priorities) {
     if ( p.first/_mpiRanksPerNode == workerRank/_mpiRanksPerNode) {
-      p.second._priority++;
+      p.second._priority += 1.1;
+      logInfo(
+        "haveReservedSecondaryRank(int,int)",
+        "increase priority of node " << (p.first) << " to " << p.second._priority
+      );
     }
   }
 }
