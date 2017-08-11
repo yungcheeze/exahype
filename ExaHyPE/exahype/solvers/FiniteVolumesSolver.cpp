@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra
  **/
 
 #include "exahype/solvers/FiniteVolumesSolver.h"

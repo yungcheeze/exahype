@@ -65,7 +65,7 @@ namespace exahype {
    *
    * The code crashes if this flag is set to false.
    * We are not sure what the cause for this problem is
-   * since we read the messages directly from persistent arrays.
+   * since we read the messages directly from persistent arrays. TODO(Dominic): Check again
    */
   #if ALIGNMENT==16
   typedef peano::heap::DoubleHeap<
