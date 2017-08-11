@@ -51,7 +51,7 @@ do
       prefix+="-nonfused"
     fi
     script=convergence/hamilton.slurm-script
-    newScript=convergence/hamilton-$prefix-N${patchSize}.slurm-script
+    newScript=convergence/hamilton-$prefix-p${patchSize}.slurm-script
     cp $script $newScript
    
     sed -i 's,prefix='$project',prefix='$prefix',g' $newScript
@@ -60,7 +60,7 @@ do
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
   
-    for i in 0 1  2
+    for i in 0 1
     do
       mesh=regular-$i
       h=${hMax[i]}
@@ -71,7 +71,7 @@ do
       # Create spec files
       coresPerTask=24
       spec=convergence/$project.exahype
-      filename=convergence/$specPrefix-N$patchSize
+      filename=convergence/$specPrefix-p$patchSize
       newSpec=$filename'.exahype'
 
       cp $spec $newSpec

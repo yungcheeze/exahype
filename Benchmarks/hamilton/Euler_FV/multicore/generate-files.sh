@@ -59,7 +59,7 @@ do
 
   # Create script
   script=multicore/hamilton.slurm-script
-  newScript=multicore/hamilton-$prefix-N$patchSize-n1-t1.slurm-script
+  newScript=multicore/hamilton-$prefix-p$patchSize-n1-t1.slurm-script
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
