@@ -26,10 +26,10 @@ exahype-project GRMHD
   log-file                         = whatever.log
 
   computational-domain
-    dimension const                = 3
+    dimension const                = 2
     width                          = 1.0, 1.0, 1.0
     offset                         = 0.0, 0.0, 0.0
-    end-time                       = 2000.1
+    end-time                       = 2.1
   end computational-domain
   
   shared-memory
