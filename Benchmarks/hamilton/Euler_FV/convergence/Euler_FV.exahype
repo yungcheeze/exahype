@@ -22,6 +22,12 @@ exahype-project Euler
     end-time                = 0.22
   end computational-domain
   
+  shared-memory
+    identifier               = dummy
+    cores                    = 7
+    properties-file          = sharedmemory.properties
+  end shared-memory
+  
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
@@ -49,6 +55,7 @@ exahype-project Euler
       output          = not-available
     end plot
     
+    /*
     plot vtu::Cartesian::cells::ascii ErrorPlotter
       // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
       variables const = 15 
@@ -56,5 +63,6 @@ exahype-project Euler
       repeat          = 1e-2
       output          = ./errors
     end plot
+    */
   end solver
 end exahype-project
