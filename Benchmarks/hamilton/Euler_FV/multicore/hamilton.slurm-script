@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name="ExaHyPE-Euler_ADERDG"
-#SBATCH -o ExaHyPE-Euler_ADERDG.%A.out
-#SBATCH -e ExaHyPE-Euler_ADERDG.%A.err
+#SBATCH --job-name="ExaHyPE-Euler_FV"
+#SBATCH -o ExaHyPE-Euler_FV.%A.out
+#SBATCH -e ExaHyPE-Euler_FV.%A.err
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
 #SBATCH -p par7.q
@@ -10,8 +10,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mail-user=dominic.e.charrier@durham.ac.uk
 #SBATCH --mail-type=ALL
-#SBATCH --array=24
-##SBATCH --array=1,12,24
+#SBATCH --array=1,12,24
 ##SBATCH --array=1-24,48 # ham7: 1..24 cores + 48 threads (HT)
 ##SBATCH --array=1-16,32 # ham6: 1..16 cores + 32 threads (HT) 
 
@@ -39,7 +38,7 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=Euler_ADERDG-no-output-regular-0-p3
+prefix=Euler_FV-no-output-regular-0-p3
 out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 script=multicore/hamilton.slurm-script
@@ -61,7 +60,7 @@ if (( $coresPerTask==1 )); then
   likwid-perfctr -f -C 0 -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-Euler_ADERDG-p3-$sharedMem-$compiler $spec >> $out
+  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-Euler_FV-p3-$sharedMem-$compiler $spec >> $out
 else
   let maxCore=coresPerTask-1
 
@@ -69,6 +68,6 @@ else
  likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
- #  not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler_ADERDG-p3-$sharedMem-$compiler $spec >> $out
+ #  not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler_FV-p3-$sharedMem-$compiler $spec >> $out
 fi
 
