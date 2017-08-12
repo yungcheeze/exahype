@@ -78,11 +78,7 @@ do
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
-
-    if [[ "$kernels" == "opt" ]]; then
-      sed -i -r "s,generic::fluxes::nonlinear,optimised::fluxes::nonlinear," $newSpec
-    fi
-
+    
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
     sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 
     sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',' $newSpec
@@ -93,6 +89,12 @@ do
   
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',' $newSpec
     sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',' $newSpec
+    
+    if [ "$kernels" == "opt" ]; then
+      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3optimised::fluxes::nonlinear,' $newSpec
+    elif [ "$kernels" == "gen" ]; then
+      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::fluxes::nonlinear,' $newSpec
+    fi
   done
 done
 done

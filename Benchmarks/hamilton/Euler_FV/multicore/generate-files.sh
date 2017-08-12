@@ -81,12 +81,6 @@ do
 
     cp $spec $newSpec
 
-    if [[ "$kernels" -eq "gengodunov" ]]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
-    elif [[ "$kernels" -eq "genmuscl" ]]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
-    fi
-
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
     sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 
     sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',' $newSpec
@@ -97,6 +91,12 @@ do
   
     sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$patchSize',' $newSpec
     sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',' $newSpec
+    
+    if [ "$kernels" == "gengodunov" ]; then
+      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
+    elif [ "$kernels" == "genmusclhancock" ]; then
+      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
+    fi
   done
 done
 done

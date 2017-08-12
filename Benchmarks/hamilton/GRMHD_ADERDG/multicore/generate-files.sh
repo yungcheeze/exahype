@@ -79,7 +79,7 @@ do
 
     cp $spec $newSpec
 
-    if [[ "$kernels" == "opt" ]]; then
+    if [ "$kernels" == "opt" ]; then
       sed -i -r "s,generic::fluxes::nonlinear,optimised::fluxes::nonlinear," $newSpec
     fi
 
