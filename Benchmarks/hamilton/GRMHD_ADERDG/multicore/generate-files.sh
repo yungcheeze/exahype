@@ -24,7 +24,7 @@ batchFactor=0.8
 hMax=(0.05 0.01 0.005 0.001)
 io=no-output # or output
 
-kernels=gen
+kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables
 
 # Derived options
 
@@ -62,7 +62,7 @@ do
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+  sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
 
   sed -i 's,p3,p'$order',g' $newScript
 
@@ -78,10 +78,6 @@ do
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
-
-    if [ "$kernels" == "opt" ]; then
-      sed -i -r "s,generic::fluxes::nonlinear,optimised::fluxes::nonlinear," $newSpec
-    fi
 
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
     sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 

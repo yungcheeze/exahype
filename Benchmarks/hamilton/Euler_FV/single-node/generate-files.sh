@@ -24,7 +24,7 @@ patchSize=3
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 io=no-output # or output
-kernels=gengodunov # gengodunov or genmusclhancock
+kernels=gengodunov # this is just an identifier; actual kernels must be chosen before building the executables # gengodunov or genmusclhancock
 sharedMem=None
 
 # MESH
@@ -98,12 +98,6 @@ do
      
       sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$patchSize',' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
-      
-      if [ "$kernels" == "gengodunov" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
-      elif [ "$kernels" == "genmusclhancock" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
-      fi
     done
   done
 done

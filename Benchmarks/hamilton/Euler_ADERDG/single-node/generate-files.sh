@@ -23,7 +23,7 @@ order=5
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 io=no-output # or output
-kernels=gen
+kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables
 sharedMem=TBB
 
 # MESH
@@ -96,12 +96,6 @@ do
      
       sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',g' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
-      
-      if [ "$kernels" == "opt" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3optimised::fluxes::nonlinear,' $newSpec
-      elif [ "$kernels" == "gen" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::fluxes::nonlinear,' $newSpec
-      fi
     done
   done
 done

@@ -24,7 +24,7 @@ batchFactor=0.8
 hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 io=no-output # or output
 
-kernels=gengodunov # gengodunov or genmusclhancock
+kernels=gengodunov # this is just an identifier; actual kernels must be chosen before building the executables # gengodunov or genmusclhancock
 
 # Derived options
 
@@ -64,7 +64,7 @@ do
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
 
-  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+  sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
   
   sed -i 's,p3,p'$patchSize',g' $newScript
 
@@ -91,12 +91,6 @@ do
   
     sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$patchSize',' $newSpec
     sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',' $newSpec
-    
-    if [ "$kernels" == "gengodunov" ]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
-    elif [ "$kernels" == "genmusclhancock" ]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
-    fi
   done
 done
 done

@@ -99,8 +99,8 @@ int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData
 int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
 int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
 // limiter status
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 5;
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 3;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 3;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 2;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
@@ -2528,12 +2528,16 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 
   int limiterStatus =
       std::min(
-        cellDescription.getFacewiseLimiterStatus(faceIndex),
+        cellDescription.getLimiterStatus(),
         MinimumLimiterStatusForTroubledCell );
+
   limiterStatus =
       std::max( limiterStatus, croppedOtherLimiterStatus );
-
   cellDescription.setFacewiseLimiterStatus( faceIndex, std::max( 0, limiterStatus-1 ) );
+
+  if (otherLimiterStatus==2 && limiterStatus==0 ) {
+    std::cout << "FOUND ONE!" << std::endl;
+  }
 }
 
 /**
@@ -2543,6 +2547,17 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
+
+  std::cout << "cellDescription.getFacewiseLimiterStatus()=";
+  for(int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    if (cellDescription.getFacewiseLimiterStatus(i)==1) {
+      std::cout << cellDescription.getFacewiseLimiterStatus(i) << ",";
+    } else {
+      std::cout << "X,";
+    }
+  }
+  std::cout << std::endl;
+
   return tarch::la::max(cellDescription.getFacewiseLimiterStatus());
 }
 

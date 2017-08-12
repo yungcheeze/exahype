@@ -24,7 +24,7 @@ batchFactor=0.8
 hMax=( 0.11112 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 T=0.03 # SIMULATION END TIME # chosen the same for all patch and mesh sizes
 
-kernels=gen
+kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables
 
 # Derived options
 
@@ -46,7 +46,7 @@ do
     cp $script $newScript
    
     sed -i 's,prefix='$project',prefix='$prefix',g' $newScript
-    sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+    sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
     sed -i 's,p3,p'$order',g' $newScript
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript
@@ -77,12 +77,6 @@ do
     
       sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.|-|\+|e|E)*),maximum-mesh-size\1=\2'$h',' $newSpec
-      
-      if [ "$kernels" == "opt" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3optimised::fluxes::nonlinear,' $newSpec
-      elif [ "$kernels" == "gen" ]; then
-        sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::fluxes::nonlinear,' $newSpec
-      fi
     done
   done
 done

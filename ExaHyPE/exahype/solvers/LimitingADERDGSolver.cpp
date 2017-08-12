@@ -1468,6 +1468,8 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatus(SolverPatch& solverP
   solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
   ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
 
+  logInfo("updateLimiterStatus(...)","solverPatch.getLimiterStatus()=="<<solverPatch.getLimiterStatus());
+
   if (
       solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&
       solverPatch.getLimiterStatus()>0 &&
