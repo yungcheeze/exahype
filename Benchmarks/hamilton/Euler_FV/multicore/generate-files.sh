@@ -40,7 +40,7 @@ if [ "$fuseAlgorithmicSteps" == "on" ]; then
 else
   prefix+="-nonfused"
 fi
-prefix+=$mesh
+prefix+="-$mesh"
 
 for patchSize in 7 11 15 19 # corresponds to orders=3 5 7 9
 do
