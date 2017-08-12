@@ -44,13 +44,14 @@ out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$core
 script=multicore/hamilton.slurm-script
 spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
-# pipe some information into output file
+# pipe some information into output files
 echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
 module list 2>$out
 echo "" >> $out
 cat $script >>$out
 echo "" >> $out
 cat $spec >> $out
+cat $out > ${out}.likwid
 
 # execute the job
 ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
@@ -64,10 +65,10 @@ if (( $coresPerTask==1 )); then
 else
   let maxCore=coresPerTask-1
 
- likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
- likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
- likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
- likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
- #  not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler_FV-p3-$sharedMem-$compiler $spec >> $out
+  likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  # not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler_FV-p3-$sharedMem-$compiler $spec >> $out
 fi
 
