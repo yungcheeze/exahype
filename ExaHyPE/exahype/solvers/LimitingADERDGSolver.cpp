@@ -1,8 +1,17 @@
-/*
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
  *
- *  Created on: 26 Oct 2016
- *      Author: dominic
- */
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ *
+ * \author Dominic E. Charrier, Tobias Weinzierl
+ **/
 
 #include "LimitingADERDGSolver.h"
 
@@ -1459,6 +1468,8 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatus(SolverPatch& solverP
   solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
   ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
 
+  logInfo("updateLimiterStatus(...)","solverPatch.getLimiterStatus()=="<<solverPatch.getLimiterStatus());
+
   if (
       solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&
       solverPatch.getLimiterStatus()>0 &&
@@ -1945,10 +1956,9 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
   // send an empty minAndMax message
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables) {
-    DataHeap::HeapEntries emptyMessage(0);
     for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
       DataHeap::getInstance().sendData(
-          emptyMessage, toRank, x, level,
+          exahype::EmptyDataHeapMessage, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
   }
 

@@ -53,7 +53,7 @@ namespace mpibalancing {
  *
  *
  * @author Tobias Weinzierl
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
   private:
@@ -64,7 +64,7 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      * requested an update.
      *
      * @author Tobias Weinzierl
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.5 $
      */
     class NodePoolListEntry {
       public:
@@ -213,8 +213,8 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
     NodePoolState _nodePoolState;
 
     struct DeploymentPriority {
-      int _priority;
-      int _maxNumberOfSecondaryRanksToBeDeployed;
+      double  _priority;
+      int     _maxNumberOfSecondaryRanksToBeDeployed;
     };
 
     std::map<int, DeploymentPriority> _priorities;
@@ -264,7 +264,7 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
      * @param waitTimeOutSec        How long shall the node wait for more
      *   messages dropping in before it starts to answer them.
      */
-    SFCDiffusionNodePoolStrategy(int mpiRanksPerNode, int primaryMPIRanksPerNode, double waitTimeOutSec = 1e-5);
+    SFCDiffusionNodePoolStrategy(int mpiRanksPerNode, int primaryMPIRanksPerNode, double waitTimeOutSec = 1e-2);
     virtual ~SFCDiffusionNodePoolStrategy();
 
     void setNodePoolTag(int tag) override;

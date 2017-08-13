@@ -103,7 +103,8 @@ int exahype::Cell::countListingsOfRemoteRankAtFace(
   // TODO(Dominic): Uniqueness is probably guaranteed by the SFC based DD.
   dfor2(v) // Loop over vertices.
     dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-      if (tarch::la::equals(v+a,pos) &&
+      if (tarch::la::equals(v+a,pos)                             &&
+          verticesAroundCell[ verticesEnumerator(v) ].isInside() &&
           verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
           tarch::parallel::Node::getInstance().getRank()) {
         // Increment

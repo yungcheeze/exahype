@@ -65,7 +65,7 @@ namespace exahype {
    *
    * The code crashes if this flag is set to false.
    * We are not sure what the cause for this problem is
-   * since we read the messages directly from persistent arrays.
+   * since we read the messages directly from persistent arrays. TODO(Dominic): Check again
    */
   #if ALIGNMENT==16
   typedef peano::heap::DoubleHeap<
@@ -100,6 +100,21 @@ namespace exahype {
 
 
 #ifdef Parallel
+  /**
+   * An empty DataHeap message.
+   *
+   * !!! CreateCopiesOfSentData
+   *
+   * If we have set CreateCopiesOfSentData to
+   * false for the DataHeap, all messages need to
+   * have a fixed address as long as the send
+   * process takes.
+   *
+   * Has to be declared extern in C++ standard as
+   * it is instantiated in the corresponding cpp file.
+   */
+  extern DataHeap::HeapEntries EmptyDataHeapMessage;
+
   /**
    * We abuse this heap to send and receive metadata from one MPI rank to the other.
    * We never actually store data on this heap.

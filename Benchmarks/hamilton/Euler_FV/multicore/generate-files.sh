@@ -21,11 +21,10 @@ project=Euler_FV
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
-hMax=(0.05 0.01 0.005 0.001)
-T=(0.2 0.2 0.0005 0.0001) 
+hMax=( 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 io=no-output # or output
 
-kernels=gengodunov # gengodunov or genmusclhancock
+kernels=gengodunov # this is just an identifier; actual kernels must be chosen before building the executables # gengodunov or genmusclhancock
 
 # Derived options
 
@@ -41,32 +40,33 @@ if [ "$fuseAlgorithmicSteps" == "on" ]; then
 else
   prefix+="-nonfused"
 fi
-prefix+=$mesh
+prefix+="-$mesh"
 
-for patchSize in 7 11 15 17 # corresponds to orders=3 5 7 9
+for patchSize in 7 11 15 19 # corresponds to orders=3 5 7 9
 do
-  T=(0.01 0.002 0.0005 0.0001)   # p=3
+  # SIMULATION END TIME
+  T=( 0.01 0.00334 0.00112 0.00038 0.00013 )            # p=3
   if (( patchSize == 11 )); then
-    T=(0.003)                    # p=5
+    T=( 0.006364 0.002126 0.000713 0.000242 0.000083 )  # p=5; (2*3+1)/(2*order+1)*T_3 ceiled with sig. 1e-6
   fi
   if (( patchSize == 15 )); then
-    T=(0.001)                    # p=7
+    T=( 0.004667 0.001559 0.000523 0.000178 0.000061 )  # p=7
   fi
-  if (( patchSize == 17 )); then
-    T=(0.0003)                   # p=9
+  if (( patchSize == 19 )); then
+    T=( 0.003685 0.001231 0.000413 0.00014 0.000048 )   # p=9
   fi
   t=${T[i]}
 
   # Create script
   script=multicore/hamilton.slurm-script
-  newScript=multicore/hamilton-$prefix-N$patchSize-n1-t1.slurm-script
+  newScript=multicore/hamilton-$prefix-p$patchSize-n1-t1.slurm-script
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
 
-  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
+  sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
   
-  sed -i 's,N3,N'$patchSize',g' $newScript
+  sed -i 's,p3,p'$patchSize',g' $newScript
 
   sed -i 's,script=multicore/hamilton.slurm-script,script='$newScript',g' $newScript
   
@@ -75,17 +75,11 @@ do
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 48 # ham7
   #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 # ham6
   do
-    spec=multicore/Euler_FV-$io.exahype
-    filename=multicore/$prefix-N$patchSize-t1-c$coresPerTask
+    spec=multicore/$project-$io.exahype
+    filename=multicore/$prefix-p$patchSize-t1-c$coresPerTask
     newSpec=$filename'.exahype'
 
     cp $spec $newSpec
-
-    if [[ "$kernels" -eq "gengodunov" ]]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::godunov,' $newSpec
-    elif [[ "$kernels" -eq "genmuscl" ]]; then
-      sed -i -r 's,kernel(\s*)const(\s*)=(\s*)(.+),kernel\1const\2=\3generic::musclhancock,' $newSpec
-    fi
 
     sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
     sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:1,' $newSpec 

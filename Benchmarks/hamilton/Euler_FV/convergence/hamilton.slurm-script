@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name="ExaHyPE-Euler"
-#SBATCH -o ExaHyPE-Euler.%A.out
-#SBATCH -e ExaHyPE-Euler.%A.err
+#SBATCH --job-name="ExaHyPE-Euler_FV"
+#SBATCH -o ExaHyPE-Euler_FV.%A.out
+#SBATCH -e ExaHyPE-Euler_FV.%A.err
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
-##SBATCH -p test.q
+##SBATCH -p par7.q
 #SBATCH -p par7.q
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -37,7 +37,7 @@ if (( coresPerTask==1 )); then
   sharedMem=None
 fi
 
-prefix=Euler_FV-regular-$SLURM_ARRAY_TASK_ID-N3
+prefix=Euler_FV-regular-$SLURM_ARRAY_TASK_ID-p3
 
 out=convergence/results/${prefix}.out
 
@@ -51,7 +51,6 @@ echo "" >> $out
 cat $script >>$out
 echo "" >> $out
 cat $spec >> $out
-#ExaHyPE-Euler_FV-N3-$sharedMem-$compiler --version >> $out
 
 # execute the job
-./ExaHyPE-Euler_FV-N3-$sharedMem-$compiler $spec >> $out
+./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out

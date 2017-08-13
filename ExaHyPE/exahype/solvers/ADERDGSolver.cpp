@@ -10,7 +10,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  *
- * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra
+ * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra, Leonhard Rannabauer
  **/
 #include "exahype/solvers/ADERDGSolver.h"
 
@@ -99,8 +99,8 @@ int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData
 int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
 int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
 // limiter status
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 5;
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 3;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 3;
+int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 2;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
@@ -2528,12 +2528,16 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 
   int limiterStatus =
       std::min(
-        cellDescription.getFacewiseLimiterStatus(faceIndex),
+        cellDescription.getLimiterStatus(),
         MinimumLimiterStatusForTroubledCell );
+
   limiterStatus =
       std::max( limiterStatus, croppedOtherLimiterStatus );
-
   cellDescription.setFacewiseLimiterStatus( faceIndex, std::max( 0, limiterStatus-1 ) );
+
+  if (otherLimiterStatus==2 && limiterStatus==0 ) {
+    std::cout << "FOUND ONE!" << std::endl;
+  }
 }
 
 /**
@@ -2543,6 +2547,17 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
+
+  std::cout << "cellDescription.getFacewiseLimiterStatus()=";
+  for(int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    if (cellDescription.getFacewiseLimiterStatus(i)==1) {
+      std::cout << cellDescription.getFacewiseLimiterStatus(i) << ",";
+    } else {
+      std::cout << "X,";
+    }
+  }
+  std::cout << std::endl;
+
   return tarch::la::max(cellDescription.getFacewiseLimiterStatus());
 }
 
@@ -3304,10 +3319,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoi
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
+        exahype::EmptyDataHeapMessage, toRank, x, level,
         peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
@@ -3446,13 +3460,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
 
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
-    DataHeap::HeapEntries emptyMessage(0);
-
-    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
-      DataHeap::getInstance().sendData(
-          emptyMessage, toRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-    }
+    sendEmptyDataToNeighbour(toRank,x,level);
   }
 }
 
@@ -3460,11 +3468,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  DataHeap::HeapEntries emptyMessage(0);
-
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
+        exahype::EmptyDataHeapMessage, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
 }
 
@@ -3753,10 +3759,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
   logDebug("sendEmptyDataToMaster(...)","empty data for solver sent to rank "<<masterRank<<
            ", cell: "<< x << ", level: " << level);
 
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, masterRank, x, level,
+        exahype::EmptyDataHeapMessage, masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 
@@ -4053,10 +4058,9 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
-        emptyMessage, workerRank, x, level,
+        exahype::EmptyDataHeapMessage, workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 

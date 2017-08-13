@@ -337,10 +337,6 @@ void exahype::mappings::MeshRefinement::enterCell(
                   fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
-
-//      solver->prepareNextNeighbourMerging(
-//          fineGridCell.getCellDescriptionsIndex(),element,
-//          fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Only necessary for face data exchange
     }
   }
 

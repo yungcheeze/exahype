@@ -357,7 +357,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+  if (!vertex.hasToCommunicate(fineGridH)) {
     return;
   }
   
@@ -421,7 +421,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
             exahype::MetadataHeap::HeapEntries expectedMetadata =
                             exahype::createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
             #endif
-            for (int i=0; i<exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver; i++) {
+            for (unsigned int i=0; i<exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver; i++) {
               assertionEquals3(expectedMetadata[i].getU(),receivedMetadata[i].getU(),
                                i,expectedMetadata[i].getU(),receivedMetadata[i].getU());
             }

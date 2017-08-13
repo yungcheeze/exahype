@@ -2,8 +2,6 @@ package eu.exahype;
 
 import java.io.IOException;
 import java.io.BufferedWriter;
-import java.util.AbstractMap;
-import java.util.List;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
@@ -15,7 +13,6 @@ import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 import eu.exahype.solvers.Solver;
 import eu.exahype.solvers.SolverFactory;
-import eu.exahype.solvers.OptimisedADERDG; //dirty, TODO JMG find a way around
 import eu.exahype.variables.Variables;
 import eu.exahype.io.FileSearch;
 import eu.exahype.io.IOUtils;
@@ -39,7 +36,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   private boolean _enableProfiler;
   private boolean _enableDeepProfiler;
-  private AbstractMap<String, List<String>> _optDirectories;
 
   public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -47,14 +43,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
     _enableProfiler = false;
     _enableDeepProfiler = false;
-    _optDirectories = new java.util.HashMap<String, List<String>>();
   }
 
   @Override
   public void inAProject(AProject node) {
     _projectName     = node.getName().getText();
     _definedSolvers  = new java.util.HashSet<String>();
-    _optDirectories.put(_projectName, new java.util.ArrayList<String>());
 
     if (node.getSolver().size() == 0) {
       System.out.println("there are no solvers in the specification file ... nothing to be done");
@@ -188,11 +182,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         System.err.println("ERROR: " + exc.toString());
         exc.printStackTrace();
         valid = false;
-      }
-      
-      //if optimised kernel, add the subpath to the list of subpath for this project
-      if(kernel.startsWith("optimised") && !kernel.equals(eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier)) {
-        _optDirectories.get(_projectName).add(((OptimisedADERDG)solver).getOptKernelPath());
       }
     }
   }
@@ -430,9 +419,5 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       System.out.println("create header of variables for solver " + solverName + " ... ok");
       headerWriter.close();
     }
-  }
-  
-  public AbstractMap<String, List<String>> getOptDirectories() {
-    return _optDirectories;
   }
 }

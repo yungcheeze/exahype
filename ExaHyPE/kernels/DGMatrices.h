@@ -18,7 +18,7 @@
 namespace kernels {
 /**
  * Initialises the lookup tables
- * \p Kxi, \p F0, \p F1, ... \p fineGridProjector1d
+ * \p Kxi, ... \p fineGridProjector1d
  * for the specified \p orders.
  *
  * \todo default implementation!
@@ -29,7 +29,7 @@ void initDGMatrices(const std::set<int>& orders);
 
 /**
  * Frees the memory that was allocated for the lookup tables
- * \p Kxi, \p F0, \p F1, ... \p fineGridProjector1d
+ * \p Kxi, ... \p fineGridProjector1d
  * for the specified \p orders.
  *
  * \todo default implementation!
@@ -51,23 +51,6 @@ extern double*** Kxi;
  * basis
  */
 extern double*** dudx;
-
-/**
- * \brief Time flux matrix (left)
- */
-// todo Dominic Etienne Charrier
-// order, row
-// [order+1][order+1]
-extern double** F0;
-
-/**
- * \brief Time flux matrix (right)
- * \note Unused.
- */
-// todo Dominic Etienne Charrier
-// order, row
-// [order+1][order+1]
-extern double** F1;
 
 /**
  * \brief Inverse stiffness matrix

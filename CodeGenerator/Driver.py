@@ -22,15 +22,6 @@
 #
 # @note
 # requires python3
-#
-# For a quick test, type
-# python Driver.py Euler 5 3 2 nonlinear hsw path/to/libxsmmRepository
-#                 NoOtherOption nVar Order 2/3d NoOtherOption Architecture 
-#
-# for Jenkins this is
-# python Driver.py Euler 5 3 2 nonlinear hsw ../../libxsmm
-#
-# 
 
 import argparse
 import CodeGenArgumentParser
@@ -40,15 +31,20 @@ import Backend
 import os
 import sys
 
+# --------------------------------------------------------
+# Configuration parameters
+# --------------------------------------------------------
+
+pathFromHereToInternalExaHyPE = "../ExaHyPE/"
 
 # --------------------------------------------------------
 # Require python3
 # --------------------------------------------------------
-requiredVersion = (3,0)
+requiredVersion = (3,3)
 currentVersion  = sys.version_info
 
 if(requiredVersion > currentVersion):
-    sys.exit("CodeGenerator: Requires Python 3.0 or newer. Abort.")
+    sys.exit("CodeGenerator: Requires Python 3.3 or newer. Abort.")
 
 
 # --------------------------------------------------------
@@ -57,9 +53,9 @@ if(requiredVersion > currentVersion):
 l_parser = argparse.ArgumentParser(description="This is the front end of the ExaHyPE code generator.")
 
 l_parser.add_argument("pathToOptKernel",
-                      help="Desired path to the generated code")
+                      help="desired relative path to the generated code ("+pathFromHereToInternalExaHyPE+" as root)")
 l_parser.add_argument("solverName",
-                      help="Name of the user-solver")
+                      help="name of the user-solver")
 l_parser.add_argument("numberOfVariables", 
                       type=int, 
                       help="the number of quantities")
@@ -145,7 +141,7 @@ Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 # used for testing as standalone tool
 
 dir = os.path.dirname(__file__)
-pathToOutputDirectory = os.path.join(dir,"../ExaHyPE/"+pathToOptKernel)
+pathToOutputDirectory = os.path.join(dir,pathFromHereToInternalExaHyPE+pathToOptKernel)
 prepareOutputDirectory(pathToOutputDirectory)
 
 # --------------------------------------------------------

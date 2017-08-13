@@ -115,7 +115,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
               kernels::gaussLegendreWeights[order][k] *
               kernels::gaussLegendreWeights[order][l];
           for (int m = 0; m < numberOfVariables; m++) {
-            rhs[idx_rhs(i, k, l, m)] = weight * kernels::F0[order][i] * luh[idx_luh(k, l, m)];
+            rhs[idx_rhs(i, k, l, m)] = weight * kernels::FLCoeff[order][i] * luh[idx_luh(k, l, m)]; //FLCoeff == F0
           }
         }
       endpfor

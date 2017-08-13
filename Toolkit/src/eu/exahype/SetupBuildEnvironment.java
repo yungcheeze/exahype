@@ -1,8 +1,5 @@
 package eu.exahype;
 
-import java.util.AbstractMap;
-import java.util.List;
-
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.*;
 
@@ -16,16 +13,14 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   private boolean _requiresFortran;
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
   private boolean _opt_noTimeAveraging = false; 
-  private AbstractMap<String, List<String>> _optDirectories = null;
 
   private String _likwidInc;
   private String _likwidLib;
   private String _ipcmInc;
   private String _ipcmLib;
 
-  public SetupBuildEnvironment(DirectoryAndPathChecker directoryAndPathChecker, AbstractMap<String, List<String>> optDirectories) {
+  public SetupBuildEnvironment(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
-    _optDirectories = optDirectories;
   }
 
   @Override
@@ -219,12 +214,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         String _projectName = node.getName().getText();
         _writer.write("PROJECT_CFLAGS += -DOPT_KERNELS\n");
         String paths = "";
-        if(_optDirectories != null && _optDirectories.containsKey(_projectName) && _optDirectories.get(_projectName) != null) {
-           for(String subpath : _optDirectories.get(_projectName)) {
-            paths = _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/" + subpath + " ";
-           }
-        } else {
-          throw new IllegalArgumentException("No optimised kernels were generated for this project: "+_projectName+"!"); //not expected to happen
+        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths(_projectName)) {
+          paths = _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/" + subPath + " ";
         }
         _writer.write("OPT_KERNEL_PATH=" + paths + "\n"); 
         _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");

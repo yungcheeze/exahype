@@ -29,6 +29,10 @@
 
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
+#ifdef Parallel
+exahype::DataHeap::HeapEntries exahype::EmptyDataHeapMessage(0);
+#endif
+
 const int exahype::solvers::Solver::NotFound = -1;
 
 tarch::logging::Log exahype::solvers::Solver::_log( "exahype::solvers::Solver");

@@ -123,9 +123,9 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         logError( "initDistributedMemoryConfiguration()", "please inform SFC balancing how many primary ranks per node you use through value \"primary_ranks_per_node:XXX\". Read value " << primaryRanksPerNode << " is invalid" );
         primaryRanksPerNode = 1;
       }
-      if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
-        logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
-        ranksPerNode = 1;
+      if ( ranksPerNode<primaryRanksPerNode ) {
+        logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" is smaller than primary_ranks_per_node. Reset to 1" );
+        primaryRanksPerNode = 1;
       }
       tarch::parallel::NodePool::getInstance().setStrategy(
         new mpibalancing::SFCDiffusionNodePoolStrategy(ranksPerNode,primaryRanksPerNode)
