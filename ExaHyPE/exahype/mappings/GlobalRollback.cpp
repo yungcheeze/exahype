@@ -154,10 +154,13 @@ void exahype::mappings::GlobalRollback::enterCell(
     endpfor
     grainSize.parallelSectionHasTerminated();
 
-    exahype::Cell::resetNeighbourMergeHelperVariables(
-        fineGridCell.getCellDescriptionsIndex(),
-        fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done after GlobalRollback since we might add new finite volumes patches here.
+    // !!! The following has to be done after GlobalRollback since we might add new finite volumes patches here.
     // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
+    exahype::Cell::resetNeighbourMergeFlags(
+        fineGridCell.getCellDescriptionsIndex());
+    exahype::Cell::resetFaceDataExchangeCounters(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

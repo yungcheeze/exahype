@@ -143,9 +143,11 @@ void exahype::mappings::Prediction::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    exahype::Cell::resetNeighbourMergeHelperVariables(
-            fineGridCell.getCellDescriptionsIndex(),
-            fineGridVertices,fineGridVerticesEnumerator);
+    exahype::Cell::resetNeighbourMergeFlags(
+        fineGridCell.getCellDescriptionsIndex());
+    exahype::Cell::resetFaceDataExchangeCounters(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator);
 
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         exahype::solvers::ADERDGSolver::Heap::getInstance().getData(

@@ -44,27 +44,14 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
   // Do not use it. This would overwrite persistent data.
 }
 
-void exahype::Cell::resetNeighbourMergeHelperVariables(
-    const int cellDescriptionsIndex,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+void exahype::Cell::resetNeighbourMergeFlags(
+    const int cellDescriptionsIndex) {
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
+  // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    // ADER-DG
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
       p.setNeighbourMergePerformed(faceIndex,false);
-
-      #ifdef Parallel
-      int listingsOfRemoteRank =
-          countListingsOfRemoteRankAtFace(
-              faceIndex,fineGridVertices,fineGridVerticesEnumerator);
-      if (listingsOfRemoteRank==0) {
-        listingsOfRemoteRank = TWO_POWER_D;
-      }
-      p.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
-      assertion(p.getFaceDataExchangeCounter(faceIndex)>0);
-      #endif
     }
   }
 
@@ -72,8 +59,20 @@ void exahype::Cell::resetNeighbourMergeHelperVariables(
   for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
       p.setNeighbourMergePerformed(faceIndex,false);
+    }
+  }
+}
 
-      #ifdef Parallel
+void exahype::Cell::resetFaceDataExchangeCounters(
+    const int cellDescriptionsIndex,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  #ifdef Parallel
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex));
+
+  // ADER-DG
+  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
+    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
       int listingsOfRemoteRank =
           countListingsOfRemoteRankAtFace(
               faceIndex,fineGridVertices,fineGridVerticesEnumerator);
@@ -82,9 +81,23 @@ void exahype::Cell::resetNeighbourMergeHelperVariables(
       }
       p.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
       assertion(p.getFaceDataExchangeCounter(faceIndex)>0);
-      #endif
     }
   }
+
+  // Finite-Volumes (loop body can be copied from ADER-DG loop)
+  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
+    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+      int listingsOfRemoteRank =
+          countListingsOfRemoteRankAtFace(
+              faceIndex,fineGridVertices,fineGridVerticesEnumerator);
+      if (listingsOfRemoteRank==0) {
+        listingsOfRemoteRank = TWO_POWER_D;
+      }
+      p.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
+      assertion(p.getFaceDataExchangeCounter(faceIndex)>0);
+    }
+  }
+  #endif
 }
 
 std::bitset<DIMENSIONS_TIMES_TWO> exahype::Cell::determineInsideAndOutsideFaces(

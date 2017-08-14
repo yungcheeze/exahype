@@ -231,9 +231,11 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
       }
     }
 
-    exahype::Cell::resetNeighbourMergeHelperVariables(
-                fineGridCell.getCellDescriptionsIndex(),
-                fineGridVertices,fineGridVerticesEnumerator);
+    exahype::Cell::resetNeighbourMergeFlags(
+        fineGridCell.getCellDescriptionsIndex());
+    exahype::Cell::resetFaceDataExchangeCounters(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator);
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

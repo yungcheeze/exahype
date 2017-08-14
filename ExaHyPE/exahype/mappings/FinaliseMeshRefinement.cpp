@@ -155,9 +155,11 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     endpfor
     grainSize.parallelSectionHasTerminated();
 
-    exahype::Cell::resetNeighbourMergeHelperVariables(
-        fineGridCell.getCellDescriptionsIndex(),
-        fineGridVertices,fineGridVerticesEnumerator);
+    exahype::Cell::resetNeighbourMergeFlags(
+        fineGridCell.getCellDescriptionsIndex());
+    exahype::Cell::resetFaceDataExchangeCounters(
+            fineGridCell.getCellDescriptionsIndex(),
+            fineGridVertices,fineGridVerticesEnumerator);
   }
 }
 

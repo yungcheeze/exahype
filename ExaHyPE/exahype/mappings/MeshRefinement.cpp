@@ -319,24 +319,29 @@ void exahype::mappings::MeshRefinement::enterCell(
               solverNumber);
     }
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      if (solver->getMeshUpdateRequest()) {
-        solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
-        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+    if (fineGridCell.isInitialised()) {
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        if (solver->getMeshUpdateRequest()) {
+          solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+          solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
 
-        solver->setInitialConditions(
-            fineGridCell.getCellDescriptionsIndex(),
-            element,
-            fineGridVertices,
-            fineGridVerticesEnumerator);
+          solver->setInitialConditions(
+              fineGridCell.getCellDescriptionsIndex(),
+              element,
+              fineGridVertices,
+              fineGridVerticesEnumerator);
 
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
-                  fineGridCell.getCellDescriptionsIndex(),element);
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+          }
         }
       }
+
+      exahype::Cell::resetNeighbourMergeFlags(
+          fineGridCell.getCellDescriptionsIndex());
     }
   }
 
