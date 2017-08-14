@@ -117,7 +117,7 @@ void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, doub
 void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double t, double* Q) {
   // Initial data
   constexpr double gamma     =1.39999999999999991118;
-  constexpr double x_0       =0.00000000000000000000;
+  constexpr double x_0       =0.50000000000000000000;
 
   constexpr double rho_5     =0.12500000000000000000; // right states
   constexpr double P_5       =0.10000000000000000555;
@@ -195,7 +195,7 @@ void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double
 }
 
 void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double t, double* Q) {
-  constexpr double x0[3]   = {0, 0, 0};
+  constexpr double x0[3]   = {0.5, 0.5, 0.5};
   constexpr double radius  = 0.5;
   constexpr double radius2 = radius*radius;
 
@@ -340,7 +340,6 @@ bool Euler::EulerSolver_ADERDG::isPhysicallyAdmissible(
     const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
     const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
     const double t, const double dt) const {
-  return false;
   if (observablesMin[0] <= 0.0) return false;
   if (observablesMin[4] < 0.0) return false;
   return true;

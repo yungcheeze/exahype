@@ -46,6 +46,7 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::godunov
     language const    = C
+    // reference in {sod,explosion,entropywave,rarefactionwave}
     constants         = reference:entropywave
   end solver
 end exahype-project
