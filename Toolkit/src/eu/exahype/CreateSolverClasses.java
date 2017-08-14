@@ -251,10 +251,10 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Solver limiter = solverFactory.createFiniteVolumesSolver(
         limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),patchSize,hasConstants);
 
-    valid = validate(variables,order,kernel,language,solverName,solver);
-    valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
+    valid  = validate(variables,order,kernel,language,solverName,solver);
+    valid &= validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
     
-    if (valid) {
+    if (valid) {        
       _definedSolvers.add(solverName);
 
       // write the files

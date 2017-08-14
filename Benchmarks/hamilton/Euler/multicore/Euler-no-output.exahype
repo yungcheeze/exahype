@@ -16,9 +16,9 @@ exahype-project Euler
   output-directory const           = ./Benchmarks/hamilton/Euler
 
   computational-domain
-    dimension const         = 3
-    width                   = 1.0, 1.0, 1.0
-    offset                  = 0.0, 0.0, 0.0
+    dimension const         = 2
+    width                   = 2.0, 2.0, 2.0
+    offset                  = -1.0, -1.0, -1.0
     end-time                = 0.1
   end computational-domain
   
@@ -45,7 +45,7 @@ exahype-project Euler
     maximum-mesh-size        = 0.038
     maximum-mesh-depth       = 0
     time-stepping            = global
-    kernel const             = generic::optimised::nonlinear
+    kernel const             = generic::fluxes::nonlinear
     language const           = C
     limiter-kernel const     = generic::godunov
     limiter-language const   = C
@@ -53,7 +53,7 @@ exahype-project Euler
     dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 1
-    // reference in {smooth,sod}
+    // reference in {sod,explosion,entropywave,rarefactionwave}
     constants                = reference:sod    
   end solver
 end exahype-project
