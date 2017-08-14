@@ -205,33 +205,35 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+  if (fineGridCell.isInitialised()) {
+    for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    const int element =
-        solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      if (solver->isComputing(_localState.getAlgorithmSection())) {
-        auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDG->updateLimiterStatusDuringLimiterStatusSpreading(
-            fineGridCell.getCellDescriptionsIndex(),element);
+      const int element =
+          solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        if (solver->isComputing(_localState.getAlgorithmSection())) {
+          auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+          limitingADERDG->updateLimiterStatusDuringLimiterStatusSpreading(
+              fineGridCell.getCellDescriptionsIndex(),element);
 
-        bool meshUpdateRequest =
-            limitingADERDG->
+          bool meshUpdateRequest =
+              limitingADERDG->
               evaluateLimiterStatusRefinementCriterion(
                   fineGridCell.getCellDescriptionsIndex(),element);
 
-        _solverFlags._meshUpdateRequest[solverNumber] |= meshUpdateRequest;
-        if (meshUpdateRequest) {
-          _solverFlags._limiterDomainChange[solverNumber] =
-              exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+          _solverFlags._meshUpdateRequest[solverNumber] |= meshUpdateRequest;
+          if (meshUpdateRequest) {
+            _solverFlags._limiterDomainChange[solverNumber] =
+                exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+          }
         }
       }
-
-      solver->prepareNextNeighbourMerging(
-          fineGridCell.getCellDescriptionsIndex(),element,
-          fineGridVertices,fineGridVerticesEnumerator);
     }
+
+    exahype::Cell::resetNeighbourMergeHelperVariables(
+                fineGridCell.getCellDescriptionsIndex(),
+                fineGridVertices,fineGridVerticesEnumerator);
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

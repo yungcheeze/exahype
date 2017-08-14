@@ -143,6 +143,10 @@ void exahype::mappings::Prediction::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
+    exahype::Cell::resetNeighbourMergeHelperVariables(
+            fineGridCell.getCellDescriptionsIndex(),
+            fineGridVertices,fineGridVerticesEnumerator);
+
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
             fineGridCell.getCellDescriptionsIndex()).size());
@@ -158,10 +162,6 @@ void exahype::mappings::Prediction::enterCell(
             auto* solver = static_cast<exahype::solvers::ADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
-            solver->prepareNextNeighbourMerging(
-                fineGridCell.getCellDescriptionsIndex(),i,
-                fineGridVertices,fineGridVerticesEnumerator);
-
             if (solver->isComputing(_localState.getAlgorithmSection())) {
               solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
               performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
@@ -170,10 +170,6 @@ void exahype::mappings::Prediction::enterCell(
           case exahype::solvers::Solver::Type::LimitingADERDG: {
             auto* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-
-            solver->prepareNextNeighbourMerging(
-                fineGridCell.getCellDescriptionsIndex(),i,
-                fineGridVertices,fineGridVerticesEnumerator);
 
             if (solver->isComputing(_localState.getAlgorithmSection())) {
               solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);

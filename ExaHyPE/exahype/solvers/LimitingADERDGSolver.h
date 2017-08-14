@@ -1282,11 +1282,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) override;
 
-  void prepareNextNeighbourMerging(
-      const int cellDescriptionsIndex,const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
-
 #ifdef Parallel
   ///////////////////////////////////
   // NEIGHBOUR

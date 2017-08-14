@@ -204,12 +204,13 @@ void exahype::mappings::LocalRecomputation::enterCell(
           } break;
           }
         }
-        solver->prepareNextNeighbourMerging(
-          fineGridCell.getCellDescriptionsIndex(),element,
-          fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
+
+    exahype::Cell::resetNeighbourMergeHelperVariables(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

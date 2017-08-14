@@ -1446,23 +1446,6 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictorLocally(
   }
 }
 
-void exahype::solvers::LimitingADERDGSolver::prepareNextNeighbourMerging(
-    const int cellDescriptionsIndex,const int solverElement,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  _solver->prepareNextNeighbourMerging(
-      cellDescriptionsIndex,solverElement,
-      fineGridVertices,fineGridVerticesEnumerator);
-
-  const int limiterElement =
-      tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,solverElement);
-  if (limiterElement!=exahype::solvers::Solver::NotFound) {
-    _limiter->prepareNextNeighbourMerging(
-        cellDescriptionsIndex,limiterElement,
-        fineGridVertices,fineGridVerticesEnumerator);
-  }
-}
-
 exahype::solvers::LimiterDomainChange
 exahype::solvers::LimitingADERDGSolver::updateLimiterStatus(SolverPatch& solverPatch) const {
   solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));

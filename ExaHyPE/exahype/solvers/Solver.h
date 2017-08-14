@@ -1434,17 +1434,6 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) = 0;
 
-  /**
-   * After all merges with neighbour and boundary data have been performed for all the surrounding
-   * faces of a cell (description), we prepare the neighbour merge helper variables
-   * for the next neighbour merge in one of the following grid traversals.
-   */
-  virtual void prepareNextNeighbourMerging(
-        const int cellDescriptionsIndex,
-        const int element,
-        exahype::Vertex* const fineGridVertices,
-        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const = 0;
-
   #ifdef Parallel
   /**
    * If a cell description was allocated at heap address \p cellDescriptionsIndex
@@ -1469,6 +1458,11 @@ class exahype::solvers::Solver {
    * Currently, the neighbour metadata is only the neighbour
    * type as int \p neighbourTypeAsInt and
    * the neighbour's limiter status as int.
+   *
+   * <h2> Number of merges </h2>
+   * Usually metadata is only merged once between neighbouring cells but
+   * at a MPI boundary, it might be merged twice.
+   * It is thus important that the inputs do not change after a merge.
    *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in

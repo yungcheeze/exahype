@@ -47,34 +47,6 @@ exahype::Vertex::getCellDescriptionsIndex() const {
   return _vertexData.getCellDescriptionsIndex();
 }
 
-
-bool exahype::Vertex::hasToMergeNeighboursMetadata(
-    const tarch::la::Vector<DIMENSIONS,int>& pos1,
-    const int pos1Scalar,
-    const tarch::la::Vector<DIMENSIONS,int>& pos2,
-    const int pos2Scalar) const {
-  assertion(!isHangingNode());
-
-  if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
-    const int cellDescriptionsIndex1 = _vertexData.getCellDescriptionsIndex(pos1Scalar);
-    const int cellDescriptionsIndex2 = _vertexData.getCellDescriptionsIndex(pos2Scalar);
-
-    if (//cellDescriptionsIndex1!=cellDescriptionsIndex2 && // This scenario occured during one run due to inconsistent adjacency indices
-        exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) &&
-        exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
-      assertion1(pos1Scalar!=pos2Scalar,pos1Scalar);
-      assertion1(cellDescriptionsIndex1!=cellDescriptionsIndex2,cellDescriptionsIndex1);
-      assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1),
-          cellDescriptionsIndex1);
-      assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2),
-          cellDescriptionsIndex2);
-      return true;
-    }
-  }
-
-  return false;
-}
-
 void exahype::Vertex::mergeOnlyMetadata(
     const exahype::records::State::AlgorithmSection& section) {
   assertion(!isHangingNode());

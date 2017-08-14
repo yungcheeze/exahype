@@ -162,14 +162,14 @@ void exahype::mappings::Reinitialisation::enterCell(
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
               determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
-
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done after reinitialisation since we might add new finite volumes patches here.
-                                                          // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
+
+    exahype::Cell::resetNeighbourMergeHelperVariables(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done after reinitialisation since we might add new finite volumes patches here.
+                                                      // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

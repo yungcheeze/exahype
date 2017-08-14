@@ -73,12 +73,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * TODO(Dominic): Revise this docu.
    * Here we reset helper variables that play a role in
    * the neighbour merge methods.
    * These are the cell description attributes
-   * riemannSolvePerformed[], and
-   * faceDataExchangeCounter[].
+   * riemannSolvePerformed[DIMENSIONS_TIMES_TWO], and
+   * faceDataExchangeCounter[DIMENSIONS_TIMES_TWO].
    *
    * <h2>Shared Memory</h2>
    * The flag riemannSolvePerformed
@@ -97,28 +96,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * send at time of 2^{d-2}-th touch of face.
    * 4^{d-2} - full face connection where cell is inside and face vertices are all inside:
    * send at time of 2^{d-2}-th touch of face.
-   * We require that #ifdef vertex.isBoundary() is set.
    */
-  template <class CellDescription>
   static void resetNeighbourMergeHelperVariables(
-      CellDescription& cellDescription,
+      const int cellDescriptionsIndex,
       exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      cellDescription.setNeighbourMergePerformed(faceIndex,false);
-
-      #ifdef Parallel
-      int listingsOfRemoteRank =
-          countListingsOfRemoteRankAtFace(
-              faceIndex,fineGridVertices,fineGridVerticesEnumerator);
-      if (listingsOfRemoteRank==0) {
-        listingsOfRemoteRank = TWO_POWER_D;
-      }
-      cellDescription.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
-      assertion(cellDescription.getFaceDataExchangeCounter(faceIndex)>0);
-      #endif
-    }
-  }
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   /**
    * Determine inside and outside faces of a cell.

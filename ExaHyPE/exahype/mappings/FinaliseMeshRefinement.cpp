@@ -152,12 +152,12 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
                         determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
-
-      solver->prepareNextNeighbourMerging(
-          fineGridCell.getCellDescriptionsIndex(),element,
-          fineGridVertices,fineGridVerticesEnumerator);
     endpfor
     grainSize.parallelSectionHasTerminated();
+
+    exahype::Cell::resetNeighbourMergeHelperVariables(
+        fineGridCell.getCellDescriptionsIndex(),
+        fineGridVertices,fineGridVerticesEnumerator);
   }
 }
 

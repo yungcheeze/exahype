@@ -2986,16 +2986,6 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryOrEmptyCellMetadata(
    cellDescription.setFacewiseLimiterStatus(faceIndex,0);
 }
 
-void exahype::solvers::ADERDGSolver::prepareNextNeighbourMerging(
-    const int cellDescriptionsIndex,const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-}
-
 #ifdef Parallel
 const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication    = 2;
 const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 1;

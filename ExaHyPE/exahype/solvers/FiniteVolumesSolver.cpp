@@ -725,17 +725,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryOrEmptyCellMetadata
    // do nothing
 }
 
-void exahype::solvers::FiniteVolumesSolver::prepareNextNeighbourMerging(
-    const int cellDescriptionsIndex,const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-}
-
-
 #ifdef Parallel
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbourCommunication    = 1;
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerForkOrJoinCommunication   = 1;
