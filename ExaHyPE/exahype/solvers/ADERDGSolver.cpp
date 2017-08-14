@@ -2547,17 +2547,6 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
-
-  std::cout << "cellDescription.getFacewiseLimiterStatus()=";
-  for(int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    if (cellDescription.getFacewiseLimiterStatus(i)==1) {
-      std::cout << cellDescription.getFacewiseLimiterStatus(i) << ",";
-    } else {
-      std::cout << "X,";
-    }
-  }
-  std::cout << std::endl;
-
   return tarch::la::max(cellDescription.getFacewiseLimiterStatus());
 }
 
