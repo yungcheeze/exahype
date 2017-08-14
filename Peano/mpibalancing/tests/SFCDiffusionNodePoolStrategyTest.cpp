@@ -228,11 +228,11 @@ void mpibalancing::tests::SFCDiffusionNodePoolStrategyTest::testSecondaryNodeDel
   reservedNode = myStrategy.reserveNode(selectedMaster);
   validateEqualsWithParams1( reservedNode,21, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
-  validateEqualsWithParams1( reservedNode,20, myStrategy.toString() );
+  validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
-  validateEqualsWithParams1( reservedNode,19, myStrategy.toString() );
+  validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
-  validateEqualsWithParams1( reservedNode,17, myStrategy.toString() );
+  validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
   validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
@@ -252,9 +252,9 @@ void mpibalancing::tests::SFCDiffusionNodePoolStrategyTest::testSecondaryNodeDel
   reservedNode = myStrategy.reserveNode(selectedMaster);
   validateEqualsWithParams1( reservedNode,13, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
-  validateEqualsWithParams1( reservedNode,11, myStrategy.toString() );
+  validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
-  validateEqualsWithParams1( reservedNode,9, myStrategy.toString() );
+  validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
   validateEqualsWithParams1( reservedNode,-1, myStrategy.toString() );
   reservedNode = myStrategy.reserveNode(selectedMaster);
