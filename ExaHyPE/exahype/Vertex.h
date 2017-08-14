@@ -162,17 +162,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
 #ifdef Parallel
 
-  /**
-   * Returns true if the vertex has to communicate, i.e.
-   * send and receive metadata, and solver data if applicable.
-   *
-   * Current criteria:
-   * - Vertex has to be inside of the domain.
-   * - Vertex must belong to a grid which is at least
-   *   as fine as the coarsest solver grid.
-   */
-  bool hasToCommunicate(
-      const tarch::la::Vector<DIMENSIONS, double>& h) const;
 
   /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
