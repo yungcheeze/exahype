@@ -20,7 +20,7 @@
 
 # PREAMBLE
 project=Euler_FV
-patchSize=3
+patchSize=7
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 io=no-output # or output
@@ -66,8 +66,8 @@ do
       #let coresPerTask=16/$tasksPerNode # ham6
 
       # Create script
-      script=plenty-nodes/hamilton.slurm-script
-      newScript=plenty-nodes/hamilton-$prefix-p$patchSize-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
+      script=single-nodes/hamilton.slurm-script
+      newScript=single-nodes/hamilton-$prefix-p$patchSize-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
       cp $script $newScript
      
       sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
@@ -84,8 +84,8 @@ do
       sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript 
 
       # Create spec file
-      spec=plenty-nodes/$project-$io.exahype
-      filename=plenty-nodes/$prefix-p$patchSize-t$tasksPerNode-c$coresPerTask
+      spec=single-nodes/$project-$io.exahype
+      filename=single-nodes/$prefix-p$patchSize-t$tasksPerNode-c$coresPerTask
       newSpec=$filename'.exahype'
       cp $spec $newSpec
 
