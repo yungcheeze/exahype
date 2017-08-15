@@ -1054,12 +1054,12 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertion( tarch::la::countEqualEntries(src,dest)==(DIMENSIONS-1) ); // TODO(Dominic): If we only use Godunov
-/*
-  if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
-    return; // We only consider faces; no corners.
-  }
-*/
+  assertion( tarch::la::countEqualEntries(src,dest)==(DIMENSIONS-1) );
+
+  const int direction    = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation  = (1 + dest(direction) - src(direction))/2;
+  const int faceIndex    = 2*direction+orientation;
+
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (holdsFaceData(cellDescription.getType())) {
@@ -1067,9 +1067,9 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
 
     const int numberOfFaceDof = getDataPerPatchFace();
-    const int boundaryLayerToSendIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
-    double* luhbnd = DataHeap::getInstance().getData(boundaryLayerToSendIndex).data();
-
+//    const int boundaryLayerToSendIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+    double* luhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data()
+        + (faceIndex * numberOfFaceDof);
     const double* luh = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     boundaryLayerExtraction(luhbnd,luh,dest-src);
 
@@ -1091,7 +1091,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
         peano::heap::MessageType::NeighbourCommunication);
     // TODO(Dominic): If anarchic time stepping send the time step over too.
 
-    DataHeap::getInstance().deleteData(boundaryLayerToSendIndex,true);
+//    DataHeap::getInstance().deleteData(boundaryLayerToSendIndex,true);
   } else {
     sendEmptyDataToNeighbour(toRank,x,level);
   }
