@@ -24,7 +24,7 @@ do
     rm *.o
     sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$p',' $spec
     cat $spec
-    $directory/configure-no-output.sh
+    $directory/configure-output.sh
     make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
