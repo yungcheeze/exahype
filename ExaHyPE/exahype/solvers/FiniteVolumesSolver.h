@@ -418,7 +418,7 @@ public:
    * The number of unknowns per patch.
    * This number does not include ghost layer values.
    */
-  int getUnknownsPerPatch() const; // TODO(Dominic): Rename
+  int getDataPerPatch() const;
 
   /**
    * Get the width of the ghost layer of the patch.
@@ -428,7 +428,7 @@ public:
   /**
    * Get the total number of ghost values per patch.
    */
-  int getGhostValuesPerPatch() const; // TODO(Dominic): Rename
+  int getGhostDataPerPatch() const;
 
   /**
    * This operation returns the number of unknowns per
@@ -436,11 +436,25 @@ public:
    *
    * This number does not include ghost values.
    */
-  int getUnknownsPerFace() const; // TODO(Dominic): Rename
+  int getDataPerPatchFace() const;
+
+  /**
+   * This operation returns the combined number of data
+   * of all faces of a patch (variables and material parameter coefficients).
+   *
+   * This number does not include ghost values.
+   */
+  int getDataPerPatchBoundary() const;
+
+  /**
+   * This operation returns the number of unknowns that are located
+   * on or in the vicinity of the boundary of a cell.
+   */
+  int getUnknownsPerPatchBoundary() const;
 
 
-  virtual int getTempUnknownsSize()              const {return getUnknownsPerPatch();} // TODO function should be renamed
-  virtual int getBndFaceSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
+  virtual int getTempUnknownsSize()              const {return getDataPerPatch();} // TODO function should be renamed
+  virtual int getBndFaceSize()                   const {return getDataPerPatchFace();} // TODO function should be renamed
   virtual int getTempStateSizedVectorsSize()     const {return getNumberOfVariables()+getNumberOfParameters();} //dataPoints // TODO function should be renamed
 
   /**

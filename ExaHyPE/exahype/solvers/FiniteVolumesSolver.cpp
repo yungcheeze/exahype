@@ -64,7 +64,7 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
   }
 }
 
-int exahype::solvers::FiniteVolumesSolver::getUnknownsPerPatch() const {
+int exahype::solvers::FiniteVolumesSolver::getDataPerPatch() const {
   return _dataPerPatch;
 }
 
@@ -72,12 +72,16 @@ int exahype::solvers::FiniteVolumesSolver::getGhostLayerWidth() const {
   return _ghostLayerWidth;
 }
 
-int exahype::solvers::FiniteVolumesSolver::getGhostValuesPerPatch() const {
+int exahype::solvers::FiniteVolumesSolver::getGhostDataPerPatch() const {
   return _ghostDataPerPatch;
 }
 
-int exahype::solvers::FiniteVolumesSolver::getUnknownsPerFace() const {
+int exahype::solvers::FiniteVolumesSolver::getDataPerPatchFace() const {
   return _dataPerPatchFace;
+}
+
+int exahype::solvers::FiniteVolumesSolver::getDataPerPatchBoundary() const {
+  return _dataPerPatchBoundary;
 }
 
 double exahype::solvers::FiniteVolumesSolver::getPreviousMinTimeStepSize() const {
@@ -324,9 +328,10 @@ void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
   newCellDescription.setSize(cellSize);
   newCellDescription.setOffset(cellOffset);
 
-  // Default field data indices
+  // Default data field indices
   newCellDescription.setSolution(-1);
   newCellDescription.setPreviousSolution(-1);
+  newCellDescription.setExtrapolatedSolution(-1);
 
   Heap::getInstance().getData(cellDescriptionsIndex).push_back(newCellDescription);
 }
@@ -340,12 +345,15 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedSolution()));
 
         DataHeap::getInstance().deleteData(cellDescription.getSolution());
         DataHeap::getInstance().deleteData(cellDescription.getPreviousSolution());
+        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolution());
 
         cellDescription.setSolution(-1);
         cellDescription.setPreviousSolution(-1);
+        cellDescription.setExtrapolatedSolution(-1);
         } break;
       case CellDescription::Cell:
         // do nothing
@@ -362,20 +370,24 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
-        // Allocate volume DoF for limiter
-        const int size = _dataPerPatch+_ghostDataPerPatch;
+        // Allocate volume data
+        const int patchSize         = getDataPerPatch()+getGhostDataPerPatch();
 
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
-        cellDescription.setSolution(DataHeap::getInstance().createData(size, size, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
-        cellDescription.setPreviousSolution(DataHeap::getInstance().createData(size, size, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
-
+        cellDescription.setSolution(        DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setPreviousSolution(DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
         // Zero out the solution and previous solution arrays. For our MUSCL-Hancock implementation which
         // does not take the corner neighbours into account e.g., it is important that the values in
         // the corner cells of the first ghost layer are set to zero.
-        std::fill_n( DataHeap::getInstance().getData(cellDescription.getSolution()).data(),         size, 0.0 );
-        std::fill_n( DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data(), size, 0.0 );
+        std::fill_n( DataHeap::getInstance().getData(cellDescription.getSolution()).data(),         patchSize, 0.0 );
+        std::fill_n( DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data(), patchSize, 0.0 );
+
+        // Allocate boundary data
+        const int patchBoundarySize = getDataPerPatchBoundary();
+        cellDescription.setExtrapolatedSolution(DataHeap::getInstance().createData(patchBoundarySize, patchBoundarySize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        std::fill_n( DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data(), patchBoundarySize, 0.0 );
       }
       break;
     case CellDescription::Erased:
@@ -693,7 +705,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     double* luhbndIn  = tempFaceUnknowns[0];
     double* luhbndOut = tempFaceUnknowns[1];
 
-    assertion1(getUnknownsPerFace() <= &luhbndOut[0] - &luhbndIn[0], &luhbndOut[0]-&luhbndIn[0]);
+    assertion1(getDataPerPatchFace() <= &luhbndOut[0] - &luhbndIn[0], &luhbndOut[0]-&luhbndIn[0]);
 
     assertion2(tarch::la::countEqualEntries(posCell,posBoundary)==DIMENSIONS-1,posCell.toString(),posBoundary.toString());
 
@@ -951,7 +963,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJ
         ", cell: "<< x << ", level: " << level);
 
     DataHeap::getInstance().sendData(
-        solution, getUnknownsPerPatch()+getGhostValuesPerPatch(), toRank, x, level,
+        solution, getDataPerPatch()+getGhostDataPerPatch(), toRank, x, level,
         peano::heap::MessageType::ForkOrJoinCommunication);
   }
 }
@@ -1054,7 +1066,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
 
-    const int numberOfFaceDof = getUnknownsPerFace();
+    const int numberOfFaceDof = getDataPerPatchFace();
     const int boundaryLayerToSendIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
     double* luhbnd = DataHeap::getInstance().getData(boundaryLayerToSendIndex).data();
 
@@ -1156,7 +1168,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     // For methods that are higher order in time, e.g., MUSCL-Hancock, we usually need
     // corner neighbours. This is why we currently adapt a GATHER-UPDATE algorithm
     // instead of a SOLVE RIEMANN PROBLEM AT BOUNDARY-UPDATE INTERIOR scheme.
-    const int numberOfFaceDof      = getUnknownsPerFace();
+    const int numberOfFaceDof      = getDataPerPatchFace();
     const int receivedBoundaryLayerIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
     double* luhbnd = DataHeap::getInstance().getData(receivedBoundaryLayerIndex).data();
     assertion(DataHeap::getInstance().getData(receivedBoundaryLayerIndex).empty());

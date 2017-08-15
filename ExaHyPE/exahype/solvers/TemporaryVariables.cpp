@@ -281,14 +281,14 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTem
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getBndFaceSize(), // == getDataPerFace() + eventual padding
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getDataPerPatchFace() );
         lengthOfStateSizedVectors       =
              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getTempStateSizedVectorsSize(); // variables + parameters; same for both solvers
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
         lengthOfFaceUnknowns =
-            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
+            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getDataPerPatchFace();
         lengthOfStateSizedVectors       =
             static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getTempStateSizedVectorsSize(); // variables + parameters
         break;

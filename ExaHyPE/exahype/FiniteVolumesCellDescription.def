@@ -56,6 +56,12 @@ class exahype::records::FiniteVolumesCellDescription {
   parallelise persistent int previousSolution;
   
   /**
+   * Index pointing to the solution DoF extrapolated to the bounding faces of
+   * the cell.
+   */
+  parallelise persistent int extrapolatedSolution;
+  
+  /**
    * Space-tree level of the cell this FiniteVolumesCellDescription is associated
    * with.
    */
