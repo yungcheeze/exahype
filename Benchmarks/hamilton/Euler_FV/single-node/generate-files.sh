@@ -66,8 +66,8 @@ do
       #let coresPerTask=16/$tasksPerNode # ham6
 
       # Create script
-      script=single-nodes/hamilton.slurm-script
-      newScript=single-nodes/hamilton-$prefix-p$patchSize-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
+      script=single-node/hamilton.slurm-script
+      newScript=single-node/hamilton-$prefix-p$patchSize-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
       cp $script $newScript
      
       sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
@@ -84,8 +84,8 @@ do
       sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript 
 
       # Create spec file
-      spec=single-nodes/$project-$io.exahype
-      filename=single-nodes/$prefix-p$patchSize-t$tasksPerNode-c$coresPerTask
+      spec=single-node/$project-$io.exahype
+      filename=single-node/$prefix-p$patchSize-t$tasksPerNode-c$coresPerTask
       newSpec=$filename'.exahype'
       cp $spec $newSpec
 
