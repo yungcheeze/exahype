@@ -3055,18 +3055,20 @@ void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
     const int cellDescriptionsIndex) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
-  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-    const int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      auto& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-      if (cellDescription.getType()==CellDescription::Type::Cell) {
-        cellDescription.setType(CellDescription::Type::Erased);
-        static_cast<ADERDGSolver*>(solver)->ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
-      }
+  Heap::HeapEntries::iterator p =
+      Heap::getInstance().getData(cellDescriptionsIndex).begin();
+  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
+    if (p->getType()==CellDescription::Cell) {
+      auto* aderdgSolver = static_cast<ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[p->getSolverNumber()]);
+      p->setType(CellDescription::Type::Erased);
+      aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
 
-      Heap::getInstance().getData(cellDescriptionsIndex).erase(
-          Heap::getInstance().getData(cellDescriptionsIndex).begin()+element);
+      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    } else {
+      ++p;
+      assertionMsg(false,"Not implemented yet. Don't know what to do for type="<<
+          CellDescription::toString(p->getType()));
     }
   }
 }
@@ -3095,6 +3097,12 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
 
+  // We have to initialise before we create the local CellDescription-Array.
+  // Otherwise we will mix up the heap indices.
+  if (!localCell.isInitialised()) {
+    localCell.setupMetaData();
+  }
+
   const int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
   Heap::getInstance().receiveData(
@@ -3117,16 +3125,13 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     resetDataHeapIndices(receivedCellDescriptionsIndex,
                          multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
 
-    if (!localCell.isInitialised()) {
-      localCell.setupMetaData();
+    logDebug("mergeCellDescriptionsWithRemoteData(...)","setup metadata for " <<
+        "cell ("
+        "centre="<< x.toString() <<
+        ",level="<< level <<
+        ",isRoot="<< localCell.isRoot() <<
+        ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank());
 
-      logDebug("mergeCellDescriptionsWithRemoteData(...)","setup metadata for " <<
-                    "cell ("
-                    "centre="<< x.toString() <<
-                    ",level="<< level <<
-                    ",isRoot="<< localCell.isRoot() <<
-                    ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank());
-    }
     assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
                localCell.getCellDescriptionsIndex());
     Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).reserve(
@@ -3193,6 +3198,8 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
             push_back(pReceived);
       }
     }
+  } else {
+    localCell.shutdownMetaData();
   }
 
   Heap::getInstance().deleteData(receivedCellDescriptionsIndex);
