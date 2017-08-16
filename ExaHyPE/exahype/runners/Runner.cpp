@@ -1102,7 +1102,10 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
 
-  if (numberOfStepsToRun>1) {
+  if (numberOfStepsToRun==0) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","plot");
+  }
+  else if (numberOfStepsToRun>1) {
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","run "<<numberOfStepsToRun<< " iterations within one batch");
   }
 
