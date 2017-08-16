@@ -1168,16 +1168,9 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
-//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update solution");
-
-  repository.getState().switchToSolutionUpdateContext();
-  repository.switchToSolutionUpdate();  // Face to cell + Inside cell
-  repository.iterate();
-
-//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
-
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update solution and compute new time step size");
   repository.getState().switchToTimeStepSizeComputationContext();
-  repository.switchToTimeStepSizeComputation();
+  repository.switchToSolutionUpdateAndTimeStepSizeComputation();  // Face to cell + Inside cell
   repository.iterate();
 
   // TODO(Dominic): Will be merged with the mesh refinement

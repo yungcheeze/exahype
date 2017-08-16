@@ -81,7 +81,7 @@ class exahype::repositories::Repository {
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToGlobalRollback() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
-    virtual void switchToSolutionUpdate() = 0;    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
@@ -103,7 +103,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGlobalRollback() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
-    virtual bool isActiveAdapterSolutionUpdate() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;

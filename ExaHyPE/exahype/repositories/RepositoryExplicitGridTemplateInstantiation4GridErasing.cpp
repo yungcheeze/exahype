@@ -25,7 +25,7 @@
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
- #include "exahype/adapters/SolutionUpdate.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 

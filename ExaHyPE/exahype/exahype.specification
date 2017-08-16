@@ -199,9 +199,11 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing 
 
 adapter:
-  name: SolutionUpdate
+  name: SolutionUpdateAndTimeStepSizeComputation
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
   merge-with-user-defined-mapping: PostProcessing
 
 adapter:

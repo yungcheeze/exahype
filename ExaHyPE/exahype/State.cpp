@@ -201,11 +201,6 @@ exahype::records::State::AlgorithmSection exahype::State::getAlgorithmSection() 
    _stateData.setSendMode (records::State::SendMode::SendFaceData);
  }
 
- void exahype::State::switchToSolutionUpdateContext() {
-   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-   _stateData.setSendMode (records::State::SendMode::SendNothing);
- }
-
  void exahype::State::switchToTimeStepSizeComputationContext() {
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);

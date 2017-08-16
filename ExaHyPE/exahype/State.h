@@ -180,8 +180,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToPredictionContext();
 
-  void switchToSolutionUpdateContext();
-
   void switchToTimeStepSizeComputationContext();
 
   void switchToUpdateMeshContext();

@@ -1131,12 +1131,9 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourMetadata[exahype::NeighbourCommunicationMetadataCellType].getU());
 
-  #if defined(Asserts) || defined(Debug)
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-          (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
-  #endif
+  const int direction    = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation  = (1 + src(direction) - dest(direction))/2;
+  const int faceIndex    = 2*direction+orientation;
 
   // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
   // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems
@@ -1169,9 +1166,11 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     // corner neighbours. This is why we currently adapt a GATHER-UPDATE algorithm
     // instead of a SOLVE RIEMANN PROBLEM AT BOUNDARY-UPDATE INTERIOR scheme.
     const int numberOfFaceDof      = getDataPerPatchFace();
-    const int receivedBoundaryLayerIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
-    double* luhbnd = DataHeap::getInstance().getData(receivedBoundaryLayerIndex).data();
-    assertion(DataHeap::getInstance().getData(receivedBoundaryLayerIndex).empty());
+//    const int receivedBoundaryLayerIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+    double* luhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data()
+        + (faceIndex * numberOfFaceDof);
+//    double* luhbnd = DataHeap::getInstance().getData(receivedBoundaryLayerIndex).data();
+//    assertion(DataHeap::getInstance().getData(receivedBoundaryLayerIndex).empty());
 
 
     // Send order: minMax,lQhbnd,lFhbnd
@@ -1191,7 +1190,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     double* luh = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     ghostLayerFillingAtBoundary(luh,luhbnd,src-dest);
 
-    DataHeap::getInstance().deleteData(receivedBoundaryLayerIndex,true);
+//    DataHeap::getInstance().deleteData(receivedBoundaryLayerIndex,true);
   } else  {
     logDebug(
         "mergeWithNeighbourData(...)", "drop one array from rank " <<
