@@ -36,6 +36,35 @@ constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
 
 tarch::logging::Log exahype::solvers::FiniteVolumesSolver::_log( "exahype::solvers::FiniteVolumesSolver");
 
+void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
+    const int cellDescriptionsIndex, const bool deleteOnlyCells) {
+  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
+
+  Heap::HeapEntries::iterator p =
+      Heap::getInstance().getData(cellDescriptionsIndex).begin();
+  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
+    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+
+    FiniteVolumesSolver* fvSolver = nullptr;
+    if (solver->getType()==Solver::Type::FiniteVolumes) {
+      fvSolver = static_cast<FiniteVolumesSolver*>(solver);
+    }
+    else if (solver->getType()==Solver::Type::LimitingADERDG) {
+      fvSolver =
+          static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
+    }
+
+    if (fvSolver!=nullptr) {
+      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
+      p->setType(CellDescription::Type::Erased);
+      fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    } else {
+      ++p;
+    }
+  }
+}
+
 exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     const std::string& identifier, int numberOfVariables,
     int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
@@ -755,35 +784,6 @@ void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
                                  toRank,x,level,messageType);
   } else {
     sendEmptyCellDescriptions(toRank,messageType,x,level);
-  }
-}
-
-void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex, const bool deleteOnlyCells) {
-  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
-
-  Heap::HeapEntries::iterator p =
-      Heap::getInstance().getData(cellDescriptionsIndex).begin();
-  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
-
-    FiniteVolumesSolver* fvSolver = nullptr;
-    if (solver->getType()==Solver::Type::FiniteVolumes) {
-      fvSolver = static_cast<FiniteVolumesSolver*>(solver);
-    }
-    else if (solver->getType()==Solver::Type::LimitingADERDG) {
-      fvSolver =
-          static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
-    }
-
-    if (fvSolver!=nullptr) {
-      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
-      p->setType(CellDescription::Type::Erased);
-      fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
-    } else {
-      ++p;
-    }
   }
 }
 

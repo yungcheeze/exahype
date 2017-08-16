@@ -729,6 +729,14 @@ public:
    */
   static bool holdsFaceData(const CellDescription& cellDescription);
 
+  /**
+   * Erase all cell descriptions registered for solvers
+   * of type Type::ADERDG.
+   *
+   * \param deleteOnlyCells deletes only cell descriptions of type Cell
+   */
+  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
+
   void updateHelperStatus(
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
   /**
@@ -1868,14 +1876,6 @@ public:
       const peano::heap::MessageType&              messageType,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
-
-  /**
-   * Erase all cell descriptions registered for solvers
-   * of type Type::ADERDG.
-   *
-   * \param deleteOnlyCells deletes only cell descriptions of type Cell
-   */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
 
   /**
    * Sends an empty message to the rank \p toRank.

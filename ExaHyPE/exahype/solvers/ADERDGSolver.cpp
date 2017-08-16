@@ -445,6 +445,35 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   }
 }
 
+void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
+    const int cellDescriptionsIndex,const bool deleteOnlyCells) {
+  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
+
+  Heap::HeapEntries::iterator p =
+      Heap::getInstance().getData(cellDescriptionsIndex).begin();
+  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
+    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+
+    ADERDGSolver* aderdgSolver = nullptr;
+    if (solver->getType()==Solver::Type::ADERDG) {
+      aderdgSolver = static_cast<ADERDGSolver*>(solver);
+    }
+    else if (solver->getType()==Solver::Type::LimitingADERDG) {
+      aderdgSolver =
+          static_cast<LimitingADERDGSolver*>(solver)->getSolver().get();
+    }
+
+    if (aderdgSolver!=nullptr) {
+      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
+      p->setType(CellDescription::Type::Erased);
+      aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    } else {
+      ++p;
+    }
+  }
+}
+
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
     int numberOfParameters, int DOFPerCoordinateAxis,
@@ -3048,35 +3077,6 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
                                  toRank,x,level,messageType);
   } else {
     sendEmptyCellDescriptions(toRank,messageType,x,level);
-  }
-}
-
-void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex,const bool deleteOnlyCells) {
-  assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
-
-  Heap::HeapEntries::iterator p =
-      Heap::getInstance().getData(cellDescriptionsIndex).begin();
-  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
-
-    ADERDGSolver* aderdgSolver = nullptr;
-    if (solver->getType()==Solver::Type::ADERDG) {
-      aderdgSolver = static_cast<ADERDGSolver*>(solver);
-    }
-    else if (solver->getType()==Solver::Type::LimitingADERDG) {
-      aderdgSolver =
-          static_cast<LimitingADERDGSolver*>(solver)->getSolver().get();
-    }
-
-    if (aderdgSolver!=nullptr) {
-      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
-      p->setType(CellDescription::Type::Erased);
-      aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
-    } else {
-      ++p;
-    }
   }
 }
 

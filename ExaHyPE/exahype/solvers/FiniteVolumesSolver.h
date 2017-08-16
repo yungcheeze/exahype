@@ -206,10 +206,20 @@ public:
     * Returns if a ADERDGCellDescription type holds face data.
     */
    static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
-     return cellDescriptionType==CellDescription::Cell ||
-            cellDescriptionType==CellDescription::Ancestor   ||
-            cellDescriptionType==CellDescription::Descendant;
+//     return cellDescriptionType==CellDescription::Cell ||
+//            cellDescriptionType==CellDescription::Ancestor   ||
+//            cellDescriptionType==CellDescription::Descendant;
+     return true;
    }
+
+
+  /**
+   * Erase all cell descriptions registered for solvers
+   * of type Type::ADERDG.
+   *
+   * \param deleteOnlyCells deletes only cell descriptions of type Cell
+   */
+  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
       int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
@@ -738,14 +748,6 @@ public:
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
-
-  /**
-   * Erase all cell descriptions registered for solvers
-   * of type Type::ADERDG.
-   *
-   * \param deleteOnlyCells deletes only cell descriptions of type Cell
-   */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
 
   /**
    * Send an empty message to rank
