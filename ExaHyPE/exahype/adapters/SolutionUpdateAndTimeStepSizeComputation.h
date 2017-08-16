@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_SolutionUpdate_H_
-#define EXAHYPE_ADAPTERS_SolutionUpdate_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -20,13 +20,15 @@
 
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class SolutionUpdate;
+        class SolutionUpdateAndTimeStepSizeComputation;
       } 
 }
 
@@ -38,15 +40,19 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::SolutionUpdate {
+class exahype::adapters::SolutionUpdateAndTimeStepSizeComputation {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::SolutionUpdate Mapping1;
-    typedef mappings::PostProcessing Mapping2;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Sending Mapping3;
+    typedef mappings::PostProcessing Mapping4;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2SolutionUpdate;
-     Mapping2  _map2PostProcessing;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Sending;
+     Mapping4  _map2PostProcessing;
 
 
   public:
@@ -58,16 +64,16 @@ class exahype::adapters::SolutionUpdate {
     peano::MappingSpecification         descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    SolutionUpdate();
+    SolutionUpdateAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    SolutionUpdate(const SolutionUpdate& masterThread);
+    SolutionUpdateAndTimeStepSizeComputation(const SolutionUpdateAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~SolutionUpdate();
+    virtual ~SolutionUpdateAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const SolutionUpdate& workerThread);
+    void mergeWithWorkerThread(const SolutionUpdateAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(
