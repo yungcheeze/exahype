@@ -20,16 +20,15 @@
 #include <limits>
 #include <algorithm>
 
-#include "exahype/Cell.h"
-#include "exahype/Vertex.h"
-#include "exahype/VertexOperations.h"
-
 #include "peano/utils/Loop.h"
 
 #include "tarch/multicore/Lock.h"
 
-#include "exahype/amr/AdaptiveMeshRefinement.h"
+#include "exahype/Cell.h"
+#include "exahype/Vertex.h"
+#include "exahype/VertexOperations.h"
 
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 namespace {
 constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
@@ -760,23 +759,30 @@ void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
 }
 
 void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex) {
+    const int cellDescriptionsIndex, const bool deleteOnlyCells) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
   Heap::HeapEntries::iterator p =
       Heap::getInstance().getData(cellDescriptionsIndex).begin();
   while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    if (p->getType()==CellDescription::Cell) {
-      auto* fvSolver = static_cast<FiniteVolumesSolver*>(
-          exahype::solvers::RegisteredSolvers[p->getSolverNumber()]);
+    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+
+    FiniteVolumesSolver* fvSolver = nullptr;
+    if (solver->getType()==Solver::Type::FiniteVolumes) {
+      fvSolver = static_cast<FiniteVolumesSolver*>(solver);
+    }
+    else if (solver->getType()==Solver::Type::LimitingADERDG) {
+      fvSolver =
+          static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
+    }
+
+    if (fvSolver!=nullptr) {
+      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
       p->setType(CellDescription::Type::Erased);
       fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-
       p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
     } else {
       ++p;
-      assertionMsg(false,"Not implemented yet. Don't know what to do for type="<<
-          CellDescription::toString(p->getType()));
     }
   }
 }

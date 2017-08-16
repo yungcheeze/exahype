@@ -63,29 +63,27 @@ namespace exahype {
    *
    * !!! CreateCopiesOfSentData
    *
-   * The code crashes if this flag is set to false.
-   * We are not sure what the cause for this problem is
-   * since we read the messages directly from persistent arrays. TODO(Dominic): Check again
+   * All solvers must store the face data they send to neighbours at persistent addresses.
    */
   #if ALIGNMENT==16
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<16> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<16> >,
-    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<16> >,
+    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<16> >,
     std::vector< double, peano::heap::HeapAllocator<double, 16 > >
   >     DataHeap;
   #elif ALIGNMENT==32
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<32> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<32> >,
-    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<32> >,
+    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<32> >,
     std::vector< double, peano::heap::HeapAllocator<double, 32 > >
   >     DataHeap;
   #elif ALIGNMENT==64
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<64> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::AlignedDoubleSendReceiveTask<64> >,
-    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::AlignedDoubleSendReceiveTask<64> >,
+    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::AlignedDoubleSendReceiveTask<64> >,
     std::vector< double, peano::heap::HeapAllocator<double, 64 > >
   >     DataHeap;
   #elif defined(ALIGNMENT)
@@ -94,7 +92,7 @@ namespace exahype {
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
     peano::heap::SynchronousDataExchanger< double, true,  peano::heap::SendReceiveTask<double> >,
-    peano::heap::PlainBoundaryDataExchanger< double, true, peano::heap::SendReceiveTask<double> >
+    peano::heap::RLEBoundaryDataExchanger< double, false, peano::heap::SendReceiveTask<double> >
   >     DataHeap;
   #endif
 
@@ -128,7 +126,7 @@ namespace exahype {
       peano::heap::records::IntegerHeapData,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
       peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
-      peano::heap::PlainBoundaryDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
+      peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
   >     MetadataHeap;
 
   /**
@@ -185,30 +183,6 @@ namespace exahype {
    * TODO(Dominic): Add docu.
    */
   exahype::MetadataHeap::HeapEntries gatherMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
-
-  /**
-   * Creates a sequence of \p InvalidMetadataEntry with length
-   * exahype::solvers::RegisteredSolvers.size()*NeighbourCommunicationMetadataPerSolver.
-   */
-  exahype::MetadataHeap::HeapEntries createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
-
-  /**
-   * Creates a sequence of \p InvalidMetadataEntry with length
-   * exahype::solvers::RegisteredSolvers.size()*MasterWorkerCommunicationMetadataPerSolver.
-   */
-  exahype::MetadataHeap::HeapEntries createMasterWorkerCommunicationMetadataSequenceWithInvalidEntries();
-
-  /**
-   * Checks if all the entries of \p sequence are set to
-   * \p InvalidMetadataEntry.
-   */
-  bool isNeighbourCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
-
-  /**
-   * Checks if all the entries of \p sequence are set to
-   * \p InvalidMetadataEntry.
-   */
-  bool isMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
 
   /**
    * Send metadata to rank \p toRank.
@@ -1767,6 +1741,8 @@ class exahype::solvers::Solver {
    *
    * Otherwise, push exahype::MasterWorkerCommunicationMetadataPerSolver
    * times exahype::InvalidMetadataEntry to the back of the vector.
+   *
+   * TODO(Dominic): Do send more information, e.g., the limiter status!
    */
   virtual void appendMasterWorkerCommunicationMetadata(
       MetadataHeap::HeapEntries& metadata,

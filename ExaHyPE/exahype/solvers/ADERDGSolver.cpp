@@ -3052,23 +3052,30 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
 }
 
 void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex) {
+    const int cellDescriptionsIndex,const bool deleteOnlyCells) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
   Heap::HeapEntries::iterator p =
       Heap::getInstance().getData(cellDescriptionsIndex).begin();
   while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    if (p->getType()==CellDescription::Cell) {
-      auto* aderdgSolver = static_cast<ADERDGSolver*>(
-          exahype::solvers::RegisteredSolvers[p->getSolverNumber()]);
+    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+
+    ADERDGSolver* aderdgSolver = nullptr;
+    if (solver->getType()==Solver::Type::ADERDG) {
+      aderdgSolver = static_cast<ADERDGSolver*>(solver);
+    }
+    else if (solver->getType()==Solver::Type::LimitingADERDG) {
+      aderdgSolver =
+          static_cast<LimitingADERDGSolver*>(solver)->getSolver().get();
+    }
+
+    if (aderdgSolver!=nullptr) {
+      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
       p->setType(CellDescription::Type::Erased);
       aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-
       p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
     } else {
       ++p;
-      assertionMsg(false,"Not implemented yet. Don't know what to do for type="<<
-          CellDescription::toString(p->getType()));
     }
   }
 }
@@ -3214,6 +3221,7 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
 
     // Default field data indices
     p.setSolution(-1);
+    p.setPreviousSolution(-1);
     p.setUpdate(-1);
     p.setExtrapolatedPredictor(-1);
     p.setFluctuation(-1);
@@ -3221,6 +3229,13 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
     // Limiter meta data (oscillations identificator)
     p.setSolutionMin(-1);
     p.setSolutionMax(-1);
+
+    // compression
+    p.setExtrapolatedPredictorCompressed(-1);
+    p.setFluctuationCompressed(-1);
+    p.setSolutionCompressed(-1);
+    p.setPreviousSolutionCompressed(-1);
+    p.setUpdateCompressed(-1);
   }
 }
 

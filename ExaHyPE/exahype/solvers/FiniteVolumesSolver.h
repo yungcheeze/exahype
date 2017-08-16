@@ -729,7 +729,7 @@ public:
   // FORK OR JOIN
   ///////////////////////////////////
   /**
-   * Send all ADER-DG cell descriptions to rank
+   * Send all ADERDG cell descriptions to rank
    * \p toRank.
    */
   static void sendCellDescriptions(
@@ -740,12 +740,12 @@ public:
       const int                                     level);
 
   /**
-   * Erase all cell descriptions of type \p Cell.
+   * Erase all cell descriptions registered for solvers
+   * of type Type::ADERDG.
    *
-   * TODO(Dominic): It might be possible to delete all cell
-   * descriptions. Discuss with Tobias.
+   * \param deleteOnlyCells deletes only cell descriptions of type Cell
    */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex);
+  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
 
   /**
    * Send an empty message to rank

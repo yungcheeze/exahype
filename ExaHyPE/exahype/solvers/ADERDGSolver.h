@@ -1870,12 +1870,12 @@ public:
       const int                                    level);
 
   /**
-   * Erase all cell descriptions of type \p Cell.
+   * Erase all cell descriptions registered for solvers
+   * of type Type::ADERDG.
    *
-   * TODO(Dominic): It might be possible to delete all cell
-   * descriptions. Discuss with Tobias.
+   * \param deleteOnlyCells deletes only cell descriptions of type Cell
    */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex);
+  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
 
   /**
    * Sends an empty message to the rank \p toRank.

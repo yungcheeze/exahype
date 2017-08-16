@@ -535,8 +535,8 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
       }
     }
 
-    exahype::solvers::ADERDGSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex());
-    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex());
+    exahype::solvers::ADERDGSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex(),true);
+    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex(),true);
     localCell.shutdownMetaData();
 
   } else if (localCell.isInside() && !localCell.isInitialised()){

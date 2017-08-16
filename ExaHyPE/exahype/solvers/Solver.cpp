@@ -412,6 +412,9 @@ void exahype::solvers::Solver::toString(std::ostream& out) const {
 }
 
 #ifdef Parallel
+
+// Neighbours
+
 exahype::MetadataHeap::HeapEntries exahype::gatherNeighbourCommunicationMetadata(
     int cellDescriptionsIndex,
     const tarch::la::Vector<DIMENSIONS,int>& src,
@@ -436,6 +439,61 @@ exahype::MetadataHeap::HeapEntries exahype::gatherNeighbourCommunicationMetadata
   return encodedMetaData;
 }
 
+void exahype::sendNeighbourCommunicationMetadata(
+    const int                                   toRank,
+    const int                                   cellDescriptionsIndex,
+    const tarch::la::Vector<DIMENSIONS,int>&    src,
+    const tarch::la::Vector<DIMENSIONS,int>&    dest,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  MetadataHeap::HeapEntries metadata =
+      gatherNeighbourCommunicationMetadata(cellDescriptionsIndex,src,dest);
+
+  MetadataHeap::getInstance().sendData(
+      metadata,toRank,
+      x,level,peano::heap::MessageType::NeighbourCommunication);
+}
+
+void exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+    const int                                   toRank,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  MetadataHeap::HeapEntries metadata(0);
+
+  MetadataHeap::getInstance().sendData(
+      metadata,toRank,x,level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+int exahype::receiveNeighbourCommunicationMetadata(
+    const int                                   fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  const unsigned int length =
+      exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size();
+
+  const int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,length);
+
+  MetadataHeap::HeapEntries& metadata =
+      MetadataHeap::getInstance().getData(receivedMetadataIndex);
+  assertion(metadata.size()==0);
+  assertion(metadata.capacity()==length);
+
+  MetadataHeap::getInstance().receiveData(
+      receivedMetadataIndex,
+      fromRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+  assertion(metadata.size()==0 || metadata.size()==length);
+  assertion(metadata.capacity()==length);
+
+  if (metadata.size()==0) {
+    metadata.assign(length, InvalidMetadataEntry);
+  }
+  return receivedMetadataIndex;
+}
+
+// Master<=>Worker
+
 exahype::MetadataHeap::HeapEntries exahype::gatherMasterWorkerCommunicationMetadata(int cellDescriptionsIndex) {
   const int length =
       exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver;
@@ -452,92 +510,16 @@ exahype::MetadataHeap::HeapEntries exahype::gatherMasterWorkerCommunicationMetad
   return encodedMetaData;
 }
 
-exahype::MetadataHeap::HeapEntries exahype::createNeighbourCommunicationMetadataSequenceWithInvalidEntries() {
-    exahype::MetadataHeap::HeapEntries metadata;
-    const unsigned int messageLength =
-        exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver;
-    metadata.reserve(messageLength);
-    for (unsigned int i=0; i<messageLength; i++) {
-      metadata.push_back(InvalidMetadataEntry);
-    }
-    assertion(metadata.capacity() == exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver);
-    assertion(metadata.size()     == exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver);
-    return metadata;
-}
-
-exahype::MetadataHeap::HeapEntries exahype::createMasterWorkerCommunicationMetadataSequenceWithInvalidEntries() {
-  exahype::MetadataHeap::HeapEntries metadata;
-  const unsigned int messageLength =
-      exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver;
-  metadata.reserve(messageLength);
-  for (unsigned int i=0; i<messageLength; i++) {
-    metadata.push_back(InvalidMetadataEntry);
-  }
-  assertion(metadata.capacity() == exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver);
-  assertion(metadata.size()     == exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver);
-  return metadata;
-}
-
-bool exahype::isNeighbourCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
-   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver);
-
-   for (auto& m : sequence)
-     if (m.getU()==exahype::InvalidMetadataEntry)
-       return false;
-
-   return true;
-}
-
-bool exahype::isMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
-   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver);
-
-   for (auto& m : sequence)
-     if (m.getU()==exahype::InvalidMetadataEntry)
-       return false;
-
-   return true;
-}
-
-void exahype::sendNeighbourCommunicationMetadata(
-    const int                                   toRank,
-    const int                                   cellDescriptionsIndex,
-    const tarch::la::Vector<DIMENSIONS,int>&    src,
-    const tarch::la::Vector<DIMENSIONS,int>&    dest,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  MetadataHeap::HeapEntries metadata =
-      gatherNeighbourCommunicationMetadata(cellDescriptionsIndex,src,dest);
-  MetadataHeap::getInstance().sendData(
-      metadata,toRank,
-      x,level,peano::heap::MessageType::NeighbourCommunication);
-}
 void exahype::sendMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(
     const int                                   toRank,
     const tarch::la::Vector<DIMENSIONS,double>& x,
     const int                                   level) {
-  MetadataHeap::HeapEntries metadata =
-      createMasterWorkerCommunicationMetadataSequenceWithInvalidEntries();
+  exahype::MetadataHeap::HeapEntries metadata(0);
+
   MetadataHeap::getInstance().sendData(
       metadata,toRank,x,level,
       peano::heap::MessageType::MasterWorkerCommunication);
 }
-int exahype::receiveNeighbourCommunicationMetadata(
-    const int                                   fromRank,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  const int receivedMetadataIndex = MetadataHeap::getInstance().createData(
-      0,exahype::MasterWorkerCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
-  MetadataHeap::getInstance().receiveData(
-      receivedMetadataIndex,
-      fromRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
-  assertionEquals(
-      exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size(),
-      MetadataHeap::getInstance().getData(receivedMetadataIndex).size());
-
-  return receivedMetadataIndex;
-}
-
 
 void exahype::sendMasterWorkerCommunicationMetadata(
     const int                                   toRank,
@@ -546,29 +528,35 @@ void exahype::sendMasterWorkerCommunicationMetadata(
     const int                                   level) {
   MetadataHeap::HeapEntries metadata =
       gatherMasterWorkerCommunicationMetadata(cellDescriptionsIndex);
+
   MetadataHeap::getInstance().sendData(
       metadata,toRank,x,level,peano::heap::MessageType::MasterWorkerCommunication);
 }
-void exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
-    const int                                   toRank,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  MetadataHeap::HeapEntries metadata =
-      createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
-  MetadataHeap::getInstance().sendData(
-      metadata,toRank,x,level,
-      peano::heap::MessageType::NeighbourCommunication);
-}
+
 int exahype::receiveMasterWorkerCommunicationMetadata(
     const int                                   fromRank,
     const tarch::la::Vector<DIMENSIONS,double>& x,
     const int                                   level) {
-  const int receivedMetadataIndex = MetadataHeap::getInstance().createData(
-      0,exahype::MasterWorkerCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
+  const unsigned int length =
+      exahype::MasterWorkerCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size();
+
+  const int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,length);
+
+  MetadataHeap::HeapEntries& metadata =
+      MetadataHeap::getInstance().getData(receivedMetadataIndex);
+  assertion(metadata.size()==0);
+  assertion(metadata.capacity()==length);
+
   MetadataHeap::getInstance().receiveData(
       receivedMetadataIndex,
       fromRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
+  assertion(metadata.size()==0 || metadata.size()==length);
+  assertion(metadata.capacity()==length);
+
+  if (metadata.size()==0) {
+    metadata.assign(length, InvalidMetadataEntry);
+  }
   return receivedMetadataIndex;
 }
 

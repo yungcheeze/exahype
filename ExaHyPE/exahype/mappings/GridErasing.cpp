@@ -60,7 +60,11 @@ void exahype::mappings::GridErasing::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  // TODO(Dominic): Implement.
+  if (fineGridCell.isInitialised()) {
+    exahype::solvers::ADERDGSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex());
+    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex());
+    fineGridCell.shutdownMetaData();
+  }
 }
 
 

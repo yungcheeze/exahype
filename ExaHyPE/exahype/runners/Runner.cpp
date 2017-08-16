@@ -781,6 +781,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
     }
 
+    repository.getState().switchToNeighbourDataDroppingContext();
+    repository.switchToGridErasing();
+    repository.iterate();
+
     printStatistics();
     repository.logIterationStatistics(false);
   }

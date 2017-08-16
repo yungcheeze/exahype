@@ -388,7 +388,8 @@ void exahype::mappings::Merging::mergeWithNeighbour(
               fromRank, fineGridX, level);
           exahype::MetadataHeap::HeapEntries& receivedMetadata =
               MetadataHeap::getInstance().getData(receivedMetadataIndex);
-          assertion(receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
+          assertion(
+              receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
             // logDebug("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
@@ -416,16 +417,6 @@ void exahype::mappings::Merging::mergeWithNeighbour(
             vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
             vertex.setMergePerformed(src,dest,true);
           } else {
-
-            #ifdef Asserts
-            exahype::MetadataHeap::HeapEntries expectedMetadata =
-                            exahype::createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
-            #endif
-            for (unsigned int i=0; i<exahype::solvers::RegisteredSolvers.size()*exahype::NeighbourCommunicationMetadataPerSolver; i++) {
-              assertionEquals3(expectedMetadata[i].getU(),receivedMetadata[i].getU(),
-                               i,expectedMetadata[i].getU(),receivedMetadata[i].getU());
-            }
-
             dropNeighbourData(
                 fromRank,
                 vertex.getCellDescriptionsIndex()[srcScalar],
