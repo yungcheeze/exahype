@@ -28,7 +28,7 @@
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
- #include "exahype/adapters/SolutionUpdate.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
@@ -74,7 +74,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LocalRecomputationAndTimeStepSizeComputation> _gridWithLocalRecomputationAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalRollback> _gridWithGlobalRollback;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndTimeStepSizeComputation> _gridWithSolutionUpdateAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
@@ -99,7 +99,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureGlobalRollbackCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
-    tarch::timing::Measurement _measureSolutionUpdateCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
@@ -121,7 +121,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureGlobalRollbackCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
-    tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
@@ -181,7 +181,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation();    
     virtual void switchToGlobalRollback();    
     virtual void switchToNeighbourDataMerging();    
-    virtual void switchToSolutionUpdate();    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation();    
     virtual void switchToTimeStepSizeComputation();    
     virtual void switchToPrediction();    
     virtual void switchToPredictionAndPlot();    
@@ -203,7 +203,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterGlobalRollback() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
-    virtual bool isActiveAdapterSolutionUpdate() const;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterPredictionAndPlot() const;
