@@ -1,5 +1,7 @@
 #include "exahype/mappings/GridErasing.h"
 
+#include "exahype/solvers/FiniteVolumesSolver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 peano::CommunicationSpecification   exahype::mappings::GridErasing::communicationSpecification() const {
   return peano::CommunicationSpecification(
@@ -7,6 +9,12 @@ peano::CommunicationSpecification   exahype::mappings::GridErasing::communicatio
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true
   );
+}
+
+peano::MappingSpecification   exahype::mappings::GridErasing::enterCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexLastTimeSpecification(int level) const {
@@ -21,14 +29,6 @@ peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexFirstTi
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-
-
-peano::MappingSpecification   exahype::mappings::GridErasing::enterCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
-}
-
 
 peano::MappingSpecification   exahype::mappings::GridErasing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,
@@ -61,8 +61,8 @@ void exahype::mappings::GridErasing::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   if (fineGridCell.isInitialised()) {
-    exahype::solvers::ADERDGSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex());
-    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex());
+    exahype::solvers::ADERDGSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex(),false);
+    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex(),false);
     fineGridCell.shutdownMetaData();
   }
 }
