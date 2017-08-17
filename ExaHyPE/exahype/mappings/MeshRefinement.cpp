@@ -20,6 +20,8 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
+#include "tarch/multicore/Lock.h"
+
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
@@ -33,6 +35,8 @@ bool exahype::mappings::MeshRefinement::IsFirstIteration = true;
 bool exahype::mappings::MeshRefinement::IsInitialMeshRefinement = false;
 
 tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::MeshRefinement");
+
+tarch::multicore::BooleanSemaphore exahype::mappings::MeshRefinement::_semaphore;
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -62,14 +66,14 @@ peano::MappingSpecification
 exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::leaveCellSpecification(int level) const {
@@ -306,6 +310,9 @@ void exahype::mappings::MeshRefinement::enterCell(
               IsInitialMeshRefinement,
               solverNumber);
 
+
+      // TODO(Dominic): Minimise lock scope
+      tarch::multicore::Lock lock(_semaphore);
       refineFineGridCell |=
           solver->updateStateInEnterCell(
               fineGridCell,
@@ -317,12 +324,20 @@ void exahype::mappings::MeshRefinement::enterCell(
               fineGridPositionOfCell,
               IsInitialMeshRefinement,
               solverNumber);
-    }
+      lock.free();
 
-    if (fineGridCell.isInitialised()) {
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        if (solver->getMeshUpdateRequest()) {
+      // TODO(Dominic): I planned the following:
+      // In the first iteration, make sure already existing cells have the most up-to-date
+      // solution values. Later, only impose initial conditions for
+      // newly created cells, compute a new limiter status if necessary
+      //
+      // However this turned out to be more complicated than anticipated
+      // because of the LimitingADERDGSolver introducing limiter patches
+      // in multiple iterations. We have to ensure those work
+      // with correct initial data as well.
+      if (fineGridCell.isInitialised()) {
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+        if (element!=exahype::solvers::Solver::NotFound) {
           solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
           solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
 
@@ -338,10 +353,10 @@ void exahype::mappings::MeshRefinement::enterCell(
                     fineGridCell.getCellDescriptionsIndex(),element);
           }
         }
-      }
 
-      exahype::Cell::resetNeighbourMergeFlags(
-          fineGridCell.getCellDescriptionsIndex());
+        exahype::Cell::resetNeighbourMergeFlags(
+            fineGridCell.getCellDescriptionsIndex());
+      }
     }
   }
 
@@ -377,6 +392,12 @@ void exahype::mappings::MeshRefinement::leaveCell(
 
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+    // TODO(Dominic): Computationally heaviest operation is
+    // restriction of volume unknows up to a parent during
+    // erasing operations. This is mostly localised.
+    // Multicoreising of this routine is thus postponed.
+
     if (solver->getMeshUpdateRequest()) {
       erasedCellDescriptionOfAllSolvers &=
           solver->updateStateInLeaveCell(

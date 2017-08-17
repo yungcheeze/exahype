@@ -29,6 +29,8 @@
 
 #include "peano/utils/Globals.h"
 
+#include "tarch/multicore/BooleanSemaphore.h"
+
 namespace exahype {
 namespace mappings {
 class MeshRefinement;
@@ -58,6 +60,12 @@ private:
    * I use a copy of the state to determine whether I'm allowed to refine or not.
    */
   State _localState;
+
+  /**
+   * A semaphore that is locked if a thread calls while solver->updateStateInEnterCell
+   * or solver->updateStateInLeaveCell
+   */
+  static tarch::multicore::BooleanSemaphore _semaphore;
 
   /**
    * TODO(Tobias): Add docu.
