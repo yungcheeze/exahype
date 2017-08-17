@@ -41,6 +41,13 @@ peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
+peano::MappingSpecification
+exahype::mappings::FinaliseMeshRefinement::enterCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::AvoidFineGridRaces,true);
+}
+
 // Below all specs are Nop
 
 peano::MappingSpecification
@@ -55,13 +62,6 @@ exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification(int 
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
-peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::enterCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
