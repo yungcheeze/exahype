@@ -435,11 +435,14 @@ header:
 	@echo compilers via EXAHYPE_CC and EXAHYPE_FC, please specify a valid COMPILER 
 	@echo mode nevertheless.
 	@echo
-	@echo The compiler variant does set various compiler flags that can be 
-	@echo augmented by setting COMPILER_FLAGS before you invoke make. If you select
-	@echo the compiler manual, ExaHyPE does not set any COMPILER_CFLAGS, i.e. it is up 
-	@echo to you to initialise all compiler settings. Notably, you have to specify 
-	@echo through EXAHYPE_CC which compiler to use.
+	@echo The compiler variant does set various compiler and linker flags. 
+	@echo You cann supplement you own by setting the variables 
+	@echo COMPILER_CFLAGS, COMPILER_LFLAGS, FCOMPILER_CFLAGS and FCOMPILER_LFLAGS prior 
+	@echo running make.
+	@echo
+	@echo NOTE: If you select the compiler manually, ExaHyPE does not set any compiler 
+	@echo flags, i.e. it is up  to you to initialise all compiler settings. Notably, 
+	@echo you have to specify through EXAHYPE_CC which compiler to use.
 
 build:  $(FOBJECTS) $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
