@@ -19,12 +19,12 @@ exahype-project Euler
     dimension const         = 2
     width                   = 1.0, 1.0, 1.0
     offset                  = 0.0, 0.0, 0.0
-    end-time                = 0.22
+    end-time                = 0.05
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 7
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
   

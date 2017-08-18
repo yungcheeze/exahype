@@ -53,8 +53,8 @@ exahype-project Euler
     dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 0
-    // reference either: sod,entropywave,explosion,rarefactionwave. suppressvely either: on,off
-    constants                = reference:explosion
+    // reference either: sod,entropywave,explosion,rarefactionwave
+    constants                = reference:entropywave
 
 
     plot user::defined ErrorWriter

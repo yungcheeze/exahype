@@ -16,9 +16,9 @@ exahype-project Euler
   output-directory const           = ./Benchmarks/hamilton/Euler
 
   computational-domain
-    dimension const         = 3
-    width                   = 1.0, 1.0, 1.0
-    offset                  = 0.0, 0.0, 0.0
+    dimension const         = 2
+    width                   = 2.0, 2.0, 2.0
+    offset                  = -1.0, -1.0, -1.0
     end-time                = 0.1
   end computational-domain
   
@@ -26,7 +26,14 @@ exahype-project Euler
     identifier               = dummy
     cores                    = 4
     properties-file          = sharedmemory.properties
-  end shared-memory  
+  end shared-memory
+  
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:1}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
   
   optimisation
     fuse-algorithmic-steps          = on
@@ -53,8 +60,8 @@ exahype-project Euler
     dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 0
-    // reference either: sod,entropywave,explosion,rarefactionwave. suppressvely either: on,off
-    constants                = reference:explosion
+    // reference either: sod,entropywave,explosion,rarefactionwave
+    constants                = reference:entropywave
 
 
     plot user::defined ErrorWriter

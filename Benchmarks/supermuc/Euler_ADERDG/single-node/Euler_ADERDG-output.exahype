@@ -65,7 +65,8 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-    constants         = reference:rarefactionwave
+    // reference either: sod,entropywave,explosion,rarefactionwave
+    constants         = reference:entropywave
    
      plot vtk::Cartesian::vertices::ascii ErrorPlotter
       // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]

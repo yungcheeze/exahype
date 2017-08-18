@@ -58,5 +58,7 @@ exahype-project Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
+    // reference either: sod,entropywave,explosion,rarefactionwave
+    constants         = reference:entropywave
   end solver
 end exahype-project
