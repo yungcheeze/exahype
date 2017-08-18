@@ -44,7 +44,7 @@ do
     cp $script $newScript
    
     sed -i 's,prefix='$project',prefix='$prefix',g' $newScript
-    sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
+    sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
     sed -i 's,p3,p'$patchSize',g' $newScript
     sed -i 's,regular-0,'$mesh',g' $newScript
     sed -i 's,script=convergence/hamilton.slurm-script,script='$newScript',g' $newScript

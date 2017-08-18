@@ -64,7 +64,7 @@ do
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
 
-  sed -i 's,kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables,kernels='$kernels',g' $newScript
+  sed -i 's,kernels=gen,kernels='$kernels',g' $newScript
   
   sed -i 's,p3,p'$patchSize',g' $newScript
 

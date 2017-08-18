@@ -25,7 +25,7 @@ do
     sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$p',' $spec
     cat $spec
     $directory/configure-output.sh
-    make -j4 && \
+    make -j28 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done
