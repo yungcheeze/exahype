@@ -22,7 +22,7 @@ do
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
     cat $spec
     multicore/configure-output.sh
-    make -j28 && \
+    make -j24 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done

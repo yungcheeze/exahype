@@ -19,7 +19,7 @@ do
   do
     rm *.o
     sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $header
-    make -j28 && \
+    make -j24 && \
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
 #    sleep 2m
   done
