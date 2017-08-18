@@ -123,10 +123,10 @@ namespace exahype {
    * all data exchangers of the MetadataHeap create copies of the data to send.
    */
   typedef peano::heap::Heap<
-      peano::heap::records::IntegerHeapData,
-      peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
-      peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
-      peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
+      peano::heap::records::CharHeapData,
+      peano::heap::SynchronousDataExchanger< peano::heap::records::CharHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::CharHeapData> >,
+      peano::heap::SynchronousDataExchanger< peano::heap::records::CharHeapData, true,  peano::heap::SendReceiveTask<peano::heap::records::CharHeapData> >,
+      peano::heap::RLEBoundaryDataExchanger< peano::heap::records::CharHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::CharHeapData> >
   >     MetadataHeap;
 
   /**
