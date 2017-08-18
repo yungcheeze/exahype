@@ -19,6 +19,13 @@
 #include "PDE.h"
 #include "really.h"
 
+/******************************************************************************
+ * Status of the PDE system:
+ *   It is now equal to the schemes of BHAC and ECHO, i.e. it seems to be valid
+ *   for the cowling approximation but not neccessarily for a dynamical
+ *   spacetime.
+ *****************************************************************************/
+
 void GRMHD::PDE::prepare() {
 	// NEED to prepare:
 	// Generic for Sij and preparation:
