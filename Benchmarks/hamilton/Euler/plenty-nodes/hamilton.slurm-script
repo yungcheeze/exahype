@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name="ExaHyPE-Euler_ADERDG"
-#SBATCH -o ExaHyPE-Euler_ADERDG.%A.out
-#SBATCH -e ExaHyPE-Euler_ADERDG.%A.err
+#SBATCH --job-name="ExaHyPE-Euler"
+#SBATCH -o ExaHyPE-Euler.%A.out
+#SBATCH -e ExaHyPE-Euler.%A.err
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
 #SBATCH -p par7.q
@@ -31,7 +31,7 @@ let tasks=nodes*tasksPerNode
 compiler=Intel
 sharedMem=None
 
-prefix=Euler_ADERDG-no-output-regular-0-p3
+prefix=Euler-no-output-regular-0-p3
 out=plenty-nodes/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 script=plenty-nodes/hamilton.slurm-script
