@@ -412,26 +412,39 @@ endif
 
 	
 header:
-	@echo ================================
+	@echo "================================================================================"
 	@echo
 	@echo  www.exahype.eu
 	@echo
-	@echo ================================
+	@echo "================================================================================"
 	@echo
 	@echo The project has received funding from the European Union\'s
 	@echo Horizon 2020 research and innovation programme under grant
 	@echo agreement No 671698 \(ExaHyPE\). It is based upon the PDE
 	@echo framework Peano \(www.peano-framework.org\).
 	@echo 
-	@echo ================================
-	@echo "Building ExaHyPE with options:"
-	@echo ================================
-	@echo "COMPILER       | $(COMPILER)"
-	@echo "MODE           | $(MODE)"
-	@echo "SHAREDMEM      | $(SHAREDMEM)"
-	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
-	@echo "ARCHITECTURE   | $(ARCHITECTURE)"
-	@echo ================================
+	@echo "================================================================================"
+	@echo "Building ExaHyPE project with the following options:"
+	@echo "================================================================================"
+	@echo "COMPILER               = $(COMPILER)"
+	@echo "MODE                   = $(MODE)"
+	@echo "SHAREDMEM              = $(SHAREDMEM)"
+	@echo "DISTRIBUTEDMEM         = $(DISTRIBUTEDMEM)"
+	@echo "ARCHITECTURE           = $(ARCHITECTURE)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "EXAHYPE_CC             = $(EXAHYPE_CC)"
+	@echo "EXAHYPE_FC             = $(EXAHYPE_FC)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "CC                     = $(CC)"
+	@echo "FC                     = $(FC)"
+	@echo "COMPILER_CFLAGS        = $(COMPILER_CFLAGS)"
+	@echo "COMPILER_LFLAGS        = $(COMPILER_LFLAGS)"
+	@echo "FCOMPILER_CFLAGS       = $(FCOMPILER_CFLAGS)"
+	@echo "FCOMPILER_LFLAGS       = $(FCOMPILER_LFLAGS)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "PROJECT_CFLAGS         = $(PROJECT_CFLAGS)"
+	@echo "PROJECT_LFLAGS         = $(PROJECT_LFLAGS)"
+	@echo "================================================================================"
 	@echo
 	@echo ExaHyPE uses environment variables EXAHYPE_CC and EXAHYPE_FC for the 
 	@echo C++ or Fortran compiler, respectively. If you haven\'t defined EXAHYPE_CC
