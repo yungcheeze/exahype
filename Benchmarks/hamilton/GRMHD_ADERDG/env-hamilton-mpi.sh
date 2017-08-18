@@ -11,7 +11,8 @@ export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.
 
 export I_MPI_FABRICS="shm:dapl"
 
-export EXAHYPE_CC=mpicc
+export EXAHYPE_CC="mpicc -DnoPackedRecords"
+export COMPILER_LFLAGS="-lgsl -lgslcblas"
 
 export MODE=Release
 export COMPILER=Intel

@@ -10,6 +10,7 @@ module load gcc
 export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.7 -ltbb"
 
 export EXAHYPE_CC=icpc
+export COMPILER_LFLAGS="-lgsl -lgslcblas"
 
 export MODE=Release
 export COMPILER=Intel
