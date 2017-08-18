@@ -53,12 +53,10 @@ do
 
   for nodes in 10 28 82
   do
-    for tasksPerNode in 1 2 4 8 # ham7
-    #for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 # ham6
+    for tasksPerNode in 1 2 4 7 14 28
     do 
       let tasks=$nodes*$tasksPerNode
-      let coresPerTask=24/$tasksPerNode # ham7
-      #let coresPerTask=16/$tasksPerNode # ham6
+      let coresPerTask=28/$tasksPerNode
 
       # Create script
       script=plenty-nodes/supermuc.load-leveler

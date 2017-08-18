@@ -56,7 +56,7 @@ do
       sed -i 's,script=convergence/supermuc.load-leveler,script='$newScript',g' $newScript
     
       # Create spec files
-      coresPerTask=24
+      coresPerTask=28
       spec=convergence/$project.exahype
       filename=convergence/$specPrefix-p$order
       newSpec=$filename'.exahype'
