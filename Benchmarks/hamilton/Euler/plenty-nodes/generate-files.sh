@@ -70,11 +70,11 @@ do
       newScript=plenty-nodes/hamilton-$prefix-p$order-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
       cp $script $newScript
      
-      sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
+      sed -i -r 's,--nodes(\s*)=(\s*)([0-9]*),--nodes\1=\2'$nodes',' $newScript
+      sed -i -r 's,--ntasks-per-node(\s*)=(\s*)([0-9]*),--ntasks-per-node\1=\2'$tasksPerNode',' $newScript
+      
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
-    
       sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
       sed -i 's,p3,p'$order',g' $newScript
 
       sed -i 's,nodes=1,nodes='$nodes',' $newScript
