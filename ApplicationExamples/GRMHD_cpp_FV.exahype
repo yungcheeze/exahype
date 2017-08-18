@@ -55,7 +55,8 @@ exahype-project GRMHD
   end optimisation
 
   solver Finite-Volumes GRMHDSolver_FV
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6,detg:1
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1
+    parameters const               = lapse:1,shift:3,gij:6,detg:1
     patch-size const               = 8
     maximum-mesh-size              = 5.00009
     maximum-mesh-depth             = 0
