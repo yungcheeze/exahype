@@ -19,27 +19,45 @@ module load gcc/4.9
 module load tbb
 
 nodes=1
+tasks=1
 tasksPerNode=1
-coresPerTask=1
+coresPerTask=$SLURM_ARRAY_TASK_ID
 let procsPerNode=tasksPerNode*coresPerTask
-let tasks=nodes*tasksPerNode
 
 compiler=Intel
-sharedMem=None
+sharedMem=TBB
+if (( coresPerTask==1 )); then
+  sharedMem=None
+fi
 
-prefix=Euler-no-output-regular-0-p3
-out=plenty-nodes/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+prefix=Euler_FV-no-output-regular-0-p3
+out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
-script=plenty-nodes/supermuc.load-leveler
-spec=plenty-nodes/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+script=multicore/hamilton.slurm-script
+spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
-# pipe some information into output file
+# pipe some information into output files
 echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
 module list 2>$out
 echo "" >> $out
 cat $script >>$out
 echo "" >> $out
 cat $spec >> $out
+cat $out > ${out}.likwid
 
 # execute the job
-mpiexec -np $tasks ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+
+if (( $coresPerTask==1 )); then
+  likwid-perfctr -f -C 0 -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+else
+  let maxCore=coresPerTask-1
+
+  likwid-perfctr -f -C 0-$maxCore -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+fi

@@ -27,7 +27,7 @@ let tasks=nodes*tasksPerNode
 compiler=Intel
 sharedMem=None
 
-prefix=Euler-no-output-regular-0-p3
+prefix=Euler_ADERDG-no-output-regular-0-p3
 out=plenty-nodes/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 script=plenty-nodes/supermuc.load-leveler
