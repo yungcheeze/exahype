@@ -17,6 +17,7 @@
 . /etc/profile.d/modules.sh
 module load gcc/4.9
 module load tbb
+module load likwid
 
 nodes=1
 tasksPerNode=1
