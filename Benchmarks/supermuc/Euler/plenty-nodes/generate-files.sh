@@ -52,12 +52,7 @@ do
   prefix+="-$mesh"
 
   for nodes in 10 28 82
-  do
-    queue=micro
-    if (( nodes > 20 )); then
-      queue=general
-    fi
-  
+  do  
     for tasksPerNode in 1 2 4 7 14 28
     do 
       let tasks=$nodes*$tasksPerNode
@@ -67,7 +62,11 @@ do
       script=plenty-nodes/supermuc.load-leveler
       newScript=plenty-nodes/supermuc-$prefix-p$order-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.load-leveler
       cp $script $newScript
-     
+    
+      queue=micro
+      if (( nodes > 20 )); then
+        queue=general
+      fi
       sed -i -r 's,@(\s*)class(\s*)=(\s*)(\w+),@\1class\2=\3'$queue',' $newScript
       sed -i -r 's,@(\s*)node(\s*)=(\s*)([0-9]+),@\1node\2=\3'$nodes',' $newScript
       sed -i -r 's,@(\s*)tasks_per_node(\s*)=(\s*)([0-9]+),@\1tasks_per_node\2=\3'$tasksPerNode',' $newScript
@@ -80,7 +79,7 @@ do
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
 
-      sed -i 's,script=supermuc.load-leveler,script='$newScript',g' $newScript 
+      sed -i 's,script=plenty-nodes/supermuc.load-leveler,script='$newScript',g' $newScript
 
       # Create spec file
       spec=plenty-nodes/Euler-$io.exahype

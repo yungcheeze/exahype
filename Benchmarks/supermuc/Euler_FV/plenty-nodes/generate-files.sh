@@ -63,18 +63,23 @@ do
       newScript=plenty-nodes/supermuc-$prefix-p$patchSize-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.load-leveler
       cp $script $newScript
      
-      sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
+      queue=micro
+      if (( nodes > 20 )); then
+        queue=general
+      fi
+      sed -i -r 's,@(\s*)class(\s*)=(\s*)(\w+),@\1class\2=\3'$queue',' $newScript
+      sed -i -r 's,@(\s*)node(\s*)=(\s*)([0-9]+),@\1node\2=\3'$nodes',' $newScript
+      sed -i -r 's,@(\s*)tasks_per_node(\s*)=(\s*)([0-9]+),@\1tasks_per_node\2=\3'$tasksPerNode',' $newScript
+      
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
-    
       sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
-      sed -i 's,p3,p'$patchSize',g' $newScript
+      sed -i 's,p3,p'$order',g' $newScript
 
       sed -i 's,nodes=1,nodes='$nodes',' $newScript
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
 
-      sed -i 's,script=supermuc.load-leveler,script='$newScript',g' $newScript 
+      sed -i 's,script=plenty-nodes/supermuc.load-leveler,script='$newScript',g' $newScript
 
       # Create spec file
       spec=plenty-nodes/$project-$io.exahype

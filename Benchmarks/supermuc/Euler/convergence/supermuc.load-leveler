@@ -19,21 +19,21 @@ module load gcc/4.9
 module load tbb
 
 nodes=1
+tasks=1
 tasksPerNode=1
-coresPerTask=1
+coresPerTask=28
 let procsPerNode=tasksPerNode*coresPerTask
-let tasks=nodes*tasksPerNode
 
 compiler=Intel
-sharedMem=None
+sharedMem=TBB
 
 prefix=Euler-no-output-regular-0-p3
-out=plenty-nodes/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+out=convergence/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
-script=plenty-nodes/supermuc.load-leveler
-spec=plenty-nodes/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+script=convergence/supermuc.load-leveler
+spec=convergence/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
-# pipe some information into output file
+# pipe some information into output files
 echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
 module list 2>$out
 echo "" >> $out
@@ -42,4 +42,4 @@ echo "" >> $out
 cat $spec >> $out
 
 # execute the job
-mpiexec -np $tasks ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out

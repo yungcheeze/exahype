@@ -28,10 +28,10 @@ compiler=Intel
 sharedMem=None
 
 prefix=Euler_ADERDG-no-output-regular-0-p3
-out=plenty-nodes/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+out=single-node/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
-script=plenty-nodes/supermuc.load-leveler
-spec=plenty-nodes/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+script=single-node/supermuc.load-leveler
+spec=single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
 # pipe some information into output file
 echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
