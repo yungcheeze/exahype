@@ -19,7 +19,6 @@ module load gcc/4.9
 module load tbb
 
 nodes=1
-tasks=1
 tasksPerNode=1
 coresPerTask=28
 let procsPerNode=tasksPerNode*coresPerTask
