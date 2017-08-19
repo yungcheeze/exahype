@@ -523,31 +523,7 @@ int exahype::runners::Runner::run() {
 
     exahype::repositories::Repository* repository = createRepository();
     initSolvers(_domainOffset,_domainSize);
-    if (_parser.getFuseAlgorithmicSteps()) {
-      exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
-      exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
-    } else {
-      bool abortProgram = false;
-      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          abortProgram = true;
-        }
-        if (solver->getMaximumAdaptiveMeshDepth()>0) {
-          abortProgram = true;
-        }
-      }
 
-      if (abortProgram) {
-        assertionMsg(false,
-            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
-            "You might need to add the 'optimisation' environment.");
-        logError("run()",
-            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
-            "You might need to add the 'optimisation' environment.");
-        abort();
-      }
-    }
     // must be after repository creation
     initDistributedMemoryConfiguration();
     initSharedMemoryConfiguration();
@@ -877,41 +853,6 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
   #endif
 }
 
-void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Repository& repository) {
-//  logInfo("updateLimiterDomain(...)","start to update limiter domain");
-//  repository.getState().switchToLimiterStatusSpreadingContext();
-//  repository.switchToLimiterStatusSpreading();
-//  repository.iterate();
-//
-//  /**
-//   * We need to gather information from all neighbours
-//   * of a cell before we can determine the unified
-//   * limiter status value of the cell.
-//   *
-//   * We thus need two extra iterations to send and receive
-//   * the limiter status of remote neighbours.
-//   */
-//  #ifdef Parallel
-//  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
-//  repository.switchToLimiterStatusMergingAndSpreadingMPI();
-//  repository.iterate();
-//  repository.switchToLimiterStatusMergingMPI();
-//  repository.iterate();
-//  #endif
-//
-//  repository.getState().switchToReinitialisationContext();
-//  logInfo("updateLimiterDomain(...)","reinitialise cells");
-//  repository.switchToReinitialisation();
-//  repository.iterate();
-//
-//  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
-//  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
-//  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-//  repository.iterate();
-//
-//  logInfo("updateLimiterDomain(...)","updated limiter domain");
-}
-
 void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository& repository) {
   // We refine here using the previous solution (which is valid)
   logInfo("initialiseMesh(...)","create initial grid");
@@ -925,12 +866,16 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   repository.iterate();
 }
 
-void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::updateMeshAndSubdomains(
+    exahype::repositories::Repository& repository, const bool fusedTimeStepping) {
   // 1. All solvers drop their MPI messages
   assertion(repository.getState().getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping);
-  repository.getState().switchToNeighbourDataDroppingContext();
-  repository.switchToNeighbourDataMerging();
-  repository.iterate();
+
+  if (fusedTimeStepping) {
+    repository.getState().switchToNeighbourDataDroppingContext();
+    repository.switchToNeighbourDataMerging();
+    repository.iterate();
+  }
 
   // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading()) {
@@ -940,7 +885,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     repository.iterate(5);
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
     logInfo("updateMeshFusedTimeStepping(...)","global recomputation requested by at least one solver");
     repository.switchToGlobalRollback();
@@ -984,7 +929,9 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
   assertion(!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() ||
             !exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
-  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+
+  if (fusedTimeStepping &&
+      exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
     logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
@@ -1142,16 +1089,16 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested by at least one solver");
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
   }
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()) {
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","mesh update requested by at least one solver");
   }
 
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate() ||
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
-    updateMeshFusedTimeStepping(repository);
+    updateMeshAndSubdomains(repository,true);
   }
 
   if (exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated()) {
@@ -1169,46 +1116,31 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
 void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
+  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
 
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
-//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update solution and compute new time step size");
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToSolutionUpdateAndTimeStepSizeComputation();  // Face to cell + Inside cell
   repository.iterate();
 
-  // TODO(Dominic): Will be merged with the mesh refinement
-  // We mimic the flow of the fused time stepping scheme here
-  // a little. Updating the limiter domain is thus done after the time step
-  // size computation.
-//  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-//    updateLimiterDomain(repository);
-//  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
+    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","local recomputation requested by at least one solver");
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
+    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","global recomputation requested by at least one solver");
+  }
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","mesh update requested by at least one solver");
+  }
 
-  // We mimic the flow of the fused time stepping scheme here
-  // a little. Updating grid is thus done after the time step
-  // size computation.
-  //
-  // We further consider the limiter status in our mesh
-  // refinement criterion. We enforce that the
-  // limiter is only active on the finest mesh level
-  // by mesh refinement.
-//  while (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
-//    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
-//
-//    repository.getState().switchToUpdateMeshContext();
-//    repository.switchToMergeTimeStepData();
-//    repository.iterate();
-//
-//    createMesh(repository);
-//
-//    repository.getState().switchToPostAMRContext();
-//    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
-//    repository.iterate();
-//  }
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
+    updateMeshAndSubdomains(repository,false);
+  }
 
   printTimeStepInfo(1,repository);
 
@@ -1224,6 +1156,8 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     repository.switchToPrediction();   // Cell onto faces
   }
   repository.iterate();
+
+  updateStatistics();
 }
 
 void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const {

@@ -184,27 +184,17 @@ class exahype::runners::Runner {
   void runOneTimeStepWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
 
   /**
-   * Run the three adapters necessary for updating the
-   * limiter domain.
-   *
-   * TODO(Dominic): What can I fuse here?
-   *
-   */
-  void updateLimiterDomain(exahype::repositories::Repository& repository);
-
-  /**
    * Run the three (four for MPI) adapters necessary for initialising the
    * limiter domain.
    */
   void initialiseMesh(exahype::repositories::Repository& repository);
 
   /**
-   * Run the three (four for MPI) adapters necessary for updating the
-   * limiter domain.
-   *
-   * TODO(Dominic): What can I fuse here?
+   * TODO(Dominic): Add docu.
    */
-  void updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
+  void updateMeshAndSubdomains(
+      exahype::repositories::Repository& repository,
+      const bool fusedTimeStepping);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.
@@ -218,7 +208,7 @@ class exahype::runners::Runner {
   void validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const;
 
   /**
-   * Per dimenison, computes the smallest multiplicity of the coarsest solver mesh size
+   * Per dimension, computes the smallest multiplicity of the coarsest solver mesh size
    * which is larger than the domain size.
    */
   tarch::la::Vector<DIMENSIONS, double> determineDomainSize() const;
