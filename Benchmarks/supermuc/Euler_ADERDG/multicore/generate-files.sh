@@ -58,11 +58,11 @@ do
     script=multicore/supermuc.load-leveler
     newScript=multicore/supermuc-$prefix-p$order-n1-t1-c$coresPerTask.load-leveler
     cp $script $newScript
- 
+    
+    sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',g' $newScript
+    
     sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
     sed -i 's,p3,p'$order',g' $newScript
-
     sed -i 's,script=multicore/supermuc.load-leveler,script='$newScript',g' $newScript 
 
     # Create spec files  

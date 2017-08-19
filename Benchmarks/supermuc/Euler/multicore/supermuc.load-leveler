@@ -19,9 +19,8 @@ module load gcc/4.9
 module load tbb
 
 nodes=1
-tasks=1
 tasksPerNode=1
-coresPerTask=$SLURM_ARRAY_TASK_ID
+coresPerTask=1
 let procsPerNode=tasksPerNode*coresPerTask
 
 compiler=Intel
