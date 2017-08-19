@@ -19,13 +19,14 @@ module load gcc/4.9
 module load tbb
 module load likwid
 
-export OMP_NUM_THREADS=28
-export MP_TASK_AFFINITY=core:28
-
 nodes=1
 tasksPerNode=1
 coresPerTask=1
 let procsPerNode=tasksPerNode*coresPerTask
+
+export MP_SINGLE_THREAD=no
+export OMP_NUM_THREADS=$coresPerTask
+export MP_TASK_AFFINITY=core:$coresPerTask
 
 compiler=Intel
 sharedMem=TBB
