@@ -46,4 +46,4 @@ echo "" >> $out
 cat $spec >> $out
 
 # execute the job
-mpiexec -np $tasks ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+mpiexec -n $tasks ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
