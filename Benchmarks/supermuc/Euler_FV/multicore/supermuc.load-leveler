@@ -50,18 +50,18 @@ cat $spec >> $out
 cat $out > ${out}.likwid
 
 # execute the job
-./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+mpiexec -n 1 ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
 
-if (( $coresPerTask==1 )); then
-  likwid-perfctr -f -C 0 -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0 -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0 -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0 -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+if (( coresPerTask==1 )); then
+  mpiexec -n 1 likwid-perfctr -f -C 0 -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0 -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0 -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0 -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
 else
   let maxCore=coresPerTask-1
 
-  likwid-perfctr -f -C 0-$maxCore -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0-$maxCore -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0-$maxCore -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
-  likwid-perfctr -f -C 0-$maxCore -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0-$maxCore -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0-$maxCore -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0-$maxCore -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  mpiexec -n 1 likwid-perfctr -f -C 0-$maxCore -g BRANCH    ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
 fi

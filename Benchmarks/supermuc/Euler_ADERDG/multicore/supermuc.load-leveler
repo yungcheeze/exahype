@@ -52,7 +52,7 @@ cat $out > ${out}.likwid
 # execute the job
 ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
 
-if (( $coresPerTask==1 )); then
+if (( coresPerTask==1 )); then
   likwid-perfctr -f -C 0 -g MEM       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g FLOPS_AVX ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g L2CACHE   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
