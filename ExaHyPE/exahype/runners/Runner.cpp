@@ -514,6 +514,9 @@ int exahype::runners::Runner::run() {
 
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().disableInheritingOfCoarseGridIndices();
 
+    exahype::State::FuseADERDGPhases                = _parser.getFuseAlgorithmicSteps();
+    exahype::State::WeightForPredictionRerun        = _parser.getFuseAlgorithmicStepsFactor();
+
     exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
     exahype::State::EnableNeighbourCommunication    = _parser.getMPINeighbourCommunication();
     #ifdef Parallel
@@ -705,7 +708,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
     printTimeStepInfo(-1,repository);
-    validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
+    validateInitialSolverTimeStepData(exahype::State::fuseADERDGPhases());
 
     const double simulationEndTime = _parser.getSimulationEndTime();
     logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
@@ -715,7 +718,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
           solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
-      if (_parser.getFuseAlgorithmicSteps()) {
+      if (exahype::State::fuseADERDGPhases()) {
         int numberOfStepsToRun = 1;
         if (plot) {
           numberOfStepsToRun = 0;
