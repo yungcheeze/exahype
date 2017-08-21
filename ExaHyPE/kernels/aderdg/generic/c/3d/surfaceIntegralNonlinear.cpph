@@ -23,6 +23,8 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
                               const tarch::la::Vector<DIMENSIONS, double> &dx) {
   constexpr int order = basisSize - 1;
 
+  const double invDx[3] = { 1.0/dx[0], 1.0/dx[1], 1.0/dx[2] };
+  
   idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables); // (z,y,x,var/par)
   idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
   // x-faces: (z,y,var/par)
@@ -34,7 +36,7 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
     for (int j = 0; j < basisSize; j++) { // y
       const double weight = kernels::gaussLegendreWeights[order][i] *
                             kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight / dx[0];
+      const double updateSize = weight * invDx[0];
 
       for (int k = 0; k < basisSize; k++) { // x
         // left flux minus right flux
@@ -54,7 +56,7 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
       for (int k = 0; k < basisSize; k++) { // x
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][k];
-        const double updateSize = weight / dx[1];
+        const double updateSize = weight * invDx[1];
 
         // back flux minus front flux
         for (int l = 0; l < numberOfVariables; l++) {
@@ -73,7 +75,7 @@ void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const d
       for (int k = 0; k < basisSize; k++) { // x
         const double weight = kernels::gaussLegendreWeights[order][j] *
                               kernels::gaussLegendreWeights[order][k];
-        const double updateSize = weight / dx[2];
+        const double updateSize = weight * invDx[2];
 
         // bottom flux minus top flux
         for (int l = 0; l < numberOfVariables; l++) {

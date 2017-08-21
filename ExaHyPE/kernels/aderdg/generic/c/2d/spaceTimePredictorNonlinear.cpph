@@ -56,6 +56,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
   
   assertion(numberOfVariables>=0);
   assertion(numberOfParameters>=0);
+  
+  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
 
   idx3 idx_luh(basisSize, basisSize, numberOfData); // idx_luh(y,x,nVar)
   
@@ -134,7 +136,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
       pfor(k,0,basisSize,grainSizeComputeDerivatives.getGrainSize())
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][k];
-        const double updateSize = weight * dt / dx[0];
+        const double updateSize = weight * dt * invDx[0];
 
         // Matrix operation
         for (int l = 0; l < basisSize; l++) { // l == x
@@ -143,7 +145,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
               rhs[idx_rhs(i, k, l, m)] -= updateSize * lFi[idx_lFi(i, k, n, 0, m)] *
                                           kernels::Kxi[order][n][l];
               if(useNCP) {
-                gradQ[idx_gradQ(k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
+                gradQ[idx_gradQ(k, l, i, /*x*/0, m)] += 1.0 * invDx[0] *
                                           lQi[idx_lQi(k,n,i,m)] *
                                           kernels::dudx[order][l][n];
               }
@@ -158,7 +160,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
       pfor(k,0,basisSize,grainSizeComputeDerivatives.getGrainSize())
         const double weight = kernels::gaussLegendreWeights[order][i] *
             kernels::gaussLegendreWeights[order][k];
-        const double updateSize = weight * dt / dx[1];
+        const double updateSize = weight * dt * invDx[1];
 
         // Matrix operation
         for (int l = 0; l < basisSize; l++) { // l == y
@@ -167,7 +169,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
               rhs[idx_rhs(i, l, k, m)] -= updateSize * lFi[idx_lFi(i, n, k, 1, m)] *
                                           kernels::Kxi[order][n][l];
               if(useNCP) {
-                gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
+                gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 * invDx[1] *
                                           lQi[idx_lQi(n, k, i, m)] *
                                           kernels::dudx[order][l][n]; /* l,n: transpose */
               }

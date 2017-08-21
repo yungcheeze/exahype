@@ -33,6 +33,8 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
   const int order = basisSize - 1;
   const int basisSize2 = basisSize  * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
+  
+  const double invDx[3] = { 1.0/dx[0], 1.0/dx[1], 1.0/dx[2] };
 
   // Initialize the update DOF
   std::fill_n(lduh, basisSize3 * numberOfVariables, 0.0);
@@ -50,7 +52,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
               kernels::gaussLegendreWeights[order][j] * // z
               kernels::gaussLegendreWeights[order][k];  // y
 
-          const double updateSize = weight / dx[0];
+          const double updateSize = weight * invDx[0];
           for (int l = 0; l < basisSize; l++) { // x
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {  
@@ -69,7 +71,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
               kernels::gaussLegendreWeights[order][i] * // t
               kernels::gaussLegendreWeights[order][j] * // z
               kernels::gaussLegendreWeights[order][l];  // x
-          const double updateSize = weight / dx[1];
+          const double updateSize = weight * invDx[1];
           
           for (int k = 0; k < basisSize; k++) { // y
             for (int m = 0; m < numberOfVariables; m++) {
@@ -89,7 +91,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
               kernels::gaussLegendreWeights[order][i] * // t
               kernels::gaussLegendreWeights[order][k] * // y
               kernels::gaussLegendreWeights[order][l];  // x
-          const double updateSize = weight / dx[2];
+          const double updateSize = weight * invDx[2];
 
           for (int j = 0; j < basisSize; j++) { // z
             for (int m = 0; m < numberOfVariables; m++) {
@@ -138,6 +140,8 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
   constexpr int order      = basisSize - 1;
   constexpr int basisSize2 = basisSize * basisSize;
   constexpr int basisSize3 = basisSize2 * basisSize;
+  
+  const double invDx[3] = { 1.0/dx[0], 1.0/dx[1], 1.0/dx[2] };
 
   // Initialize the update DOF
   std::fill_n(lduh, basisSize3 * numberOfVariables, 0.0);
@@ -150,7 +154,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
       for (int j = 0; j < basisSize; j++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][j];
-        const double updateSize = weight / dx[0];
+        const double updateSize = weight * invDx[0];
 
         // Fortran: lduh(l, k, j, i) += us * lFhi_x(l, m, j, i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
@@ -172,7 +176,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
       for (int j = 0; j < basisSize; j++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][j];
-        const double updateSize = weight / dx[1];
+        const double updateSize = weight * invDx[1];
 
         // Fortran: lduh(l, j, k, i) += us * lFhi_y(l,m,j,i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
@@ -194,7 +198,7 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
       for (int j = 0; j < basisSize; j++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][j];
-        const double updateSize = weight / dx[2];
+        const double updateSize = weight * invDx[2];
 
         // Fortran: lduh(l, j, i, k) += us * lFhi_z(l, m, j, i) * Kxi(m, k)
         // Matrix product (l, m) * (m, k) = (l, k)

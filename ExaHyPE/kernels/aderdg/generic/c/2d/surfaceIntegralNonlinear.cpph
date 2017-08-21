@@ -27,6 +27,8 @@ template <int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double *lduh, const double *const lFhbnd,
                               const tarch::la::Vector<DIMENSIONS, double> &dx) {
   constexpr int order = basisSize - 1;
+  
+  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
 
   idx3 idx_lduh(basisSize, basisSize, numberOfVariables);
   idx3 idx_lFhbnd(2 * DIMENSIONS, basisSize, numberOfVariables);
@@ -34,7 +36,7 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFhbnd,
   // x faces
   for (int j = 0; j < basisSize; j++) {
     const double weight = kernels::gaussLegendreWeights[order][j];
-    const double updateSize = weight / dx[0];
+    const double updateSize = weight * invDx[0];
 
     for (int k = 0; k < basisSize; k++) {
       // left flux minus right flux
@@ -51,7 +53,7 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFhbnd,
   for (int j = 0; j < basisSize; j++) {
     for (int k = 0; k < basisSize; k++) {
       const double weight = kernels::gaussLegendreWeights[order][k];
-      const double updateSize = weight / dx[1];
+      const double updateSize = weight * invDx[1];
 
       // back flux minus front flux
       for (int l = 0; l < numberOfVariables; l++) {

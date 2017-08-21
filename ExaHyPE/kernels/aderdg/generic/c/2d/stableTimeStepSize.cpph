@@ -26,6 +26,8 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   constexpr double PNPM[10]  = {1.0,   0.33,  0.17, 0.1,  0.069,
                                 0.045, 0.038, 0.03, 0.02, 0.015};
 
+  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
+  
   idx3 idx_luh(basisSize, basisSize, numberOfData); // idx_luh(y,x,nVar)
   
   double dt = std::numeric_limits<double>::max();
@@ -40,7 +42,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
           maxEigenvalue = std::max(std::abs(lambda[ivar]), maxEigenvalue);
         }
-        denominator += maxEigenvalue / dx[d];
+        denominator += maxEigenvalue * invDx[d];
       }
 
       dt = std::min(dt, cflFactor * PNPM[order] / denominator);

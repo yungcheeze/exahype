@@ -39,6 +39,8 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
   const int basisSize2 = basisSize  * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
 
+  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
+  
   // Initialize the update DOF
   std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
 
@@ -52,7 +54,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
         const double weight =
             kernels::gaussLegendreWeights[order][i] *
             kernels::gaussLegendreWeights[order][j];
-        const double updateSize = weight / dx[0];
+        const double updateSize = weight * invDx[0];
 
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
@@ -71,7 +73,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
         const double weight =
             kernels::gaussLegendreWeights[order][i] *
             kernels::gaussLegendreWeights[order][k];
-        const double updateSize = weight / dx[1];
+        const double updateSize = weight * invDx[1];
 
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int j = 0; j < basisSize; j++) {
@@ -117,6 +119,8 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
   constexpr int order      = basisSize - 1;
   constexpr int basisSize2 = basisSize * basisSize;
 
+  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
+  
   // Initialize the update DOF
   std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
 
@@ -127,7 +131,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
     const int x_offset = 0 * basisSize2 * numberOfVariables;
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight / dx[0];
+      const double updateSize = weight * invDx[0];
 
       // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
       // Matrix product: (l, m) * (m, k) = (l, k)
@@ -145,7 +149,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
     const int y_offset = 1 * basisSize2 * numberOfVariables;
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight / dx[1];
+      const double updateSize = weight * invDx[1];
 
       // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
       // Matrix product: (l, m) * (m, k) = (l, k)
