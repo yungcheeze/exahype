@@ -235,10 +235,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         }
         solver->startNewTimeStep();
       }
-      // Special case for the LimitingADERDGSolver in the context of global recomputations
       else if (recomputeTimeStepSizes) {
-        auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDG->updateTimeStepSizes();
+        solver->updateTimeStepSizes();
 
         // Here, we use the same function again. The time step size is never instable though.
         if (exahype::State::fuseADERDGPhases()
@@ -343,13 +341,9 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         _maxCellSizes[solverNumber] = std::max(
             fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
       }
-      // Special case for the limiting ADER-DG solver
       else if (recomputeTimeStepSizes && element!=exahype::solvers::Solver::NotFound) {
-        assertion(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG);
-        auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
         double admissibleTimeStepSize =
-            limitingADERDG->updateTimeStepSizes(
+            solver->updateTimeStepSizes(
                 fineGridCell.getCellDescriptionsIndex(),element,
                 _temporaryVariables._tempEigenValues[solverNumber]);
 
