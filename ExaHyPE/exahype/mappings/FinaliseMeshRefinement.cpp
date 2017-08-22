@@ -97,8 +97,6 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithWorkerThread(
 void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  _localState=solverState;
-
   #ifdef Parallel
   exahype::mappings::LimiterStatusSpreading::IsFirstIteration = true;
   exahype::mappings::MeshRefinement::IsFirstIteration = true;

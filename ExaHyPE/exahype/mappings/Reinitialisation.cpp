@@ -28,7 +28,7 @@ peano::CommunicationSpecification
 exahype::mappings::Reinitialisation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
-      MaskOutMasterWorkerDataAndStateExchange,
+      SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::
       MaskOutWorkerMasterDataAndStateExchange,
       true);

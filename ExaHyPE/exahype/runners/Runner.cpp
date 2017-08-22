@@ -1086,7 +1086,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.iterate();
   } else {
     repository.switchToADERDGTimeStep();
-    repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
+    repository.iterate(numberOfStepsToRun);
   }
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
@@ -1121,7 +1121,6 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
-
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
@@ -1153,6 +1152,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
+  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToPredictionContext();
   if (plot) {
     repository.switchToPredictionAndPlot();

@@ -104,6 +104,15 @@ class exahype::mappings::TimeStepSizeComputation {
   void prepareLocalTimeStepVariables();
 
   /**
+   * Weights the min next predictor time step size
+   * by the user's safety factor for the fused time stepping
+   * algorithm.
+   */
+  void weighMinNextPredictorTimeStepSize(
+      exahype::State& state,
+      exahype::solvers::Solver* solver) const;
+
+  /**
    * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
    * with stable time step sizes if we detect a-posteriori that the CFL condition was
    * harmed by the estimated predictor time step size used in the last iteration.

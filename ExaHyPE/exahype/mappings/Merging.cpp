@@ -114,10 +114,12 @@ void exahype::mappings::Merging::beginIteration(
 
   _localState = solverState;
 
-  logDebug("beginIteration(State)",
+  #ifdef Asserts
+  logInfo("beginIteration(State)",
       "MergeMode="<<exahype::records::State::toString(_localState.getMergeMode())<<
       ", SendMode="<<exahype::records::State::toString(_localState.getSendMode())<<
       ", AlgorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
+  #endif
 
   #ifdef Parallel
   if (_localState.getMergeMode()!=exahype::records::State::MergeMode::MergeNothing) {
@@ -360,7 +362,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
   if (!vertex.hasToCommunicate(fineGridH)) {
     return;
   }
-  
+
   if (
       _localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
