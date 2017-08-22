@@ -883,14 +883,14 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
   // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LimiterStatusSpreading);
-    logInfo("updateMeshFusedTimeStepping(...)","pre-spreading of limiter status");
+    logInfo("updateMeshAndSubdomains(...)","pre-spreading of limiter status");
     repository.switchToLimiterStatusSpreading();
     repository.iterate(5);
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
-    logInfo("updateMeshFusedTimeStepping(...)","global recomputation requested by at least one solver");
+    logInfo("updateMeshAndSubdomains(...)","global recomputation requested by at least one solver");
     repository.switchToGlobalRollback();
     repository.iterate();
   }
@@ -898,7 +898,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
   // 2. Perform a grid update for those solvers that requested refinement
   if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinement);
-    logInfo("updateMeshFusedTimeStepping(...)","perform mesh refinement");
+    logInfo("updateMeshAndSubdomains(...)","perform mesh refinement");
     repository.getState().switchToUpdateMeshContext(); // TODO(Dominic): Adjust context for MPI
     createMesh(repository);
   }
@@ -911,7 +911,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
 
     // TODO(Dominic): Only overwrite the current time step size with the previous values if global recomputation
     // Rename Reinitialisation to LocalReinitialisation. Do only call reinitialiseSolversLocally
-    logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
+    logInfo("updateMeshAndSubdomains(...)","finalise mesh refinement (if applicable)");
+    logInfo("updateMeshAndSubdomains(...)","reinitialise cells and send data to neigbours (if applicable)");
     repository.getState().switchToReinitialisationContext();
     repository.switchToFinaliseMeshRefinementAndReinitialisation();
     repository.iterate();
@@ -924,7 +925,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     }
 
     // TODO(Dominic): Think about something in order to not shift the time step size if global recomputation
-    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
+    logInfo("updateMeshAndSubdomains(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
     repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
@@ -937,13 +938,13 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
       exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
-    logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
+    logInfo("updateMeshAndSubdomains(...)","recompute predictor globally and reinitialise fused time stepping");
     repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
     repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-      logInfo("updateMeshFusedTimeStepping(...)","redo time step since mesh was not prepared");
+      logInfo("updateMeshAndSubdomains(...)","redo time step since mesh was not prepared");
     }
   } // MeshUpdate and GlobalRecomputation is done here
 }
