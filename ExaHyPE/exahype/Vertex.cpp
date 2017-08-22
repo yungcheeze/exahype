@@ -486,15 +486,13 @@ void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
                  x.toString() << ", level=" <<level << ", adjacentRanks: "
                  << getAdjacentRanks());
 
-        const int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
-        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
-        MetadataHeap::getInstance().receiveData(
-            receivedMetadataIndex,
-            fromRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().
-            getData(receivedMetadataIndex);
+        const int receivedMetadataIndex =
+            exahype::receiveNeighbourCommunicationMetadata(
+                fromRank, x, level);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata =
+            MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertionEquals(receivedMetadata.size(),
+            exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];

@@ -421,14 +421,13 @@ void exahype::mappings::LocalRecomputation::mergeWithNeighbour(
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
       if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-        int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::solvers::RegisteredSolvers.size());
-        MetadataHeap::getInstance().receiveData(
-            receivedMetadataIndex,
-            fromRank, fineGridX, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-        assertion(receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
+        const int receivedMetadataIndex =
+            exahype::receiveNeighbourCommunicationMetadata(
+                fromRank, fineGridX, level);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata =
+            MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertionEquals(receivedMetadata.size(),
+            exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
         if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
           mergeNeighourData(

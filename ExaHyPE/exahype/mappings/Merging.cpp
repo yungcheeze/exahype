@@ -382,14 +382,12 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           logInfo("mergeWithNeighbour(...)","from rank "<<fromRank <<" vertex="<<fineGridX.toString()<<" src="<<src.toString()<<" dest="<<dest.toString());
           #endif
 
-          // TODO(Dominic)
           const int receivedMetadataIndex =
           exahype::receiveNeighbourCommunicationMetadata(
               fromRank, fineGridX, level);
           exahype::MetadataHeap::HeapEntries& receivedMetadata =
               MetadataHeap::getInstance().getData(receivedMetadataIndex);
-          assertion(
-              receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
+          assertionEquals(receivedMetadata.size(),exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
             // logDebug("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");

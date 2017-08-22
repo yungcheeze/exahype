@@ -2639,10 +2639,13 @@ exahype::solvers::ADERDGSolver::updateHelperStatus(
 int
 exahype::solvers::ADERDGSolver::determineHelperStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
-  return
-      (cellDescription.getType()==CellDescription::Type::Cell) ?
-          MaximumHelperStatus :
-          tarch::la::max(cellDescription.getFacewiseHelperStatus());
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    return MaximumAugmentationStatus;
+  }
+  if (cellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
+    return MinimumHelperStatusForAllocatingBoundaryData;
+  }
+  return tarch::la::max(cellDescription.getFacewiseHelperStatus());
 }
 
 void exahype::solvers::ADERDGSolver::overwriteFacewiseHelperStatus(
@@ -3062,7 +3065,6 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
           }
         }
       } else if (cellDescription.getType()==CellDescription::Type::Descendant) {
-
         cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
 
         auto* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
