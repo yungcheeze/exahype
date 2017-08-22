@@ -174,7 +174,7 @@ namespace exahype {
    * for each FiniteVolumesCellDescription associated with this cell
    * (description).
    */
-  exahype::MetadataHeap::HeapEntries gatherNeighbourCommunicationMetadata(
+  MetadataHeap::HeapEntries gatherNeighbourCommunicationMetadata(
       const int cellDescriptionsIndex,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest);
@@ -182,7 +182,7 @@ namespace exahype {
   /**
    * TODO(Dominic): Add docu.
    */
-  exahype::MetadataHeap::HeapEntries gatherMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
+  MetadataHeap::HeapEntries gatherMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
 
   /**
    * Send metadata to rank \p toRank.
@@ -962,6 +962,30 @@ class exahype::solvers::Solver {
    */
   virtual void startNewTimeStep() = 0;
 
+  /**
+   * In contrast to startNewTimeStep(), this
+   * method does not shift the time stamps.
+   *
+   * It simply updates the time step sizes
+   *
+   * This method is used after a mesh refinement.
+   */
+  virtual void updateTimeStepSizes() = 0;
+
+  /**
+   * Zeroes all the time step sizes.
+   * This method is used by the adaptive mesh refinement mapping.
+   * After the mesh refinement, we need to recompute
+   * the time step sizes.
+   *
+   * <h1>ADER-DG</h1>
+   * Further resets the predictor time stamp to take
+   * the value of the corrector time stamp.
+   * The fused must be initialised again after
+   * each mesh refinement.
+   */
+  virtual void zeroTimeStepSizes() = 0;
+
   virtual double getMinNextTimeStepSize() const=0;
 
   /**
@@ -987,7 +1011,7 @@ class exahype::solvers::Solver {
    */
   virtual SubcellPosition computeSubcellPositionOfCellOrAncestor(
       const int cellDescriptionsIndex,
-      const int element) = 0;
+      const int element) const = 0;
 
   /**
    * Evaluates the user refinement criterion and sets
@@ -1120,24 +1144,12 @@ class exahype::solvers::Solver {
    *
    * \return RefinementType::APrioriRefinement (or
    * RefinementType::APosterrioriRefinement) if a mesh update is necessary.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual bool evaluateRefinementCriterionAfterSolutionUpdate(
       const int cellDescriptionsIndex,
       const int element) = 0;
-
-  /**
-   * Zeroes all the time step sizes.
-   * This method is used by the adaptive mesh refinement mapping.
-   * After the mesh refinement, we need to recompute
-   * the time step sizes.
-   *
-   * <h1>ADER-DG</h1>
-   * Further resets the predictor time stamp to take
-   * the value of the corrector time stamp.
-   * The fused must be initialised again after
-   * each mesh refinement.
-   */
-  virtual void zeroTimeStepSizes() = 0;
 
   /**
    * Compute and return a new admissible time step
@@ -1168,11 +1180,31 @@ class exahype::solvers::Solver {
    * \see startNewTimeStep(),
    *      synchroniseTimeStepping(int,int),
    *      synchroniseTimeStepping(CellDescription&)
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) = 0;
+
+  /**
+   * Computes a new time step size and overwrites
+   * a cell description's time stamps and time step sizes
+   * with it.
+   *
+   * In contrast to startNewTimeStep(int,int), this
+   * method does not shift time stamps.
+   *
+   * This method is usually called after mesh refinement
+   * was performed.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
+   */
+    virtual double updateTimeStepSizes(
+          const int cellDescriptionsIndex,
+          const int element,
+          double*   tempEigenvalues) = 0;
 
   /**
    * Zeroes all the time step sizes.
@@ -1190,13 +1222,15 @@ class exahype::solvers::Solver {
    * equivalent value since this would erase the time
    * step size of the fixed time stepping schemes ("globalfixed" etc.)
    */
-  virtual void zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) = 0;
+  virtual void zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) const = 0;
 
   /**
    * Impose initial conditions.
    *
    * \note Make sure to reset neighbour merge
    * helper variables in this method call.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void setInitialConditions(
       const int cellDescriptionsIndex,
@@ -1209,6 +1243,8 @@ class exahype::solvers::Solver {
    *
    * \note Make sure to reset neighbour merge
    * helper variables in this method call.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void updateSolution(
       const int cellDescriptionsIndex,
@@ -1232,7 +1268,7 @@ class exahype::solvers::Solver {
      */
     virtual void preProcess(
         const int cellDescriptionsIndex,
-        const int element) = 0;
+        const int element) const = 0;
 
   /**
    * In this method, the solver can perform post-processing
@@ -1245,6 +1281,9 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    *
    * \see tryGetElement
+   *
+   * \note Has no const modifier since a binding in ADERDGSolver::compress disregards
+   * the const modifier.
    */
   virtual void postProcess(
       const int cellDescriptionsIndex,
@@ -1263,6 +1302,8 @@ class exahype::solvers::Solver {
     *
     * \note Calling this method makes only sense if \p cellDescription is of type
     * Descendant or Ancestor.
+    *
+    * \note Has no const modifier since kernels are not const functions yet.
     */
   virtual void prolongateDataAndPrepareDataRestriction(
       const int cellDescriptionsIndex,
@@ -1282,7 +1323,7 @@ class exahype::solvers::Solver {
       const int fineGridCellDescriptionsIndex,
       const int fineGridElement,
       const int coarseGridCellDescriptionsIndex,
-      const int coarseGridElement) = 0;
+      const int coarseGridElement) const = 0;
 
   /**
    * Restrict face data to the top most parent which has allocated face data arrays (Ancestor)
@@ -1298,6 +1339,8 @@ class exahype::solvers::Solver {
    *
    * \note This function assumes a bottom-up traversal of the grid and must thus
    * be called from the leaveCell(...) or ascend(...) mapping methods.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void restrictToTopMostParent(
         const int cellDescriptionsIndex,
@@ -1322,7 +1365,7 @@ class exahype::solvers::Solver {
         const int                                 cellDescriptionsIndex2,
         const int                                 element2,
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
-        const tarch::la::Vector<DIMENSIONS, int>& pos2) = 0;
+        const tarch::la::Vector<DIMENSIONS, int>& pos2) const= 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -1346,6 +1389,8 @@ class exahype::solvers::Solver {
    * exahype::mappings::SolutionRecomputation::prepareTemporaryVariables()
    * for details on the size of the allocation of
    * the temporary variables.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void mergeNeighbours(
         const int                                 cellDescriptionsIndex1,
@@ -1378,6 +1423,8 @@ class exahype::solvers::Solver {
    * exahype::mappings::SolutionRecomputation::prepareTemporaryVariables()
    * for details on the size of the allocation of
    * the temporary variables.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void mergeWithBoundaryData(
         const int                                 cellDescriptionsIndex,
@@ -1386,7 +1433,7 @@ class exahype::solvers::Solver {
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
         double**                                  tempFaceUnknowns,
         double**                                  tempStateSizedVectors,
-        double**                                  tempStateSizedSquareMatrices) =0;
+        double**                                  tempStateSizedSquareMatrices) = 0;
 
   /**
    * Merge cell description \p element in
@@ -1406,7 +1453,7 @@ class exahype::solvers::Solver {
       const int cellDescriptionsIndex,
       const int element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) = 0;
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const = 0;
 
   #ifdef Parallel
   /**
@@ -1422,7 +1469,7 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
-      const int solverNumber) = 0;
+      const int solverNumber) const = 0;
 
   /**
    * Merge cell description \p element in
@@ -1448,7 +1495,7 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
-      const int element) = 0;
+      const int element)  const = 0;
 
   /**
    * Send solver data to neighbour rank. Read the data from
@@ -1462,6 +1509,8 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    *
    * \see tryGetElement
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void sendDataToNeighbour(
       const int                                    toRank,
@@ -1478,7 +1527,7 @@ class exahype::solvers::Solver {
   virtual void sendEmptyDataToNeighbour(
       const int                                    toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -1522,7 +1571,7 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Send solver data to master or worker rank. Read the data from
@@ -1540,7 +1589,7 @@ class exahype::solvers::Solver {
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Send empty solver data to master or worker rank
@@ -1549,7 +1598,7 @@ class exahype::solvers::Solver {
   virtual void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                    toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Merge with solver data from master or worker rank
@@ -1568,7 +1617,7 @@ class exahype::solvers::Solver {
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Drop solver data from master or worker rank
@@ -1577,7 +1626,7 @@ class exahype::solvers::Solver {
   virtual void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                    fromRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   ///////////////////////////////////
   // WORKER->MASTER
@@ -1600,7 +1649,7 @@ class exahype::solvers::Solver {
    */
   virtual bool hasToSendDataToMaster(
       const int cellDescriptionsIndex,
-      const int element) = 0;
+      const int element) const = 0;
 
   /**
    * Send data to the master that is not
@@ -1619,7 +1668,7 @@ class exahype::solvers::Solver {
   virtual void sendDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Merge with solver data from worker rank.
@@ -1655,7 +1704,7 @@ class exahype::solvers::Solver {
   void sendMeshUpdateFlagsToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
+      const int                                    level) const;
 
   /**
    * Merge with the workers mesh update flags.
@@ -1693,7 +1742,7 @@ class exahype::solvers::Solver {
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Send empty solver data to master rank.
@@ -1701,7 +1750,7 @@ class exahype::solvers::Solver {
   virtual void sendEmptyDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Merge with solver data from worker rank.
@@ -1713,6 +1762,8 @@ class exahype::solvers::Solver {
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
    *                    This is not the solver number.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void mergeWithWorkerData(
       const int                                    workerRank,
@@ -1728,7 +1779,7 @@ class exahype::solvers::Solver {
   virtual void dropWorkerData(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -1747,7 +1798,7 @@ class exahype::solvers::Solver {
   virtual void appendMasterWorkerCommunicationMetadata(
       MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
-      const int solverNumber) = 0;
+      const int solverNumber) const = 0;
 
   /**
    * TODO(Dominic): docu
@@ -1755,7 +1806,7 @@ class exahype::solvers::Solver {
   virtual void mergeWithMasterWorkerMetadata(
         const MetadataHeap::HeapEntries& receivedMetadata,
         const int                        cellDescriptionsIndex,
-        const int                        element) = 0;
+        const int                        element) const = 0;
 
   /**
    * Send data to the worker that is not
@@ -1769,7 +1820,7 @@ class exahype::solvers::Solver {
   virtual void sendDataToWorker(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Merge with solver data from master rank.
@@ -1788,6 +1839,8 @@ class exahype::solvers::Solver {
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    *                    This is not the solver number.
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual void sendDataToWorker(
       const int                                    workerRank,
@@ -1802,7 +1855,7 @@ class exahype::solvers::Solver {
   virtual void sendEmptyDataToWorker(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Merge with solver data from master rank
@@ -1822,7 +1875,7 @@ class exahype::solvers::Solver {
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
 
   /**
    * Drop solver data from master rank.
@@ -1830,7 +1883,7 @@ class exahype::solvers::Solver {
   virtual void dropMasterData(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) = 0;
+      const int                                    level) const = 0;
   #endif
 };
 

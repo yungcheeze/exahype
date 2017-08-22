@@ -221,14 +221,14 @@ private:
    */
   const int _DMPObservables;
 
-  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
-  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
+  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
+  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
 
   /**
    * Different to compress(), this operation is called automatically by
    * mergeNeighbours(). Therefore the routine is private.
    */
-  void uncompress(exahype::records::ADERDGCellDescription& cellDescription);
+  void uncompress(exahype::records::ADERDGCellDescription& cellDescription) const;
 
   /**
    * TODO(Dominic): Add more docu.
@@ -635,14 +635,14 @@ private:
    * average per unknown.' The result is stored within
    *
    */
-  void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription);
+  void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription) const;
 
   /**
    * Runs over all entries and adds sign times the average value. So if you
    * hand in a -1, you compute the hierarchical transform. If you hand in a +1,
    * you compute the inverse hierarchical transform.
    */
-  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign);
+  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign) const;
 
   /**
    * This routine runs over the unknowns, asks the Heap's compression routines
@@ -652,7 +652,7 @@ private:
    * assertions, we leave it there and thus allow pullUnknownsFromByteStream()
    * to do quite some validation.
    */
-  void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription);
+  void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
 
   /**
    *
@@ -676,7 +676,7 @@ private:
    *   calls should run in parallel, but I'm not 100% sure) should run.
    * - Create additional data.
    */
-  void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription);
+  void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
 
   class CompressionTask {
     private:
@@ -1368,17 +1368,7 @@ public:
    */
   void startNewTimeStep() override;
 
-  /**
-   * In contrast to startNewTimeStep(), this
-   * method does not shift the time stamps.
-   *
-   * It simply updates the time step sizes
-   * and adjusts the predictor time step size.
-   *
-   * This method is used in the context of
-   * global recomputations.
-   */
-  void updateTimeStepSizes();
+  void updateTimeStepSizes() override;
 
   /**
    * Zero predictor and corrector time step size.
@@ -1528,7 +1518,7 @@ public:
 
   SubcellPosition computeSubcellPositionOfCellOrAncestor(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) const override;
 
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
@@ -1612,6 +1602,8 @@ public:
    * \param[in] tempUnknowns              Solution sized temporary array.
    * \param[in] tempFluxUnknowns          Volume flux sized temporary array.
    * \param[in] tempStateSizedVector      A vector of size of the state vector (=number of variables).
+   *
+   * \note Has no const modifier since kernels are not const functions yet.
    */
   void performPredictionAndVolumeIntegral(
       exahype::records::ADERDGCellDescription& cellDescription,
@@ -1640,7 +1632,14 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
-  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
+  double updateTimeStepSizes(
+        const int cellDescriptionsIndex,
+        const int solverElement,
+        double*   tempEigenvalues) override;
+
+  void zeroTimeStepSizes(
+      const int cellDescriptionsIndex,
+      const int solverElement) const override;
 
   /**
    * If we use the original time stepping
@@ -1652,7 +1651,9 @@ public:
    * is set to the admissible time step size that
    * was computed using the latest corrector solution.
    */
-  void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const;
+  void reconstructStandardTimeSteppingData(
+      const int cellDescriptionsIndex,
+      int element) const;
 
   /**
    * !!! Only for fused time stepping !!!
@@ -1764,7 +1765,7 @@ public:
 
   void preProcess(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) const override;
 
   void postProcess(
       const int cellDescriptionsIndex,
@@ -1778,7 +1779,7 @@ public:
       const int fineGridCellDescriptionsIndex,
       const int fineGridElement,
       const int coarseGridCellDescriptionsIndex,
-      const int coarseGridElement) override;
+      const int coarseGridElement) const override;
 
   void restrictToTopMostParent(
       const int cellDescriptionsIndex,
@@ -1824,7 +1825,7 @@ public:
       const int                                 cellDescriptionsIndex2,
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const override;
 
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
@@ -1850,7 +1851,7 @@ public:
         const int cellDescriptionsIndex,
         const int element,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
-        const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) override;
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const override;
 #ifdef Parallel
   /**
    * Sends all the cell descriptions at address \p
@@ -1932,14 +1933,14 @@ public:
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int cellDescriptionsIndex,
-      const int solverNumber) override;
+      const int solverNumber) const override;
 
   void mergeWithNeighbourMetadata(
       const MetadataHeap::HeapEntries&          neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int                                 cellDescriptionsIndex,
-      const int                                 element) override;
+      const int                                 element) const override;
 
   void sendDataToNeighbour(
       const int                                    toRank,
@@ -1953,7 +1954,7 @@ public:
   void sendEmptyDataToNeighbour(
       const int                                    toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
@@ -1973,7 +1974,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   ///////////////////////////////////
   // FORK OR JOIN
@@ -1984,24 +1985,24 @@ public:
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                    toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                    fromRank,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) const override;
 
 
   ///////////////////////////////////
@@ -2009,7 +2010,7 @@ public:
   ///////////////////////////////////
   bool hasToSendDataToMaster(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) const override;
 
   /**
    * Compiles a message for the master.
@@ -2026,7 +2027,7 @@ public:
   void sendDataToMaster(
       const int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   /**
    * Read a message from a worker
@@ -2047,12 +2048,12 @@ public:
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void sendEmptyDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void mergeWithWorkerData(
       const int                                     workerRank,
@@ -2065,7 +2066,7 @@ public:
   void dropWorkerData(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -2073,12 +2074,12 @@ public:
   void appendMasterWorkerCommunicationMetadata(
       MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
-      const int solverNumber) override;
+      const int solverNumber) const override;
 
   void mergeWithMasterWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) override;
+      const int                        element) const override;
 
   /**
    * Compiles a message for a worker.
@@ -2095,7 +2096,7 @@ public:
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   /**
    * Read a message from the master
@@ -2120,7 +2121,7 @@ public:
   void sendEmptyDataToWorker(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void mergeWithMasterData(
       const int                                    masterRank,
@@ -2128,12 +2129,12 @@ public:
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 
   void dropMasterData(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) const override;
 #endif
 
   std::string toString() const override;

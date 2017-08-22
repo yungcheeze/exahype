@@ -446,30 +446,28 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 }
 
 void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex,const bool deleteOnlyCells) {
+    const int cellDescriptionsIndex,const bool deleteOnlyCells) { // TODO(Dominic): Use deleteOnlyCells attribute
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
   Heap::HeapEntries::iterator p =
       Heap::getInstance().getData(cellDescriptionsIndex).begin();
   while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    if (!deleteOnlyCells || p->getType()==CellDescription::Type::Cell) {
+      auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
 
-    ADERDGSolver* aderdgSolver = nullptr;
-    if (solver->getType()==Solver::Type::ADERDG) {
-      aderdgSolver = static_cast<ADERDGSolver*>(solver);
-    }
-    else if (solver->getType()==Solver::Type::LimitingADERDG) {
-      aderdgSolver =
-          static_cast<LimitingADERDGSolver*>(solver)->getSolver().get();
-    }
-
-    if (aderdgSolver!=nullptr) {
-      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
+      ADERDGSolver* aderdgSolver = nullptr;
+      if (solver->getType()==Solver::Type::ADERDG) {
+        aderdgSolver = static_cast<ADERDGSolver*>(solver);
+      }
+      else if (solver->getType()==Solver::Type::LimitingADERDG) {
+        aderdgSolver =
+            static_cast<LimitingADERDGSolver*>(solver)->getSolver().get();
+      }
+      assertion(aderdgSolver!=nullptr);
       p->setType(CellDescription::Type::Erased);
       aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+
       p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
-    } else {
-      ++p;
     }
   }
 }
@@ -915,7 +913,7 @@ int exahype::solvers::ADERDGSolver::tryGetElement(
 exahype::solvers::Solver::SubcellPosition
 exahype::solvers::ADERDGSolver::computeSubcellPositionOfCellOrAncestor(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   CellDescription& cellDescription =
       getCellDescription(cellDescriptionsIndex,element);
 
@@ -2073,7 +2071,27 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
   return std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::ADERDGSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) {
+double exahype::solvers::ADERDGSolver::updateTimeStepSizes(
+      const int cellDescriptionsIndex,
+      const int solverElement,
+      double*   tempEigenvalues) {
+  CellDescription& cellDescription = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    const double admissibleTimeStepSize =
+        computeTimeStepSize(cellDescription,tempEigenvalues);
+
+    cellDescription.setCorrectorTimeStepSize( admissibleTimeStepSize );
+    cellDescription.setPredictorTimeStepSize( admissibleTimeStepSize );
+    cellDescription.setPredictorTimeStamp   ( cellDescription.getCorrectorTimeStamp()+admissibleTimeStepSize );
+
+    return admissibleTimeStepSize;
+  }
+  return std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::ADERDGSolver::zeroTimeStepSizes(
+    const int cellDescriptionsIndex,
+    const int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
@@ -2090,10 +2108,6 @@ void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData(const i
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
-    //  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): Should not be necessary: Prove by induction
-//    logDebug("reconstructStandardTimeSteppingData(...)","cellDescription.getCorrectorTimeStamp()="<<cellDescription.getCorrectorTimeStamp());
-//    logDebug("reconstructStandardTimeSteppingData(...)","cellDescription.getCorrectorTimeStepSize()="<<cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): remove
-
     cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize());
     cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
     cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
@@ -2272,7 +2286,7 @@ void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(CellDescrip
 
 void exahype::solvers::ADERDGSolver::preProcess(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (
@@ -2445,7 +2459,7 @@ void exahype::solvers::ADERDGSolver::restrictToNextParent(
       const int fineGridCellDescriptionsIndex,
       const int fineGridElement,
       const int coarseGridCellDescriptionsIndex,
-      const int coarseGridElement) {
+      const int coarseGridElement) const {
   // do nothing
 }
 
@@ -2747,7 +2761,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursMetadata(
     const int                                 cellDescriptionsIndex2,
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
-    const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
   mergeNeighboursHelperStatus      (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
   mergeNeighboursAugmentationStatus(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
   mergeNeighboursLimiterStatus     (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
@@ -2992,7 +3006,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryOrEmptyCellMetadata(
       const int cellDescriptionsIndex,
       const int element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) {
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const {
    CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
    const int direction   = tarch::la::equalsReturnIndex(posCell, posBoundaryOrEmptyCell);
@@ -3257,7 +3271,7 @@ void
 exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
     MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);
 
   if (element!=exahype::solvers::Solver::NotFound)  {
@@ -3275,7 +3289,7 @@ exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
 void exahype::solvers::ADERDGSolver::mergeWithMasterWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) {
+      const int                        element) const {
   if (element!=exahype::solvers::Solver::NotFound)  {
     CellDescription& cellDescription =
         getCellDescription(cellDescriptionsIndex,element);
@@ -3295,7 +3309,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -3319,7 +3333,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
 void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, toRank, x, level,
@@ -3332,7 +3346,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   auto& p = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
   assertion4(tarch::la::equals(x,p.getOffset()+0.5*p.getSize()),x,p.getOffset()+0.5*p.getSize(),level,p.getLevel());
   assertion2(p.getLevel()==level,p.getLevel(),level);
@@ -3351,7 +3365,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
 void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
@@ -3367,7 +3381,7 @@ exahype::solvers::ADERDGSolver::appendNeighbourCommunicationMetadata(
     const tarch::la::Vector<DIMENSIONS,int>& src,
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);
 
   if (element!=exahype::solvers::Solver::NotFound)  {
@@ -3390,7 +3404,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
     const tarch::la::Vector<DIMENSIONS, int>& src,
     const tarch::la::Vector<DIMENSIONS, int>& dest,
     const int                                 cellDescriptionsIndex,
-    const int                                 element) {
+    const int                                 element) const {
   if (tarch::la::countEqualEntries(src,dest)!=DIMENSIONS-1) { // only consider faces
     return;
   }
@@ -3468,7 +3482,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
 void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, toRank, x, level,
@@ -3632,7 +3646,7 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   logDebug(
       "dropNeighbourData(...)", "drop "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
       fromRank << " for vertex x=" << x << ", level=" << level <<
@@ -3675,7 +3689,7 @@ exahype::solvers::ADERDGSolver::compileMessageForMaster(const int capacity) cons
 void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level){
+    const int                                    level) const {
   DataHeap::HeapEntries messageForMaster = compileMessageForMaster();
 
   assertion1(messageForMaster.size()==4,messageForMaster.size());
@@ -3756,7 +3770,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   logDebug("sendEmptyDataToMaster(...)","empty data for solver sent to rank "<<masterRank<<
            ", cell: "<< x << ", level: " << level);
 
@@ -3771,7 +3785,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -3810,7 +3824,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) {
   logDebug("mergeWithWorkerData(...)","merge with worker data from rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
 
@@ -3873,7 +3887,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 void exahype::solvers::ADERDGSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   logDebug("dropWorkerData(...)","dropping worker data from rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
 
@@ -3918,7 +3932,7 @@ exahype::solvers::ADERDGSolver::compileMessageForWorker(const int capacity) cons
 void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   DataHeap::HeapEntries messageForWorker = compileMessageForWorker();
 
   if (tarch::parallel::Node::getInstance().getRank()==
@@ -3991,7 +4005,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
 
 bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -4058,7 +4072,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
 void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, workerRank, x, level,
@@ -4071,7 +4085,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -4104,7 +4118,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
 void exahype::solvers::ADERDGSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-        const int                                     level) {
+        const int                                     level) const {
   for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         masterRank, x, level,
@@ -4203,7 +4217,7 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
 }
 
 
-void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
+void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) const {
   #ifdef SharedMemoryParallelisation
   bool madeDecision = CompressionAccuracy<=0.0;
   bool uncompress   = false;
@@ -4242,8 +4256,7 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
 
 
 void exahype::solvers::ADERDGSolver::determineUnknownAverages(
-  exahype::records::ADERDGCellDescription& cellDescription
-) {
+  exahype::records::ADERDGCellDescription& cellDescription) const {
   for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
     double solutionAverage         = 0.0;
     double previousSolutionAverage = 0.0;
@@ -4274,7 +4287,8 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
 }
 
 
-void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign) {
+void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
+    exahype::records::ADERDGCellDescription& cellDescription, double sign) const {
   for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
     int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
     for (int i=0; i<numberOfDoFsPerVariable; i++) {
@@ -4294,7 +4308,8 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::recor
 }
 
 
-void exahype::solvers::ADERDGSolver::tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) {
+void exahype::solvers::ADERDGSolver::tearApart(
+    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
   char exponent;
   long int mantissa;
   char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
@@ -4322,7 +4337,8 @@ void exahype::solvers::ADERDGSolver::tearApart(int numberOfEntries, int normalHe
 }
 
 
-void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) {
+void exahype::solvers::ADERDGSolver::glueTogether(
+    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
   char exponent  = 0;
   long int mantissa;
   char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
@@ -4367,7 +4383,8 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int norma
 
 
 
-void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
+    exahype::records::ADERDGCellDescription& cellDescription) const {
   assertion(CompressionAccuracy>0.0);
 
   assertion( cellDescription.getPreviousSolutionCompressed()==-1 );
@@ -4596,7 +4613,8 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
 }
 
 
-void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
+    exahype::records::ADERDGCellDescription& cellDescription) const {
   assertion(CompressionAccuracy>0.0);
 
   #if !defined(ValidateCompressedVsUncompressedData)

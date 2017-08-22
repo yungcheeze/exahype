@@ -584,7 +584,7 @@ exahype::solvers::Solver::compileMeshUpdateFlagsForMaster(const int capacity) co
 void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level){
+    const int                                    level) const {
   DataHeap::HeapEntries meshRefinementFlags = compileMeshUpdateFlagsForMaster();
 
   assertion1(meshRefinementFlags.size()==2,meshRefinementFlags.size());

@@ -88,7 +88,7 @@ bool exahype::solvers::LimitingADERDGSolver::isValidCellDescriptionIndex(
 
 exahype::solvers::Solver::SubcellPosition exahype::solvers::LimitingADERDGSolver::computeSubcellPositionOfCellOrAncestor(
       const int cellDescriptionsIndex,
-      const int element) {
+      const int element) const {
   return _solver->computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
 }
 
@@ -266,7 +266,7 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
            ",nextLimiterDomainChange="<<static_cast<int>(_nextLimiterDomainChange));
 }
 
-void exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes() {
+void exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes()  {
   _solver->updateTimeStepSizes();
 }
 
@@ -659,15 +659,11 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
 double exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes(
       const int cellDescriptionsIndex,
       const int solverElement,
-      double*   tempEigenvalues) const {
+      double*   tempEigenvalues) {
   SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
     const double admissibleTimeStepSize =
-        _solver->computeTimeStepSize(solverPatch,tempEigenvalues);
-
-    solverPatch.setCorrectorTimeStepSize( admissibleTimeStepSize );
-    solverPatch.setPredictorTimeStepSize( admissibleTimeStepSize );
-    solverPatch.setPredictorTimeStamp   ( solverPatch.getCorrectorTimeStamp()+admissibleTimeStepSize );
+        _solver->updateTimeStepSizes(cellDescriptionsIndex,solverElement,tempEigenvalues);
 
     ensureLimiterPatchTimeStepDataIsConsistent(cellDescriptionsIndex,solverElement);
 
@@ -677,7 +673,8 @@ double exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes(
   return std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) {
+void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(
+    const int cellDescriptionsIndex, const int solverElement) const {
   _solver->zeroTimeStepSizes(cellDescriptionsIndex,solverElement);
   ensureLimiterPatchTimeStepDataIsConsistent(cellDescriptionsIndex,solverElement);
 }
@@ -1470,7 +1467,7 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatus(
 
 void exahype::solvers::LimitingADERDGSolver::preProcess(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   _solver->preProcess(cellDescriptionsIndex,element);
 
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
@@ -1520,7 +1517,7 @@ void exahype::solvers::LimitingADERDGSolver::restrictToNextParent(
         const int fineGridCellDescriptionsIndex,
         const int fineGridElement,
         const int coarseGridCellDescriptionsIndex,
-        const int coarseGridElement) {
+        const int coarseGridElement) const {
   restrictLimiterStatus(
       fineGridCellDescriptionsIndex,
       fineGridElement,coarseGridCellDescriptionsIndex,coarseGridElement);
@@ -1545,7 +1542,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursMetadata(
     const int                                 cellDescriptionsIndex2,
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
-    const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
   _solver->mergeNeighboursMetadata(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 }
 
@@ -1654,7 +1651,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
     const int                                 cellDescriptionsIndex2,
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
-    const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
 
   SolverPatch& solverPatch1 = ADERDGSolver::getCellDescription(cellDescriptionsIndex1,element1);
@@ -1770,7 +1767,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryOrEmptyCellMetadat
       const int cellDescriptionsIndex,
       const int element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) {
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const {
     _solver->mergeWithBoundaryOrEmptyCellMetadata(
         cellDescriptionsIndex,element,posCell,posBoundaryOrEmptyCell);
 }
@@ -1788,7 +1785,7 @@ void exahype::solvers::LimitingADERDGSolver::appendNeighbourCommunicationMetadat
     const tarch::la::Vector<DIMENSIONS,int>& src,
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   _solver->appendNeighbourCommunicationMetadata(
       metadata,src,dest,
       cellDescriptionsIndex,solverNumber);
@@ -1799,7 +1796,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
-      const int element) {
+      const int element) const {
   _solver->mergeWithNeighbourMetadata(metadata,src,dest,cellDescriptionsIndex,element);
 }
 
@@ -1933,7 +1930,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   // send an empty minAndMax message
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables) {
@@ -2100,7 +2097,7 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   logDebug("dropNeighbourData(...)", "receive data for solver " << _identifier << " from rank " <<
       fromRank << " at vertex x=" << x << ", level=" << level <<
       ", source=" << src << ", destination=" << dest);
@@ -2155,7 +2152,7 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
 void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMetadata(
     exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   _solver->appendMasterWorkerCommunicationMetadata(
       metadata,cellDescriptionsIndex,solverNumber);
 }
@@ -2163,7 +2160,7 @@ void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMeta
 void exahype::solvers::LimitingADERDGSolver::mergeWithMasterWorkerMetadata(
     const exahype::MetadataHeap::HeapEntries& metadata,
     const int                                 cellDescriptionsIndex,
-    const int                                 element) {
+    const int                                 element) const {
   _solver->mergeWithMasterWorkerMetadata(
       metadata,cellDescriptionsIndex,element);
 }
@@ -2176,7 +2173,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorkerOrMasterDueToForkOr
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->sendDataToWorkerOrMasterDueToForkOrJoin(
       toRank,cellDescriptionsIndex,element,x,level);
 
@@ -2193,7 +2190,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorkerOrMasterDueToForkOr
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
         toRank,x,level);
   _limiter->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
@@ -2205,7 +2202,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerOrMasterDataDueToFor
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->mergeWithWorkerOrMasterDataDueToForkOrJoin(
       fromRank,cellDescriptionsIndex,element,x,level);
 
@@ -2222,7 +2219,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerOrMasterDataDueToFor
 void exahype::solvers::LimitingADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->dropWorkerOrMasterDataDueToForkOrJoin(
           fromRank,x,level);
   _limiter->dropWorkerOrMasterDataDueToForkOrJoin(
@@ -2235,7 +2232,7 @@ void exahype::solvers::LimitingADERDGSolver::dropWorkerOrMasterDataDueToForkOrJo
 void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   DataHeap::HeapEntries messageForMaster =
       _solver->compileMessageForMaster(5);
 
@@ -2291,7 +2288,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 
 bool exahype::solvers::LimitingADERDGSolver::hasToSendDataToMaster(
       const int cellDescriptionsIndex,
-      const int element) {
+      const int element) const {
   #if defined(Asserts) || defined(Debug)
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
   if (limiterElement!=exahype::solvers::Solver::NotFound) {
@@ -2307,7 +2304,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->sendDataToMaster(
       masterRank,cellDescriptionsIndex,element,x,level);
   // limiter is only active on the finest mesh level
@@ -2316,7 +2313,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->sendEmptyDataToMaster(masterRank,x,level);
 }
 
@@ -2334,7 +2331,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 void exahype::solvers::LimitingADERDGSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->dropWorkerData(workerRank,x,level);
 }
 
@@ -2344,7 +2341,7 @@ void exahype::solvers::LimitingADERDGSolver::dropWorkerData(
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(9);
 
   // append additional data
@@ -2419,7 +2416,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->sendEmptyDataToWorker(workerRank,x,level);
   // limiter is only active on the finest mesh level
 }
@@ -2430,7 +2427,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->mergeWithMasterData(
       masterRank,masterMetadata,cellDescriptionsIndex,element,x,level);
 }
@@ -2438,7 +2435,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 void exahype::solvers::LimitingADERDGSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   _solver->dropMasterData(masterRank,x,level);
 }
 #endif

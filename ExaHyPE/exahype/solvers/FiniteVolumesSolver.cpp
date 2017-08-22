@@ -43,24 +43,22 @@ void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
   Heap::HeapEntries::iterator p =
       Heap::getInstance().getData(cellDescriptionsIndex).begin();
   while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    if (!deleteOnlyCells || p->getType()==CellDescription::Type::Cell) {
+      auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
 
-    FiniteVolumesSolver* fvSolver = nullptr;
-    if (solver->getType()==Solver::Type::FiniteVolumes) {
-      fvSolver = static_cast<FiniteVolumesSolver*>(solver);
-    }
-    else if (solver->getType()==Solver::Type::LimitingADERDG) {
-      fvSolver =
-          static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
-    }
-
-    if (fvSolver!=nullptr) {
-      assertion1(p->getType()==CellDescription::Type::Cell,p->toString());
+      FiniteVolumesSolver* fvSolver = nullptr;
+      if (solver->getType()==Solver::Type::FiniteVolumes) {
+        fvSolver = static_cast<FiniteVolumesSolver*>(solver);
+      }
+      else if (solver->getType()==Solver::Type::LimitingADERDG) {
+        fvSolver =
+            static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
+      }
+      assertion(fvSolver!=nullptr);
       p->setType(CellDescription::Type::Erased);
       fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+
       p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
-    } else {
-      ++p;
     }
   }
 }
@@ -160,7 +158,7 @@ bool exahype::solvers::FiniteVolumesSolver::isComputing(
 }
 
 void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
-    CellDescription& cellDescription) {
+    CellDescription& cellDescription) const {
   switch (_timeStepping) {
     case TimeStepping::Global:
       cellDescription.setPreviousTimeStepSize(_previousMinTimeStepSize);;
@@ -248,7 +246,7 @@ int exahype::solvers::FiniteVolumesSolver::tryGetElement(
 
 exahype::solvers::Solver::SubcellPosition exahype::solvers::FiniteVolumesSolver::computeSubcellPositionOfCellOrAncestor(
         const int cellDescriptionsIndex,
-        const int element) {
+        const int element) const {
   // TODO(Dominic): Comment code in as soon as we have all the required fields
   // on the cell description.
 //  CellDescription& cellDescription =
@@ -502,7 +500,31 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
   return std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) {
+double exahype::solvers::FiniteVolumesSolver::updateTimeStepSizes(
+    const int cellDescriptionsIndex,
+    const int element,
+    double*   tempEigenvalues) {
+  CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
+
+  if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
+    //         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo
+    double* solution = exahype::DataHeap::getInstance().getData(p.getSolution()).data();
+
+    double admissibleTimeStepSize = stableTimeStepSize(
+        solution, tempEigenvalues, p.getSize());
+
+    assertion(!std::isnan(admissibleTimeStepSize));
+    p.setTimeStepSize(admissibleTimeStepSize);
+
+    return admissibleTimeStepSize;
+  }
+
+  return std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes(
+    const int cellDescriptionsIndex,
+    const int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
@@ -633,7 +655,7 @@ void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
 
 void exahype::solvers::FiniteVolumesSolver::preProcess(
         const int cellDescriptionsIndex,
-        const int element) {
+        const int element) const {
   // TODO(Dominic)
 //  assertionMsg(false,"Please implement!");
 }
@@ -660,7 +682,7 @@ void exahype::solvers::FiniteVolumesSolver::restrictToNextParent(
       const int fineGridCellDescriptionsIndex,
       const int fineGridElement,
       const int coarseGridCellDescriptionsIndex,
-      const int coarseGridElement) {
+      const int coarseGridElement) const {
   // do nothing
 }
 
@@ -682,7 +704,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighboursMetadata(
     const int                                 cellDescriptionsIndex2,
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
-    const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
   // do nothing
 }
 
@@ -761,7 +783,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryOrEmptyCellMetadata
       const int cellDescriptionsIndex,
       const int element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) {
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const {
    // do nothing
 }
 
@@ -932,7 +954,7 @@ void
 exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
     exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   for (int i = 0; i < exahype::MasterWorkerCommunicationMetadataPerSolver; ++i) {
     metadata.push_back(exahype::InvalidMetadataEntry); // implicit conversion
   }
@@ -941,7 +963,7 @@ exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
 void exahype::solvers::FiniteVolumesSolver::mergeWithMasterWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) {
+      const int                        element) const {
   // do nothing
 }
 
@@ -954,7 +976,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJ
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -978,7 +1000,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJ
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, toRank, x, level,
@@ -991,7 +1013,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerOrMasterDataDueToFork
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   auto& cellDescription = getCellDescription(cellDescriptionsIndex,element);
   assertion4(tarch::la::equals(x,cellDescription.getOffset()+0.5*cellDescription.getSize()),x,cellDescription.getOffset()+0.5*cellDescription.getSize(),level,cellDescription.getLevel());
   assertion2(cellDescription.getLevel()==level,cellDescription.getLevel(),level);
@@ -1010,7 +1032,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerOrMasterDataDueToFork
 void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoin(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
@@ -1026,7 +1048,7 @@ exahype::solvers::FiniteVolumesSolver::appendNeighbourCommunicationMetadata(
     const tarch::la::Vector<DIMENSIONS,int>& src,
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     const int cellDescriptionsIndex,
-    const int solverNumber) {
+    const int solverNumber) const {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);
 
   if (element!=exahype::solvers::Solver::NotFound)  {
@@ -1048,7 +1070,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourMetadata(
     const tarch::la::Vector<DIMENSIONS, int>& src,
     const tarch::la::Vector<DIMENSIONS, int>& dest,
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   // do nothing
 }
 
@@ -1106,7 +1128,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, toRank, x, level,
@@ -1215,7 +1237,7 @@ void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
@@ -1243,7 +1265,7 @@ void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
 void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   DataHeap::HeapEntries timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minTimeStepSize);
   timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0);
@@ -1325,7 +1347,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, masterRank, x, level,
@@ -1337,7 +1359,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -1390,7 +1412,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
 void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   logDebug("dropWorkerData(...)","Dropping worker data from rank "<<workerRank<<
                ", cell: "<< x << ", level: " << level);
 
@@ -1406,7 +1428,7 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
 void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   std::vector<double> timeStepDataToSend(0,4);
   timeStepDataToSend.push_back(_minTimeStamp); // TODO(Dominic): Append previous time step size
   timeStepDataToSend.push_back(_minTimeStepSize);
@@ -1472,7 +1494,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
 
 bool exahype::solvers::FiniteVolumesSolver::hasToSendDataToMaster(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -1534,7 +1556,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, workerRank, x, level,
@@ -1547,7 +1569,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) const {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -1561,7 +1583,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
 void exahype::solvers::FiniteVolumesSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-        const int                                     level) {
+        const int                                     level) const {
   for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         masterRank, x, level,
