@@ -259,7 +259,12 @@ bool exahype::mappings::GridErasing::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker
 ) {
-  // do nothing
+  if (fineGridCell.isInitialised()) {
+    exahype::solvers::ADERDGSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex(),false);
+    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(fineGridCell.getCellDescriptionsIndex(),false);
+    fineGridCell.shutdownMetaData();
+  }
+
   return false;
 }
 
