@@ -503,6 +503,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void updateTimeStepSizes() override;
+
   void zeroTimeStepSizes() override;
 
   /**

@@ -182,7 +182,24 @@ void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _previousMinTimeStepSize  = _minTimeStepSize;
+      _minTimeStepSize          = _minNextTimeStepSize;
+      _minNextTimeStepSize      = std::numeric_limits<double>::max();
+      break;
+    case TimeStepping::GlobalFixed:
+      _minTimeStepSize          = _minNextTimeStepSize;
+      break;
+  }
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+}
+
+void exahype::solvers::FiniteVolumesSolver::updateTimeStepSizes() {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _previousMinTimeStepSize  = _minNextTimeStepSize;
       _minTimeStamp            += _minTimeStepSize;
       _minTimeStepSize          = _minNextTimeStepSize;
       _minNextTimeStepSize      = std::numeric_limits<double>::max();
