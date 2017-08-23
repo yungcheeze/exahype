@@ -2641,9 +2641,11 @@ exahype::solvers::ADERDGSolver::determineHelperStatus(
   if (cellDescription.getType()==CellDescription::Type::Cell) {
     return MaximumAugmentationStatus;
   }
+  #ifdef Parallel
   if (cellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
     return MinimumHelperStatusForAllocatingBoundaryData;
   }
+  #endif
   return tarch::la::max(cellDescription.getFacewiseHelperStatus());
 }
 
