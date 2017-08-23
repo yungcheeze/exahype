@@ -2149,6 +2149,12 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
 /////////////////////////////////////
 // MASTER<=>WORKER
 /////////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
+    const int cellDescriptionsIndex,
+    const int element) {
+  _solver->prepareCellDescriptionOnMasterWorkerBoundary(cellDescriptionsIndex,element);
+}
+
 void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMetadata(
     exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
@@ -2157,17 +2163,22 @@ void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMeta
       metadata,cellDescriptionsIndex,solverNumber);
 }
 
-void exahype::solvers::LimitingADERDGSolver::mergeWithMasterWorkerMetadata(
+void exahype::solvers::LimitingADERDGSolver::mergeWithMasterMetadata(
     const exahype::MetadataHeap::HeapEntries& metadata,
     const int                                 cellDescriptionsIndex,
     const int                                 element) const {
-  _solver->mergeWithMasterWorkerMetadata(
+  _solver->mergeWithMasterMetadata(
       metadata,cellDescriptionsIndex,element);
 }
 
-///////////////////////////////////////
-// FORK OR JOIN
-///////////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
+    const exahype::MetadataHeap::HeapEntries& metadata,
+    const int                                 cellDescriptionsIndex,
+    const int                                 element) const {
+  _solver->mergeWithWorkerMetadata(
+      metadata,cellDescriptionsIndex,element);
+}
+
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -2229,6 +2240,7 @@ void exahype::solvers::LimitingADERDGSolver::dropWorkerOrMasterDataDueToForkOrJo
 ///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
+
 void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -2338,12 +2350,6 @@ void exahype::solvers::LimitingADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
-void exahype::solvers::LimitingADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
-    const int cellDescriptionsIndex,
-    const int element) {
-  _solver->prepareCellDescriptionOnMasterWorkerBoundary(cellDescriptionsIndex,element);
-}
-
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,

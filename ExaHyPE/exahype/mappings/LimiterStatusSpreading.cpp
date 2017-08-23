@@ -316,13 +316,19 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      solver->sendMeshUpdateFlagsToMaster(
-          tarch::parallel::NodePool::getInstance().getMasterRank(),
-          verticesEnumerator.getCellCenter(),
-          verticesEnumerator.getLevel());
+    solver->sendMeshUpdateFlagsToMaster(
+        tarch::parallel::NodePool::getInstance().getMasterRank(),
+        verticesEnumerator.getCellCenter(),
+        verticesEnumerator.getLevel());
   }
+
+  exahype::sendMasterWorkerCommunicationMetadata(
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      localCell.getCellDescriptionsIndex(),
+      verticesEnumerator.getCellCenter(),
+      verticesEnumerator.getLevel());
 }
 
 void exahype::mappings::LimiterStatusSpreading::mergeWithMaster(
@@ -337,11 +343,27 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
+  // Merge global solver states
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     solver->mergeWithWorkerMeshUpdateFlags(
         worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+  }
+
+  // Merge cell states
+  if (fineGridCell.isInitialised()) {
+    fineGridCell.mergeWithWorkerMetadata(
+        worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel(),
+        _localState.getAlgorithmSection());
+  } else {
+    exahype::dropMetadata(
+        worker,
+        peano::heap::MessageType::MasterWorkerCommunication,
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getLevel());
   }

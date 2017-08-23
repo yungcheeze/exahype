@@ -1424,19 +1424,25 @@ public:
   /////////////////////////////////////
   // MASTER<=>WORKER
   /////////////////////////////////////
+  void prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   void appendMasterWorkerCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
-  void mergeWithMasterWorkerMetadata(
-      const exahype::MetadataHeap::HeapEntries& neighbourMetadata,
-      const int                                 cellDescriptionsIndex,
-      const int                                 element) const override;
+  void mergeWithMasterMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const override;
 
-  /////////////////////////////////////
-  // FORK OR JOIN
-  /////////////////////////////////////
+  void mergeWithWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const override;
+
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -1506,10 +1512,6 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
-  void prepareCellDescriptionOnMasterWorkerBoundary(
-        const int cellDescriptionsIndex,
-        const int element) override;
-
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,

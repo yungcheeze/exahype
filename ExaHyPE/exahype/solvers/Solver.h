@@ -152,7 +152,7 @@ namespace exahype {
   static constexpr int NeighbourCommunicationMetadataHelperStatus       = 2;
   static constexpr int NeighbourCommunicationMetadataLimiterStatus      = 3;
 
-  static constexpr int MasterWorkerCommunicationMetadataPerSolver       = 4;
+  static constexpr int MasterWorkerCommunicationMetadataPerSolver       = 5;
 
   static constexpr int MasterWorkerCommunicationMetadataSendReceiveData = 0;
 
@@ -1349,6 +1349,10 @@ class exahype::solvers::Solver {
         const int parentElement,
         const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) = 0;
 
+  ///////////////////////////////////
+  // NEIGHBOUR
+  ///////////////////////////////////
+
   /**
    * Merge the metadata of two cell descriptions.
    *
@@ -1573,6 +1577,60 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) const = 0;
 
+  ///////////////////////////////////
+  // WORKER<=>MASTER
+  ///////////////////////////////////
+  /**
+   * Prepares a solver's cell descriptions at a
+   * master-worker boundary for exchanging data
+   * (with the master or worker, respectively).
+   *
+   * \note Thread-safe
+   *
+   * \note ADERDGSolver, e.g., calls a method here which locks a semaphore.
+   * This routine can thus not have a const modifier.
+   *
+   * \note TODO ADERDGSolver: We currently assume there is no cell at a master worker boundary
+   * that needs to restrict data up to an Ancestor on the
+   * master rank. However, this can definitively happen. For example,
+   * in situations where a refined cell is augmented as well, i.e.
+   * has virtual children (Descendants).
+   */
+  virtual void prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
+   * If a cell description was allocated at heap address \p cellDescriptionsIndex
+   * for solver \p solverNumber, encode metadata of the cell description
+   * and push it to the back of the metadata vector \p metadata.
+   *
+   * Otherwise, push exahype::MasterWorkerCommunicationMetadataPerSolver
+   * times exahype::InvalidMetadataEntry to the back of the vector.
+   *
+   * TODO(Dominic): Do send more information, e.g., the limiter status!
+   */
+  virtual void appendMasterWorkerCommunicationMetadata(
+      MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) const = 0;
+
+  /**
+   * TODO(Dominic): docu
+   */
+  virtual void mergeWithMasterMetadata(
+        const MetadataHeap::HeapEntries& receivedMetadata,
+        const int                        cellDescriptionsIndex,
+        const int                        element) const = 0;
+
+  /**
+   * TODO(Dominic): docu
+   */
+  virtual void mergeWithWorkerMetadata(
+          const MetadataHeap::HeapEntries& receivedMetadata,
+          const int                        cellDescriptionsIndex,
+          const int                        element) const = 0;
+
   /**
    * Send solver data to master or worker rank. Read the data from
    * the cell description \p element in
@@ -1631,20 +1689,6 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
-
-  /**
-   * Prepares a solver's cell descriptions at a
-   * master-worker boundary for exchanging data
-   * (with the master or worker, respectively).
-   *
-   * \note Thread-safe
-   *
-   * \note ADERDGSolver, e.g., calls a method here which locks a semaphore.
-   * This routine can thus not have a const modifier.
-   */
-  virtual void prepareCellDescriptionOnMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element);
 
   /**
    * Determine if the solver has to reduce data for the cell description
@@ -1798,30 +1842,6 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
-
-  /**
-   * If a cell description was allocated at heap address \p cellDescriptionsIndex
-   * for solver \p solverNumber, encode metadata of the cell description
-   * and push it to the back of the metadata vector \p metadata.
-   *
-   * Otherwise, push exahype::MasterWorkerCommunicationMetadataPerSolver
-   * times exahype::InvalidMetadataEntry to the back of the vector.
-   *
-   * TODO(Dominic): Do send more information, e.g., the limiter status!
-   */
-  virtual void appendMasterWorkerCommunicationMetadata(
-      MetadataHeap::HeapEntries& metadata,
-      const int cellDescriptionsIndex,
-      const int solverNumber) const = 0;
-
-  /**
-   * TODO(Dominic): docu
-   */
-  virtual void mergeWithMasterWorkerMetadata(
-        const MetadataHeap::HeapEntries& receivedMetadata,
-        const int                        cellDescriptionsIndex,
-        const int                        element) const = 0;
-
   /**
    * Send data to the worker that is not
    * depending on a particular cell description.

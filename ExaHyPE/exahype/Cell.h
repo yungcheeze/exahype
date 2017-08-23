@@ -187,6 +187,26 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const int faceIndex,
       exahype::Vertex* const verticesAroundCell,
       const peano::grid::VertexEnumerator& verticesEnumerator);
+
+  /**
+   * Receives metadata from a worker and merges it with all
+   * solvers registered on the cell.
+   */
+  void mergeWithWorkerMetadata(
+      const int                                   workerRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level,
+      const exahype::records::State::AlgorithmSection& section) const;
+
+  /**
+   * Receives metadata from the master and merges it with all
+   * solvers registered on the cell.
+   */
+  void mergeWithMasterMetadata(
+      const int                                   masterRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level,
+      const exahype::records::State::AlgorithmSection& section) const;
   #endif
 
   /**

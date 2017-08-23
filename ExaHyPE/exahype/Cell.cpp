@@ -186,6 +186,74 @@ int exahype::Cell::countListingsOfRemoteRankAtFace(
 
   return result;
 }
+
+void exahype::Cell::mergeWithWorkerMetadata(
+    const int                                   workerRank,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level,
+    const exahype::records::State::AlgorithmSection& section) const {
+  const int receivedMetadataIndex =
+      exahype::receiveMasterWorkerCommunicationMetadata(workerRank, x,level);
+  exahype::MetadataHeap::HeapEntries& receivedMetadata =
+      MetadataHeap::getInstance().getData(receivedMetadataIndex);
+  assertionEquals(receivedMetadata.size(),
+      exahype::MasterWorkerCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
+
+  if (isInitialised()) {
+    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = solver->tryGetElement(getCellDescriptionsIndex(),element);
+      const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
+      if (solver->isComputing(section) &&
+          element!=exahype::solvers::Solver::NotFound &&
+          receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+        MetadataHeap::HeapEntries metadataPortion(
+            receivedMetadata.begin()+offset,
+            receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
+
+        solver->mergeWithWorkerMetadata(
+            metadataPortion,
+            getCellDescriptionsIndex(),element);
+      }
+    }
+  }
+
+  MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+}
+
+void exahype::Cell::mergeWithMasterMetadata(
+    const int                                        masterRank,
+    const tarch::la::Vector<DIMENSIONS,double>&      x,
+    const int                                        level,
+    const exahype::records::State::AlgorithmSection& section) const {
+  const int receivedMetadataIndex =
+      exahype::receiveMasterWorkerCommunicationMetadata(masterRank, x,level);
+  exahype::MetadataHeap::HeapEntries& receivedMetadata =
+      MetadataHeap::getInstance().getData(receivedMetadataIndex);
+  assertionEquals(receivedMetadata.size(),
+      exahype::MasterWorkerCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
+
+  if (isInitialised()) {
+    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = solver->tryGetElement(getCellDescriptionsIndex(),element);
+      const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
+      if (solver->isComputing(section) &&
+          element!=exahype::solvers::Solver::NotFound &&
+          receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+        MetadataHeap::HeapEntries metadataPortion(
+            receivedMetadata.begin()+offset,
+            receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
+
+        solver->mergeWithMasterMetadata(
+            metadataPortion,
+            getCellDescriptionsIndex(),element);
+      }
+    }
+  }
+
+  MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+}
 #endif
 
 tarch::la::Vector<DIMENSIONS,double> exahype::Cell::computeFaceBarycentre(

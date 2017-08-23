@@ -960,16 +960,19 @@ exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
   }
 }
 
-void exahype::solvers::FiniteVolumesSolver::mergeWithMasterWorkerMetadata(
+void exahype::solvers::FiniteVolumesSolver::mergeWithMasterMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
       const int                        element) const {
   // do nothing
 }
 
-///////////////////////////////////
-// FORK OR JOIN
-///////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const {
+  // do nothing
+}
 
 void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,

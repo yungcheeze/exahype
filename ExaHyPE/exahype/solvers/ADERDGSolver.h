@@ -2080,7 +2080,12 @@ public:
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
-  void mergeWithMasterWorkerMetadata(
+  void mergeWithMasterMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const override;
+
+  void mergeWithWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
       const int                        element) const override;

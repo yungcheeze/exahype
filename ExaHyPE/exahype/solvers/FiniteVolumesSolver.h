@@ -732,19 +732,25 @@ public:
   ///////////////////////////////////
   // MASTER<=>WORKER
   ///////////////////////////////////
+  void prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   void appendMasterWorkerCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
-  void mergeWithMasterWorkerMetadata(
-        const MetadataHeap::HeapEntries& receivedMetadata,
-        const int                        cellDescriptionsIndex,
-        const int                        element) const override;
+  void mergeWithMasterMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const override;
 
-  ///////////////////////////////////
-  // FORK OR JOIN
-  ///////////////////////////////////
+  void mergeWithWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) const override;
+
   /**
    * Send all ADERDG cell descriptions to rank
    * \p toRank.
@@ -883,10 +889,6 @@ public:
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
-  void prepareCellDescriptionOnMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element) override;
-
   bool hasToSendDataToMaster(
         const int cellDescriptionsIndex,
         const int element) const override;

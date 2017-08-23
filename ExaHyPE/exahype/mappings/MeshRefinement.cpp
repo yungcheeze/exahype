@@ -511,29 +511,11 @@ void exahype::mappings::MeshRefinement::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (receivedCell.isInitialised()) {
-    const int receivedMetadataIndex =
-        exahype::receiveMasterWorkerCommunicationMetadata(
-            tarch::parallel::NodePool::getInstance().getMasterRank(),
-            receivedVerticesEnumerator.getCellCenter(),
-            receivedVerticesEnumerator.getLevel());
-    MetadataHeap::HeapEntries& receivedMetadata =
-        MetadataHeap::getInstance().getData(receivedMetadataIndex);
-
-    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      if (solver->getMeshUpdateRequest()) {
-        const int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
-        const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
-        if (element!=exahype::solvers::Solver::NotFound) {
-          exahype::MetadataHeap::HeapEntries metadataPortion(
-              receivedMetadata.begin()+offset,
-              receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
-
-          solver->mergeWithMasterWorkerMetadata(metadataPortion,receivedCell.getCellDescriptionsIndex(),element);
-        }
-      }
-    }
-    MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+    receivedCell.mergeWithMasterMetadata(
+        tarch::parallel::NodePool::getInstance().getMasterRank(),
+        receivedVerticesEnumerator.getCellCenter(),
+        receivedVerticesEnumerator.getLevel(),
+        _localState.getAlgorithmSection());
   } else {
     exahype::dropMetadata(
         tarch::parallel::NodePool::getInstance().getMasterRank(),
@@ -666,12 +648,10 @@ void exahype::mappings::MeshRefinement::prepareSendToMaster(
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
     solver->sendMeshUpdateFlagsToMaster(
         tarch::parallel::NodePool::getInstance().getMasterRank(),
         verticesEnumerator.getCellCenter(),
         verticesEnumerator.getLevel());
-
 
     const int element =
         solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
@@ -680,6 +660,12 @@ void exahype::mappings::MeshRefinement::prepareSendToMaster(
           localCell.getCellDescriptionsIndex(),element);
     }
   }
+
+  exahype::sendMasterWorkerCommunicationMetadata(
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      localCell.getCellDescriptionsIndex(),
+      verticesEnumerator.getCellCenter(),
+      verticesEnumerator.getLevel());
 }
 
 void exahype::mappings::MeshRefinement::mergeWithMaster(
@@ -694,11 +680,27 @@ void exahype::mappings::MeshRefinement::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
+  // Merge global solver states
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     solver->mergeWithWorkerMeshUpdateFlags(
         worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+  }
+
+  // Merge cell states
+  if (fineGridCell.isInitialised()) {
+    fineGridCell.mergeWithWorkerMetadata(
+        worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel(),
+        _localState.getAlgorithmSection());
+  } else {
+    exahype::dropMetadata(
+        worker,
+        peano::heap::MessageType::MasterWorkerCommunication,
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getLevel());
   }
