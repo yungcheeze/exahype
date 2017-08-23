@@ -3379,7 +3379,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerMetadata(
     const CellDescription::Type receivedType = static_cast<CellDescription::Type>(receivedMetadata[index++].getU());
     index++; // workerAugmentationStatus
     const int  workerHelperStatus            = receivedMetadata[index++].getU();
-    const int  workerLimiterStatus           = receivedMetadata[index++].getU();
+    index++; // workerLimiterStatus
     index++; // workerHoldData
 
     assertion(receivedType==cellDescription.getType());
@@ -3394,13 +3394,10 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerMetadata(
       // is not implemented yet.
       assertion(workerHelperStatus==MinimumHelperStatusForAllocatingBoundaryData);
     } else if (cellDescription.getType()==CellDescription::Ancestor) {
-      cellDescription.setLimiterStatus(workerLimiterStatus);
-
       if (cellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
         assertion(cellDescription.getHelperStatus()==MinimumHelperStatusForAllocatingBoundaryData);
       }
     } else if (cellDescription.getType()==CellDescription::Cell) {
-      cellDescription.setLimiterStatus(workerLimiterStatus);
       assertion(!cellDescription.getIsAugmented() || cellDescription.getHasToHoldDataForMasterWorkerCommunication());
       assertion(!cellDescription.getHasToHoldDataForMasterWorkerCommunication() || cellDescription.getIsAugmented());
     }

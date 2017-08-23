@@ -2172,11 +2172,34 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterMetadata(
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
-    const exahype::MetadataHeap::HeapEntries& metadata,
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata,
     const int                                 cellDescriptionsIndex,
     const int                                 element) const {
   _solver->mergeWithWorkerMetadata(
-      metadata,cellDescriptionsIndex,element);
+      receivedMetadata,cellDescriptionsIndex,element);
+
+  if (element!=exahype::solvers::Solver::NotFound)  {
+    SolverPatch& cellDescription =
+        ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+
+    int index=0;
+    const SolverPatch::Type receivedType = static_cast<SolverPatch::Type>(receivedMetadata[index++].getU());
+    index++; // workerAugmentationStatus
+    const int  workerHelperStatus        = receivedMetadata[index++].getU();
+    const int  workerLimiterStatus       = receivedMetadata[index++].getU();
+    index++; // workerHoldData
+
+    assertion(receivedType==cellDescription.getType());
+    if (cellDescription.getType()==SolverPatch::Ancestor ||
+        cellDescription.getType()==SolverPatch::Cell) {
+      cellDescription.setLimiterStatus(workerLimiterStatus);
+      const int parentElement =
+          _solver->tryGetElement(cellDescription.getParentIndex(),cellDescription.getSolverNumber());
+      if (parentElement!=exahype::solvers::Solver::NotFound) {
+        restrictLimiterStatus(cellDescriptionsIndex,element,cellDescription.getParentIndex(),parentElement);
+      }
+    }
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
