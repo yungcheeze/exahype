@@ -145,8 +145,6 @@ namespace exahype {
    */
   static constexpr int NeighbourCommunicationMetadataPerSolver    = 4;
 
-  // TODO(Dominic): We can still encode the information below
-  // into a single status int
   static constexpr int NeighbourCommunicationMetadataCellType           = 0;
   static constexpr int NeighbourCommunicationMetadataAugmentationStatus = 1;
   static constexpr int NeighbourCommunicationMetadataHelperStatus       = 2;
@@ -154,7 +152,11 @@ namespace exahype {
 
   static constexpr int MasterWorkerCommunicationMetadataPerSolver       = 5;
 
-  static constexpr int MasterWorkerCommunicationMetadataSendReceiveData = 0;
+  static constexpr int MasterWorkerCommunicationMetadataCellType           = 0;
+  static constexpr int MasterWorkerCommunicationMetadataAugmentationStatus = 1;
+  static constexpr int MasterWorkerCommunicationMetadataHelperStatus       = 2;
+  static constexpr int MasterWorkerCommunicationMetadataLimiterStatus      = 3;
+  static constexpr int MasterWorkerCommunicationMetadataSendReceiveData    = 4;
 
   /**
    * TODO(Dominic): Docu is outdated

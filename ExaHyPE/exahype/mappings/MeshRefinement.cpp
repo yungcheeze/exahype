@@ -531,6 +531,14 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   if (localCell.isInside() && localCell.isInitialised()) {
+    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
+      if(element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareCellDescriptionOnMasterWorkerBoundary(localCell.getCellDescriptionsIndex(),element);
+      }
+    }
+
     exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
         peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
     exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
@@ -547,11 +555,6 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
         solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
       }
     }
-
-    exahype::solvers::ADERDGSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex(),true);
-    exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(localCell.getCellDescriptionsIndex(),true);
-    localCell.shutdownMetaData();
-
   } else if (localCell.isInside() && !localCell.isInitialised()){
     exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(toRank,
         peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
@@ -559,7 +562,7 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
         peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
 
     for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
       solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
     }

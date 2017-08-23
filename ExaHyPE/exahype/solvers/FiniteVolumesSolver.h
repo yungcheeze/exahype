@@ -216,10 +216,8 @@ public:
   /**
    * Erase all cell descriptions registered for solvers
    * of type Type::ADERDG.
-   *
-   * \param deleteOnlyCells deletes only cell descriptions of type Cell
    */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
+  static void eraseCellDescriptions(const int cellDescriptionsIndex);
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
       int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,

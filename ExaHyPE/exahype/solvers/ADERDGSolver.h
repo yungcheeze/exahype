@@ -732,10 +732,8 @@ public:
   /**
    * Erase all cell descriptions registered for solvers
    * of type Type::ADERDG.
-   *
-   * \param deleteOnlyCells deletes only cell descriptions of type Cell
    */
-  static void eraseCellDescriptions(const int cellDescriptionsIndex, const bool deleteOnlyCells=false);
+  static void eraseCellDescriptions(const int cellDescriptionsIndex);
 
   void updateHelperStatus(
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;

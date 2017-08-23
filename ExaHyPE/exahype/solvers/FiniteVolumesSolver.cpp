@@ -36,30 +36,29 @@ constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
 
 tarch::logging::Log exahype::solvers::FiniteVolumesSolver::_log( "exahype::solvers::FiniteVolumesSolver");
 
-void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(
-    const int cellDescriptionsIndex, const bool deleteOnlyCells) {
+void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(const int cellDescriptionsIndex) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
   Heap::HeapEntries::iterator p =
       Heap::getInstance().getData(cellDescriptionsIndex).begin();
   while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    if (!deleteOnlyCells || p->getType()==CellDescription::Type::Cell) {
-      auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    assertion(p->getType()==CellDescription::Type::Cell);
 
-      FiniteVolumesSolver* fvSolver = nullptr;
-      if (solver->getType()==Solver::Type::FiniteVolumes) {
-        fvSolver = static_cast<FiniteVolumesSolver*>(solver);
-      }
-      else if (solver->getType()==Solver::Type::LimitingADERDG) {
-        fvSolver =
-            static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
-      }
-      assertion(fvSolver!=nullptr);
-      p->setType(CellDescription::Type::Erased);
-      fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
 
-      p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    FiniteVolumesSolver* fvSolver = nullptr;
+    if (solver->getType()==Solver::Type::FiniteVolumes) {
+      fvSolver = static_cast<FiniteVolumesSolver*>(solver);
     }
+    else if (solver->getType()==Solver::Type::LimitingADERDG) {
+      fvSolver =
+          static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
+    }
+    assertion(fvSolver!=nullptr);
+    p->setType(CellDescription::Type::Erased);
+    fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
+
+    p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
   }
 }
 
