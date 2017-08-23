@@ -3269,6 +3269,31 @@ void exahype::solvers::ADERDGSolver::dropCellDescriptions(
 ////////////////////////////////////
 // MASTER <=> WORKER
 ////////////////////////////////////
+void exahype::solvers::ADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Type::Ancestor) {
+    Solver::SubcellPosition subcellPosition =
+        exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+        <CellDescription,Heap>(cellDescription);
+
+    if (subcellPosition.parentElement!=NotFound) {
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+      cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
+
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      ensureNecessaryMemoryIsAllocated(cellDescription);
+    }
+  } else if (cellDescription.getType()==CellDescription::Type::Descendant) {
+    cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+    cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
+    ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+    ensureNecessaryMemoryIsAllocated(cellDescription);
+  }
+}
+
 void
 exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
     MetadataHeap::HeapEntries& metadata,
@@ -3776,7 +3801,11 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
   logDebug("sendEmptyDataToMaster(...)","empty data for solver sent to rank "<<masterRank<<
            ", cell: "<< x << ", level: " << level);
 
-  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+  const int numberOfMessages =
+        DataMessagesPerMasterWorkerCommunication +
+        (getDMPObservables() > 0) ? 2 : 0;
+
+  for(int sends=0; sends<numberOfMessages; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
@@ -3797,24 +3826,29 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
-      cellDescription.getType()==CellDescription::Ancestor
-      &&
+      cellDescription.getType()==CellDescription::Ancestor &&
       cellDescription.getHasToHoldDataForMasterWorkerCommunication()
-   ) {
-    double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
-    double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
-
+  ) {
     logDebug("sendDataToMaster(...)","face data of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
              ", cell: "<< x << ", level: " << level);
 
     // No inverted message order since we do synchronous data exchange.
-    // Order: extrapolatedPredictor,fluctuations.
+    // Order: extrapolatedPredictor,fluctuations,observablesMin,observablesMax
     DataHeap::getInstance().sendData(
-        extrapolatedPredictor, getBndTotalSize(), masterRank, x, level,
+        DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
     DataHeap::getInstance().sendData(
-        fluctuations, getBndFluxTotalSize(), masterRank, x, level,
+        DataHeap::getInstance().getData(cellDescription.getFluctuation()), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
+
+    if (getDMPObservables()>0) {
+      DataHeap::getInstance().sendData(
+          DataHeap::getInstance().getData(cellDescription.getSolutionMin()), masterRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+      DataHeap::getInstance().sendData(
+          DataHeap::getInstance().getData(cellDescription.getSolutionMax()), masterRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+    }
   } else {
     sendEmptyDataToMaster(masterRank,x,level);
   }
@@ -3839,8 +3873,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
-      cellDescription.getType()==CellDescription::Type::Ancestor
-      &&
+      cellDescription.getType()==CellDescription::Type::Ancestor &&
       cellDescription.getHasToHoldDataForMasterWorkerCommunication()
   ) {
     logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
@@ -3859,6 +3892,18 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     DataHeap::getInstance().receiveData(
         cellDescription.getFluctuation(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
+
+    if (getDMPObservables()>0) {
+      DataHeap::getInstance().getData(cellDescription.getSolutionMin()).clear();
+      DataHeap::getInstance().getData(cellDescription.getSolutionMax()).clear();
+
+      DataHeap::getInstance().receiveData(
+          cellDescription.getSolutionMin(), workerRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+      DataHeap::getInstance().receiveData(
+          cellDescription.getSolutionMax(), workerRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+    }
 
     exahype::solvers::Solver::SubcellPosition subcellPosition =
         computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
@@ -3893,7 +3938,11 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
   logDebug("dropWorkerData(...)","dropping worker data from rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
 
-  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+  const int numberOfMessages =
+      DataMessagesPerMasterWorkerCommunication +
+      (getDMPObservables() > 0) ? 2 : 0;
+
+  for(int receives=0; receives<numberOfMessages; ++receives)
     DataHeap::getInstance().receiveData(
         workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
@@ -4014,9 +4063,7 @@ bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
-  if (
-      cellDescription.getType()==CellDescription::Ancestor
-  ) {
+  if (cellDescription.getType()==CellDescription::Ancestor) {
     #if defined(Debug) || defined(Asserts)
     exahype::solvers::Solver::SubcellPosition subcellPosition =
         computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
@@ -4042,7 +4089,6 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
   // TODO(Dominic): Add sends of min and max
-
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
   if (
       cellDescription.getType()==CellDescription::Descendant &&
@@ -4052,16 +4098,23 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
         exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap,false>(cellDescription);
     prolongateFaceDataToDescendant(cellDescription,subcellPosition);
 
-    double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
-    double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
-
+    // No inverted message order since we do synchronous data exchange.
+    // Order: extraplolatedPredictor,fluctuations,observablesMin,observablesMax
     DataHeap::getInstance().sendData(
-        extrapolatedPredictor, getBndTotalSize(), workerRank, x, level,
-        peano::heap::MessageType::MasterWorkerCommunication); // No inverted message order since we do synchronous data exchange.
-                                                              // Order: extraplolatedPredictor,fluctuations.
-    DataHeap::getInstance().sendData(
-        fluctuations, getBndFluxTotalSize(), workerRank, x, level,
+        DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
+    DataHeap::getInstance().sendData(
+        DataHeap::getInstance().getData(cellDescription.getFluctuation()), workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+    if (getDMPObservables()>0) {
+      DataHeap::getInstance().sendData(
+          DataHeap::getInstance().getData(cellDescription.getSolutionMin()), workerRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+      DataHeap::getInstance().sendData(
+          DataHeap::getInstance().getData(cellDescription.getSolutionMax()), workerRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+    }
 
     logDebug("sendDataToWorker(...)","sent face data of solver " <<
              cellDescription.getSolverNumber() << " to rank "<< workerRank <<
@@ -4075,7 +4128,11 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
-  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+  const int numberOfMessages =
+          DataMessagesPerMasterWorkerCommunication +
+          (getDMPObservables() > 0) ? 2 : 0;
+
+  for(int sends=0; sends<numberOfMessages; ++sends)
     DataHeap::getInstance().sendData(
         exahype::EmptyDataHeapMessage, workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
@@ -4112,6 +4169,15 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     DataHeap::getInstance().receiveData(
         cellDescription.getFluctuation(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
+
+    if(getDMPObservables()>0) {
+      DataHeap::getInstance().receiveData(
+          cellDescription.getSolutionMin(), masterRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+      DataHeap::getInstance().receiveData(
+          cellDescription.getSolutionMax(), masterRank, x, level,
+          peano::heap::MessageType::MasterWorkerCommunication);
+    }
   } else {
     dropMasterData(masterRank,x,level);
   }
@@ -4121,7 +4187,11 @@ void exahype::solvers::ADERDGSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
         const int                                     level) const {
-  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+  const int numberOfMessages =
+      DataMessagesPerMasterWorkerCommunication +
+      (getDMPObservables() > 0) ? 2 : 0;
+
+  for(int receives=0; receives<numberOfMessages; ++receives)
     DataHeap::getInstance().receiveData(
         masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);

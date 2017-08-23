@@ -152,7 +152,7 @@ namespace exahype {
   static constexpr int NeighbourCommunicationMetadataHelperStatus       = 2;
   static constexpr int NeighbourCommunicationMetadataLimiterStatus      = 3;
 
-  static constexpr int MasterWorkerCommunicationMetadataPerSolver = 1;
+  static constexpr int MasterWorkerCommunicationMetadataPerSolver       = 4;
 
   static constexpr int MasterWorkerCommunicationMetadataSendReceiveData = 0;
 
@@ -1631,6 +1631,20 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
+
+  /**
+   * Prepares a solver's cell descriptions at a
+   * master-worker boundary for exchanging data
+   * (with the master or worker, respectively).
+   *
+   * \note Thread-safe
+   *
+   * \note ADERDGSolver, e.g., calls a method here which locks a semaphore.
+   * This routine can thus not have a const modifier.
+   */
+  virtual void prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element);
 
   /**
    * Determine if the solver has to reduce data for the cell description

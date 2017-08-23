@@ -2338,6 +2338,12 @@ void exahype::solvers::LimitingADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
+    const int cellDescriptionsIndex,
+    const int element) {
+  _solver->prepareCellDescriptionOnMasterWorkerBoundary(cellDescriptionsIndex,element);
+}
+
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,

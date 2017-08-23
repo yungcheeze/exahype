@@ -2071,6 +2071,10 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   void appendMasterWorkerCommunicationMetadata(
       MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,

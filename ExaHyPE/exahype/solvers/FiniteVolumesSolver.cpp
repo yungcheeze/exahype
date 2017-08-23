@@ -1492,6 +1492,12 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
   _maxCellSize              = receivedTimeStepData[3];
 }
 
+void exahype::solvers::FiniteVolumesSolver::prepareCellDescriptionOnMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  // do nothing
+}
+
 bool exahype::solvers::FiniteVolumesSolver::hasToSendDataToMaster(
     const int cellDescriptionsIndex,
     const int element) const {

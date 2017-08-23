@@ -1506,6 +1506,10 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void prepareCellDescriptionOnMasterWorkerBoundary(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
