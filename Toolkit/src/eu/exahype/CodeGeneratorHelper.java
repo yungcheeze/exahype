@@ -13,14 +13,14 @@ public class CodeGeneratorHelper {
   
   //configuration parameters
   private static String INTERNAL_EXAHYPE_PATH  = "ExaHyPE";                  //starts from root (ExaHyPE-Engine)
-  private static String OPT_KERNEL_PATH_PREFIX = "kernels/aderdg/optimised"; //starts from root + INTERNAL_EXAHYPE_PATH
+  private static String OPT_KERNEL_PATH_PREFIX = "kernels"; //starts from root + INTERNAL_EXAHYPE_PATH
   private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from root (ExaHyPE-Engine)
   
   //Singleton pattern to be able to access the instance in solvers
   private static volatile CodeGeneratorHelper instance = null;
 
   private CodeGeneratorHelper() {
-    _optDirectories = new HashMap<String, Collection<String>>();
+    _optKernelPaths = new HashSet<String>();
   }
 
   public static CodeGeneratorHelper getInstance() {
@@ -36,63 +36,62 @@ public class CodeGeneratorHelper {
   
   
   //Internal states
-  private Map<String, Collection<String>> _optDirectories;
+  private Collection<String> _optKernelPaths;
+  private String _pathToLibxsmm = null;
+  private String _pathToApplication = null;
+  
+  //setter
+  public void setPaths(DirectoryAndPathChecker directoryAndPathChecker) {
+    try{
+      _pathToLibxsmm = directoryAndPathChecker.libxsmmPath.getCanonicalPath();
+      _pathToApplication = directoryAndPathChecker.outputDirectory.getCanonicalPath();
+    } catch(IOException e) {} 
+  }
   
   //getter
-  public Collection<String> getOptKernelPaths(String projectName) {
-    if(_optDirectories.containsKey(projectName) && _optDirectories.get(projectName) != null) {
-      return _optDirectories.get(projectName);
-    } else {
-      return Collections.<String>emptySet(); //return an immutable empty Collection<String>
-    }
+  public Collection<String> getOptKernelPaths() {
+    return _optKernelPaths;
   }
   
-  private void addPathToMap(String projectName, String path) {
-    if(_optDirectories.containsKey(projectName) && _optDirectories.get(projectName) != null) {
-      _optDirectories.get(projectName).add(path);
-    } else {
-      HashSet<String> set = new HashSet<String>();
-      set.add(path);
-      _optDirectories.put(projectName, set);
-    }
-  }
-  
-  
-  public String invokeCodeGenerator(String projectName, String solverFullName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
+  public String invokeCodeGenerator(String projectName, String solverName, int numberOfUnknowns, int numberOfParameters, int order,
+      boolean isLinear, int dimensions, String microarchitecture, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
       throws IOException {
-    String currentDirectory = System.getProperty("user.dir");
-    java.io.File pathToCodeGenerator =
-        new java.io.File(currentDirectory + '/' + CodeGeneratorHelper.CODEGENERATOR_PATH);
-    if (!pathToCodeGenerator.exists()) {
-      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + pathToCodeGenerator.toString());
+        
+    if(_pathToLibxsmm == null) {
+      System.err.println("ERROR: Path to Libxsmm for the Code generator not found");
       throw new IOException();
     }
     
-    if(pathToLibxsmm == null || pathToLibxsmm.isEmpty()) {
-      System.err.println("ERROR: Libxsmm path not specified");
+    if(_pathToApplication == null) {
+      System.err.println("ERROR: Path to the application for the Code generator not found");
       throw new IOException();
     }
+        
+        
+    java.io.File pathToCodeGenerator_File =
+        new java.io.File(CodeGeneratorHelper.CODEGENERATOR_PATH);
+    if (!pathToCodeGenerator_File.exists()) {
+      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + pathToCodeGenerator_File.getCanonicalPath());
+      throw new IOException();
+    }
+    String pathToCodeGenerator = pathToCodeGenerator_File.getCanonicalPath();
     
-/*    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
-        new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
-    if (!pathToLibxsmmMakefile.exists()) {
-      System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
-      throw new IOException();
-    }
-*/
     String numericsParameter = isLinear ? "linear" : "nonlinear";
     String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "") + (noTimeAveraging ? "--noTimeAveraging " : "");
     
 
     // set up the command to execute the code generator
-    String args = " " + solverFullName + " " + numberOfUnknowns + " " + order + " "
-        + dimensions + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " " + options; 
+    String args =   " " + projectName + "::" + solverName 
+                  + " " + numberOfUnknowns 
+                  + " " + order 
+                  + " " + dimensions 
+                  + " " + numericsParameter 
+                  + " " + microarchitecture 
+                  + " " + options; 
 
-    String optKernelPath = getOptKernelPath(args);
-        
-    String bashCommand = "env python3 "  + pathToCodeGenerator  + " " + optKernelPath + args;
+    String optKernelPath = (new java.io.File(OPT_KERNEL_PATH_PREFIX,solverName)).getCanonicalPath();
+    
+    String bashCommand = "env python3 "  + pathToCodeGenerator + " " + _pathToLibxsmm + " " + _pathToApplication + " " + optKernelPath + args;
 
     Runtime runtime = Runtime.getRuntime();
     System.out.println("Codegenerator command line: "+bashCommand);
@@ -127,48 +126,14 @@ public class CodeGeneratorHelper {
         throw new IOException();
     }
     
-    addPathToMap(projectName, optKernelPath);
+     _optKernelPaths.add(optKernelPath);
     
     return optKernelPath;
     
   } // invokeCodeGenerator
   
   public static String getOptKernelPath(String key) {
-    //TODO JMG
-    
-    return OPT_KERNEL_PATH_PREFIX+"/test_TODOJMG";
-  }
-  
-  //remove all the generated opt. kernels
-  public static void cleanAll() throws IOException {
-    System.out.println("Cleaning directory "+Paths.get(INTERNAL_EXAHYPE_PATH, OPT_KERNEL_PATH_PREFIX).toString());
-    cleanDirectory(Paths.get(System.getProperty("user.dir"), INTERNAL_EXAHYPE_PATH, OPT_KERNEL_PATH_PREFIX));
-  }
-  
-  //Remove all the files and subdir inside the given directory
-  private static void cleanDirectory(final Path directory) throws IOException
-  {
-    if (Files.exists(directory))
-    {
-      Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
-      {
-        @Override
-        public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException
-        {
-          Files.delete(path);
-          return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult postVisitDirectory(Path loc_dir, IOException ioException) throws IOException
-        {
-          if(!loc_dir.equals(directory))
-            Files.delete(loc_dir);
-          
-          return FileVisitResult.CONTINUE;
-        }
-      });
-    }
+    return OPT_KERNEL_PATH_PREFIX+"/"+key;
   }
 
 }

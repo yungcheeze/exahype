@@ -30,8 +30,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   private java.util.Set<String>  _definedSolvers;
 
-  private String _pathToLibxsmm;
-
   private int _dimensions;
 
   private boolean _enableProfiler;
@@ -83,16 +81,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       _microarchitecture = "noarch";
     }
   }
-
-  @Override
-  public void inAPaths(eu.exahype.node.APaths node) {
-    if (node.getLibxsmmPath() == null) {
-      // attribute 'libxsmm-path' did not occur in spec file
-      _pathToLibxsmm = "";
-    } else {
-      _pathToLibxsmm = node.getLibxsmmPath().getText();
-    }
-  };
 
   @Override
   public void inAComputationalDomain(AComputationalDomain node) {
@@ -151,7 +139,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
-    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler,  _enableDeepProfiler, _microarchitecture, _pathToLibxsmm);
+    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
     eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
         kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), order, hasConstants);
     valid = validate(variables,order,kernel,language,solverName,solver);
@@ -196,7 +184,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
-    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture, _pathToLibxsmm);
+    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
     eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
         kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), patchSize, hasConstants);
 
@@ -245,7 +233,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  limiterKernel   = node.getKernelLimiter().getText();
     String  limiterLanguage = node.getLanguageLimiter().getText();
     
-    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture, _pathToLibxsmm);
+    SolverFactory solverFactory = new SolverFactory(_projectName, solverName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
     Solver solver  = solverFactory.createADERDGSolver(
         kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),order,hasConstants);
     Solver limiter = solverFactory.createFiniteVolumesSolver(
