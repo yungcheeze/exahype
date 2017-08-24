@@ -1096,8 +1096,6 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
 
   switch (fineGridCellDescription.getType()) {
     case CellDescription::Cell:
-      assertion(!fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication());
-
       switch (fineGridCellDescription.getRefinementEvent()) {
         case CellDescription::RefiningRequested:
           refineFineGridCell = true;
