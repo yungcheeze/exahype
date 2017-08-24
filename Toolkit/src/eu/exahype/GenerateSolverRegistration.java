@@ -115,7 +115,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n");
       _writer.write("#include \"buildinfo.h\"\n\n");
       if(_useOptimisedKernels) {
-        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths(_projectName)) {
+        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths()) {
           _writer.write("#include \""+subPath+"/GaussLegendreQuadrature.h\"\n");
           _writer.write("#include \""+subPath+"/DGMatrices.h\"\n");
         }       

@@ -23,7 +23,6 @@ public class OptimisedADERDG implements Solver {
   private int     _order;
 //  private int   _patchSize;
   private String  _microarchitecture;
-  private String  _pathToLibxsmm;
   private boolean _enableProfiler;
   private boolean _enableDeepProfiler;
   private boolean _hasConstants;
@@ -36,7 +35,7 @@ public class OptimisedADERDG implements Solver {
   private String  _optKernelPath;
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
+      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -44,7 +43,6 @@ public class OptimisedADERDG implements Solver {
     _order              = order;
 //    _patchSize = patchSize;
     _microarchitecture  = microarchitecture;
-    _pathToLibxsmm      = pathToLibxsmm;
     _enableProfiler     = enableProfiler;
     _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
@@ -56,8 +54,8 @@ public class OptimisedADERDG implements Solver {
 
     //generate the optimised kernel
     try {
-      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+          _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
     } catch(IOException e) {
       _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation
     }

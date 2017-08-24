@@ -35,7 +35,8 @@ import sys
 # Configuration parameters
 # --------------------------------------------------------
 
-pathFromHereToInternalExaHyPE = "../ExaHyPE/"
+pathFromHereToExaHyPERoot = "../"
+
 
 # --------------------------------------------------------
 # Require python3
@@ -52,8 +53,13 @@ if(requiredVersion > currentVersion):
 # --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description="This is the front end of the ExaHyPE code generator.")
 
+l_parser.add_argument("pathToLibxsmm",
+                      type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
+                      help="where to find your local copy of code generator back end 'https://github.com/hfp/libxsmm'")
+l_parser.add_argument("pathToApplication",
+                      help="path to the application as given by the ExaHyPE specification file (application directory as root)")
 l_parser.add_argument("pathToOptKernel",
-                      help="desired relative path to the generated code ("+pathFromHereToInternalExaHyPE+" as root)")
+                      help="desired relative path to the generated code (application directory as root)")
 l_parser.add_argument("solverName",
                       help="name of the user-solver")
 l_parser.add_argument("numberOfVariables", 
@@ -71,9 +77,6 @@ l_parser.add_argument("numerics",
 l_parser.add_argument("architecture",
                       type=lambda architectureArg: CodeGenArgumentParser.validateArchitecture(l_parser, architectureArg), 
                       help="the microarchitecture of the target device")
-l_parser.add_argument("pathToLibxsmm",
-                      type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
-                      help="where to find your local copy of code generator back end 'https://github.com/hfp/libxsmm'")
 l_parser.add_argument("--deepProfiling",
                       action="store_true",
                       help="enable deep-rpofiling (use only with profiler enable)")
@@ -97,6 +100,7 @@ l_parser.add_argument("--noTimeAveraging",
 
 l_commandLineArguments = l_parser.parse_args()
 
+pathToApplication      = l_commandLineArguments.pathToApplication
 pathToOptKernel        = l_commandLineArguments.pathToOptKernel
 solverName             = l_commandLineArguments.solverName
 numberOfVariables      = l_commandLineArguments.numberOfVariables
@@ -141,7 +145,7 @@ Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 # used for testing as standalone tool
 
 dir = os.path.dirname(__file__)
-pathToOutputDirectory = os.path.join(dir,pathFromHereToInternalExaHyPE+pathToOptKernel)
+pathToOutputDirectory = os.path.join(dir,pathFromHereToExaHyPERoot,pathToApplication,pathToOptKernel)
 prepareOutputDirectory(pathToOutputDirectory)
 
 # --------------------------------------------------------
