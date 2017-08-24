@@ -2069,7 +2069,11 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
-  void prepareCellDescriptionOnMasterWorkerBoundary(
+  void prepareMasterCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void prepareWorkerCellDescriptionAtMasterWorkerBoundary(
       const int cellDescriptionsIndex,
       const int element) override;
 
@@ -2081,12 +2085,12 @@ public:
   void mergeWithMasterMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const override;
+      const int                        element) override;
 
   void mergeWithWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const override;
+      const int                        element) override;
 
   /**
    * Compiles a message for a worker.

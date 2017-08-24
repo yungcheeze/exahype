@@ -2149,10 +2149,16 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
 /////////////////////////////////////
 // MASTER<=>WORKER
 /////////////////////////////////////
-void exahype::solvers::LimitingADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
+void exahype::solvers::LimitingADERDGSolver::prepareMasterCellDescriptionAtMasterWorkerBoundary(
     const int cellDescriptionsIndex,
     const int element) {
-  _solver->prepareCellDescriptionOnMasterWorkerBoundary(cellDescriptionsIndex,element);
+  _solver->prepareMasterCellDescriptionAtMasterWorkerBoundary(cellDescriptionsIndex,element);
+}
+
+void exahype::solvers::LimitingADERDGSolver::prepareWorkerCellDescriptionAtMasterWorkerBoundary(
+    const int cellDescriptionsIndex,
+    const int element) {
+  _solver->prepareWorkerCellDescriptionAtMasterWorkerBoundary(cellDescriptionsIndex,element);
 }
 
 void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMetadata(
@@ -2166,7 +2172,7 @@ void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMeta
 void exahype::solvers::LimitingADERDGSolver::mergeWithMasterMetadata(
     const exahype::MetadataHeap::HeapEntries& metadata,
     const int                                 cellDescriptionsIndex,
-    const int                                 element) const {
+    const int                                 element) {
   _solver->mergeWithMasterMetadata(
       metadata,cellDescriptionsIndex,element);
 }
@@ -2174,7 +2180,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterMetadata(
 void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
     const exahype::MetadataHeap::HeapEntries& receivedMetadata,
     const int                                 cellDescriptionsIndex,
-    const int                                 element) const {
+    const int                                 element) {
   _solver->mergeWithWorkerMetadata(
       receivedMetadata,cellDescriptionsIndex,element);
 
@@ -2185,7 +2191,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
     int index=0;
     const SolverPatch::Type receivedType = static_cast<SolverPatch::Type>(receivedMetadata[index++].getU());
     index++; // workerAugmentationStatus
-    const int  workerHelperStatus        = receivedMetadata[index++].getU();
+    index++; // workerHelperStatus
     const int  workerLimiterStatus       = receivedMetadata[index++].getU();
     index++; // workerHoldData
 

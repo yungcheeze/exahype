@@ -387,7 +387,11 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
       cellDescription.toString());
 
   if(
-      cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData
+      (cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData
+      #ifdef Parallel
+      || cellDescription.getHasToHoldDataForMasterWorkerCommunication()
+      #endif
+      )
       &&
       !DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())
   ) {
@@ -1092,6 +1096,8 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
 
   switch (fineGridCellDescription.getType()) {
     case CellDescription::Cell:
+      assertion(!fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication());
+
       switch (fineGridCellDescription.getRefinementEvent()) {
         case CellDescription::RefiningRequested:
           refineFineGridCell = true;
@@ -1792,6 +1798,10 @@ void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
   int unknownsPerCellBoundary = 0;
 
   #if defined(Debug) || defined(Asserts)
+  #ifdef Parallel
+  assertion(!cellDescription.getHasToHoldDataForMasterWorkerCommunication());
+  #endif
+
   double* luh = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   double* lduh = DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
 
@@ -3241,75 +3251,6 @@ void exahype::solvers::ADERDGSolver::dropCellDescriptions(
 ////////////////////////////////////
 // MASTER <=> WORKER
 ////////////////////////////////////
-void exahype::solvers::ADERDGSolver::prepareCellDescriptionOnMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element) {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
- /**
-  * TODO(Dominic):
-  *
-  * We currently assume there is no cell at a master worker boundary
-  * that needs to restrict data up to an Ancestor on the
-  * master rank. However, this can definitively happen. For example,
-  * in situations where a refined cell is augmented as well, i.e.
-  * has virtual children (Descendants).
-  *
-  * Condition is probably something like:
-  * has a parent that holds data & child is augmented (->multisolvers)
-  *
-  * Erasing of cellDescriptions must check the same condition
-  * in order to determine if a cell description should be erased
-  * or not.
-  *
-  * Update: Is implemented experimentally.
-  */
-  if (cellDescription.getType()==CellDescription::Type::Ancestor) {
-    Solver::SubcellPosition subcellPosition =
-        exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
-        <CellDescription,Heap>(cellDescription);
-
-    if (subcellPosition.parentElement!=NotFound) {
-      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
-      cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
-
-      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
-      ensureNecessaryMemoryIsAllocated(cellDescription);
-    }
-  } else if (cellDescription.getType()==CellDescription::Type::Cell) {
-    Solver::SubcellPosition subcellPosition =
-        exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
-        <CellDescription,Heap>(cellDescription);
-
-    if (subcellPosition.parentElement!=NotFound &&
-        cellDescription.getIsAugmented()) {
-      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
-      cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
-
-      cellDescription.setType(CellDescription::Ancestor);
-      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
-      ensureNecessaryMemoryIsAllocated(cellDescription);
-      cellDescription.setType(CellDescription::Cell); // Hack to only store face data.
-    } else {
-      cellDescription.setType(CellDescription::Erased);
-      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
-      ensureNecessaryMemoryIsAllocated(cellDescription);
-      cellDescription.setType(CellDescription::Cell); // Hack deletes all the data
-    }
-  } else if (cellDescription.getType()==CellDescription::Type::Descendant) {
-    // TODO(Dominic): At the moment, we straightforwardly assume that
-    // all descendants at a master worker boundary exchange.
-    // This can be relaxed later on. It is complicated to do so
-    // since the decision making depends on the children of a cell.
-
-    cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
-    cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
-
-    ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
-    ensureNecessaryMemoryIsAllocated(cellDescription);
-  }
-}
-
 void
 exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
     MetadataHeap::HeapEntries& metadata,
@@ -3333,10 +3274,24 @@ exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
   }
 }
 
+void exahype::solvers::ADERDGSolver::prepareWorkerCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Type::Descendant) {
+    cellDescription.setHasToHoldDataForMasterWorkerCommunication(cellDescription.getIsAugmented());
+    ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+    ensureNecessaryMemoryIsAllocated(cellDescription);
+  }
+  // Ancestors; wait for info from master
+  // see mergeWithMasterMetadata
+}
+
 void exahype::solvers::ADERDGSolver::mergeWithMasterMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const {
+      const int                        element) {
   if (element!=exahype::solvers::Solver::NotFound)  {
     CellDescription& cellDescription =
         getCellDescription(cellDescriptionsIndex,element);
@@ -3344,35 +3299,62 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterMetadata(
     int index=0;
     const CellDescription::Type receivedType = static_cast<CellDescription::Type>(receivedMetadata[index++].getU());
     const int  masterAugmentationStatus      = receivedMetadata[index++].getU();
-    const int  masterHelperStatus            = receivedMetadata[index++].getU();
+    index++; // masterHelperStatus
     index++; // masterLimiterStatus
-    const bool masterHoldData                = receivedMetadata[index++].getU()==1;
+    const bool masterHoldsData               = receivedMetadata[index++].getU()==1;
 
     assertion(receivedType==cellDescription.getType());
     if (cellDescription.getType()==CellDescription::Ancestor) {
-      cellDescription.setHasToHoldDataForMasterWorkerCommunication(masterHoldData);
-      if (cellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
-        cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
-        assertion(masterHelperStatus==MinimumHelperStatusForAllocatingBoundaryData);
-      }
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(masterHoldsData);
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      ensureNecessaryMemoryIsAllocated(cellDescription);
       assertion(masterAugmentationStatus==MaximumAugmentationStatus);
-    } else if (cellDescription.getType()==CellDescription::Descendant) {
-      // TODO(Dominic): At the moment, we straightforwardly assume that
-      // all descendants at a master worker boundary exchange.
-      // This can be relaxed later on. It is complicated to do so
-      // since the decision making depends on the children of a cell.
-      assertion(cellDescription.getHasToHoldDataForMasterWorkerCommunication());
-      assertion(cellDescription.getHelperStatus()==MinimumHelperStatusForAllocatingBoundaryData);
-      assertion(masterHoldData);
-      assertion(masterHelperStatus==MinimumHelperStatusForAllocatingBoundaryData);
-    }
+    } // do nothing for the other cell types
   }
+}
+
+void exahype::solvers::ADERDGSolver::prepareMasterCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Type::Ancestor) {
+    Solver::SubcellPosition subcellPosition =
+        exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+        <CellDescription,Heap>(cellDescription);
+
+    if (subcellPosition.parentElement!=NotFound) {
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+      cellDescription.setHelperStatus(MinimumHelperStatusForAllocatingBoundaryData);
+
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      ensureNecessaryMemoryIsAllocated(cellDescription);
+    }
+  } else if (cellDescription.getType()==CellDescription::Type::Cell) {
+    Solver::SubcellPosition subcellPosition =
+        exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+        <CellDescription,Heap>(cellDescription);
+
+    if (subcellPosition.parentElement!=NotFound) {
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+      cellDescription.setHelperStatus(0);
+      cellDescription.setType(CellDescription::Ancestor);
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      ensureNecessaryMemoryIsAllocated(cellDescription);
+      cellDescription.setType(CellDescription::Cell); // Hack to only store face data.
+    } else {
+      cellDescription.setType(CellDescription::Erased);
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      cellDescription.setType(CellDescription::Cell); // Hack deletes all the data
+    }
+  } // do nothing for descendants; wait for info from worker
+    // see mergeWithWorkerMetadata
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const {
+      const int                        element) {
   if (element!=exahype::solvers::Solver::NotFound)  {
     CellDescription& cellDescription =
         getCellDescription(cellDescriptionsIndex,element);
@@ -3380,29 +3362,16 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerMetadata(
     int index=0;
     const CellDescription::Type receivedType = static_cast<CellDescription::Type>(receivedMetadata[index++].getU());
     index++; // workerAugmentationStatus
-    const int  workerHelperStatus            = receivedMetadata[index++].getU();
+    index++; // const int  workerHelperStatus            = receivedMetadata[index++].getU();
     index++; // workerLimiterStatus
-    index++; // workerHoldData
+    const bool workerHoldsData               = receivedMetadata[index++].getU()==1;
 
     assertion(receivedType==cellDescription.getType());
     if (cellDescription.getType()==CellDescription::Descendant) {
-      // TODO(Dominic): At the moment, we straightforwardly assume that
-      // all descendants at a master worker boundary exchange.
-      // This can be relaxed later on. It is complicated to do so
-      // since the decision making depends on the children of a cell.
-      //
-      // Then, we have to adjust the masters holdData flag and
-      // and its helper status accordingly. I repeat: This
-      // is not implemented yet.
-      assertion(workerHelperStatus==MinimumHelperStatusForAllocatingBoundaryData);
-    } else if (cellDescription.getType()==CellDescription::Ancestor) {
-      if (cellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
-        assertion(cellDescription.getHelperStatus()==MinimumHelperStatusForAllocatingBoundaryData);
-      }
-    } else if (cellDescription.getType()==CellDescription::Cell) {
-      assertion(!cellDescription.getIsAugmented() || cellDescription.getHasToHoldDataForMasterWorkerCommunication());
-      assertion(!cellDescription.getHasToHoldDataForMasterWorkerCommunication() || cellDescription.getIsAugmented());
-    }
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(workerHoldsData);
+      ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
+      ensureNecessaryMemoryIsAllocated(cellDescription);
+    } // do nothing for the other cell types
   }
 }
 

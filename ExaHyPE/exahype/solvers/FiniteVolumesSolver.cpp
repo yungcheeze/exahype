@@ -966,6 +966,18 @@ void exahype::solvers::FiniteVolumesSolver::dropCellDescriptions(
 ////////////////////////////////////
 // MASTER <=> WORKER
 ////////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::prepareMasterCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  // do nothing
+}
+
+void exahype::solvers::FiniteVolumesSolver::prepareWorkerCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) {
+  // do nothing
+}
+
 void
 exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
     exahype::MetadataHeap::HeapEntries& metadata,
@@ -979,14 +991,14 @@ exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
 void exahype::solvers::FiniteVolumesSolver::mergeWithMasterMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const {
+      const int                        element) {
   // do nothing
 }
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerMetadata(
       const MetadataHeap::HeapEntries& receivedMetadata,
       const int                        cellDescriptionsIndex,
-      const int                        element) const {
+      const int                        element) {
   // do nothing
 }
 
@@ -1509,12 +1521,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
 
   _minCellSize              = receivedTimeStepData[2];
   _maxCellSize              = receivedTimeStepData[3];
-}
-
-void exahype::solvers::FiniteVolumesSolver::prepareCellDescriptionOnMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element) {
-  // do nothing
 }
 
 bool exahype::solvers::FiniteVolumesSolver::hasToSendDataToMaster(

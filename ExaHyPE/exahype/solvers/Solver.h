@@ -1598,9 +1598,16 @@ class exahype::solvers::Solver {
    * in situations where a refined cell is augmented as well, i.e.
    * has virtual children (Descendants).
    */
-  virtual void prepareCellDescriptionOnMasterWorkerBoundary(
+  virtual void prepareMasterCellDescriptionAtMasterWorkerBoundary(
       const int cellDescriptionsIndex,
       const int element) = 0;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  virtual void prepareWorkerCellDescriptionAtMasterWorkerBoundary(
+        const int cellDescriptionsIndex,
+        const int element) = 0;
 
   /**
    * If a cell description was allocated at heap address \p cellDescriptionsIndex
@@ -1623,7 +1630,7 @@ class exahype::solvers::Solver {
   virtual void mergeWithMasterMetadata(
         const MetadataHeap::HeapEntries& receivedMetadata,
         const int                        cellDescriptionsIndex,
-        const int                        element) const = 0;
+        const int                        element) = 0;
 
   /**
    * TODO(Dominic): docu
@@ -1631,7 +1638,7 @@ class exahype::solvers::Solver {
   virtual void mergeWithWorkerMetadata(
           const MetadataHeap::HeapEntries& receivedMetadata,
           const int                        cellDescriptionsIndex,
-          const int                        element) const = 0;
+          const int                        element) = 0;
 
   /**
    * Send solver data to master or worker rank. Read the data from
