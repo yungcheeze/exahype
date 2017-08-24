@@ -13,7 +13,7 @@ public class CodeGeneratorHelper {
   
   //configuration parameters
   private static String INTERNAL_EXAHYPE_PATH  = "ExaHyPE";                  //starts from root (ExaHyPE-Engine)
-  private static String OPT_KERNEL_PATH_PREFIX = "kernels/aderdg/optimised"; //starts from root + INTERNAL_EXAHYPE_PATH
+  private static String OPT_KERNEL_PATH_PREFIX = "kernels"; //starts from root + INTERNAL_EXAHYPE_PATH
   private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from root (ExaHyPE-Engine)
   
   //Singleton pattern to be able to access the instance in solvers
@@ -37,6 +37,14 @@ public class CodeGeneratorHelper {
   
   //Internal states
   private Map<String, Collection<String>> _optDirectories;
+  private String _pathToLibxsmm = null;
+  private String _pathToApplication = null;
+  
+  //setter
+  public void setPaths(DirectoryAndPathChecker directoryAndPathChecker) {
+    _pathToLibxsmm = directoryAndPathChecker.libxsmmPath.getAbsolutePath();
+    _pathToApplication = directoryAndPathChecker.outputDirectory.getAbsolutePath();
+  }
   
   //getter
   public Collection<String> getOptKernelPaths(String projectName) {
@@ -58,9 +66,21 @@ public class CodeGeneratorHelper {
   }
   
   
-  public String invokeCodeGenerator(String projectName, String solverFullName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
+  public String invokeCodeGenerator(String projectName, String solverName, int numberOfUnknowns, int numberOfParameters, int order,
+      boolean isLinear, int dimensions, String microarchitecture, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
       throws IOException {
+        
+    if(_pathToLibxsmm == null) {
+      System.err.println("ERROR: Path to Libxsmm for the Code generator not found");
+      throw new IOException();
+    }
+    
+    if(_pathToApplication == null) {
+      System.err.println("ERROR: Path to the application for the Code generator not found");
+      throw new IOException();
+    }
+        
+        
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
         new java.io.File(currentDirectory + '/' + CodeGeneratorHelper.CODEGENERATOR_PATH);
@@ -69,30 +89,23 @@ public class CodeGeneratorHelper {
       throw new IOException();
     }
     
-    if(pathToLibxsmm == null || pathToLibxsmm.isEmpty()) {
-      System.err.println("ERROR: Libxsmm path not specified");
-      throw new IOException();
-    }
-    
-/*    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
-        new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
-    if (!pathToLibxsmmMakefile.exists()) {
-      System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
-      throw new IOException();
-    }
-*/
     String numericsParameter = isLinear ? "linear" : "nonlinear";
     String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "") + (noTimeAveraging ? "--noTimeAveraging " : "");
     
 
     // set up the command to execute the code generator
-    String args = " " + solverFullName + " " + numberOfUnknowns + " " + order + " "
-        + dimensions + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " " + options; 
+    String args =   " " + projectName + "::" + solverName 
+                  + " " + numberOfUnknowns 
+                  + " " + order 
+                  + " " + dimensions 
+                  + " " + numericsParameter 
+                  + " " + microarchitecture 
+                  + " " + _pathToLibxsmm 
+                  + " " + options; 
 
-    String optKernelPath = getOptKernelPath(args);
-        
-    String bashCommand = "env python3 "  + pathToCodeGenerator  + " " + optKernelPath + args;
+    String optKernelPath = getOptKernelPath(solverName);
+    
+    String bashCommand = "env python3 "  + pathToCodeGenerator  + " " + _pathToApplication + " " + optKernelPath + args;
 
     Runtime runtime = Runtime.getRuntime();
     System.out.println("Codegenerator command line: "+bashCommand);
@@ -136,7 +149,7 @@ public class CodeGeneratorHelper {
   public static String getOptKernelPath(String key) {
     //TODO JMG
     
-    return OPT_KERNEL_PATH_PREFIX+"/test_TODOJMG";
+    return OPT_KERNEL_PATH_PREFIX+"/"+key;
   }
   
   //remove all the generated opt. kernels

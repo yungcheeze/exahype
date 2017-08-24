@@ -20,15 +20,13 @@ public class SolverFactory {
       int dimensions,
       boolean enableProfiler,
       boolean enableDeepProfiler,
-      String microarchitecture,
-      String pathToLibxsmm) {
+      String microarchitecture) {
     _projectName = projectName;
     _solverName = solverName;    
     _dimensions = dimensions;
     _enableProfiler = enableProfiler;
     _enableDeepProfiler = enableDeepProfiler;
     _microarchitecture = microarchitecture;
-    _pathToLibxsmm = pathToLibxsmm;
     
   }
   
@@ -47,14 +45,15 @@ public class SolverFactory {
       return new eu.exahype.solvers.GenericADERDG(_dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isLinear, isFortran );
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
-      return new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
-          numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-          _enableProfiler, hasConstants);
-    }
+    // TODO JMG Clean
+    // else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
+      // return new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
+          // numberOfVariables, numberOfParameters, order, _microarchitecture,
+          // _enableProfiler, hasConstants);
+    // }
     else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
       return new eu.exahype.solvers.OptimisedADERDG(_projectName, _solverName, _dimensions,
-          numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture, _pathToLibxsmm,
+          numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
           _enableProfiler, _enableDeepProfiler, hasConstants, false, Arrays.asList(generalKernel.split("::")));
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
