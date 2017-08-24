@@ -1,20 +1,14 @@
 package eu.exahype;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Collections;
 
 public class CodeGeneratorHelper {
   
   //configuration parameters
-  private static String INTERNAL_EXAHYPE_PATH  = "ExaHyPE";                  //starts from root (ExaHyPE-Engine)
-  private static String OPT_KERNEL_PATH_PREFIX = "kernels"; //starts from root + INTERNAL_EXAHYPE_PATH
-  private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from root (ExaHyPE-Engine)
+  private static String OPT_KERNEL_PATH_PREFIX = "kernels";                  //starts from application root
+  private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from exahype root (ExaHyPE-Engine)
   
   //Singleton pattern to be able to access the instance in solvers
   private static volatile CodeGeneratorHelper instance = null;
