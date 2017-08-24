@@ -74,7 +74,11 @@ void exahype::Vertex::mergeOnlyMetadata(
 
         setMergePerformed(pos1,pos2,true);
       }
-      if (hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {  // Implies that one is valid the other a DomainBoundaryAdjacencyIndex
+      if (
+          hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)
+          ||
+          hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)
+      ) {
         auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
             parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())

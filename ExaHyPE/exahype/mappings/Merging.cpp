@@ -340,6 +340,11 @@ void exahype::mappings::Merging::touchVertexFirstTime(
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
+        if (fineGridVertex.hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)) {
+          mergeWithBoundaryOrEmptyCellMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
+
+          fineGridVertex.setMergePerformed(pos1,pos2,true);
+        }
       enddforx
     enddforx
   }
