@@ -211,10 +211,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("endif\n");
       }
       if (_useOptimisedKernels) {
-        String _projectName = node.getName().getText();
         _writer.write("PROJECT_CFLAGS += -DOPT_KERNELS\n");
         String paths = "";
-        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths(_projectName)) {
+        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths()) {
           paths = _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/" + subPath + " ";
         }
         _writer.write("OPT_KERNEL_PATH=" + paths + "\n"); 

@@ -52,10 +52,6 @@ public class Main {
     // not for the first phase
     //    
     printHeader();
-    
-    if(cleanAllOptKernel(args)) {
-      return;
-    }
 
     if (args.length != 1 && args.length != 2) {
       System.err.println("ERROR: Please provide input file as argument");
@@ -213,17 +209,5 @@ public class Main {
       e.printStackTrace();
       System.exit(-13);
     }
-  }
-  
-  private static boolean cleanAllOptKernel(String[] args) { 
-    if(args.length == 1 && args[0].contains(Main.CLEAN_OPT_KERNEL)) {
-      try {
-        CodeGeneratorHelper.cleanAll();
-      } catch(Exception e) {
-        System.err.println(e.toString());
-      }
-      return true;
-    }
-    return false;
   }
 }
