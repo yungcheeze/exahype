@@ -1823,7 +1823,7 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
   const int numberOfObservables = _solver->getDMPObservables();
-  if (numberOfObservables) {
+  if (numberOfObservables>0) {
     const int direction   = tarch::la::equalsReturnIndex(src, dest);
     const int orientation = (1 + dest(direction) - src(direction))/2;
     const int faceIndex   = 2*direction+orientation;
@@ -1831,17 +1831,25 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
     SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
     assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMin()));
     assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMax()));
-
-    // We append all the max values to the min values.
-    DataHeap::HeapEntries minAndMaxToSend(2*numberOfObservables);
-    for (int i=0; i<numberOfObservables; i++) {
-      minAndMaxToSend[i]                     = DataHeap::getInstance().getData( solverPatch.getSolutionMin() )[faceIndex*numberOfObservables+i];
-      minAndMaxToSend[i+numberOfObservables] = DataHeap::getInstance().getData( solverPatch.getSolutionMax() )[faceIndex*numberOfObservables+i];
-    }
+    const double* observablesMin = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMin()).data() +
+        (faceIndex * numberOfObservables);
+    const double* observablesMax = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMax()).data() +
+        (faceIndex * numberOfObservables);
 
     DataHeap::getInstance().sendData(
-        minAndMaxToSend, toRank, x, level,
+        observablesMin, numberOfObservables, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
+    DataHeap::getInstance().sendData(
+        observablesMax, numberOfObservables, toRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+  } else {
+    for (int messages = 0; messages < 2; ++messages) {
+      DataHeap::getInstance().sendData(
+          EmptyDataHeapMessage, toRank, x, level,
+          peano::heap::MessageType::NeighbourCommunication);
+    }
   }
 }
 
@@ -1885,35 +1893,6 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
       _solver->sendEmptyDataToNeighbour(toRank,x,level);
       _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
     }
-
-
-    // TODO(Dominic): Old code; keep for reference
-//    switch (solverPatch.getLimiterStatus()) {
-//    case SolverPatch::LimiterStatus::Ok: {
-//      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-//      _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
-//    } break;
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
-//      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-//      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
-//      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-//      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
-//    } break;
-//    case SolverPatch::LimiterStatus::Troubled: {
-//      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-//      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
-//      _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-//      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
-//    } break;
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled2:{
-//      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-//      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
-//      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-//      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
-//    } break;
-//    }
   } else {
     _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
   }
@@ -2002,31 +1981,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
           src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
       _solver->dropNeighbourData(fromRank,src,dest,x,level);
     }
-    // TODO(Dominic): Old code; keep for reference
-//    switch (solverPatch.getLimiterStatus()) {
-//    case SolverPatch::LimiterStatus::Ok:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
-//      _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
-//      if (!isRecomputation) {
-//        _solver->mergeWithNeighbourData(
-//            fromRank,neighbourMetadata,cellDescriptionsIndex,element,
-//            src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
-//      } else {
-//        _solver->dropNeighbourData(fromRank,src,dest,x,level);
-//      }
-//    }break;
-//    case SolverPatch::LimiterStatus::Troubled:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-//    case SolverPatch::LimiterStatus::NeighbourOfTroubled2:{
-//      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-//      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-//      _limiter->mergeWithNeighbourData(
-//          fromRank,neighbourMetadata,cellDescriptionsIndex,limiterElement,
-//          src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
-//      _solver->dropNeighbourData(fromRank,src,dest,x,level);
-//    } break;
-//    }
   } else {
     logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
@@ -2053,15 +2007,28 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMinAndMax(
     const int orientation = (1 + src(direction) - dest(direction))/2;
     const int faceIndex   = 2*direction+orientation;
 
-    const int receivedMinMaxIndex = DataHeap::getInstance().createData(2*numberOfObservables, 2*numberOfObservables);
-    assertion(DataHeap::getInstance().getData(receivedMinMaxIndex).size()==static_cast<unsigned int>(2*numberOfObservables));
-    double* receivedMinAndMax = DataHeap::getInstance().getData(receivedMinMaxIndex).data();
+    const int receivedMaxIndex = DataHeap::getInstance().createData(numberOfObservables, numberOfObservables);
+    const int receivedMinIndex = DataHeap::getInstance().createData(numberOfObservables, numberOfObservables);
+    DataHeap::HeapEntries& receivedMax = DataHeap::getInstance().getData(receivedMaxIndex);
+    DataHeap::HeapEntries& receivedMin = DataHeap::getInstance().getData(receivedMinIndex);
+    assertionEquals(DataHeap::getInstance().getData(receivedMaxIndex).size(),static_cast<size_t>(numberOfObservables));
+    assertionEquals(DataHeap::getInstance().getData(receivedMinIndex).size(),static_cast<size_t>(numberOfObservables));
 
-    DataHeap::getInstance().receiveData(receivedMinAndMax, 2*numberOfObservables, fromRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-    mergeSolutionMinMaxOnFace(solverPatch,faceIndex,receivedMinAndMax,receivedMinAndMax+numberOfObservables);
+    // Inverted send-receive order: TODO(Dominic): Add to docu
+    // Send order:    min,max
+    // Receive order; max,min
+    DataHeap::getInstance().receiveData(
+        receivedMax.data(), numberOfObservables, fromRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+    DataHeap::getInstance().receiveData(
+        receivedMin.data(), numberOfObservables, fromRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
 
-    DataHeap::getInstance().deleteData(receivedMinMaxIndex,true);
+    mergeSolutionMinMaxOnFace(
+        solverPatch,faceIndex,receivedMin.data(),receivedMax.data());
+
+    DataHeap::getInstance().deleteData(receivedMinIndex,true);
+    DataHeap::getInstance().deleteData(receivedMaxIndex,true);
   }
 }
 
@@ -2180,12 +2147,12 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
     SolverPatch& cellDescription =
         ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
-    int index=0;
-    const SolverPatch::Type receivedType = static_cast<SolverPatch::Type>(receivedMetadata[index++].getU());
-    index++; // workerAugmentationStatus
-    index++; // workerHelperStatus
-    const int  workerLimiterStatus       = receivedMetadata[index++].getU();
-    index++; // workerHoldData
+    #ifdef Asserts
+    const SolverPatch::Type receivedType =
+            static_cast<SolverPatch::Type>(receivedMetadata[MasterWorkerCommunicationMetadataCellType].getU());
+    #endif
+    const int  workerLimiterStatus       =
+        receivedMetadata[MasterWorkerCommunicationMetadataLimiterStatus].getU();
 
     assertion(receivedType==cellDescription.getType());
     if (cellDescription.getType()==SolverPatch::Ancestor ||
