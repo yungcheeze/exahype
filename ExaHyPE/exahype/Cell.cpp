@@ -202,7 +202,7 @@ void exahype::Cell::mergeWithWorkerMetadata(
   if (isInitialised()) {
     for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      const int element = solver->tryGetElement(getCellDescriptionsIndex(),element);
+      const int element = solver->tryGetElement(getCellDescriptionsIndex(),solverNumber);
       const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
       if (solver->isComputing(section) &&
           element!=exahype::solvers::Solver::NotFound &&
@@ -232,7 +232,7 @@ void exahype::Cell::mergeWithMasterMetadata(
   if (isInitialised()) {
     for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      const int element = solver->tryGetElement(getCellDescriptionsIndex(),element);
+      const int element = solver->tryGetElement(getCellDescriptionsIndex(),solverNumber);
       const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
       if (solver->isComputing(section) &&
           element!=exahype::solvers::Solver::NotFound &&
