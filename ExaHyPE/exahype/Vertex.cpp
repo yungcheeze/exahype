@@ -74,77 +74,6 @@ void exahype::Vertex::mergeOnlyMetadata(
 
         setMergePerformed(pos1,pos2,true);
       }
-      if (
-          hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)
-          ||
-          hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)
-      ) {
-        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
-        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->isComputing(section)) {
-          const int cellDescriptionsIndex1 = getCellDescriptionsIndex()[pos1Scalar];
-          const int cellDescriptionsIndex2 = getCellDescriptionsIndex()[pos2Scalar];
-          const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-          const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-          if (element1>=0) {
-            assertion(element2==exahype::solvers::Solver::NotFound);
-            solver->mergeWithBoundaryOrEmptyCellMetadata(
-                cellDescriptionsIndex1,element1,pos1,pos2);
-          }
-          if (element2>=0) {
-            assertion(element1==exahype::solvers::Solver::NotFound);
-            solver->mergeWithBoundaryOrEmptyCellMetadata(
-                cellDescriptionsIndex2,element2,pos2,pos1); // Be aware of the order
-          }
-        }
-        endpfor
-        grainSize.parallelSectionHasTerminated();
-
-        setMergePerformed(pos1,pos2,true);
-      }
-    enddforx
-  enddforx
-}
-
-
-void exahype::Vertex::mergeOnlyMetadataAtHangingNode(
-    const exahype::records::State::AlgorithmSection& section) {
-  assertion(isHangingNode());
-
-  dfor2(pos1)
-    dfor2(pos2)
-      if (
-          hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)
-          ||
-          hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)
-      ) {
-        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
-        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->isComputing(section)) {
-          const int cellDescriptionsIndex1 = getCellDescriptionsIndex()[pos1Scalar];
-          const int cellDescriptionsIndex2 = getCellDescriptionsIndex()[pos2Scalar];
-          const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-          const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-          if (element1>=0) {
-            assertion(element2==exahype::solvers::Solver::NotFound);
-            solver->mergeWithBoundaryOrEmptyCellMetadata(
-                cellDescriptionsIndex1,element1,pos1,pos2);
-          }
-          if (element2>=0) {
-            assertion(element1==exahype::solvers::Solver::NotFound);
-            solver->mergeWithBoundaryOrEmptyCellMetadata(
-                cellDescriptionsIndex2,element2,pos2,pos1); // Be aware of the order
-          }
-        }
-        endpfor
-        grainSize.parallelSectionHasTerminated();
-
-        setMergePerformed(pos1,pos2,true);
-      }
     enddforx
   enddforx
 }
@@ -502,10 +431,10 @@ void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
           auto* solver = solvers::RegisteredSolvers[solverNumber];
           if (solver->isComputing(section)) {
             const int offset  = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
-            if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
-              const int element = solver->tryGetElement(
-                  getCellDescriptionsIndex()[destScalar],solverNumber);
-              if (element!=exahype::solvers::Solver::NotFound) {
+            const int element = solver->tryGetElement(
+                getCellDescriptionsIndex()[destScalar],solverNumber);
+            if (element!=exahype::solvers::Solver::NotFound) {
+              if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
                 MetadataHeap::HeapEntries metadataPortion(
                     receivedMetadata.begin()+offset,
                     receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
@@ -515,6 +444,8 @@ void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
                     src, dest,
                     getCellDescriptionsIndex()[destScalar],element);
               }
+
+              setMergePerformed(src,dest,true);
             }
 
             logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);

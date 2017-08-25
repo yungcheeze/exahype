@@ -822,7 +822,7 @@ public:
    * the limiter status.
    */
   static void overwriteFacewiseLimiterStatus(
-      CellDescription& cellDescription);
+      CellDescription& cellDescription,const int value);
 
   /**
    * TODO(Dominic): Can later be replaced
@@ -1844,12 +1844,6 @@ public:
       double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
-
-  void mergeWithBoundaryOrEmptyCellMetadata(
-        const int cellDescriptionsIndex,
-        const int element,
-        const tarch::la::Vector<DIMENSIONS, int>& posCell,
-        const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const override;
 #ifdef Parallel
   /**
    * Sends all the cell descriptions at address \p

@@ -195,7 +195,7 @@ void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
   grainSize.parallelSectionHasTerminated();
 }
 
-void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
+void exahype::mappings::Merging::mergeWithBoundaryData(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,int>&  pos1,
     const int pos1Scalar,
@@ -221,10 +221,6 @@ void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
                                       _temporaryVariables._tempFaceUnknowns[solverNumber],
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
-        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
-          solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex1,element1,pos1,pos2);
-        }
-
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
@@ -235,45 +231,11 @@ void exahype::mappings::Merging::mergeWithBoundaryDataAndMetadata(
                                       _temporaryVariables._tempStateSizedVectors[solverNumber],
                                       _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
-        if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
-          solver->mergeWithBoundaryOrEmptyCellMetadata(cellDescriptionsIndex2,element2,pos2,pos1);
-        }
-
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
       }
     }
-  endpfor
-  grainSize.parallelSectionHasTerminated();
-}
-
-void exahype::mappings::Merging::mergeWithBoundaryOrEmptyCellMetadata(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS,int>&  pos1,
-    const int pos1Scalar,
-    const tarch::la::Vector<DIMENSIONS,int>&  pos2,
-    const int pos2Scalar) {
-  auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-      parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
-  pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-  auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-  if (solver->isComputing(_localState.getAlgorithmSection())) {
-    const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
-    const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
-    const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
-    const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-    if (element1>=0) {
-      assertion(element2==exahype::solvers::Solver::NotFound);
-      solver->mergeWithBoundaryOrEmptyCellMetadata(
-          cellDescriptionsIndex1,element1,pos1,pos2);
-    }
-    if (element2>=0) {
-      assertion(element1==exahype::solvers::Solver::NotFound);
-      solver->mergeWithBoundaryOrEmptyCellMetadata(
-          cellDescriptionsIndex2,element2,pos2,pos1); // Be aware of the order
-    }
-  }
   endpfor
   grainSize.parallelSectionHasTerminated();
 }
@@ -296,12 +258,7 @@ void exahype::mappings::Merging::createHangingVertex(
     dfor2(pos1)
       dfor2(pos2)
         if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
-          mergeWithBoundaryDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
-
-          fineGridVertex.setMergePerformed(pos1,pos2,true);
-        }
-        if (fineGridVertex.hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)) {
-          mergeWithBoundaryOrEmptyCellMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
+          mergeWithBoundaryData(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
@@ -336,12 +293,7 @@ void exahype::mappings::Merging::touchVertexFirstTime(
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
         if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
-          mergeWithBoundaryDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
-
-          fineGridVertex.setMergePerformed(pos1,pos2,true);
-        }
-        if (fineGridVertex.hasToMergeWithEmptyCell(pos1,pos1Scalar,pos2,pos2Scalar)) {
-          mergeWithBoundaryOrEmptyCellMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
+          mergeWithBoundaryData(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }

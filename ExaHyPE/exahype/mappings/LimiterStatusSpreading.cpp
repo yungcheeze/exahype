@@ -166,14 +166,7 @@ void exahype::mappings::LimiterStatusSpreading::createHangingVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
-                           fineGridX, fineGridH,
-                           coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-
-  fineGridVertex.mergeOnlyMetadataAtHangingNode(_localState.getAlgorithmSection());
-
-  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
+  // do nothing
 }
 
 void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(

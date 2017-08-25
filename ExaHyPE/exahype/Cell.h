@@ -203,9 +203,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * solvers registered on the cell.
    */
   void mergeWithMasterMetadata(
-      const int                                   masterRank,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level,
+      const int                                   receivedMetadataIndex,
       const exahype::records::State::AlgorithmSection& section) const;
   #endif
 

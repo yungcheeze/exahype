@@ -795,14 +795,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
   }
 }
 
-void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryOrEmptyCellMetadata(
-      const int cellDescriptionsIndex,
-      const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const {
-   // do nothing
-}
-
 #ifdef Parallel
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbourCommunication    = 1;
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerForkOrJoinCommunication   = 1;
@@ -844,16 +836,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
 
-  logDebug("mergeCellDescriptionsWithRemoteData(...)","[pre] receive for cell ("
-        "offset="<< x.toString() <<
-        "level="<< level << ")");
-
-  // We have to initialise before we create the local CellDescription-Array.
-  // Otherwise we will mix up the heap indices.
-  if (!localCell.isInitialised()) {
-    localCell.setupMetaData();
-  }
-
   const int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
   Heap::getInstance().receiveData(
@@ -865,62 +847,33 @@ void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
       "offset="<< x.toString() <<
       "level="<< level << ")");
 
+  Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).clear();
   if (Heap::getInstance().getData(receivedCellDescriptionsIndex).size()>0) {
-    // TODO(Dominic): We reset the parent and heap indices of a received cell
-    // to -1 and RemoteAdjacencyIndex, respectively.
-    // If we receive parent and children cells during a fork event,
-    //
-    // We use the information of a parentIndex of a fine grid cell description
-    // set to RemoteAdjacencyIndex to update the parent index with
-    // the index of the coarse grid cell description in enterCell(..).
     resetDataHeapIndices(receivedCellDescriptionsIndex,
         multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
     assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
         localCell.getCellDescriptionsIndex());
     Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).reserve(
-        std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
-            Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
+            Heap::getInstance().getData(receivedCellDescriptionsIndex).size());
 
     for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
-      logDebug("mergeCellDescriptionsWithRemoteData(...)","Received " <<
-          " cell description for cell ("
-          "offset="<< x.toString() <<
-          ",level="<< level <<
-          ",isRoot="<< localCell.isRoot() <<
-          ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank() <<
-          ") with type="<< pReceived.getType());
+      auto* solver = exahype::solvers::RegisteredSolvers[pReceived.getSolverNumber()];
 
-      bool found = false;
-      for (auto& pLocal : Heap::getInstance().getData(localCell.getCellDescriptionsIndex())) {
-        if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
-          found = true;
-
-          assertion(pReceived.getType()==pLocal.getType());
-          if (pLocal.getType()==CellDescription::Type::Cell
-//              || // TODO(Dominic)
-//              pLocal.getType()==CellDescription::Type::EmptyAncestor ||
-//              pLocal.getType()==CellDescription::Type::Ancestor ||
-//              pLocal.getType()==CellDescription::Type::Descendant
-          ) {
-            assertionNumericalEquals2(pLocal.getTimeStamp(),pReceived.getTimeStamp(),
-                pLocal.toString(),pReceived.toString());
-            assertionNumericalEquals2(pLocal.getTimeStepSize(),pReceived.getTimeStepSize(),
-                pLocal.toString(),pReceived.toString());
-          }
-        }
+      switch (solver->getType()) {
+      case exahype::solvers::Solver::Type::ADERDG:
+        assertionMsg(false,"Solver type not appropriate!");
+        break;
+      case exahype::solvers::Solver::Type::LimitingADERDG:
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->ensureNecessaryMemoryIsAllocated(pReceived);
+        break;
+      case exahype::solvers::Solver::Type::FiniteVolumes:
+        static_cast<FiniteVolumesSolver*>(solver)->ensureNecessaryMemoryIsAllocated(pReceived);
+        break;
       }
 
-      if (!found) {
-        FiniteVolumesSolver* solver =
-            static_cast<FiniteVolumesSolver*>(RegisteredSolvers[pReceived.getSolverNumber()]);
-
-        solver->ensureNecessaryMemoryIsAllocated(pReceived);
-        Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).
-            push_back(pReceived);
-      }
+      Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).
+          push_back(pReceived);
     }
-  } else {
-    localCell.shutdownMetaData();
   }
 
   Heap::getInstance().deleteData(receivedCellDescriptionsIndex);

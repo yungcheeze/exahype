@@ -1441,26 +1441,6 @@ class exahype::solvers::Solver {
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) = 0;
 
-  /**
-   * Merge cell description \p element in
-   * the cell descriptions array stored at \p
-   * cellDescriptionsIndex with metadata
-   * stemming from the boundary or an empty cell.
-   *
-   * This function is used to prescribe boundary
-   * conditions for the diffused limiter status,
-   * augmentation, and helper status.
-   *
-   * Usually the boundary conditions of these
-   * diffusion processes are set to the lowest
-   * value in this function.
-   */
-  virtual void mergeWithBoundaryOrEmptyCellMetadata(
-      const int cellDescriptionsIndex,
-      const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const = 0;
-
   #ifdef Parallel
   /**
    * If a cell description was allocated at heap address \p cellDescriptionsIndex

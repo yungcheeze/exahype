@@ -722,12 +722,6 @@ public:
       double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
-
-  void mergeWithBoundaryOrEmptyCellMetadata(
-      const int cellDescriptionsIndex,
-      const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundaryOrEmptyCell) const override;
 #ifdef Parallel
   ///////////////////////////////////
   // MASTER<=>WORKER

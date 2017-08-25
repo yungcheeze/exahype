@@ -99,11 +99,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   void mergeOnlyMetadata(const exahype::records::State::AlgorithmSection& section);
 
   /**
-   * Merge metadata at a hanging node.
-   */
-  void mergeOnlyMetadataAtHangingNode(const exahype::records::State::AlgorithmSection& section);
-
-  /**
    * Checks if the cell descriptions at the indices corresponding
    * to \p pos1 and \p pos2 need to be merged with each other.
    *
