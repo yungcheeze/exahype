@@ -196,7 +196,7 @@ void Euler::EulerSolver_ADERDG::sodShockTube(const double* const x, const double
 
 void Euler::EulerSolver_ADERDG::sphericalExplosion(const double* const x,double t, double* Q) {
   constexpr double x0[3]   = {0.5, 0.5, 0.5};
-  constexpr double radius  = 0.5;
+  constexpr double radius  = 0.25;
   constexpr double radius2 = radius*radius;
 
   // Velocities are set to zero (initially).
