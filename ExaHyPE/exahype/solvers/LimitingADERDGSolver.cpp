@@ -485,7 +485,7 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
       &&
       parentSolverElement!=exahype::solvers::Solver::NotFound
   ) {
-    restrictLimiterStatus(
+    _solver->restrictLimiterStatus(
         fineGridCell.getCellDescriptionsIndex(),solverElement,
         coarseGridCell.getCellDescriptionsIndex(),parentSolverElement);
   }
@@ -1498,28 +1498,12 @@ void exahype::solvers::LimitingADERDGSolver::prolongateDataAndPrepareDataRestric
   }
 }
 
-void exahype::solvers::LimitingADERDGSolver::restrictLimiterStatus(
-    const int cellDescriptionsIndex,
-    const int element,
-    const int parentCellDescriptionsIndex,
-    const int parentElement) const {
-  SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
-  if (solverPatch.getLimiterStatus()>=ADERDGSolver::MinimumLimiterStatusForTroubledCell) {
-    SolverPatch& parentSolverPatch =
-        ADERDGSolver::getCellDescription(parentCellDescriptionsIndex,parentElement);
-    if(parentSolverPatch.getType()==SolverPatch::Type::Ancestor) {
-      parentSolverPatch.setLimiterStatus(ADERDGSolver::MinimumLimiterStatusForTroubledCell);
-      solverPatch.setFacewiseLimiterStatus(solverPatch.getLimiterStatus());
-    }
-  }
-}
-
 void exahype::solvers::LimitingADERDGSolver::restrictToNextParent(
         const int fineGridCellDescriptionsIndex,
         const int fineGridElement,
         const int coarseGridCellDescriptionsIndex,
         const int coarseGridElement) const {
-  restrictLimiterStatus(
+  _solver->restrictToNextParent(
       fineGridCellDescriptionsIndex,
       fineGridElement,coarseGridCellDescriptionsIndex,coarseGridElement);
 }
@@ -2142,29 +2126,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMetadata(
     const int                                 element) {
   _solver->mergeWithWorkerMetadata(
       receivedMetadata,cellDescriptionsIndex,element);
-
-  if (element!=exahype::solvers::Solver::NotFound)  {
-    SolverPatch& cellDescription =
-        ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
-
-    #ifdef Asserts
-    const SolverPatch::Type receivedType =
-            static_cast<SolverPatch::Type>(receivedMetadata[MasterWorkerCommunicationMetadataCellType].getU());
-    #endif
-    const int  workerLimiterStatus       =
-        receivedMetadata[MasterWorkerCommunicationMetadataLimiterStatus].getU();
-
-    assertion(receivedType==cellDescription.getType());
-    if (cellDescription.getType()==SolverPatch::Ancestor ||
-        cellDescription.getType()==SolverPatch::Cell) {
-      cellDescription.setLimiterStatus(workerLimiterStatus);
-      const int parentElement =
-          _solver->tryGetElement(cellDescription.getParentIndex(),cellDescription.getSolverNumber());
-      if (parentElement!=exahype::solvers::Solver::NotFound) {
-        restrictLimiterStatus(cellDescriptionsIndex,element,cellDescription.getParentIndex(),parentElement);
-      }
-    }
-  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(

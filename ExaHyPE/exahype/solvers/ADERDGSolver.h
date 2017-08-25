@@ -1779,6 +1779,20 @@ public:
       const int coarseGridCellDescriptionsIndex,
       const int coarseGridElement) const override;
 
+  /**
+   * Restrict the Troubled limiter status of a cell
+   * up to the parent if the parent exists.
+   *
+   * Any other limiter status is ignored.
+   *
+   * \note This operation is not thread-safe
+   */
+  void restrictLimiterStatus(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) const;
+
   void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
@@ -1920,6 +1934,11 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  /** \copydoc Solver::mergeWithNeighbourMetadata
+   *
+   * Appends cell type,limiterStatus,augmentationStatus,
+   * and helperStatus to \p metadata.
+   */
   void appendNeighbourCommunicationMetadata(
       exahype::MetadataHeap::HeapEntries& metadata,
       const tarch::la::Vector<DIMENSIONS,int>& src,
@@ -1927,6 +1946,17 @@ public:
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
+  /** \copydoc Solver::mergeWithNeighbourMetadata
+   *
+   * Merges with a metadata message received from
+   * a neighbour. The message contains the neighbours
+   * cell type,limiterStatus,augmentationStatus,helperStatus.
+   *
+   * <h2>LiimitingADERDGSolver</h2>
+   * This routine also merges the cell's limiter status
+   * with the one of the neighour.
+   * We do this here in order to reduce code bloat.
+   */
   void mergeWithNeighbourMetadata(
       const MetadataHeap::HeapEntries&          neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
@@ -1934,6 +1964,25 @@ public:
       const int                                 cellDescriptionsIndex,
       const int                                 element) const override;
 
+  /** \copydoc Solver::sendDataToNeighbour
+   *
+   * Sends out two messages, one holding degrees of freedom (DOF)
+   * of the boundary-extrapolated space-time predictor and one
+   * holding DOF of the boundary-extrapolated space-time flux.
+   *
+   * <h2>LimitingADERDGSolver's min and max</h2>
+   * This method does not send the minimum and
+   * maximum values required for the
+   * LimitingADERDGSolver's discrete h2>maximum principle.
+   * The LimitingADERDGSolver does this in his
+   * LimitingADERDGSolver::sendDataToNeighbour method.
+   *
+   * Min and max have to be merge
+   * independent of the limiter status of the cell while
+   * a ADER-DG neighbour merge has to be performed
+   * only for cells with certain limiter status
+   * flags.
+   */
   void sendDataToNeighbour(
       const int                                    toRank,
       const int                                    cellDescriptionsIndex,
@@ -1943,11 +1992,46 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
+  /**
+   * \copydoc Solver::sendEmptyDataToNeighbour
+   *
+   * Sends out two empty messages, one for
+   * the boundary-extrapolated space-time predictor and one
+   * for the boundary-extrapolated space-time flux.
+   *
+   * <h2>LimitingADERDGSolver's min and max</h2>
+   * This method does not send an empty message for each,
+   * the minimum and maximum values required for the
+   * LimitingADERDGSolver's discrete h2>maximum principle.
+   * The LimitingADERDGSolver does this in his
+   * LimitingADERDGSolver::sendEmptyDataToNeighbour method.
+   *
+   * Min and max have to be merge
+   * independent of the limiter status of the cell while
+   * a ADER-DG neighbour merge has to be performed
+   * only for cells with certain limiter status
+   * flags.
+   */
   void sendEmptyDataToNeighbour(
       const int                                    toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) const override;
 
+  /** \copydoc Solver::mergeWithNeighbourData
+   *
+   * <h2>LimitingADERDGSolver's min and max</h2>
+   * This method does not merge the minimum and
+   * maximum values required for the
+   * LimitingADERDGSolver's discrete maximum principle.
+   * The LimitingADERDGSolver does this in his
+   * LimitingADERDGSolver::mergeWithNeighbourData method.
+   *
+   * Min and max have to be merged
+   * independent of the limiter status of the cell while
+   * a ADER-DG neighbour merge has to be performed
+   * only for cells with certain limiter status
+   * flags.
+   */
   void mergeWithNeighbourData(
       const int                                    fromRank,
       const MetadataHeap::HeapEntries&             neighbourMetadata,
@@ -1961,6 +2045,15 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
+  /** \copydoc Solver::dropNeighbourData
+   *
+   * <h2>LimitingADERDGSolver's min and max</h2>
+   * This method does not drop the minimum and
+   * maximum values required for the
+   * LimitingADERDGSolver's discrete maximum principle.
+   * The LimitingADERDGSolver does this in his
+   * LimitingADERDGSolver::dropNeighbourData method.
+   */
   void dropNeighbourData(
       const int                                    fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1969,8 +2062,36 @@ public:
       const int                                    level) const override;
 
   ///////////////////////////////////
-  // FORK OR JOIN
+  // MASTER<=>WORKER
   ///////////////////////////////////
+  /**
+   * TODO(Dominic): Add docu
+   */
+  void prepareMasterCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  /**
+   * TODO(Dominic): Add docu
+   */
+  void prepareWorkerCellDescriptionAtMasterWorkerBoundary(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void appendMasterWorkerCommunicationMetadata(
+      MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) const override;
+
+  void mergeWithMasterMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) override;
+
+  void mergeWithWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) override;
 
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                    toRank,
@@ -1995,7 +2116,6 @@ public:
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) const override;
-
 
   ///////////////////////////////////
   // WORKER->MASTER
@@ -2035,6 +2155,12 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
+  /** \copydoc Solver::sendDataToMaster
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   * We further send here the solution/observables min
+   * and max to the master.
+   */
   void sendDataToMaster(
       const int                                    masterRank,
       const int                                    cellDescriptionsIndex,
@@ -2042,11 +2168,29 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) const override;
 
+  /** \copydoc Solver::sendDataToMaster
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   * We further send here a empty message for both, the
+   * solution/observables min and max vectors,
+   * to the master.
+   */
   void sendEmptyDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) const override;
 
+  /** \copydoc Solver::mergeWithWorkerData
+   *
+   * Receive all 2*DIMENSIONS boundary-extrapolated
+   * space-time predictor and space-time flux vectors
+   * from the worker.
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   * We further receive and restrict here the
+   * 2*DIMENSIONS solution/observables min and max
+   * vectors send from the master.
+   */
   void mergeWithWorkerData(
       const int                                     workerRank,
       const MetadataHeap::HeapEntries&              workerMetadata,
@@ -2055,6 +2199,12 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
+  /** \copydoc Solver::dropWorkerData
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   * We further drop here the 2*DIMENSIONS solution/observables min
+   * and max vectors send from the master.
+   */
   void dropWorkerData(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -2063,29 +2213,6 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
-  void prepareMasterCellDescriptionAtMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element) override;
-
-  void prepareWorkerCellDescriptionAtMasterWorkerBoundary(
-      const int cellDescriptionsIndex,
-      const int element) override;
-
-  void appendMasterWorkerCommunicationMetadata(
-      MetadataHeap::HeapEntries& metadata,
-      const int cellDescriptionsIndex,
-      const int solverNumber) const override;
-
-  void mergeWithMasterMetadata(
-      const MetadataHeap::HeapEntries& receivedMetadata,
-      const int                        cellDescriptionsIndex,
-      const int                        element) override;
-
-  void mergeWithWorkerMetadata(
-      const MetadataHeap::HeapEntries& receivedMetadata,
-      const int                        cellDescriptionsIndex,
-      const int                        element) override;
-
   /**
    * Compiles a message for a worker.
    *

@@ -1110,20 +1110,6 @@ public:
       const int parentElement,
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
-  /**
-   * Restrict the Troubled limiter status of a cell
-   * up to the parent if the parent exists.
-   *
-   * Any other limiter status is ignored.
-   *
-   * \note This operation is not thread-safe
-   */
-  void restrictLimiterStatus(
-      const int cellDescriptionsIndex,
-      const int element,
-      const int parentCellDescriptionsIndex,
-      const int parentElement) const;
-
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
