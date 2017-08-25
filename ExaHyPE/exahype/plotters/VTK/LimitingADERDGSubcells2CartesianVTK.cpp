@@ -202,23 +202,24 @@ void exahype::plotters::LimitingADERDGSubcells2CartesianVTK::plotPatch(const int
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    //typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
-    int limiterStatus         = solverPatch.getLimiterStatus();
-    int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
+    assertion(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getType()==
+        exahype::solvers::Solver::Type::LimitingADERDG);
+    auto* limitingADERDG =
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
 
     // ignore limiter status on coarser mesh levels
+    int limiterStatus         = solverPatch.getLimiterStatus();
+    int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
     assertion(static_cast<unsigned int>(solverPatch.getSolverNumber())
         <exahype::solvers::RegisteredSolvers.size());
-    if (solverPatch.getLevel()
-        <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
+    if (solverPatch.getLevel()<limitingADERDG->getMaximumAdaptiveMeshLevel()) {
       limiterStatus         = 0;
       previousLimiterStatus = 0;
     }
 
-    if (limiterStatus>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
-      auto& limiterPatch =
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(
-              exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
+    if (limiterStatus>=limitingADERDG->getSolver()->getMinimumLimiterStatusForActiveFVPatch()) {
+      auto& limiterPatch = limitingADERDG->
               getLimiterPatchForSolverPatch(cellDescriptionsIndex,solverPatch);
 
       double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();

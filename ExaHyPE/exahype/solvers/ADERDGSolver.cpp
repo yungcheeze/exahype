@@ -98,9 +98,6 @@ int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData
 // augmentation status
 int exahype::solvers::ADERDGSolver::MaximumAugmentationStatus                = 2;
 int exahype::solvers::ADERDGSolver::MinimumAugmentationStatusForAugmentation = 1;
-// limiter status
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell  = 3;
-int exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch = 2;
 
 void exahype::solvers::ADERDGSolver::addNewCellDescription(
   const int cellDescriptionsIndex,
@@ -480,6 +477,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
     int numberOfParameters, int DOFPerCoordinateAxis,
     double maximumMeshSize, int maximumAdaptiveMeshDepth,
     int DMPObservables,
+    int limiterHelperLayers,
     exahype::solvers::Solver::TimeStepping timeStepping,
     std::unique_ptr<profilers::Profiler> profiler)
     : Solver(identifier, Solver::Type::ADERDG, numberOfVariables,
@@ -501,8 +499,9 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
      _spaceTimeDofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 1) ),
      _spaceTimeFluxDofPerCell( _spaceTimeDofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
      _dataPointsPerCell( (numberOfVariables+numberOfParameters) * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
-     _DMPObservables(DMPObservables)
-{
+     _DMPObservables(DMPObservables),
+     _minimumLimiterStatusForActiveFVPatch(limiterHelperLayers+1),
+     _minimumLimiterStatusForTroubledCell (2*limiterHelperLayers+1) {
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
@@ -557,6 +556,14 @@ int exahype::solvers::ADERDGSolver::getSpaceTimeDataPerCell() const {
 
 int exahype::solvers::ADERDGSolver::getDMPObservables() const {
   return _DMPObservables;
+}
+
+int exahype::solvers::ADERDGSolver::getMinimumLimiterStatusForActiveFVPatch() const {
+  return _minimumLimiterStatusForActiveFVPatch;
+}
+
+int exahype::solvers::ADERDGSolver::getMinimumLimiterStatusForTroubledCell() const {
+  return _minimumLimiterStatusForTroubledCell;
 }
 
 void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
@@ -1492,8 +1499,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   //
   if (!initialGrid
       &&
-      coarseGridCellDescription.getLimiterStatus()>=MinimumLimiterStatusForTroubledCell) {
-    fineGridCellDescription.setLimiterStatus(MinimumLimiterStatusForTroubledCell);
+      coarseGridCellDescription.getLimiterStatus()>=_minimumLimiterStatusForTroubledCell) {
+    fineGridCellDescription.setLimiterStatus(_minimumLimiterStatusForTroubledCell);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
   }
   overwriteFacewiseLimiterStatus(fineGridCellDescription,fineGridCellDescription.getLimiterStatus());
@@ -2480,11 +2487,11 @@ void exahype::solvers::ADERDGSolver::restrictLimiterStatus(
     const int parentCellDescriptionsIndex,
     const int parentElement) const {
   CellDescription& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
-  if (solverPatch.getLimiterStatus()>=ADERDGSolver::MinimumLimiterStatusForTroubledCell) {
+  if (solverPatch.getLimiterStatus()>=ADERDGSolver::_minimumLimiterStatusForTroubledCell) {
     CellDescription& parentCellDescription =
         ADERDGSolver::getCellDescription(parentCellDescriptionsIndex,parentElement);
     if(parentCellDescription.getType()==CellDescription::Type::Ancestor) {
-      parentCellDescription.setLimiterStatus(ADERDGSolver::MinimumLimiterStatusForTroubledCell);
+      parentCellDescription.setLimiterStatus(ADERDGSolver::_minimumLimiterStatusForTroubledCell);
       solverPatch.setFacewiseLimiterStatus(solverPatch.getLimiterStatus());
     }
   }
@@ -2569,17 +2576,6 @@ void exahype::solvers::ADERDGSolver::restrictObservablesMinAndMax(
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
-
-// limiter status
-exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
-exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
-  assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
-  const int newLimiterStatusAsInt=std::min(
-      limiterStatusAsInt, MinimumLimiterStatusForTroubledCell );
-
-  return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
-}
-
 void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
     CellDescription& cellDescription,
     const int faceIndex,
@@ -2587,12 +2583,12 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
   const int croppedOtherLimiterStatus =
       std::min(
           otherLimiterStatus,
-          MinimumLimiterStatusForTroubledCell );
+          _minimumLimiterStatusForTroubledCell );
 
   int limiterStatus =
       std::min(
         cellDescription.getLimiterStatus(),
-        MinimumLimiterStatusForTroubledCell );
+        _minimumLimiterStatusForTroubledCell );
 
   limiterStatus =
       std::max( limiterStatus, croppedOtherLimiterStatus );

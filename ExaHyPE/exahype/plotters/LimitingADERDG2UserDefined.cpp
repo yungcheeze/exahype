@@ -55,10 +55,13 @@ void exahype::plotters::LimitingADERDG2UserDefined::plotPatch(const int cellDesc
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    if (
-        solverPatch.getLimiterStatus()>=exahype::solvers::ADERDGSolver::MinimumLimiterStatusForActiveFVPatch) {
-      auto& limiterPatch = static_cast<exahype::solvers::LimitingADERDGSolver*>(
-          exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()])->
+    assertion(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getType()==
+        exahype::solvers::Solver::Type::LimitingADERDG);
+    auto* limitingADERDG =
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
+
+    if (solverPatch.getLimiterStatus()>=limitingADERDG->getSolver()->getMinimumLimiterStatusForActiveFVPatch()) {
+      auto& limiterPatch = limitingADERDG->
               getLimiterPatchForSolverPatch(cellDescriptionsIndex,solverPatch);
 
       double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();

@@ -175,7 +175,7 @@ void exahype::mappings::Prediction::enterCell(
 
             if (solver->isComputing(_localState.getAlgorithmSection())) {
               solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
-              if (cellDescription.getLimiterStatus()<exahype::solvers::ADERDGSolver::MinimumLimiterStatusForTroubledCell) {
+              if (cellDescription.getLimiterStatus()<solver->getSolver()->getMinimumLimiterStatusForTroubledCell()) {
                 performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
               }
             }

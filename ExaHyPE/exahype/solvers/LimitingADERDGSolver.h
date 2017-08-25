@@ -406,6 +406,18 @@ private:
 #endif
 
 public:
+  /**
+   * Loops over all registered LimitingADERDGSolver instances
+   * and determines the maximum value of their
+   * minimum limiter status for a troubled cell.
+   *
+   * This value determines how long we have to perform
+   * limiter status spreading.
+   *
+   * The minimum possible return value is three.
+   */
+  static int getMaxMinimumHelperStatusForTroubledCell();
+
   /*
    * Check if a solver requested limiter status spreading.
    * Such a request might stem from a limiting ADERDGSolver which
@@ -452,8 +464,7 @@ public:
       std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
       const double DMPRelaxationParameter=1e-4,
       const double DMPDifferenceScaling=1e-3,
-      const int iterationsToCureTroubledCell=2
-      );
+      const int iterationsToCureTroubledCell=2);
 
   virtual ~LimitingADERDGSolver() {
     _solver.reset();

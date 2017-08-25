@@ -637,10 +637,8 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
 
   // a few extra iterations for the limiter status spreading
   logInfo("createGrid()", "more status spreading.");
-  int extraIterations = 3;
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    extraIterations = 5;
-  }
+  int extraIterations =
+      exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell();
   while (
       extraIterations > 0
       || repository.getState().continueToConstructGrid()
@@ -885,7 +883,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LimiterStatusSpreading);
     logInfo("updateMeshAndSubdomains(...)","pre-spreading of limiter status");
     repository.switchToLimiterStatusSpreading();
-    repository.iterate(5);
+    repository.iterate(
+        exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell());
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());

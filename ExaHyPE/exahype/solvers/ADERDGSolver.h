@@ -76,19 +76,6 @@ public:
    */
   static int MinimumAugmentationStatusForAugmentation;
 
-  /**
-   * Minimum limiter status a troubled cell can have.
-   */
-  static int MinimumLimiterStatusForTroubledCell;
-  /**
-   * The minimum limiter status a cell must have
-   * to allocate an active FV patch.
-   *
-   * All patches with nonzero limiter status smaller than this value,
-   * hold a passive FV patch.
-   */
-  static int MinimumLimiterStatusForActiveFVPatch;
-
   #ifdef Asserts
   static double PipedUncompressedBytes;
   static double PipedCompressedBytes;
@@ -220,6 +207,20 @@ private:
    * is applied to.
    */
   const int _DMPObservables;
+
+  /**
+   * The minimum limiter status a cell must have
+   * to allocate an active FV patch.
+   *
+   * All patches with nonzero limiter status smaller than this value,
+   * hold a passive FV patch.
+   */
+  const int _minimumLimiterStatusForActiveFVPatch;
+
+  /**
+   * Minimum limiter status a troubled cell can have.
+   */
+  const int _minimumLimiterStatusForTroubledCell;
 
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
@@ -768,14 +769,6 @@ public:
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
-   * \note a LimiterStatus enum for the given integer.
-   *
-   * \note It makes only sense to use this method if a corresponding
-   * celldescriptions is at the finest level of the mesh.
-   */
-  static CellDescription::LimiterStatus toLimiterStatusEnum(const int limiterStatusAsInt);
-
-  /**
    * Determine a new limiter status for the given direction based on the neighbour's
    * limiter status and the cell's reduced limiter status.
    *
@@ -856,6 +849,7 @@ public:
       int numberOfVariables, int numberOfParameters, int DOFPerCoordinateAxis,
       double maximumMeshSize, int maximumAdaptiveMeshDepth,
       int DMPObservables,
+      int limiterHelperLayers,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -949,6 +943,32 @@ public:
    * is applied to.
    */
   int getDMPObservables() const;
+
+  /**
+   * !!! LimitingADERDGSolver functionality !!!
+   *
+   * \return the number of Limiter/FV helper layers
+   * surrounding a troubled cell.
+   *
+   * The helper layers of the the ADER-DG solver have
+   * the same cardinality.
+   * We thus have a total number of helper layers
+   * which is twice the returned value.
+   */
+  int getMinimumLimiterStatusForActiveFVPatch() const;
+
+  /**
+   * !!! LimitingADERDGSolver functionality !!!
+   *
+   * \return the number of Limiter/FV helper layers
+   * surrounding a troubled cell.
+   *
+   * The helper layers of the the ADER-DG solver have
+   * the same cardinality.
+   * We thus have a total number of helper layers
+   * which is twice the returned value.
+   */
+  int getMinimumLimiterStatusForTroubledCell() const;
 
   /**
    * Check if cell descriptions of type Ancestor or Descendant need to hold
