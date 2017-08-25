@@ -983,7 +983,7 @@ exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolutionUpdat
       if (solverPatch.getIterationsToCureTroubledCell()==0) {
         solverPatch.setLimiterStatus(_solver->getMinimumLimiterStatusForTroubledCell()-1);
         solverPatch.setFacewiseLimiterStatus(solverPatch.getLimiterStatus());
-        solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell); // TODO(Dominic): Probably not necessary
+        solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell+1); // TODO(Dominic): Probably not necessary
       }
     } // else do nothing
   }
