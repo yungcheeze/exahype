@@ -3225,7 +3225,6 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterMetadata(
       cellDescription.setHasToHoldDataForMasterWorkerCommunication(masterHoldsData);
       ensureNoUnnecessaryMemoryIsAllocated(cellDescription);
       ensureNecessaryMemoryIsAllocated(cellDescription);
-      assertion(masterAugmentationStatus==MaximumAugmentationStatus);
     } // do nothing for the other cell types
   }
 }
