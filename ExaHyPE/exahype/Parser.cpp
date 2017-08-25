@@ -827,35 +827,38 @@ int exahype::Parser::getDMPObservables(int solverNumber) const {
 
 int exahype::Parser::getStepsTillCured(int solverNumber) const {
   std::string token;
-  int result;
+  int result = 0;
   token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
-  result = std::atoi(token.c_str());
+  if (token.compare(_noTokenFound)!=0) {
+    result = std::atoi(token.c_str());
 
-  if (result < 0) {
-    logError("getStepsTillCured()",
-             "'" << getIdentifier(solverNumber)
-                 << "': 'steps-till-cured': Value must not be negative.");
-    _interpretationErrorOccured = true;
+    if (result < 0) {
+      logError("getStepsTillCured()",
+               "'" << getIdentifier(solverNumber)
+               << "': 'steps-till-cured': Value must not be negative.");
+      _interpretationErrorOccured = true;
+    }
+
+    logInfo("getStepsTillCured()", "found steps-till-cured " << result);
   }
-
-  logInfo("getStepsTillCured()", "found steps-till-cured " << result);
   return result;
 }
 
 int exahype::Parser::getLimiterHelperLayers(int solverNumber) const {
   std::string token;
-  int result;
+  int result = 1; // default
   token = getTokenAfter("solver", solverNumber + 1, "helper-layers", 1);
-  result = std::atoi(token.c_str());
 
-  if (result < 1) {
-    logError("getLimiterHelperLayers()",
-             "'" << getIdentifier(solverNumber)
-                 << "': 'helper-layers': Value must not be greater or equal to 1.");
-    _interpretationErrorOccured = true;
+  if (token.compare(_noTokenFound)!=0) {
+    result = std::atoi(token.c_str());
+    if (result < 1) {
+      logError("getLimiterHelperLayers()",
+               "'" << getIdentifier(solverNumber)
+               << "': 'helper-layers': Value must not be greater or equal to 1.");
+      _interpretationErrorOccured = true;
+    }
+    logInfo("getLimiterHelperLayers()", "found helper-layers " << result);
   }
-
-  logInfo("getLimiterHelperLayers()", "found helper-layers " << result);
   return result;
 }
 
