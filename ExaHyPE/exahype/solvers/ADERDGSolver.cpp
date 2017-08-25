@@ -1253,13 +1253,13 @@ void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription =
        getCellDescription(fineGridCellDescriptionsIndex,fineGridCellElement);
-    if (fineGridCellDescription.getIsAugmented()
-        ||
-        fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::Augmenting
-        ||
-        fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::AugmentingRequested
-        ||
-        fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) {
+    if (   fineGridCellDescription.getIsAugmented()
+        || fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::Augmenting
+        || fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::AugmentingRequested
+        #ifdef Parallel
+        || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()
+        #endif
+    ) {
       switch (coarseGridCellDescription.getRefinementEvent()) {
       case CellDescription::DeaugmentingChildrenRequested:
         assertion1(coarseGridCellDescription.getType()==CellDescription::Descendant,coarseGridCellDescription.toString());
