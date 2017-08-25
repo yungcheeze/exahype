@@ -33,7 +33,7 @@ class Trivial::AdvectionSolver: public Trivial::AbstractAdvectionSolver {
      */
     static tarch::logging::Log _log;
   public:
-    AdvectionSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    AdvectionSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.

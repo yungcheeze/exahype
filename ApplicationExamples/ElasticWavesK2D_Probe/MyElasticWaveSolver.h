@@ -33,7 +33,7 @@ class ElasticWave::MyElasticWaveSolver: public ElasticWave::AbstractMyElasticWav
      */
     static tarch::logging::Log _log;
   public:
-    MyElasticWaveSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    MyElasticWaveSolver(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.

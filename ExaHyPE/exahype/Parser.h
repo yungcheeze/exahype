@@ -348,6 +348,20 @@ class exahype::Parser {
   int getStepsTillCured(int solverNumber) const;
 
   /**
+   * \return the number of Limiter/FV helper layers
+   * surrounding a troubled cell.
+   *
+   * The helper layers of the the ADER-DG solver have
+   * the same cardinality.
+   * We thus have a total number of helper layers
+   * which is twice the returned value.
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  int getLimiterHelperLayers(int solverNumber) const;
+
+  /**
    * In the ExaHyPE specification file, a plotter configuration has
    * the following signature:
    *

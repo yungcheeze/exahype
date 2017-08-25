@@ -16,14 +16,14 @@
 #include <stdio.h>
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  {{AbstractSolver}}::{{AbstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
+{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
+  {{AbstractSolver}}::{{AbstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
   init(cmdlineargs{{SolverInitCallExtension}});
 }
 
-{{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
+{{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",kernels::aderdg::optimised::getNumberOfVariable(),kernels::aderdg::optimised::getNumberOfParameter(),kernels::aderdg::optimised::getBasisSize(),
-                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
+                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
 void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {

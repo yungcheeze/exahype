@@ -812,7 +812,7 @@ int exahype::Parser::getDMPObservables(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber + 1, "dmp-observables", 1);
-  result = atof(token.c_str());
+  result = std::atoi(token.c_str());
 
   if (result < 0) {
     logError("getDMPObservables()",
@@ -829,7 +829,7 @@ int exahype::Parser::getStepsTillCured(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
-  result = atof(token.c_str());
+  result = std::atoi(token.c_str());
 
   if (result < 0) {
     logError("getStepsTillCured()",
@@ -839,6 +839,23 @@ int exahype::Parser::getStepsTillCured(int solverNumber) const {
   }
 
   logInfo("getStepsTillCured()", "found steps-till-cured " << result);
+  return result;
+}
+
+int exahype::Parser::getLimiterHelperLayers(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "helper-layers", 1);
+  result = std::atoi(token.c_str());
+
+  if (result < 1) {
+    logError("getLimiterHelperLayers()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'helper-layers': Value must not be greater or equal to 1.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getLimiterHelperLayers()", "found helper-layers " << result);
   return result;
 }
 
