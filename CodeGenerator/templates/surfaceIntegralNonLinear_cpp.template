@@ -19,7 +19,7 @@
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 
-void kernels::aderdg::optimised::surfaceIntegral( 
+void {{codeNamespace}}::surfaceIntegral( 
   double* restrict lduh, 
   const double* restrict const lFhbnd, 
   const tarch::la::Vector<DIMENSIONS,double> &inverseDx

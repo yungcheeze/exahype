@@ -16,9 +16,9 @@
 
 #include <set>
 
-namespace kernels { 
-namespace aderdg {
-namespace optimised {
+{% for namespaceName in codeNamespaceList %}
+namespace {{namespaceName}} {
+{% endfor %}
 
 void initGaussLegendreNodesAndWeights(const std::set<int>& orders);
 void freeGaussLegendreNodesAndWeights(const std::set<int>& orders);
@@ -28,7 +28,8 @@ extern double **gaussLegendreWeights;
 extern double *weights1;
 extern double *weights2;
 extern double *weights3;
+
+{% for namespaceName in codeNamespaceList %}
 }
-}
-}
+{% endfor %}
 #endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_ */

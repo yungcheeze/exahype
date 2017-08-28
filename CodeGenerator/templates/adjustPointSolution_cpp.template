@@ -16,7 +16,7 @@
 
 #include "{{solverHeader}}"
 
-void kernels::aderdg::optimised::adjustPointSolution(
+void {{codeNamespace}}::adjustPointSolution(
   {{solverName}}& solver,
   double* luh,
   const tarch::la::Vector<DIMENSIONS,double>& center,

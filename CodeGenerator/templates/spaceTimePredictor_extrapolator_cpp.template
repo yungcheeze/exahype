@@ -18,7 +18,7 @@
 #include "{{pathToOptKernel}}/DGMatrices.h"
 //#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"
  
-void kernels::aderdg::optimised::extrapolatorNonlinear(
+void {{codeNamespace}}::extrapolatorNonlinear(
         const double* restrict const lQhi, 
         const double* restrict const lFhi,
         double* restrict lQhbnd, 

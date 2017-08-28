@@ -31,117 +31,116 @@ namespace {{solverNamespace}} {
 }
 
 #define NDEBUG
-namespace kernels {
-  namespace aderdg {
-    namespace optimised {
-      
-      void picardLoopNonlinear(
-        {{solverName}}& solver,
-        const double* restrict const luh, 
-        const double dt,
-        const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
-        double* restrict lQi, double* restrict rhs,
-        double* restrict lFi,
-        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+{% for namespaceName in codeNamespaceList %}
+namespace {{namespaceName}} {
+{% endfor %}
+  
+  void picardLoopNonlinear(
+    {{solverName}}& solver,
+    const double* restrict const luh, 
+    const double dt,
+    const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
+    double* restrict lQi, double* restrict rhs,
+    double* restrict lFi,
+    double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
 {% if useDeepProfiler %}
-        , exahype::profilers::Profiler* profiler
+    , exahype::profilers::Profiler* profiler
 {% endif %}
-      );
+  );
 
 {% if noTimeAveraging %}
-      void extrapolatorNonlinear(
-        const double* restrict const lQi, 
-        const double* restrict const lFi,
-        double* restrict lQhbnd, 
-        double* restrict lFhbnd);
-        
-      void volumeIntegral( 
-        double* restrict lduh, 
-        const double* restrict const lFi,
-        const double* restrict const lSi, //nullptr if not used
-        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
-      );
+  void extrapolatorNonlinear(
+    const double* restrict const lQi, 
+    const double* restrict const lFi,
+    double* restrict lQhbnd, 
+    double* restrict lFhbnd);
+    
+  void volumeIntegral( 
+    double* restrict lduh, 
+    const double* restrict const lFi,
+    const double* restrict const lSi, //nullptr if not used
+    const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+  );
 {% else %}    
-      void predictorNonlinear(
-        const double* restrict const lQi, 
-        const double* restrict const lFi,
-        const double* restrict const lSi, //nullptr if not used
-        double* restrict lQhi,
-        double* restrict lFhi,
-        double* restrict lShi //nullptr if not used
-      );
+  void predictorNonlinear(
+    const double* restrict const lQi, 
+    const double* restrict const lFi,
+    const double* restrict const lSi, //nullptr if not used
+    double* restrict lQhi,
+    double* restrict lFhi,
+    double* restrict lShi //nullptr if not used
+  );
 
-      void extrapolatorNonlinear(
-        const double* restrict const lQhi, 
-        const double* restrict const lFhi,
-        double* restrict lQhbnd, 
-        double* restrict lFhbnd);
-        
-      void volumeIntegral( 
-        double* restrict lduh, 
-        const double* restrict const lFhi,
-        const double* restrict const lShi, //nullptr if not used
-        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
-      );
+  void extrapolatorNonlinear(
+    const double* restrict const lQhi, 
+    const double* restrict const lFhi,
+    double* restrict lQhbnd, 
+    double* restrict lFhbnd);
+    
+  void volumeIntegral( 
+    double* restrict lduh, 
+    const double* restrict const lFhi,
+    const double* restrict const lShi, //nullptr if not used
+    const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+  );
 {% endif %}
 
-      void solutionUpdate( 
-        double* restrict luh, 
-        const double* restrict const lduh, 
-        const double dt
-      );
-      
-      void surfaceIntegral( 
-        double* restrict lduh, 
-        const double* restrict const lFhbnd, 
-        const tarch::la::Vector<DIMENSIONS,double> &inverseDx
-      );
+  void solutionUpdate( 
+    double* restrict luh, 
+    const double* restrict const lduh, 
+    const double dt
+  );
+  
+  void surfaceIntegral( 
+    double* restrict lduh, 
+    const double* restrict const lFhbnd, 
+    const tarch::la::Vector<DIMENSIONS,double> &inverseDx
+  );
 
-      void adjustPointSolution(
-        {{solverName}}& solver,
-        double* luh,
-        const tarch::la::Vector<DIMENSIONS,double>& center,
-        const tarch::la::Vector<DIMENSIONS,double>& dx,
-        const double t,
-        const double dt
-      );
+  void adjustPointSolution(
+    {{solverName}}& solver,
+    double* luh,
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const double t,
+    const double dt
+  );
 
-      void riemannSolver( 
-        {{solverName}}& solver,
-        double* restrict lFhbndL,
-        double* restrict lFhbndR,
-        const double* restrict const lQhbndL,
-        const double* restrict const lQhbndR,
-        const double dt,
-        const int normalNonZero
+  void riemannSolver( 
+    {{solverName}}& solver,
+    double* restrict lFhbndL,
+    double* restrict lFhbndR,
+    const double* restrict const lQhbndL,
+    const double* restrict const lQhbndR,
+    const double dt,
+    const int normalNonZero
 {% if useDeepProfiler %}
-        , exahype::profilers::Profiler* profiler
+    , exahype::profilers::Profiler* profiler
 {% endif %}
-      );
+  );
 
-      double stableTimeStepSize(
-        {{solverName}}& solver,
-        const double* restrict const luh,
-        const tarch::la::Vector<DIMENSIONS,double>& inverseDx
-      );
+  double stableTimeStepSize(
+    {{solverName}}& solver,
+    const double* restrict const luh,
+    const tarch::la::Vector<DIMENSIONS,double>& inverseDx
+  );
 
-      void boundaryConditions(
-        {{solverName}}& solver,
-        double* fluxOut, 
-        double* stateOut, 
-        const double* const fluxIn, 
-        const double* const stateIn, 
-        const tarch::la::Vector<DIMENSIONS, double>& cellCentre, 
-        const tarch::la::Vector<DIMENSIONS,double>& cellSize, 
-        const double t,const double dt, 
-        const int faceIndex, 
-        const int normalNonZero 
-      );
+  void boundaryConditions(
+    {{solverName}}& solver,
+    double* fluxOut, 
+    double* stateOut, 
+    const double* const fluxIn, 
+    const double* const stateIn, 
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre, 
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize, 
+    const double t,const double dt, 
+    const int faceIndex, 
+    const int normalNonZero 
+  );
 
-    }
-  }
+{% for namespaceName in codeNamespaceList %}
 }
-
+{% endfor %}
 {# //TODO JMG implement/remove
 {% if isLinear %}
 #include "{{pathToOptKernel}}/cauchyKovalewski.cpph"

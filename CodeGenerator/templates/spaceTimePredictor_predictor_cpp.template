@@ -16,7 +16,7 @@
 #include "{{pathToOptKernel}}/Kernels.h"
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-void kernels::aderdg::optimised::predictorNonlinear(
+void {{codeNamespace}}::predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
         const double* restrict const lSi, //nullptr if not used

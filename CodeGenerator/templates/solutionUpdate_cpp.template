@@ -16,7 +16,7 @@
 #include "{{pathToOptKernel}}/Kernels.h"
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-void kernels::aderdg::optimised::solutionUpdate( 
+void {{codeNamespace}}::solutionUpdate( 
   double* restrict luh, 
   const double* restrict const lduh, 
   const double dt
@@ -28,7 +28,7 @@ void kernels::aderdg::optimised::solutionUpdate(
 #endif
 
   for(int ijk=0;ijk<{{nDof**nDim}};ijk++) {
-    const double coeff = dt/kernels::aderdg::optimised::weights3[ijk];
+    const double coeff = dt/weights3[ijk];
     #pragma simd
     for(int n=0;n<{{nVar}};n++) {
       luh[n+ijk*{{nVar}}] += coeff*lduh[n+ijk*{{nVar}}]; //simd+fma

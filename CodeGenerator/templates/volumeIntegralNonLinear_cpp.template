@@ -19,21 +19,21 @@
 #include "{{pathToOptKernel}}/DGMatrices.h"
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-namespace kernels {
-  namespace aderdg {
-    namespace optimised {
-      void {{gemm_x}}(const double* A, const double* B, double* C);
-      void {{gemm_y}}(const double* A, const double* B, double* C);
+{% for namespaceName in codeNamespaceList %}
+namespace {{namespaceName}} {
+{% endfor %}
+  void {{gemm_x}}(const double* A, const double* B, double* C);
+  void {{gemm_y}}(const double* A, const double* B, double* C);
 {% if nDim==3 %}
-      void {{gemm_z}}(const double* A, const double* B, double* C);
+  void {{gemm_z}}(const double* A, const double* B, double* C);
 {% endif %}
-    }
-  }
+{% for namespaceName in codeNamespaceList %}
 }
+{% endfor %}
 
 #include "{{pathToOptKernel}}/asm_volumeIntegral.c"
 
-void kernels::aderdg::optimised::volumeIntegral( 
+void {{codeNamespace}}::volumeIntegral( 
   double* restrict lduh, 
   const double* restrict const lFhi,
   const double* restrict const lShi, //nullptr if not used

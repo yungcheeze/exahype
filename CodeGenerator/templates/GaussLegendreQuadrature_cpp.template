@@ -14,13 +14,13 @@
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 #include <mm_malloc.h> //g++
 
-double** kernels::aderdg::optimised::gaussLegendreWeights;
-double** kernels::aderdg::optimised::gaussLegendreNodes;
-double* kernels::aderdg::optimised::weights1;
-double* kernels::aderdg::optimised::weights2;
-double* kernels::aderdg::optimised::weights3;
+double** {{codeNamespace}}::gaussLegendreWeights;
+double** {{codeNamespace}}::gaussLegendreNodes;
+double* {{codeNamespace}}::weights1;
+double* {{codeNamespace}}::weights2;
+double* {{codeNamespace}}::weights3;
 
-void kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(const std::set<int>& orders) {
+void {{codeNamespace}}::freeGaussLegendreNodesAndWeights(const std::set<int>& orders) {
   _mm_free(weights1);
   _mm_free(weights2);
   _mm_free(weights3);
@@ -35,7 +35,7 @@ void kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(const std::set
   delete [] gaussLegendreWeights;
 }
 
-void kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {
+void {{codeNamespace}}::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {
   weights1 = (double *) _mm_malloc(sizeof(double)*{{w1Size}}, ALIGNMENT); //nDofPad
   weights2 = (double *) _mm_malloc(sizeof(double)*{{w2Size}}, ALIGNMENT); //2D: nDofPad (==weight1), 3D: (nDof*nDof)Pad (== w1[i]*w1[j])
   weights3 = (double *) _mm_malloc(sizeof(double)*{{w3Size}}, ALIGNMENT); //2D: (nDof*nDof)Pad (== w1[i]*w1[j]), 3D: (nDof*nDof*nDof)Pad (== w1[i]*w1[j]*w1[k])

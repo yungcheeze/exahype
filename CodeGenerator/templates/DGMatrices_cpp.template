@@ -16,18 +16,18 @@
 #include "{{pathToOptKernel}}/DGMatrices.h"
 
 //DGMatrices
-double* kernels::aderdg::optimised::Kxi;
-double* kernels::aderdg::optimised::Kxi_T;
-double* kernels::aderdg::optimised::iK1;
-double* kernels::aderdg::optimised::dudx;
-double* kernels::aderdg::optimised::dudx_T;
-double* kernels::aderdg::optimised::FLCoeff;
-double* kernels::aderdg::optimised::FRCoeff;
-double*** kernels::aderdg::optimised::equidistantGridProjector1d;
-double**** kernels::aderdg::optimised::fineGridProjector1d;
+double* {{codeNamespace}}::Kxi;
+double* {{codeNamespace}}::Kxi_T;
+double* {{codeNamespace}}::iK1;
+double* {{codeNamespace}}::dudx;
+double* {{codeNamespace}}::dudx_T;
+double* {{codeNamespace}}::FLCoeff;
+double* {{codeNamespace}}::FRCoeff;
+double*** {{codeNamespace}}::equidistantGridProjector1d;
+double**** {{codeNamespace}}::fineGridProjector1d;
 
 
-void kernels::aderdg::optimised::freeDGMatrices() {
+void {{codeNamespace}}::freeDGMatrices() {
   _mm_free(FLCoeff);
   _mm_free(FRCoeff);
   _mm_free(dudx);
@@ -56,7 +56,7 @@ void kernels::aderdg::optimised::freeDGMatrices() {
 }
 
 
-void kernels::aderdg::optimised::initDGMatrices() {
+void {{codeNamespace}}::initDGMatrices() {
   
   FLCoeff = (double *) _mm_malloc(sizeof(double)*{{nDofPad}}, ALIGNMENT);
   FRCoeff = (double *) _mm_malloc(sizeof(double)*{{nDofPad}}, ALIGNMENT);

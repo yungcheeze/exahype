@@ -20,31 +20,31 @@
 
 #include "{{solverHeader}}"
 
-namespace kernels {
-  namespace aderdg {
-    namespace optimised {
-      void {{gemm_rhs_x}}(const double* A, const double* B, double* C);
-      void {{gemm_rhs_y}}(const double* A, const double* B, double* C);
+{% for namespaceName in codeNamespaceList %}
+namespace {{namespaceName}} {
+{% endfor %}
+  void {{gemm_rhs_x}}(const double* A, const double* B, double* C);
+  void {{gemm_rhs_y}}(const double* A, const double* B, double* C);
 {% if nDim==3 %}
-      void {{gemm_rhs_z}}(const double* A, const double* B, double* C);
+  void {{gemm_rhs_z}}(const double* A, const double* B, double* C);
 {% endif %}
 {% if useNCP %}
-      void {{gemm_gradQ_x}}(const double* A, const double* B, double* C);
-      void {{gemm_gradQ_y}}(const double* A, const double* B, double* C);
+  void {{gemm_gradQ_x}}(const double* A, const double* B, double* C);
+  void {{gemm_gradQ_y}}(const double* A, const double* B, double* C);
 {% if nDim==3 %}
-      void {{gemm_gradQ_z}}(const double* A, const double* B, double* C);
+  void {{gemm_gradQ_z}}(const double* A, const double* B, double* C);
 {% endif %}
 {% endif %}
-      void {{gemm_lqi}}(const double* A, const double* B, double* C);
-    }
-  }
+  void {{gemm_lqi}}(const double* A, const double* B, double* C);
+{% for namespaceName in codeNamespaceList %}
 }
+{% endfor %}
 
 #include "{{pathToOptKernel}}/asm_picard.c"
 
 
 
-void kernels::aderdg::optimised::picardLoopNonlinear(
+void {{codeNamespace}}::picardLoopNonlinear(
         {{solverName}}& solver,
         const double* restrict const luh, 
         const double dt,
