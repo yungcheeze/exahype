@@ -39,7 +39,7 @@ namespace {{namespaceName}} {
   constexpr int getBndTotalSize()                  {return {{2*nDim*nVarPad*(nDof*nDof3D)}};} // == lFhbnd/lQhbnd size
   constexpr int getTempStateSizedVectorsSize()     {return {{nVarWithParPad}};}
 
-{% for namespaceName in solverNamespaces %}
+{% for namespaceName in codeNamespaceList %}
 }
 {% endfor %}
 
