@@ -33,6 +33,7 @@ public class OptimisedADERDG implements Solver {
   private boolean _useNCP;
   private boolean _noTimeAveraging;
   private String  _optKernelPath;
+  private String  _optNamespace;
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
@@ -56,8 +57,10 @@ public class OptimisedADERDG implements Solver {
     try {
       _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
           _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(solverName);
     } catch(IOException e) {
       _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation
+      _optNamespace = null; //this will trigger the error later during the generation of the abstract header/implementation
     }
   }
   
@@ -145,6 +148,7 @@ public class OptimisedADERDG implements Solver {
     }
     content.put("NamingSchemes", namingSchemes);
     content.put("optKernelPath", _optKernelPath);
+    content.put("optNamespace", _optNamespace);
     
     writer.write(content.toString());
   }
@@ -246,6 +250,7 @@ public class OptimisedADERDG implements Solver {
 	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 	  content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
     content.put("optKernelPath", _optKernelPath);
+    content.put("optNamespace", _optNamespace);
 	  
 	  writer.write(content.toString());
   }

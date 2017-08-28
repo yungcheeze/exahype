@@ -3,6 +3,8 @@ package eu.exahype;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 public class CodeGeneratorHelper {
   
@@ -15,6 +17,7 @@ public class CodeGeneratorHelper {
 
   private CodeGeneratorHelper() {
     _optKernelPaths = new HashSet<String>();
+    _optKernelNamespaces = new HashMap<String,String>();
   }
 
   public static CodeGeneratorHelper getInstance() {
@@ -31,6 +34,7 @@ public class CodeGeneratorHelper {
   
   //Internal states
   private Collection<String> _optKernelPaths;
+  private Map<String,String> _optKernelNamespaces;
   private String _pathToLibxsmm = null;
   private String _pathToApplication = null;
   
@@ -45,6 +49,14 @@ public class CodeGeneratorHelper {
   //getter
   public Collection<String> getOptKernelPaths() {
     return _optKernelPaths;
+  }
+  
+  public String getNamespace(String solverName) {
+    return _optKernelNamespaces.get(solverName);
+  }
+  
+  public Collection<String> getNamespaces() {
+    return _optKernelNamespaces.values();
   }
   
   public String invokeCodeGenerator(String projectName, String solverName, int numberOfUnknowns, int numberOfParameters, int order,
@@ -120,7 +132,8 @@ public class CodeGeneratorHelper {
         throw new IOException();
     }
     
-     _optKernelPaths.add(optKernelPath);
+    _optKernelPaths.add(optKernelPath);
+    _optKernelNamespaces.put(solverName, "kernels::aderdg::optimised"); //TODOJMG
     
     return optKernelPath;
     

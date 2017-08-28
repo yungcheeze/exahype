@@ -30,10 +30,10 @@ namespace {{Project}}{
 
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   public:
-    static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
-    static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
-    static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
-    static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
+    static constexpr int NumberOfVariables  = {{optNamespace}}::getNumberOfVariable();
+    static constexpr int NumberOfParameters = {{optNamespace}}::getNumberOfParameter();
+    static constexpr int Order              = {{optNamespace}}::getBasisSize() -1;
+    static constexpr int Dimensions         = {{optNamespace}}::getDimension();
     static constexpr double CFL             = 0.9;
     
     // virtual getters for the constexpr's
@@ -184,15 +184,15 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     static void abortWithMsg(const char* const msg);
     
     //padded array size, override default ADERDGSolver values
-    int getTempSpaceTimeUnknownsSize()     const {return kernels::aderdg::optimised::getTempSpaceTimeUnknownsSize();    }
-    int getTempSpaceTimeFluxUnknownsSize() const {return kernels::aderdg::optimised::getTempSpaceTimeFluxUnknownsSize();}
-    int getTempUnknownsSize()              const {return kernels::aderdg::optimised::getTempUnknownsSize();             }
-    int getTempFluxUnknownsSize()          const {return kernels::aderdg::optimised::getTempFluxUnknownsSize();         }
-    int getBndFaceSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
-    int getBndTotalSize()                  const {return kernels::aderdg::optimised::getBndTotalSize();                 }
-    int getBndFluxSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
-    int getBndFluxTotalSize()              const {return kernels::aderdg::optimised::getBndTotalSize();                 }
-    int getTempStateSizedVectorsSize()     const {return kernels::aderdg::optimised::getTempStateSizedVectorsSize();    }
+    int getTempSpaceTimeUnknownsSize()     const {return {{optNamespace}}::getTempSpaceTimeUnknownsSize();    }
+    int getTempSpaceTimeFluxUnknownsSize() const {return {{optNamespace}}::getTempSpaceTimeFluxUnknownsSize();}
+    int getTempUnknownsSize()              const {return {{optNamespace}}::getTempUnknownsSize();             }
+    int getTempFluxUnknownsSize()          const {return {{optNamespace}}::getTempFluxUnknownsSize();         }
+    int getBndFaceSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }
+    int getBndTotalSize()                  const {return {{optNamespace}}::getBndTotalSize();                 }
+    int getBndFluxSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }
+    int getBndFluxTotalSize()              const {return {{optNamespace}}::getBndTotalSize();                 }
+    int getTempStateSizedVectorsSize()     const {return {{optNamespace}}::getTempStateSizedVectorsSize();    }
     
     bool alignTempArray()                  const {return true;}
     

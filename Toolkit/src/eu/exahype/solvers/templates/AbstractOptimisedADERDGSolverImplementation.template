@@ -22,7 +22,7 @@
 }
 
 {{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
-  exahype::solvers::ADERDGSolver("{{Solver}}",kernels::aderdg::optimised::getNumberOfVariable(),kernels::aderdg::optimised::getNumberOfParameter(),kernels::aderdg::optimised::getBasisSize(),
+  exahype::solvers::ADERDGSolver("{{Solver}}",{{optNamespace}}::getNumberOfVariable(),{{optNamespace}}::getNumberOfParameter(),{{optNamespace}}::getBasisSize(),
                                  maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
@@ -40,20 +40,20 @@ void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
 {{BeforeSpaceTimePredictor}} 
 
 #if DIMENSIONS==2
-  constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
-  constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+  constexpr int lSi_offset  = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+  constexpr int lShi_offset = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #else
-  constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
-  constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+  constexpr int lSi_offset  = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+  constexpr int lShi_offset = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
 
 #ifdef NO_TIME_AVERAGING
-  kernels::aderdg::optimised::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
-  kernels::aderdg::optimised::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
 #else
-  kernels::aderdg::optimised::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
-  kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
-  kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
+  {{optNamespace}}::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
 #endif
   
 {{AfterSpaceTimePredictor}}
@@ -63,7 +63,7 @@ void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
 
 void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
 {{BeforeSolutionUpdate}}
-  kernels::aderdg::optimised::solutionUpdate( luh, lduh, dt );
+  {{optNamespace}}::solutionUpdate( luh, lduh, dt );
 {{AfterSolutionUpdate}}
 }
 
@@ -73,17 +73,17 @@ void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* 
 {{BeforeVolumeIntegral}}
 
 #if DIMENSIONS==2
-  constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
-  constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+  constexpr int lSi_offset  = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+  constexpr int lShi_offset = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #else
-  constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
-  constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+  constexpr int lSi_offset  = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+  constexpr int lShi_offset = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
 
 #ifdef NO_TIME_AVERAGING
-  kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, &lFhi[lSi_offset], inverseDx ); //lFhi is actually lFi
+  {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lSi_offset], inverseDx ); //lFhi is actually lFi
 #else
-  kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
+  {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
 #endif
 
 {{AfterVolumeIntegral}}
@@ -93,7 +93,7 @@ void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* 
 
 void {{Project}}::{{AbstractSolver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {{BeforeSurfaceIntegral}}
-  kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, inverseDx );
+  {{optNamespace}}::surfaceIntegral( lduh, lFhbnd, inverseDx );
 {{AfterSurfaceIntegral}}
 }
 
@@ -104,7 +104,7 @@ void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
 
-  kernels::aderdg::optimised::riemannSolver(*static_cast<{{Solver}}*>(this), FL, FR, QL, QR, dt, normalNonZeroIndex{{DeepProfilerArg}});
+  {{optNamespace}}::riemannSolver(*static_cast<{{Solver}}*>(this), FL, FR, QL, QR, dt, normalNonZeroIndex{{DeepProfilerArg}});
 
 {{AfterRiemannSolver}}
 }
@@ -113,7 +113,7 @@ void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const 
 
 void {{Project}}::{{AbstractSolver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
 {{BeforeBoundaryConditions}}
-  kernels::aderdg::optimised::boundaryConditions(*static_cast<{{Solver}}*>(this), fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
+  {{optNamespace}}::boundaryConditions(*static_cast<{{Solver}}*>(this), fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
 {{AfterBoundaryConditions}}
 }
 
@@ -121,7 +121,7 @@ void {{Project}}::{{AbstractSolver}}::boundaryConditions(double* fluxOut,double*
 
 double {{Project}}::{{AbstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {{BeforeStableTimeStepSize}}
-  double d = kernels::aderdg::optimised::stableTimeStepSize(*static_cast<{{Solver}}*>(this), luh, inverseDx );
+  double d = {{optNamespace}}::stableTimeStepSize(*static_cast<{{Solver}}*>(this), luh, inverseDx );
 {{AfterStableTimeStepSize}}
   return d;
 }
@@ -135,7 +135,7 @@ void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la
       assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
-      kernels::aderdg::optimised::adjustPointSolution(*static_cast<{{Solver}}*>(this), luh, center, dx, t, dt );
+      {{optNamespace}}::adjustPointSolution(*static_cast<{{Solver}}*>(this), luh, center, dx, t, dt );
       break;
     case AdjustSolutionValue::PatchWisely:
       printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
@@ -150,7 +150,7 @@ void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la
 
 void {{Project}}::{{AbstractSolver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsProlongation}}
-  // kernels::aderdg::optimised::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
+  // {{optNamespace}}::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
 {{AfterFaceUnknownsProlongation}}
 }
 
@@ -158,7 +158,7 @@ void {{Project}}::{{AbstractSolver}}::faceUnknownsProlongation(double* lQhbndFin
 
 void {{Project}}::{{AbstractSolver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsRestriction}}
-  // kernels::aderdg::optimised::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
+  // {{optNamespace}}::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
 {{AfterFaceUnknownsRestriction}}
 }
 
@@ -166,7 +166,7 @@ void {{Project}}::{{AbstractSolver}}::faceUnknownsRestriction(double* lQhbndCoar
 
 void {{Project}}::{{AbstractSolver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsProlongation}}
-  // kernels::aderdg::optimised::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
+  // {{optNamespace}}::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
 {{AfterVolumeUnknownsProlongation}}
 }
 
@@ -174,7 +174,7 @@ void {{Project}}::{{AbstractSolver}}::volumeUnknownsProlongation(double* luhFine
 
 void {{Project}}::{{AbstractSolver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsRestriction}}
-  // kernels::aderdg::optimised::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
+  // {{optNamespace}}::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
 {{AfterVolumeUnknownsRestriction}}
 }
 

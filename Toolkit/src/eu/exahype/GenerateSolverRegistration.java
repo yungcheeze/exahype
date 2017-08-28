@@ -393,8 +393,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::initDGMatrices(orders);\n" +
           "  kernels::initBasisFunctions(orders);\n");
       if(_useOptimisedKernels) {
-        _methodBodyWriter.write("  kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(orders);\n");
-        _methodBodyWriter.write("  kernels::aderdg::optimised::initDGMatrices();\n");
+        for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
+          _methodBodyWriter.write("  "+namespace+"::initGaussLegendreNodesAndWeights(orders);\n");
+          _methodBodyWriter.write("  "+namespace+"::initDGMatrices();\n");
+        }
       }
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
       _methodBodyWriter.write("\n");
@@ -411,8 +413,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::freeDGMatrices(orders);\n"+
           "  kernels::freeBasisFunctions(orders);\n");
       if(_useOptimisedKernels) {
-        _methodBodyWriter.write("  kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(orders);\n");
-        _methodBodyWriter.write("  kernels::aderdg::optimised::freeDGMatrices();\n");
+        for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
+          _methodBodyWriter.write("  "+namespace+"::freeGaussLegendreNodesAndWeights(orders);\n");
+          _methodBodyWriter.write("  "+namespace+"::freeDGMatrices();\n");
+        }
       }    
       _methodBodyWriter.write(
           "\n"+
