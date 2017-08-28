@@ -52,24 +52,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       System.out.println("there are no solvers in the specification file ... nothing to be done");
     }
 
-    // Only one optimised solver can be used (optimised kernel would be overwritten by the latest solver otherwise)
-    if (node.getSolver().size() > 1) {
-      int optimisedCount = 0;
-      for(PSolver psolver : node.getSolver()) {
-        if(psolver instanceof AAderdgSolver) {
-          AAderdgSolver asolver = (AAderdgSolver) psolver;
-          if(asolver.getKernel().getText().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )){
-            optimisedCount++;
-          }
-        }
-      }
-      if(optimisedCount > 1) {
-        System.err.println("ERROR: Only one optimised solver can be used at a time. Currently "+optimisedCount+" are defined.");
-        valid = false;
-        return;
-      }
-    }
-
     if (node.getArchitecture()!=null) {
       _microarchitecture = node.getArchitecture().getText().toLowerCase();
     }
