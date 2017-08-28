@@ -11,6 +11,8 @@ public class CodeGeneratorHelper {
   //configuration parameters
   private static String OPT_KERNEL_PATH_PREFIX = "kernels";                  //starts from application root
   private static String CODEGENERATOR_PATH     = "CodeGenerator/Driver.py";  //starts from exahype root (ExaHyPE-Engine)
+  private static String defineNamespace(String projectName, String solverName) {return projectName+"::"+solverName+"_kernels::aderdg";}
+  
   
   //Singleton pattern to be able to access the instance in solvers
   private static volatile CodeGeneratorHelper instance = null;
@@ -82,12 +84,16 @@ public class CodeGeneratorHelper {
     }
     String pathToCodeGenerator = pathToCodeGenerator_File.getCanonicalPath();
     
+    
+    String namespace = defineNamespace(projectName, solverName);    
+    
     String numericsParameter = isLinear ? "linear" : "nonlinear";
     String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "") + (noTimeAveraging ? "--noTimeAveraging " : "");
     
 
     // set up the command to execute the code generator
-    String args =   " " + projectName + "::" + solverName 
+    String args =   " " + namespace
+                  + " " + projectName + "::" + solverName 
                   + " " + numberOfUnknowns 
                   + " " + order 
                   + " " + dimensions 
@@ -133,7 +139,7 @@ public class CodeGeneratorHelper {
     }
     
     _optKernelPaths.add(optKernelPath);
-    _optKernelNamespaces.put(solverName, "kernels::aderdg::optimised"); //TODOJMG
+    _optKernelNamespaces.put(solverName, namespace);
     
     return optKernelPath;
     

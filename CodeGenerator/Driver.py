@@ -60,6 +60,8 @@ l_parser.add_argument("pathToApplication",
                       help="path to the application as given by the ExaHyPE specification file (application directory as root)")
 l_parser.add_argument("pathToOptKernel",
                       help="desired relative path to the generated code (application directory as root)")
+l_parser.add_argument("namespace",
+                      help="desired namespace for the generated code")                      
 l_parser.add_argument("solverName",
                       help="name of the user-solver")
 l_parser.add_argument("numberOfVariables", 
@@ -102,6 +104,7 @@ l_commandLineArguments = l_parser.parse_args()
 
 pathToApplication      = l_commandLineArguments.pathToApplication
 pathToOptKernel        = l_commandLineArguments.pathToOptKernel
+codeNamespace          = l_commandLineArguments.namespace
 solverName             = l_commandLineArguments.solverName
 numberOfVariables      = l_commandLineArguments.numberOfVariables
 order                  = l_commandLineArguments.order
@@ -130,7 +133,7 @@ config = {
            "useSource"         : useSource,
            "useSourceOrNCP"    : (useSource or useNCP),
            "noTimeAveraging"   : noTimeAveraging,
-           "codeNamespace"     : 'kernels::aderdg::optimised'
+           "codeNamespace"     : codeNamespace
           }
 
 # configure global setup of the code generator
