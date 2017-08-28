@@ -142,6 +142,8 @@ def generateContext(i_config):
     context['isLinear'] = context['numerics'] == "linear"
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
+    context['codeNamespace'] = 'kernels::aderdg::optimised'
+    context['codeNamespaceList'] = context['codeNamespace'].split('::')
     return context
 
     
