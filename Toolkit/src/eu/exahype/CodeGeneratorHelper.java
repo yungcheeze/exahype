@@ -38,7 +38,7 @@ public class CodeGeneratorHelper {
   public void setPaths(DirectoryAndPathChecker directoryAndPathChecker) {
     try{
       _pathToLibxsmm = directoryAndPathChecker.libxsmmPath.getCanonicalPath();
-      _pathToApplication = directoryAndPathChecker.outputDirectory.getCanonicalPath();
+      _pathToApplication = directoryAndPathChecker.outputDirectory.getPath();
     } catch(IOException e) {} 
   }
   
@@ -83,7 +83,7 @@ public class CodeGeneratorHelper {
                   + " " + microarchitecture 
                   + " " + options; 
 
-    String optKernelPath = (new java.io.File(OPT_KERNEL_PATH_PREFIX,solverName)).getCanonicalPath();
+    String optKernelPath = (new java.io.File(OPT_KERNEL_PATH_PREFIX,solverName)).getPath();
     
     String bashCommand = "env python3 "  + pathToCodeGenerator + " " + _pathToLibxsmm + " " + _pathToApplication + " " + optKernelPath + args;
 
