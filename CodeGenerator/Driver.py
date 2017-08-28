@@ -129,7 +129,8 @@ config = {
            "useNCP"            : useNCP,
            "useSource"         : useSource,
            "useSourceOrNCP"    : (useSource or useNCP),
-           "noTimeAveraging"   : noTimeAveraging
+           "noTimeAveraging"   : noTimeAveraging,
+           "codeNamespace"     : 'kernels::aderdg::optimised'
           }
 
 # configure global setup of the code generator

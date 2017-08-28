@@ -82,7 +82,7 @@ def generateAssemblerCode(i_pathToOutputFile,
         # for plain assembly code (rather than inline assembly) choose dense_asm
         l_commandLineArguments =       "dense"  + \
                                  ' ' + m_pathToLibxsmmGenerator+"/"+l_pathToAsmFile + \
-                                 ' ' + l_matmul.baseroutinename + \
+                                 ' ' + m_config['codeNamespace'] + '::' + l_matmul.baseroutinename + \
                                  ' ' + str(l_matmul.M) + \
                                  ' ' + str(l_matmul.N) + \
                                  ' ' + str(l_matmul.K) + \
@@ -142,7 +142,6 @@ def generateContext(i_config):
     context['isLinear'] = context['numerics'] == "linear"
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
-    context['codeNamespace'] = 'kernels::aderdg::optimised'
     context['codeNamespaceList'] = context['codeNamespace'].split('::')
     return context
 
