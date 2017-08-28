@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#ifndef EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_
-#define EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_
+#ifndef _EXAHYPE_{{guardNamespace}}_KERNELS_H_
+#define _EXAHYPE_{{guardNamespace}}_KERNELS_H_
 
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
@@ -149,4 +149,4 @@ namespace {{namespaceName}} {
 
 #include "{{pathToOptKernel}}/ConfigurationParameters.cpph"
 
-#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_
+#endif // _EXAHYPE_{{guardNamespace}}_KERNELS_H_

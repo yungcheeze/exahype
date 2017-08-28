@@ -143,6 +143,7 @@ def generateContext(i_config):
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
     context['codeNamespaceList'] = context['codeNamespace'].split('::')
+    context['guardNamespace'] = '_'.join(context['codeNamespaceList']).upper()
     return context
 
     

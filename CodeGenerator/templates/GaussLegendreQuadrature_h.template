@@ -11,8 +11,9 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#ifndef _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_
-#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_
+#ifndef _EXAHYPE_{{guardNamespace}}_WEIGHTS_H_
+#define _EXAHYPE_{{guardNamespace}}_WEIGHTS_H_
+
 
 #include <set>
 
@@ -32,4 +33,4 @@ extern double *weights3;
 {% for namespaceName in codeNamespaceList %}
 }
 {% endfor %}
-#endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_ */
+#endif /* _EXAHYPE_{{guardNamespace}}_WEIGHTS_H_ */

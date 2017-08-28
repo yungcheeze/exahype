@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#ifndef _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_
-#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_
+#ifndef _EXAHYPE_{{guardNamespace}}_DGMATRICES_H_
+#define _EXAHYPE_{{guardNamespace}}_DGMATRICES_H_
 
 #include <set>
 
@@ -36,5 +36,5 @@ extern double **** fineGridProjector1d;
 {% for namespaceName in codeNamespaceList %}
 }
 {% endfor %}
-#endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_ */
+#endif /* _EXAHYPE_{{guardNamespace}}_DGMATRICES_H_ */
 
