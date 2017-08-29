@@ -1,2 +1,5 @@
-# Ignore the jinja source code directory if present
-jinja
+# Ignore the dependencies source code and sym link if present
+dependencies
+
+markupsafe
+jinja2

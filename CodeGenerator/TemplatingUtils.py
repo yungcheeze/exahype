@@ -23,20 +23,7 @@
 
 import os
 
-# Change this boolean to change how jinja2 is imported.
-#       True = jinja2 is available directly with your python installation
-#       False = jinja2's source code is available locally under CodeGenerator/jinja
-isJinjaAvailableAsPackage=True
-
-if(isJinjaAvailableAsPackage): 
-    # 1. if jinja2 is available with Python
-    from jinja2 import Template
-else:
-    # 2. if jinja2 sources are locally available
-    import sys
-    sys.path.insert(0, 'jinja')
-    from jinja.jinja2 import Template
-
+from jinja2 import Template
 
 def renderAsFile(inputFilename, outputFilename, context):
     dir = os.path.dirname(__file__)
