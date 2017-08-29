@@ -10,18 +10,22 @@ import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
-  public static final String Identifier = "optimised"; //"optimised::options::nonlinear"
+  
+  //configuration parameters
+  //------------------------
+  public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options::nonlinear"
   public static final String noTimeAveragingOptionId = "notimeavg";
   public static final String fluxOptionId = "fluxes";
   public static final String sourceOptionId = "sources";
   public static final String ncpOptionId = "ncp";
 
+  //Internal states
+  //---------------
   private int     _dimensions;
   private int     _numberOfVariables;
   private int     _numberOfParameters;
   private Set<String> _namingSchemeNames;
   private int     _order;
-//  private int   _patchSize;
   private String  _microarchitecture;
   private boolean _enableProfiler;
   private boolean _enableDeepProfiler;
@@ -57,10 +61,10 @@ public class OptimisedADERDG implements Solver {
     try {
       _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
           _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
-      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(solverName);
+      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
     } catch(IOException e) {
-      _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation
-      _optNamespace = null; //this will trigger the error later during the generation of the abstract header/implementation
+      _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation, where it will be properly handled
+      _optNamespace = null;  //this will trigger the error later during the generation of the abstract header/implementation, where it will be properly handled
     }
   }
   
@@ -255,6 +259,7 @@ public class OptimisedADERDG implements Solver {
 	  writer.write(content.toString());
   }
   
+  //same as generic
   @Override
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
@@ -366,26 +371,9 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) {}
-
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    // @todo Implement
-    System.err.println("C-style kernels do not have a PDF.f90.\n");
-  }
-
-
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    // @todo Implement
-    System.err.println("C-style kernels do not have a typesDef.f90.\n");
-  }
   
   @Override
   public boolean supportsVariables() {
     return true;
-  }
-  
-  public String getOptKernelPath() {
-    return _optKernelPath;
   }
 }

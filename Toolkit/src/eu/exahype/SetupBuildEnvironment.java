@@ -213,7 +213,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       if (_useOptimisedKernels) {
         _writer.write("PROJECT_CFLAGS += -DOPT_KERNELS\n");
         String paths = "";
-        for(String subPath : CodeGeneratorHelper.getInstance().getOptKernelPaths()) {
+        for(String subPath : CodeGeneratorHelper.getInstance().getIncludePaths()) {
           paths = _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/" + subPath + " ";
         }
         _writer.write("OPT_KERNEL_PATH=" + paths + "\n"); 
