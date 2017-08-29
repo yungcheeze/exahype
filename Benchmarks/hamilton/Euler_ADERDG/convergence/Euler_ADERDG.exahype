@@ -23,11 +23,11 @@ exahype-project Euler
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
   output-directory const  = ./Benchmarks/hamilton/Euler_ADERDG
-  architecture const      = hsw
+  architecture const      = arch
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 3
+    dimension const          = 2
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.11
@@ -58,30 +58,31 @@ exahype-project Euler
   end optimisation
 
   solver ADER-DG EulerSolver_ADERDG
-    variables const   = rho:1,j:3,E:1
-    order const       = 5
+    variables const    = rho:1,j:3,E:1
+    order const        = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.038
-    time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
-    language const    = C
-    constants         = reference:entropywave
+    maximum-mesh-size  = 0.12
+    maximum-mesh-depth = 2
+    time-stepping      = global
+    kernel const       = generic::fluxes::nonlinear
+    language const     = C
+    constants          = reference:entropywave
 
     plot user::defined ErrorWriter
       variables const = 5
-      time            = 0.0
-      repeat          = 1e-2
+      time            = 10.0
+      repeat          = 1e-10
       output          = not-available
     end plot
-   
-    /* 
-    plot vtk::Cartesian::vertices::ascii ErrorPlotter
+ 
+     
+    plot vtu::Cartesian::vertices::ascii ErrorPlotter
       // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
       variables const = 15 
       time            = 0.0
-      repeat          = 1e-10
+      repeat          = 5e-2
       output          = ./errors
     end plot
-    */
+    
   end solver
 end exahype-project
