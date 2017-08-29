@@ -291,6 +291,10 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
     if (solver->getMeshUpdateRequest()) {
+      // TODO(Dominic): Minimise lock scope
+      // Lock must be placed here because of
+      // LimitingADERDGSolver's limiter patch allocation
+      tarch::multicore::Lock lock(_semaphore);
       refineFineGridCell |=
           solver->markForRefinement(
               fineGridCell,
@@ -303,9 +307,6 @@ void exahype::mappings::MeshRefinement::enterCell(
               IsInitialMeshRefinement,
               solverNumber);
 
-
-      // TODO(Dominic): Minimise lock scope
-      tarch::multicore::Lock lock(_semaphore);
       refineFineGridCell |=
           solver->updateStateInEnterCell(
               fineGridCell,
