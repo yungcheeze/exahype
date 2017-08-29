@@ -14,15 +14,16 @@ The CodeGenerator uses the template engine Jinja2 (http://jinja.pocoo.org/)
 If it is not provided by your python installation you can instead use the source 
 of jinja2 directly by following these steps
 
-1) Either:
+1) cd in your desired install directory <my-path>. Now, either:
 
-* Clone the source from the git repository: ``git clone https://github.com/pallets/jinja.git``
+* Clone the source from the git repository: `git clone https://github.com/pallets/jinja.git
  
 * Unpack the provided archive (release 2.9.6) and rename the directory to jinja: 
 		``tar -xzf jinja-2.9.6.tar.gz && mv jinja-2.9.6 jinja``
-		
 
-2) Modify TemplatingUtils.py to use the local version of Jinja2
+2) In ExaHyPE-Engine/CodeGenerator, create a symbolic link to <my-path>/jinja/jinja2.
+		
+3) Modify TemplatingUtils.py to use the local version of Jinja2
 
 From: 
 ```
@@ -31,8 +32,7 @@ from jinja2 import Template
 
 # 2. if jinja2 sources are locally available
 #import sys
-#sys.path.insert(0, 'jinja')
-#from jinja.jinja2 import Template
+#from jinja2 import Template
 ```
 
 To 
@@ -42,8 +42,22 @@ To
 
 # 2. if jinja2 sources are locally available
 import sys
-sys.path.insert(0, 'jinja')
-from jinja.jinja2 import Template
+from jinja2 import Template
+```
+
+Dependencies of jinja2
+----------------------
+
+jinja2 depends on the python module markupsafe. If 
+it is not available on your system, get it manually via:```
+
+cd <my-path>
+git clone https://github.com/pallets/markupsafe.git markupsafe-install
+
+Finally, create a symbolic link to <my-path>/markupsafe-install/markupsafe
+in ExaHyPE-Engine/Codegenerator via:
+
+ln -s <my-path>/markupsafe-install/markupsafe
 ```
 
 
