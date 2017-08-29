@@ -1503,7 +1503,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
     fineGridCellDescription.setLimiterStatus(_minimumLimiterStatusForTroubledCell);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
   }
-  overwriteFacewiseLimiterStatus(fineGridCellDescription,fineGridCellDescription.getLimiterStatus());
+  fineGridCellDescription.setFacewiseLimiterStatus(0);
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(
@@ -1902,7 +1902,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
              cellDescription.toString(),toString());
 
   assertionEquals1(0,tarch::la::max(cellDescription.getFacewiseLimiterStatus()),
-      cellDescription.getFacewiseLimiterStatus());
+      cellDescription.toString());
 
   // persistent fields
   // volume DoF (basisSize**(DIMENSIONS))
@@ -2484,7 +2484,7 @@ void exahype::solvers::ADERDGSolver::restrictLimiterStatus(
         ADERDGSolver::getCellDescription(parentCellDescriptionsIndex,parentElement);
     if(parentCellDescription.getType()==CellDescription::Type::Ancestor) {
       parentCellDescription.setLimiterStatus(ADERDGSolver::_minimumLimiterStatusForTroubledCell);
-      solverPatch.setFacewiseLimiterStatus(solverPatch.getLimiterStatus());
+      solverPatch.setFacewiseLimiterStatus(0);
     }
   }
 }
@@ -2595,14 +2595,6 @@ int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
   return tarch::la::max(cellDescription.getFacewiseLimiterStatus());
-}
-
-void
-exahype::solvers::ADERDGSolver::overwriteFacewiseLimiterStatus(
-    CellDescription& cellDescription,const int value) {
-  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseLimiterStatus(faceIndex,value);
-  }
 }
 
 void exahype::solvers::ADERDGSolver::mergeNeighboursLimiterStatus(

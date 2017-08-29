@@ -811,13 +811,6 @@ public:
   static int determineLimiterStatus(CellDescription& cellDescription);
 
   /**
-   * Overwrites the facewise limiter status with
-   * the limiter status.
-   */
-  static void overwriteFacewiseLimiterStatus(
-      CellDescription& cellDescription,const int value);
-
-  /**
    * TODO(Dominic): Can later be replaced
    * by ADERDGSolver::mergeNeighboursMetadata function.
    */
