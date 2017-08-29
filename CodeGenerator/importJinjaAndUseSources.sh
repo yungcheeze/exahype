@@ -18,11 +18,11 @@ cd $scriptDir
 if [ -d "$JINJA_LOCAL_DIR" ] && [ -e "$JINJA_LOCAL_DIR"/.git ]; then
   echo "jinja already imported. Updating..."
   cd "$JINJA_LOCAL_DIR"
-  #git pull
+  git pull
   cd ..
 else 
   echo "Cloning jinja2 from $GIT_URL"
-  #git clone "$GIT_URL" "$JINJA_LOCAL_DIR"
+  git clone "$GIT_URL" "$JINJA_LOCAL_DIR"
 fi
 
 # modify the Codegenerator default configuration
