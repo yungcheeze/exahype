@@ -931,7 +931,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
   } // LocalRecomputation is done here
 
   assertion(!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() ||
-            !exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
+            exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
 
   if (fusedTimeStepping &&
       exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
