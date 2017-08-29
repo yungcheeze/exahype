@@ -48,15 +48,15 @@ from jinja2 import Template
 Dependencies of jinja2
 ----------------------
 
-jinja2 depends on the python module markupsafe. If 
-it is not available on your system, get it manually via:```
-
+jinja2 depends on the python module markupsafe. If it is not available on your 
+system, get it manually via:
+```
 cd <my-path>
 git clone https://github.com/pallets/markupsafe.git markupsafe-install
-
+```
 Finally, create a symbolic link to <my-path>/markupsafe-install/markupsafe
 in ExaHyPE-Engine/Codegenerator via:
-
+```
 ln -s <my-path>/markupsafe-install/markupsafe
 ```
 
