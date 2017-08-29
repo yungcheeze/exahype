@@ -1761,6 +1761,10 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
+   * TODO(Dominic): Update docu.
+   *
+   * Old docu:
+   *
    * Rolls back the solver's solution on the
    * particular cell description.
    * This method is used by the ADER-DG a-posteriori
@@ -1777,8 +1781,6 @@ public:
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
    */
-  void rollbackSolution(CellDescription& cellDescription) const;
-
   void swapSolutionAndPreviousSolution(CellDescription& cellDescription) const;
 
   void preProcess(

@@ -656,11 +656,6 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
 
-
-void exahype::solvers::FiniteVolumesSolver::rollbackSolution(CellDescription& cellDescription) {
-  swapSolutionAndPreviousSolution(cellDescription);
-}
-
 void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
     CellDescription& cellDescription) const {
   // Simply swap the heap indices

@@ -927,31 +927,9 @@ public:
    * in order to reuse the determineLimiterStatusAfterSolutionUpdate function
    * which calls determineLimiterStatus(...) again.
    */
-  exahype::solvers::LimiterDomainChange updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+  void updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,
       const int element);
-
-  /**
-   * Update the merged limiter status with a unified value based on
-   * the merged limiter statuses per face of the cell.
-   *
-   * \return LimiterDomainChange::Regular as along as the function does not
-   * detect a cell of type Descendant/EmptyDescendant on the finest mesh level
-   * with a limiter status other than Ok.
-   *
-   * \see ::determineLimiterStatus
-   */
-  exahype::solvers::LimiterDomainChange updateLimiterStatus(
-      const int cellDescriptionsIndex,const int element) const;
-
-
-  /**
-   * Update the limiter status of the solver patch
-   * using the boundary states.
-   *
-   * Then write back the result to the boundary.
-   */
-  exahype::solvers::LimiterDomainChange updateLimiterStatus(SolverPatch& solverPatch) const;
 
   /*
    * Deallocate the limiter patch on all AMR related
