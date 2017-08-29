@@ -44,7 +44,10 @@ Quick installation:
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
-The ExaHyPE code generator requires the python3 modules jinja2 and numpy.
+The ExaHyPE code generator requires the python3 module jinja2.
+
+If it is not provided by your python installation you can instead use the source
+of jinja2 directly by following the steps in ExaHyPE-Engine/CodeGenerator/README.md.
 
 ## General remarks ##
 
