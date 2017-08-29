@@ -14,7 +14,7 @@ The CodeGenerator uses the template engine Jinja2 (http://jinja.pocoo.org/)
 If it is not provided by your python installation you can instead use the source 
 of jinja2 directly either by
 
-1) Running the bash script: './CodeGenerator/importJinjaAndUseSource.sh'
+1) Running the bash script: `./CodeGenerator/importJinjaAndUseSource.sh`
 
 or by following these steps
 
