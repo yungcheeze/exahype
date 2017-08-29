@@ -1,0 +1,2 @@
+# Ignore the jinja source code directory if present
+jinja
