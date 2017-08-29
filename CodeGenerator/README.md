@@ -12,37 +12,32 @@ Dependencies
 The CodeGenerator uses the template engine Jinja2 (http://jinja.pocoo.org/)
 
 If it is not provided by your python installation you can instead use the source 
-of jinja2 directly by following these steps
+of jinja2 directly either by
 
-1) cd in your desired install directory <my-path>. Now, either:
+1) Running the bash script: './CodeGenerator/importJinjaAndUseSource.sh'
 
-* Clone the source from the git repository: `git clone https://github.com/pallets/jinja.git
- 
-* Unpack the provided archive (release 2.9.6) and rename the directory to jinja: 
-		``tar -xzf jinja-2.9.6.tar.gz && mv jinja-2.9.6 jinja``
+or by following these steps
 
-2) In ExaHyPE-Engine/CodeGenerator, create a symbolic link to <my-path>/jinja/jinja2.
+1) Clone the source from the git repository to your desired install directory <my-path>: 
+`git clone https://github.com/pallets/jinja.git <my-path>/jinja`
+
+2) In ExaHyPE-Engine/CodeGenerator, create a symbolic link to <my-path>/jinja.
 		
 3) Modify TemplatingUtils.py to use the local version of Jinja2
 
 From: 
 ```
-# 1. if jinja2 is available with Python
-from jinja2 import Template
-
-# 2. if jinja2 sources are locally available
-#import sys
-#from jinja2 import Template
+isJinjaAvailableAsPackage=True
 ```
 
 To 
 ```
-# 1. if jinja2 is available with Python
-# from jinja2 import Template
+isJinjaAvailableAsPackage=False
+```
 
-# 2. if jinja2 sources are locally available
-import sys
-from jinja2 import Template
+You may need to adapt the path of the sys.import
+```
+sys.path.insert(0, 'jinja')
 ```
 
 Dependencies of jinja2
