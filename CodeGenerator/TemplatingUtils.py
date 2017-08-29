@@ -26,12 +26,12 @@ import os
 # get jinja2 from either 1 or 2
 
 # 1. if jinja2 is available with Python
-from jinja2 import Template
+#from jinja2 import Template
 
 # 2. if jinja2 sources are locally available
-# import sys
-# sys.path.insert(0, 'jinja')
-# from jinja.jinja2 import Template
+import sys
+sys.path.insert(0, 'jinja')
+from jinja.jinja2 import Template
 
 
 def renderAsFile(inputFilename, outputFilename, context):

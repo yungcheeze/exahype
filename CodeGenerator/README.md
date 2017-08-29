@@ -30,9 +30,9 @@ From:
 from jinja2 import Template
 
 # 2. if jinja2 sources are locally available
-# import sys
-# sys.path.insert(0, 'jinja')
-# from jinja.jinja2 import Template
+#import sys
+#sys.path.insert(0, 'jinja')
+#from jinja.jinja2 import Template
 ```
 
 To 
