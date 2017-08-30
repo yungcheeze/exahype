@@ -26,28 +26,26 @@ Look into `RUN.sh` for an alternative, more elaborate way how to setp the instal
     $exa bootstrap
     $exa compile-run EulerFlow
 
-### Libxsmm (optional) ###
+### CodeGenerator dependencies (optional) ###
 
-Libxsmm's code generator is required by the Toolkit when using application taylored optimised kernels to generate the advanced matrix multiplication code. 
-The optimised kernels are optional and can be replaced by the generic ones, thus libxsmm is also optional.
+The optimised kernels are optional and can be replaced by the generic ones, thus the CodeGenerator's dependencies are also optional.
 
-Libxsmm's sources can be found on github: https://github.com/hfp/libxsmm
+Python 3 is required to run the CodeGenerator.
 
-Python 3 is required to compile libxsmm and run the code generator.
+Additionally the CodeGenerator requires:
+
+* libxsmm (https://github.com/hfp/libxsmm) to generate the advanced matrix multiplication code using libxsmm's generator
+* Jinja2 (https://github.com/pallets/jinja.git) a python3 template engine to generate the optimised kernel
+* MarkupSafe (https://github.com/pallets/markupsafe.git), a dependency from Jinja2.
+
+A script is provided to import all the dependencies locally
 
 Quick installation:
 
-    cd ExaHyPE-Engine/
-    git clone https://github.com/hfp/libxsmm.git Libxsmm
-    cd Libxsmm/
-    make generator
+    ./ExaHyPE-Engine/importDependenciesLocally.sh 
 
-When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
+If Jinja2 is provided by your python installation you can safelly edit the value of the import script configuration parameter ``JINJA2_ALREADY_AVAILABLE`` to remove its and MarkupSafe local imports.
 
-The ExaHyPE code generator requires the python3 module jinja2.
-
-If it is not provided by your python installation you can instead use the source
-of jinja2 directly by following the steps in ExaHyPE-Engine/CodeGenerator/README.md.
 
 ## General remarks ##
 
