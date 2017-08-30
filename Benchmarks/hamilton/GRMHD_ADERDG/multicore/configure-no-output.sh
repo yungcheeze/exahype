@@ -1,9 +1,9 @@
 echo "Configure project for multicore scaling test (no output)."
-./projectpaths.cfg
-( cd ../../../ && java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Benchmarks/hamilton/GRMHD_ADERDG/multicore/GRMHD_ADERDG-no-output.exahype )
 mkdir multicore/results
 rm -r *.o cfiles.mk ffiles.mk kernels
+./projectpaths.cfg
+( cd ../../../ && java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Benchmarks/hamilton/GRMHD_ADERDG/multicore/GRMHD_ADERDG-no-output.exahype )
 
-printf "\n\nPlease add the following line to your Makefile:\n"
-echo "PROJECT_LFLAGS+=-lgsl -lgslcblas -lm"
+printf "\n\nPlease make sure you run the following command prior running make:\n"
+echo "export COMPILER_LFLAGS=-lgsl -lgslcblas -lm"
 
