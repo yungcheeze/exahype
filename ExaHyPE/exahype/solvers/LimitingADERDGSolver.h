@@ -339,24 +339,6 @@ private:
   int computeMinimumLimiterStatusForRefinement(int level) const;
 
 #ifdef Parallel
-  /**
-   * Data messages per neighbour communication.
-   * This information is required by the sendEmpty...(...)
-   * methods.
-   */
-  static const int DataMessagesPerNeighbourCommunication;
-  /**
-   * Data messages per fork/join communication.
-   * This information is required by the sendEmpty...(...)
-   * methods.
-   */
-  static const int DataMessagesPerForkOrJoinCommunication;
-  /**
-   * Data messages per master worker communication.
-   * This information is required by the sendEmpty...(...)
-   * methods.
-   */
-  static const int DataMessagesPerMasterWorkerCommunication;
 
   /**
    * Send the solution minimum and maximum values per variable

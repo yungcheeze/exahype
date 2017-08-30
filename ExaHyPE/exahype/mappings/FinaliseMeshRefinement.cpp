@@ -130,8 +130,6 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),solverNumber);
       if (solver->getMeshUpdateRequest()) {
         solver->finaliseStateUpdates(
             fineGridCell,
@@ -146,8 +144,12 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
             ==exahype::solvers::LimiterDomainChange::Regular) {
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                        determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+              fineGridCell.getCellDescriptionsIndex(),solverNumber);
+          if (element!=exahype::solvers::Solver::NotFound) {
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          }
         }
       }
     endpfor
