@@ -25,13 +25,10 @@
 #
 
 import os
-from os.path import join
-from os.path import isfile
 import copy
 import subprocess
 import errno
-from glob import iglob
-from shutil import move
+
 import KernelsHeaderGenerator
 import SpaceTimePredictorGenerator
 import VolumeIntegralGenerator
@@ -45,8 +42,7 @@ import DGMatrixGenerator
 import ConfigurationParametersGenerator
 import BoundaryConditionsGenerator
 import ConverterGenerator
-import string
-import re
+
 
 g_config                 = {}
 g_simdWidth              =  {'SP':  {'noarch' : 1,
@@ -141,7 +137,7 @@ def generateComputeKernels():
 
 
 def executeLibxsmmGenerator(i_commandLineParameters):
-    l_bashCommand = g_config['pathToLibxsmmGenerator'] + '/libxsmm_gemm_generator ' + i_commandLineParameters
+    l_bashCommand = g_config['pathToLibxsmmGemmGenerator'] + i_commandLineParameters
     subprocess.call(l_bashCommand.split())
 
 
@@ -150,7 +146,7 @@ def generateAssemblerCode(i_outputFileName,
     l_pathToAsmFile = os.path.splitext(i_outputFileName)[0]+'.c'
     for l_matmul in i_matmulConfigList:
         # for plain assembly code (rather than inline assembly) choose dense_asm
-        l_commandLineArguments =       "dense"  + \
+        l_commandLineArguments = ' ' + "dense"  + \
                                  ' ' + os.path.join(g_config['pathToOutputDirectory'],l_pathToAsmFile) + \
                                  ' ' + g_config['codeNamespace'] + '::' + l_matmul.baseroutinename + \
                                  ' ' + str(l_matmul.M) + \
@@ -167,6 +163,3 @@ def generateAssemblerCode(i_outputFileName,
                                  ' ' + l_matmul.prefetchStrategy+ \
                                  ' ' + g_config['precision'] 
         executeLibxsmmGenerator(l_commandLineArguments)
-
-
-

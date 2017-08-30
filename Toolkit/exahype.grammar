@@ -51,7 +51,6 @@ Tokens
   token_peano_kernel_path           = 'peano-kernel-path';
   token_peano_toolbox_path          = 'peano-toolbox-path';
   token_exahype_path                = 'exahype-path';
-  token_libxsmm_path                = 'libxsmm-path';
   token_output_directory            = 'output-directory';
   token_architecture                = 'architecture';
   token_logfile                     = 'log-file';
@@ -215,29 +214,14 @@ Productions
        token_peano_kernel_path [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
        token_exahype_path      [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
        token_output_directory  [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
-    { -> New paths(peano_kernel_path, Null, exahype_path, Null, output_directory) }
+    { -> New paths(peano_kernel_path, Null, exahype_path, output_directory) }
     |
     {with_toolbox}
        token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
        token_peano_toolbox_path [peano_toolbox_path_const]:token_const         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
        token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
        token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
-    { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, Null, output_directory) }
-  |
-    {with_libxsmm}
-       token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_libxsmm_path       [libxsmm_path_const]:token_const               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
-       token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
-    { -> New paths(peano_kernel_path, Null, exahype_path, libxsmm_path, output_directory) }
-    |
-    {with_toolbox_and_libxsmm}
-       token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_peano_toolbox_path [peano_toolbox_path_const]:token_const         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
-       token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_libxsmm_path       [libxsmm_path_const]:token_const               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
-       token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
-    { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, libxsmm_path, output_directory) }
+    { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, output_directory) }
    ;
 
 	master_worker_communication {->token_on_off} = 
@@ -555,7 +539,7 @@ Abstract Syntax Tree
     ;
 
   paths =
-    [peano_kernel_path]:filename [peano_toolbox_path]:filename? [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
+    [peano_kernel_path]:filename [peano_toolbox_path]:filename? [exahype_path]:filename [output_directory]:filename;
 
   shared_memory =
     [identifier]:identifier [cores]:int_number [properties_file]:filename;

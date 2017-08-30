@@ -26,7 +26,6 @@ public class CodeGeneratorHelper {
   //---------------
   private Collection<String> _optKernelsPaths;      //stores the paths to the generated code (used for imports in the KernelRegistration and in the Makefile)
   private Map<String,String> _optKernelsNamespaces; //stores the namespace used. The specific namespace depend on the solvername (assume projectname is constant)
-  private String _pathToLibxsmm = null;
   private String _pathToApplication = null;
   
   
@@ -54,10 +53,7 @@ public class CodeGeneratorHelper {
   //Setter
   //------
   public void setPaths(DirectoryAndPathChecker directoryAndPathChecker) {
-    try{
-      _pathToLibxsmm = directoryAndPathChecker.libxsmmPath.getCanonicalPath();
-      _pathToApplication = directoryAndPathChecker.outputDirectory.getPath();
-    } catch(IOException e) {} //if an error occurs here it will trigger one properly managed later
+    _pathToApplication = directoryAndPathChecker.outputDirectory.getPath();
   }
   
   
@@ -82,12 +78,7 @@ public class CodeGeneratorHelper {
       boolean isLinear, int dimensions, String microarchitecture, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP, boolean noTimeAveraging)
       throws IOException {
     
-    //check and defines paths    
-    if(_pathToLibxsmm == null) {
-      System.err.println("ERROR: Path to Libxsmm for the Code generator not found");
-      throw new IOException();
-    }
-    
+    //check and defines paths       
     if(_pathToApplication == null) {
       System.err.println("ERROR: Path to the application for the CodeGenerator not found");
       throw new IOException();
@@ -108,8 +99,7 @@ public class CodeGeneratorHelper {
     String options = (enableDeepProfiler ? enableDeepProfiler+" " : "") + (useFlux ? useFluxOptionFlag+" " : "") + (useSource ? useSourceOptionFlag+" " : "") + (useNCP ?  useNCPOptionFlag+" " : "") + (noTimeAveraging ? noTimeAveragingOptionFlag+" " : "");
 
     // set up the command to execute the code generator
-    String args =   " " + _pathToLibxsmm 
-                  + " " + _pathToApplication 
+    String args =   " " + _pathToApplication 
                   + " " + optKernelPath 
                   + " " + namespace
                   + " " + projectName + "::" + solverName 

@@ -34,7 +34,8 @@ import Backend
 # Configuration parameters
 # --------------------------------------------------------
 
-pathFromHereToExaHyPERoot = "../"
+pathFromHereToExaHyPERoot = "../"                     #path to the root of ExaHyPe from this file
+pathToLibxsmmGemmGenerator = "libxsmm_gemm_generator" #path to the gemm generator from this file
 
 # --------------------------------------------------------
 # Require python3
@@ -51,9 +52,6 @@ if(requiredVersion > currentVersion):
 # --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description="This is the front end of the ExaHyPE code generator.")
 
-l_parser.add_argument("pathToLibxsmm",
-                      type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
-                      help="where to find your local copy of code generator back end 'https://github.com/hfp/libxsmm'")
 l_parser.add_argument("pathToApplication",
                       help="path to the application as given by the ExaHyPE specification file (application directory as root)")
 l_parser.add_argument("pathToOptKernel",
@@ -100,64 +98,35 @@ l_parser.add_argument("--noTimeAveraging",
 
 l_commandLineArguments = l_parser.parse_args()
 
-pathToApplication      = l_commandLineArguments.pathToApplication
-pathToOptKernel        = l_commandLineArguments.pathToOptKernel
-codeNamespace          = l_commandLineArguments.namespace
-solverName             = l_commandLineArguments.solverName
-numberOfVariables      = l_commandLineArguments.numberOfVariables
-order                  = l_commandLineArguments.order
-dimensions             = l_commandLineArguments.dimension
-numerics               = l_commandLineArguments.numerics
-architecture           = l_commandLineArguments.architecture
-pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
-precision              = "DP" #l_commandLineArguments.precision
-useDeepProfiler        = l_commandLineArguments.deepProfiling
-useFlux                = l_commandLineArguments.useFlux
-useNCP                 = l_commandLineArguments.useNCP
-useSource              = l_commandLineArguments.useSource
-noTimeAveraging        = l_commandLineArguments.noTimeAveraging
-
 config = { 
-           "numerics"              : numerics,
-           "pathToOptKernel"       : pathToOptKernel,
-           "solverName"            : solverName,
-           "nVar"                  : numberOfVariables,
-           "nDof"                  : order+1,
-           "nDim"                  : dimensions,
+           "numerics"              : l_commandLineArguments.numerics,
+           "pathToOptKernel"       : l_commandLineArguments.pathToOptKernel,
+           "solverName"            : l_commandLineArguments.solverName,
+           "nVar"                  : l_commandLineArguments.numberOfVariables,
+           "nDof"                  : (l_commandLineArguments.order)+1,
+           "nDim"                  : l_commandLineArguments.dimension,
            "nPar"                  : 0, #TODO JMG add paramters ?
-           "useDeepProfiler"       : useDeepProfiler,
-           "useFlux"               : useFlux,
-           "useNCP"                : useNCP,
-           "useSource"             : useSource,
-           "useSourceOrNCP"        : (useSource or useNCP),
-           "noTimeAveraging"       : noTimeAveraging,
-           "codeNamespace"         : codeNamespace,
-           "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,pathToApplication,pathToOptKernel),
-           "architecture"          : architecture,
-           "precision"             : precision,
-           "pathToLibxsmmGenerator"  : pathToLibxsmmGenerator #TODO JMG remove
+           "useDeepProfiler"       : l_commandLineArguments.deepProfiling,
+           "useFlux"               : l_commandLineArguments.useFlux,
+           "useNCP"                : l_commandLineArguments.useNCP,
+           "useSource"             : l_commandLineArguments.useSource,
+           "useSourceOrNCP"        : (l_commandLineArguments.useSource or l_commandLineArguments.useNCP),
+           "noTimeAveraging"       : l_commandLineArguments.noTimeAveraging,
+           "codeNamespace"         : l_commandLineArguments.namespace,
+           "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,l_commandLineArguments.pathToApplication,l_commandLineArguments.pathToOptKernel),
+           "architecture"          : l_commandLineArguments.architecture,
+           "precision"             : "DP", #l_commandLineArguments.precision,
+           "pathToLibxsmmGemmGenerator"  : os.path.join(os.path.dirname(__file__),pathToLibxsmmGemmGenerator)
           }
 
 # configure global setup of the code generator
 Backend.setConfig(config)
 
 # clean up output directory
-# uncomment when using the Toolkit call chain
-#pathToOutputDirectory = "../../Code/ExaHyPE/kernels/aderdg/optimised"
-# used for testing as standalone tool
-
 Backend.prepareOutputDirectory(config['pathToOutputDirectory'])
 
-# --------------------------------------------------------
-# Now let's generate the compute kernels.
-# --------------------------------------------------------
-
+# generate the compute kernels.
 Backend.generateComputeKernels()
 
-# --------------------------------------------------------
-# Move generated code
-# --------------------------------------------------------
 
-# move C++ wrapper
-#moveGeneratedFiles(os.getcwd(), config['pathToOutputDirectory'])
 

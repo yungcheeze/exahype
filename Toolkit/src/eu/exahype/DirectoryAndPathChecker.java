@@ -11,7 +11,6 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
   protected java.io.File peanoToolboxPath;
   protected java.io.File exahypePath;
   protected java.io.File outputDirectory;
-  protected java.io.File libxsmmPath;
   protected java.io.File sharedMemoryOraclesPath;
 
   @Override
@@ -20,7 +19,6 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
     peanoToolboxPath = node.getPeanoKernelPath()==null ? peanoKernelPath : new java.io.File(node.getPeanoKernelPath().getText());
     exahypePath = new java.io.File(node.getExahypePath().getText());
     outputDirectory = new java.io.File(node.getOutputDirectory().getText());
-    libxsmmPath = node.getLibxsmmPath()==null ? null : new java.io.File(node.getLibxsmmPath().getText());
 
     System.out.print("Peano kernel path: " + peanoKernelPath.getAbsolutePath());
     if (peanoKernelPath.isDirectory()) {
@@ -78,11 +76,8 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
         valid = false;
       }
     
-    // If a path to libxsmm is defined, assumes optimized kernel will be used and initialize the CodeGeneratorHelper
-    if(libxsmmPath != null) {
-      CodeGeneratorHelper.getInstance().setPaths(this);
-    }
-
+    // initialize the CodeGeneratorHelper TODO JMG do it only if necessary
+    CodeGeneratorHelper.getInstance().setPaths(this);
   };
 
   @Override
