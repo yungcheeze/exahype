@@ -2032,7 +2032,9 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptySolverAndLimiterDataToNeig
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
   _solver->sendEmptyDataToNeighbour(toRank,x,level);
-  _limiter->sendEmptyDataToNeighbour(toRank,x,level);
+  if (level==getMaximumAdaptiveMeshLevel()) {
+    _limiter->sendEmptyDataToNeighbour(toRank,x,level);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
@@ -2046,7 +2048,9 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
             ", src=" << src << ", dest=" << dest);
 
   _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
-  _solver->dropNeighbourData(fromRank,src,dest,x,level);
+  if (level==getMaximumAdaptiveMeshLevel()) {
+    _solver->dropNeighbourData(fromRank,src,dest,x,level);
+  }
 }
 
 /////////////////////////////////////
