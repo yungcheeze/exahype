@@ -1719,10 +1719,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiter
 }
 
 #ifdef Parallel
-const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerNeighbourCommunication    = 1;
-const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 0;
-const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerMasterWorkerCommunication = 0;
-
 ///////////////////////////////////
 // NEIGHBOUR - Mesh refinement
 ///////////////////////////////////
@@ -1798,12 +1794,6 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
     DataHeap::getInstance().sendData(
         observablesMax, numberOfObservables, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
-  } else {
-    for (int messages = 0; messages < 2; ++messages) {
-      DataHeap::getInstance().sendData(
-          EmptyDataHeapMessage, toRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-    }
   }
 }
 
@@ -1859,7 +1849,7 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
   // send an empty minAndMax message
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables) {
-    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
+    for(int sends=0; sends<2; ++sends)
       DataHeap::getInstance().sendData(
           exahype::EmptyDataHeapMessage, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
@@ -2022,7 +2012,7 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
 
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables>0) {
-    for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
+    for(int receives=0; receives<2; ++receives)
       DataHeap::getInstance().receiveData(
           fromRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
