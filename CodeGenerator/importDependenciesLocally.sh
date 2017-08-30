@@ -8,12 +8,19 @@
 #***** Configuration variables ******
 #************************************
 
+# SuperMUC has a very restrictive firewall
+# Use the github URL below after you logged in to SuperMUC via
+# ssh -R 12345:github.com:9418 <Your Login>@<SuperMUC Login Node> (port 12345 is arbitrarily chosen)
+#GITHUB_URL="git://localhost:12345"
+# The following should work on your local machine:
+GITHUB_URL="https://github.com/"
+
 # Change this if Jinja2 is available with your python3.
 JINJA2_ALREADY_AVAILABLE=false #false => import Jinja2 and MarkupSafe locally, true => skip it. Default value is false.
 # Git paths
-JINJA_GIT_URL="https://github.com/pallets/jinja.git"
-MARKUPSAFE_GIT_URL="https://github.com/pallets/markupsafe.git"
-LIBXSMM_GIT_URL="https://github.com/hfp/libxsmm.git"
+JINJA_GIT_URL=$GITHUB_URL"/pallets/jinja.git"
+MARKUPSAFE_GIT_URL=$GITHUB_URL"/pallets/markupsafe.git"
+LIBXSMM_GIT_URL=$GITHUB_URL"/hfp/libxsmm.git"
 # Local import paths
 JINJA_LOCAL_DIR="dependencies/jinja"
 MARKUPSAFE_LOCAL_DIR="dependencies/markupsafe"
