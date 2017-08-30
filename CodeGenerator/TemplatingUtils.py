@@ -30,5 +30,5 @@ def renderAsFile(inputFilename, outputFilename, context):
            
     with open(os.path.join(dir,'templates',inputFilename), 'r') as input:
         template = Template(input.read(), trim_blocks=True)                
-        with open(outputFilename, 'w') as output:
+        with open(os.path.join(context['pathToOutputDirectory'],outputFilename), 'w') as output:
             output.write(template.render(context))

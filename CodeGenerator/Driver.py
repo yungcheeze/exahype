@@ -24,19 +24,17 @@
 # requires python3
 
 import argparse
-import CodeGenArgumentParser
-from Backend import prepareOutputDirectory
-from Backend import moveGeneratedFiles
-import Backend
 import os
 import sys
+
+import CodeGenArgumentParser
+import Backend
 
 # --------------------------------------------------------
 # Configuration parameters
 # --------------------------------------------------------
 
 pathFromHereToExaHyPERoot = "../"
-
 
 # --------------------------------------------------------
 # Require python3
@@ -120,51 +118,46 @@ useSource              = l_commandLineArguments.useSource
 noTimeAveraging        = l_commandLineArguments.noTimeAveraging
 
 config = { 
-           "numerics"          : numerics,
-           "pathToOptKernel"   : pathToOptKernel,
-           "solverName"        : solverName,
-           "nVar"              : numberOfVariables,
-           "nDof"              : order+1,
-           "nDim"              : dimensions,
-           "nPar"              : 0, #TODO JMG add paramters ?
-           "useDeepProfiler"   : useDeepProfiler,
-           "useFlux"           : useFlux,
-           "useNCP"            : useNCP,
-           "useSource"         : useSource,
-           "useSourceOrNCP"    : (useSource or useNCP),
-           "noTimeAveraging"   : noTimeAveraging,
-           "codeNamespace"     : codeNamespace
+           "numerics"              : numerics,
+           "pathToOptKernel"       : pathToOptKernel,
+           "solverName"            : solverName,
+           "nVar"                  : numberOfVariables,
+           "nDof"                  : order+1,
+           "nDim"                  : dimensions,
+           "nPar"                  : 0, #TODO JMG add paramters ?
+           "useDeepProfiler"       : useDeepProfiler,
+           "useFlux"               : useFlux,
+           "useNCP"                : useNCP,
+           "useSource"             : useSource,
+           "useSourceOrNCP"        : (useSource or useNCP),
+           "noTimeAveraging"       : noTimeAveraging,
+           "codeNamespace"         : codeNamespace,
+           "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,pathToApplication,pathToOptKernel),
+           "architecture"          : architecture,
+           "precision"             : precision,
+           "pathToLibxsmmGenerator"  : pathToLibxsmmGenerator #TODO JMG remove
           }
 
 # configure global setup of the code generator
-Backend.setArchitecture(architecture)
-Backend.setPrecision(precision)
 Backend.setConfig(config)
-Backend.setNumerics(numerics)
-Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
 # uncomment when using the Toolkit call chain
 #pathToOutputDirectory = "../../Code/ExaHyPE/kernels/aderdg/optimised"
 # used for testing as standalone tool
 
-dir = os.path.dirname(__file__)
-pathToOutputDirectory = os.path.join(dir,pathFromHereToExaHyPERoot,pathToApplication,pathToOptKernel)
-prepareOutputDirectory(pathToOutputDirectory)
+Backend.prepareOutputDirectory(config['pathToOutputDirectory'])
 
 # --------------------------------------------------------
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
-#Backend.generateCommonHeader()
 Backend.generateComputeKernels()
 
 # --------------------------------------------------------
 # Move generated code
 # --------------------------------------------------------
 
-# move assembly code
-moveGeneratedFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
 # move C++ wrapper
-moveGeneratedFiles(os.getcwd(), pathToOutputDirectory)
+#moveGeneratedFiles(os.getcwd(), config['pathToOutputDirectory'])
 
