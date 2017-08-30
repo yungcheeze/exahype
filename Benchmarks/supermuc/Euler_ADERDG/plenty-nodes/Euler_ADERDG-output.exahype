@@ -23,7 +23,7 @@ exahype-project Euler
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
   output-directory const  = ./Benchmarks/supermuc/Euler_ADERDG
-  architecture const      = noarch
+  architecture const      = hsw
   log-file                = mylogfile.log
 
   computational-domain

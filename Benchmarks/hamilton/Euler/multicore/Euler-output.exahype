@@ -14,6 +14,8 @@ exahype-project Euler
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./Benchmarks/hamilton/Euler
+  architecture const               = hsw
+  log-file                         = mylogfile.log
 
   computational-domain
     dimension const         = 3

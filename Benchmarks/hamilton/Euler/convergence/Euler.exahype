@@ -14,17 +14,19 @@ exahype-project Euler
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./Benchmarks/hamilton/Euler
+  architecture const               = hsw
+  log-file                         = mylogfile.log
 
   computational-domain
     dimension const         = 2
     width                   = 1.0, 1.0, 1.0
     offset                  = 0.0, 0.0, 0.0
-    end-time                = 0.1
+    end-time                = 0.21
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 4
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
   
@@ -48,7 +50,7 @@ exahype-project Euler
  
   solver Limiting-ADER-DG EulerSolver
     variables const          = rho:1,j:3,E:1
-    order const              = 3
+    order const              = 5
     maximum-mesh-size        = 0.03704
     maximum-mesh-depth       = 0
     time-stepping            = global
@@ -57,31 +59,32 @@ exahype-project Euler
     limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
     dmp-observables          = 5
-    dmp-relaxation-parameter = 1e-2
+    dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 0
+    steps-till-cured         = 1
+    helper-layers            = 2
     // reference either: sod,entropywave,explosion,rarefactionwave
-    constants                = reference:entropywave
+    constants                = reference:explosion
 
 
     plot user::defined ErrorWriter
       variables const = 5
-      time            = 0.0
+      time            = 10.0
       repeat          = 1e-2
       output          = not-available
     end plot
-    
-    plot vtk::Cartesian::vertices::limited::ascii ErrorPlotter
+  
+    plot vtu::Cartesian::vertices::ascii ErrorPlotter
       // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
       variables const = 15 
       time            = 0.0
-      repeat          = 1e-2
+      repeat          = 1e-10
       output          = ./errors
     end plot
-    
+  
     plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
       variables const = 5
-      time      = 0.0
+      time      = 10.0
       repeat    = 1e-2
       output    = ./fv
     end plot
