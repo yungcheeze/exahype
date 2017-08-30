@@ -24,7 +24,7 @@ batchFactor=0.8
 hMax=( 0.11112 0.03704 0.01235 0.00412 0.00138 0.00046 ) # 1/3^l ceiled with significance 1e-5
 T=0.03 # SIMULATION END TIME # chosen the same for all patch and mesh sizes
 
-kernels=gen # this is just an identifier; actual kernels must be chosen before building the executables
+kernels=opt # this is just an identifier; actual kernels must be chosen before building the executables
 
 # Derived options
 

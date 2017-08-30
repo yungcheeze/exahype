@@ -1,6 +1,7 @@
 source /etc/profile.d/modules.sh
 
 module purge
+module load python
 module load java
 module load slurm
 module load intel/xe_2017.2
