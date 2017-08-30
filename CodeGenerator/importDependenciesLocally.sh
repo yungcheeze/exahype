@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Use this script to import jinja2 source code locally (with its dependency)
+# Use this script to import the CodeGenerator dependencies locally
 
 
 
@@ -8,13 +8,13 @@
 #***** Configuration variables ******
 #************************************
 
-#Change this if Jinja2 is available with your python3.
-JINJA2_ALREADY_AVAILABLE=false #false => install Jinja2 and MarkupSafe locally, true => skip it. Default value is false.
-#git paths
+# Change this if Jinja2 is available with your python3.
+JINJA2_ALREADY_AVAILABLE=false #false => import Jinja2 and MarkupSafe locally, true => skip it. Default value is false.
+# Git paths
 JINJA_GIT_URL="https://github.com/pallets/jinja.git"
 MARKUPSAFE_GIT_URL="https://github.com/pallets/markupsafe.git"
 LIBXSMM_GIT_URL="https://github.com/hfp/libxsmm.git"
-#local clone paths
+# Local import paths
 JINJA_LOCAL_DIR="dependencies/jinja"
 MARKUPSAFE_LOCAL_DIR="dependencies/markupsafe"
 LIBXSMM_LOCAL_DIR="dependencies/libxsmm"
@@ -23,7 +23,7 @@ LIBXSMM_LOCAL_DIR="dependencies/libxsmm"
 
 
 #************************************
-#******* Installation steps *********
+#********** Import steps ************
 #************************************
 
 # local var to resolve relative path correctly
