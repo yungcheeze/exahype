@@ -44,8 +44,6 @@ void {{codeNamespace}}::volumeIntegral(
 #ifdef __INTEL_COMPILER
   __assume_aligned(lFi, ALIGNMENT);
   __assume_aligned(Kxi_T, ALIGNMENT);
-  __assume_aligned(weights3, ALIGNMENT);
-  __assume_aligned(weights2, ALIGNMENT);
   __assume_aligned(weights1, ALIGNMENT);
   __assume_aligned(lduh, ALIGNMENT); //lduh should be aligned, see Solver.h
 {% if useSourceOrNCP %}
