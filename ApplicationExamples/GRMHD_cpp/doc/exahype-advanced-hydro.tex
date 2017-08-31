@@ -3,15 +3,10 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[table]{xcolor} % colored tables
-\usepackage{booktabs} % tables
-\usepackage{amsmath}
-\usepackage{graphicx}
+\usepackage{amsmath,graphicx,booktabs}
 \usepackage[breaklinks=true,colorlinks]{hyperref}
-\usepackage{cite} % to break long cites
 \usepackage[colorinlistoftodos]{todonotes}
-\usepackage{caption} % captionof
-\usepackage{pdfpages} % include pages from PDFs
-\usepackage{amsmath} % multiline
+\usepackage{cite,caption,mathtools}
 
 % partial derivative
 \newcommand{\pp}[2]{\frac{\partial #1}{\partial #2}}
@@ -21,6 +16,9 @@
 \newcommand{\hydro}{\text{Hydro}}
 \newcommand{\mhd}{\text{MHD}}
 \newcommand{\adm}{\text{ADM}}
+
+% left aligned vectors (pmatrix is center aligned)
+\newenvironment{pvector}{\begin{pmatrix*}[l]}{\end{pmatrix*}}
 
 % Defines pushright inside math mode
 % source: https://tex.stackexchange.com/a/83522
@@ -50,6 +48,8 @@ ExaHyPE.
 
 We solve a conservation system
 \begin{equation}\label{eq.cons.star}
+\partial_\mu F^\mu=S
+\quad\text{or}\quad
 \partial_t F^0(u) + \partial_i F^i(u) = S(u)
 \end{equation}
 of the vector%
@@ -57,7 +57,7 @@ of the vector%
 are note vectors at all by the definition of a physicist, i.e.
 they don't follow a transformation law. Instead, they are just
 an (possibly) ordered set of variables}
-of primitive variables $u$ with the vector of converved variables
+of primitive variables $u$, the vector of converved variables
 $F^0(u)=Q$, Fluxes $F^i(u)=F^i(Q)$ and Sources $S(u)=S(Q)$. In the
 ExaHyPE termiology, this PDE reads
 \begin{align}
@@ -86,49 +86,70 @@ which absorbs the nonconservative product and resembles the
 conservation system \eqref{eq.cons.star} we started with.
 
 \section{GR Hydrodynamics}
-The Valencia formulation of Relativistic hydrodynamics can be given
-with
-\begin{align}
+The standard formulation of Relativistic hydrodynamics (Valencia)
+uses
+\begin{alignat}{4}
 \label{eq.grhd.prim}
-\text{primitive variables}\quad u &=
-\begin{pmatrix}
+&\text{primitive variables}
+&
+\quad u &=
+\begin{pvector}
 \text{rest mass density} \\
 \text{three-velocity} \\
 \text{internal energy}
-\end{pmatrix}
+\end{pvector}
 = \begin{pmatrix} \rho \\ v_i \\ \epsilon \end{pmatrix}
 \\
 \label{eq.grhd.cons}
-\text{conservative variables}\quad Q_\hydro
+&
+\desc{conservative variables}
+&
+Q_\hydro
 &=
-\begin{pmatrix}
+\begin{pvector}
 \text{Conserved density} \\
 \text{Momentum} \\
 \text{Rescaled energy density}
-\end{pmatrix}
+\end{pvector}
 =
 \begin{pmatrix} D \\ S_j \\ \tau \end{pmatrix}
-\end{align}
-related to each other by
-\begin{align}
-D &= \rho W \\
-S_j &= \rho h W^2 v_j \\
-\tau &= \rho h W^2 - p - \rho W = E - D
-\end{align}
-with
-\begin{align}
+\\
+&
+\desc{related by Cons2Prim}
+&
+Q(u)
+&=
+\begin{pvector}
+\rho W \\
+\rho h W^2 v_j \\
+\rho h W^2 - p - \rho W
+\end{pvector}
+\end{alignat}
+\begin{alignat}{4}
+&\text{with}
+&
 \desc{Lorentz factor}
 W&=\alpha u^0 = (1 - v_i v^i)^{-1/2}
 \\
+&&
 \desc{enthalpy} h &
 \\
+&&
 \desc{pressure} p &= p(u) = p(\rho,\epsilon, v_i)
 \\
+&&
 \desc{Total energy seen by Eulerian observer} E
-\end{align}
+&= \tau + D
+\end{alignat}
 In the literature, alternative namings are $W=\Gamma$, $E=U$.
 The pressure is given by the equation of state, the \emph{closure}
-equation of the system which governs the Cons2Prim operation.
+equation of the system which governs the Prim2Cons operation.
+
+Pay attention to whether you gain $v_i$ or $v^i$ from your Prim2Cons
+operation. In WhiskyTHC (and Lucianos book) they use $v_i$ while
+BHAC writes $v^i$. Some notations also state the primitive
+variables as $u=(\rho,W v^i, p)$, i.e. pressure $p$ instead of
+internal energy $\epsilon$.
 
 \subsection{ADM variables}
 The variables of the ADM formulation are the
@@ -143,11 +164,17 @@ Q_\adm =
 \end{pmatrix}
 =
 \begin{pmatrix}
-\alpha \\ \beta \\ \gamma_{ij} \\ K_{ij}
+\alpha \\ \beta^i \\ \gamma_{ij} \\ K_{ij}
 \end{pmatrix}.
 \end{equation}
 These variables play the role of \emph{material parameters}, i.e.
 constants, when they enter the system of hydrodynamics.
+Metric $\gamma_{ij}$ and extr. curvature $K_{ij}$ are symmetric,
+only 6 degrees of freedom need to be stored. We can compute
+$\gamma^{ij}$ from $\gamma_{ij}$ and use it for all raising and lowering
+operations. $\gamma^{ij}$ is also only a 6-component object.
+Remember that $\gamma^i_j=\delta^i_j$.
+
 The hydrodynamic 3-energy-momentum-tensor is given by
 \begin{equation}\label{eq.grhd.emtensor}
 W^{ij} = S^i v^j + p \gamma^{ij}
@@ -184,20 +211,20 @@ F^i_\hydro(u) &=
 \text{fluxes for } \tau
 \end{pmatrix}
 =
-\begin{pmatrix}
+\begin{pvector}
 D w^i \\
 \alpha W^i_j - \beta^i S_j \\
 \alpha (S^i - v^i D) - \beta^i \tau
-\end{pmatrix}
+\end{pvector}
 \quad
 \text{(general $W^{ij}$)}
 \\
 &=
-\begin{pmatrix}
+\begin{pvector}
 D w^i \\
 S_j w^i + p \delta^i_j \\
 \tau w^i + p v^i
-\end{pmatrix}
+\end{pvector}
 \hspace{2.3cm} % todo: push right
 \text{(\emph{only} for $W^{ij}=S^i v^i + p\gamma^{ij}$)}
 \end{align}
@@ -218,19 +245,19 @@ paper and for saving contractions in the computer.
 The Valencia sources \emph{with Christoffel symbols} are given by
 \begin{equation}
 S_\hydro(u) =
-\begin{pmatrix}
+\begin{pvector}
 \text{source for } D \\
 \text{sources for } S_j \\
 \text{source for } \tau
-\end{pmatrix}
+\end{pvector}
 =
-\begin{pmatrix}
+\begin{pvector}
 0
 \\
 T^{\mu\nu} \partial_\mu g_{\nu j} - \Gamma^\delta_{\nu\rho} g_{\rho j} T^{\mu\nu}
 \\
 \alpha T^{\mu 0} \partial_\mu \ln \alpha - \alpha T^{\mu\nu} \Gamma^0_{\mu\nu}
-\end{pmatrix}.
+\end{pvector}.
 \end{equation}
 In order to compute these sources, one needs to compute the
 \begin{align}
@@ -248,6 +275,7 @@ g_{\mu\nu} &=
 T^{\mu\nu} &=
 \rho h W^2 (n^\mu + v^\mu) (n^\nu + v^\nu)
 \\ &\phantom{=} + p(\gamma^{\mu\nu} - n^\mu n^\nu)
+\nonumber
 \end{align}
 One needs to recover the 4-velocity $u^\mu$ or the normal vector
 $n^\mu$ in order to compute $T^{\mu\nu}$. All this is not desirable
@@ -256,17 +284,23 @@ terms for the Valencia formulation, as used in THC
 (\href{https://arxiv.org/abs/1312.5004}{THC}). They read
 \begin{equation}
 S_\hydro(u) =
-\begin{pmatrix}
+\begin{pvector}
 0
 \\
 \frac \alpha2 S^{lm} \partial_j \gamma_{lm} + S_k \partial_j \beta^k - E \partial_j \alpha
 \\
 \alpha S^{ij} K_{ij} - S^i \partial_i \alpha
-\end{pmatrix}
+\end{pvector}
 \end{equation}
 These are the most general source terms for hydrodynamics on
-\emph{dynamical} (curved) spacetime. Note the presence of all ADM
-variables, especially the extrinsic curvature.
+\emph{dynamical} (curved) spacetime. In order to compute these sources,
+we need the
+\begin{align}
+\desc{material parameters}  &= \{ \alpha, \beta^i, \gamma_{ij}, K_{ij} \}
+\\
+\desc{Nonconservative derivatives} &= \{ \partial_i \alpha,
+\partial_i \beta^j, \partial_i \gamma_{jk} \}
+\end{align}
 
 \subsection{Cowling approximation}
 In case of static spacetime (Cowling approximation,
@@ -275,15 +309,22 @@ get rid of the contraction $S^{ij}K_{ij}$. Indeed, in this particular
 case it is
 \begin{equation}
 S_{\hydro\text{,Cowling}}(u) =
-\begin{pmatrix}
+\begin{pvector}
 0
 \\
 \frac \alpha2 S^{lm} \partial_j \gamma_{lm} + S_k \partial_j \beta^k - E \partial_j \alpha
 \\
 \frac 12 S^{ik} \beta^j \partial_j \gamma_{ik} + S^j_i \partial_j \beta^i - S^i \partial_j \alpha
-\end{pmatrix}
+\end{pvector}
 \end{equation}
-This source term is \emph{not} valid for general spacetimes.
+This source term is \emph{not} valid for general spacetimes. In order to
+compute these sources, one only needs
+\begin{align}
+\desc{material parameters}  &= \{ \alpha, \beta^i, \gamma_{ij} \}
+\\
+\desc{Nonconservative derivatives} &= \{ \partial_i \alpha,
+\partial_i \beta^j, \partial_i \gamma_{jk} \}
+\end{align}
 
 \section{GR Magnetohydrodynamics}
 
@@ -306,12 +347,18 @@ p \to p_\text{tot} = p_\hydro + p_\mhd
 p_\mhd = \frac 12 \left( B_j B^j / W^2 + (B^j v_j)^2 \right).
 \end{equation}
 The total energy-momentum tensor is the sum of all involved theories,
-thus
-\begin{align}
-W^{ij} &= W^{ij}_\hydro(p_\hydro + p_\mhd) + W^{ij}_\mhd
+thus the
+\begin{alignat}{4}
+& \desc{GRMHD EM-Tensor is}
+& W^{ij} &= W^{ij}_\hydro(p_\hydro + p_\mhd) + W^{ij}_\mhd
 \\
-\desc{with} W^{ij}_\mhd &= - B^i B^j / W^2 - (B^k v_k) v^i B^j
-\end{align}
+&\desc{with}
+& W^{ij}_\mhd &= - B^i B^j / W^2 - (B^k v_k) v^i B^j
+\\
+&\desc{giving}
+& W^{ij} &= 
+S^i v^j + p_\text{tot} \gamma^{ij} - \frac{B^i B^j}{W^2} - (B^k v_k)v^i B^j
+\end{alignat}
 
 \subsection{Fluxes and sources}
 The evolution variables in \emph{pure} GRMHD, without mentioning any
@@ -331,7 +378,7 @@ i.e. the new PDE for the magnetic field reads
 \begin{equation}\label{eq.grmhd.pdeb.simple}
 \partial_t B^j + \partial_i (w^i B^j - B^i V^j) = 0
 \end{equation}
-This evolution equation is only employed if one does \emph{not} employ
+This evolution equation is \emph{only} used if one does \emph{not} employ
 divergence cleaning. For instance, for constraint transport, the set
 of PDEs is fully given.
 
@@ -372,13 +419,15 @@ of PDEs is fully given.
 
 With divergence cleaning, one introduces an additional field $\phi$
 which is coupled to the magnetic field\footnote{Do not confuse the
-symbol $phi$ with the conformal factor of the BSSNOK/CCZ4 formulation}
+symbol $\phi$ with the conformal factor of the BSSNOK/CCZ4 formulation}
 and implements $\nabla B = - \kappa \phi$ as well as a radial advection
 of $\phi$ with speed $\kappa$.
-Hence, the PDE \eqref{eq.grmhd.pdeb.simple} no more applies.
+Hence, the PDE \eqref{eq.grmhd.pdeb.simple} is replaced by two
+different PDEs.
 
 The MHD conserved vector is $Q_\mhd = (B^j, \phi)$ and has
 fluxes and sources
+\todo{TO CHECK: are the sources correct for dynamical spacetime?}
 \begin{align}
 %\desc{fluxes}
 F^i(Q) &= \begin{pmatrix}
@@ -386,10 +435,10 @@ F^i(Q) &= \begin{pmatrix}
 \text{fluxes for }\phi
 \end{pmatrix}
 =
-\begin{pmatrix}
+\begin{pvector}
 w^i B^j - v^j B^i - B^i \beta^j \\
 \alpha B^i - \phi \beta^i
-\end{pmatrix}
+\end{pvector}
 \\
 %\desc{and sources}
 S(Q) &=
@@ -398,18 +447,71 @@ S(Q) &=
 \text{sources for } \phi
 \end{pmatrix}
 =
-\begin{pmatrix}
+\begin{pvector}
 -B^i \partial_i \beta^j - \alpha \gamma^{ij} \partial_i \phi \\
 - \alpha \kappa \phi - \phi \partial_i \beta^i
 - \frac 12 \phi \gamma^{ij} \beta^k \partial_k \gamma_{ij}
 + B^i \partial_i \alpha
-\end{pmatrix}
+\end{pvector}
 \end{align}
-%
-\todo[inline]{is this correct for dynamical spacetime?}
 
-
-
+\subsection{Summary of the GRMHD+DivCleaning PDEs}
+For the simple overview, we write down the full set of GRMHD equations
+for \emph{dynamical spacetime} with divergence cleaning. The vector of
+unknowns is $Q_\mhd=(D,S_j,\tau,B^i,\phi)$ and the fluxes and sources are
+given by
+\begin{align}
+F^i_\mhd(Q) &=
+\begin{pvector}
+\text{fluxes for } D \\
+\text{fluxes for } S_j \\
+\text{fluxes for } \tau \\
+\text{fluxes for }  B^j \\
+\text{fluxes for } \phi
+\end{pvector}
+=
+\begin{pvector}
+w^i D \\
+\alpha W^i_j - \beta^i S_j \\
+\alpha (S^i - v^i D) - \beta^i \tau \\
+w^i B^j - v^j B^i - B^i \beta^j \\
+\alpha B^i - \phi \beta^i
+\end{pvector}
+\\
+S_\mhd(Q) &=
+S_\mhd
+\begin{pvector}
+D \\
+S_j \\
+\tau \\
+ B^i \\
+\phi
+\end{pvector}
+=
+\begin{pvector}
+0
+\\
+\frac \alpha2 S^{lm} \partial_j \gamma_{lm} + S_k \partial_j \beta^k - E \partial_j \alpha
+\\
+\alpha S^{ij} K_{ij} - S^i \partial_i \alpha
+\\
+-B^i \partial_i \beta^j - \alpha \gamma^{ij} \partial_i \phi \\
+- \alpha \kappa \phi - \phi \partial_i \beta^i
+- \frac 12 \phi \gamma^{ij}
+\beta^k \partial_k \gamma_{ij}
++ B^i \partial_i \alpha
+\end{pvector}
+\end{align}
+Obviously, we need the
+\begin{alignat}{4}
+&&
+\desc{material parameters}  &= \{ \alpha, \beta^i, \gamma_{ij}, K_{ij} \}
+\\
+&\desc{and}
+&
+\desc{nonconservative derivatives} &= \{ \partial_i \alpha,
+\partial_i \beta^j, \partial_i \gamma_{jk} \}
+\end{alignat}
 
 
 
