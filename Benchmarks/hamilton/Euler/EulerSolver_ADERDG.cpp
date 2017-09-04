@@ -89,19 +89,19 @@ void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
   F[0][4] = irho*(Q[4]+p)*Q[1];
 
   // col 2
-  F[0][0] = Q[2];
-  F[0][1] = irho*Q[1]*Q[2];
-  F[0][2] = irho*Q[2]*Q[2] + p;
-  F[0][3] = irho*Q[3]*Q[2];
-  F[0][4] = irho*(Q[4]+p)*Q[2];
+  F[1][0] = Q[2];
+  F[1][1] = irho*Q[1]*Q[2];
+  F[1][2] = irho*Q[2]*Q[2] + p;
+  F[1][3] = irho*Q[3]*Q[2];
+  F[1][4] = irho*(Q[4]+p)*Q[2];
 
   #if DIMENSIONS==3
   // col 3
-  F[0][0] = Q[3];
-  F[0][1] = irho*Q[1]*Q[3];
-  F[0][2] = irho*Q[2]*Q[3];
-  F[0][3] = irho*Q[3]*Q[3] + p;
-  F[0][4] = irho*(Q[4]+p)*Q[3];
+  F[2][0] = Q[3];
+  F[2][1] = irho*Q[1]*Q[3];
+  F[2][2] = irho*Q[2]*Q[3];
+  F[2][3] = irho*Q[3]*Q[3] + p;
+  F[2][4] = irho*(Q[4]+p)*Q[3];
   #endif
   #endif
 }
