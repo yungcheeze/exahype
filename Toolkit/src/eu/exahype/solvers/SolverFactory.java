@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 public class SolverFactory {
   private String _projectName;
-  private String _solverName;
   private int _dimensions;
   private boolean _enableProfiler;
   private boolean _enableDeepProfiler;
@@ -16,21 +15,18 @@ public class SolverFactory {
   
   public SolverFactory(
       String projectName,
-      String solverName,
       int dimensions,
       boolean enableProfiler,
       boolean enableDeepProfiler,
       String microarchitecture) {
-    _projectName = projectName;
-    _solverName = solverName;    
+    _projectName = projectName;  
     _dimensions = dimensions;
     _enableProfiler = enableProfiler;
     _enableDeepProfiler = enableDeepProfiler;
     _microarchitecture = microarchitecture;
-    
   }
   
-  public Solver createADERDGSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
+  public Solver createADERDGSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
     String generalKernel = kernel.substring(0, kernel.lastIndexOf("::"));
     boolean isLinear     = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("::linear");
     
@@ -52,7 +48,7 @@ public class SolverFactory {
           // _enableProfiler, hasConstants);
     // }
     else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
-      return new eu.exahype.solvers.OptimisedADERDG(_projectName, _solverName, _dimensions,
+      return new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
           _enableProfiler, _enableDeepProfiler, hasConstants, false, Arrays.asList(generalKernel.split("::")));
     }
@@ -63,7 +59,7 @@ public class SolverFactory {
     return null;
   }
   
-  public Solver createFiniteVolumesSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
+  public Solver createFiniteVolumesSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
