@@ -163,25 +163,34 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {
-    if (node.getLanguage().getText().trim().equals("C")) {
-    } else if (node.getLanguage().getText().trim().equals("Fortran")) {
+    handleAderdgSolver(node.getLanguage().getText().trim(), node.getKernel().getText().trim(), node.getName().getText().trim()); 
+  }
+  
+  @Override
+  public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
+    handleAderdgSolver(node.getLanguage().getText().trim(), node.getKernel().getText().trim(), node.getName().getText().trim());
+  }
+
+  private void handleAderdgSolver(String language, String kernel, String name) {
+    if (language.equals("C")) {
+      //do nothing, default behavior
+    } else if (language.equals("Fortran")) {
       _requiresFortran = true;
     } else {
-      System.err.println("ERROR: unknown language for solver " + node.getName().getText()
+      System.err.println("ERROR: unknown language for solver " + name
           + ". Supported languages are C and Fortran");
       valid = false;
     }
     
     _useOptimisedKernels = _useOptimisedKernels 
-                            || (node.getLanguage().getText().trim().equals("C") 
-                                && (node.getKernel().toString().trim().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
+                            || (language.equals("C") 
+                                && (kernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
     
     if (_useOptimisedKernels)  {  
-      _opt_noTimeAveraging = node.getKernel().toString().trim().contains( eu.exahype.solvers.OptimisedADERDG.noTimeAveragingOptionId );
+      _opt_noTimeAveraging = kernel.contains( eu.exahype.solvers.OptimisedADERDG.noTimeAveragingOptionId );
     }
-    
   }
-
+  
   @Override
   public void inAProfiling(AProfiling node) {
     if (node.getLikwidInc() != null) {
