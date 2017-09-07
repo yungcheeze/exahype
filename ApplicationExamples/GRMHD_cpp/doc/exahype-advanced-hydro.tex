@@ -146,8 +146,8 @@ The pressure is given by the equation of state, the \emph{closure}
 equation of the system which governs the Prim2Cons operation.
 
 Pay attention to whether you gain $v_i$ or $v^i$ from your Prim2Cons
-operation. In WhiskyTHC (and Lucianos book) they use $v_i$ while
-BHAC writes $v^i$. Some notations also state the primitive
+operation. In \cite{THC} (and Lucianos book) they use $v_i$ while
+\cite{BHAC} writes $v^i$. Some notations also state the primitive
 variables as $u=(\rho,W v^i, p)$, i.e. pressure $p$ instead of
 internal energy $\epsilon$.
 
@@ -280,8 +280,7 @@ T^{\mu\nu} &=
 One needs to recover the 4-velocity $u^\mu$ or the normal vector
 $n^\mu$ in order to compute $T^{\mu\nu}$. All this is not desirable
 at all, therefore one can derive the Christoffel-symbol free Source
-terms for the Valencia formulation, as used in THC
-(\href{https://arxiv.org/abs/1312.5004}{THC}). They read
+terms for the Valencia formulation, as used in \cite{THC}. They read
 \begin{equation}
 S_\hydro(u) =
 \begin{pvector}
@@ -301,6 +300,19 @@ we need the
 \desc{Nonconservative derivatives} &= \{ \partial_i \alpha,
 \partial_i \beta^j, \partial_i \gamma_{jk} \}
 \end{align}
+The sources can be also easily written without computing the 3-energy-momentum-tensor,
+exploiting
+$\left(\partial_i \sqrt\gamma\right) / \sqrt\gamma = \frac 12 \gamma^{lm} \partial_i \gamma_{lm}$,
+\begin{equation}
+S_\hydro(u) =
+\begin{pvector}
+0
+\\
+\frac \alpha2 S^l v^m \partial_j \gamma_{lm} + \alpha p \frac 1{\sqrt{\gamma}} \partial_j \sqrt{\gamma} + S_k \partial_j \beta^k - E \partial_j \alpha
+\\
+\alpha S^l v^m K_{lm} - \alpha p \gamma^{lm} K_{lm} - S^i \partial_i \alpha
+\end{pvector}
+\end{equation}
 
 \subsection{Cowling approximation}
 In case of static spacetime (Cowling approximation,
@@ -455,6 +467,9 @@ S(Q) &=
 \end{pvector}
 \end{align}
 
+These terms come from \cite{BHAC} which derived it from
+\cite{divclean1, divclean2}.
+
 \subsection{Summary of the GRMHD+DivCleaning PDEs}
 For the simple overview, we write down the full set of GRMHD equations
 for \emph{dynamical spacetime} with divergence cleaning. The vector of
@@ -514,6 +529,29 @@ Obviously, we need the
 \end{alignat}
 
 
+\begin{thebibliography}{9}
+
+\bibitem[THC]{THC}
+  WhiskyTHC including the source terms
+  \url{https://arxiv.org/abs/1312.5004}
+
+\bibitem[BHAC]{BHAC}
+  Porth, Olivares, Mizuno, Younsi, Rezzolla, Moscibrodzka, Falcke, Kramer 2017: The Black Hole Accretion Code
+  \url{https://arxiv.org/pdf/1611.09720}
+
+\bibitem[Palenzuela2008]{divclean1}
+  Palenzuela, Lehner, Reula, Rezzolla 2008: 
+  Beyond ideal MHD: towards a more realistic modeling of
+  relativistic astrophysical plasmas
+  \url{https://arxiv.org/pdf/0810.1838.pdf}
+  
+\bibitem[Dionysopoulou2013]{divclean2}
+  Dionysopoulou, Alic, Palenzuela, Rezzolla, Giacomazzo 2013:
+  General-relativistic resistive magnetohydrodynamics in
+three dimensions: Formulation and tests
+  \url{https://arxiv.org/pdf/1208.3487.pdf}
+
+\end{thebibliography}
 
 
 \end{document}
