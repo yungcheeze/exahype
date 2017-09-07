@@ -146,7 +146,7 @@ def generateAssemblerCode(i_outputFileName,
     l_pathToAsmFile = os.path.splitext(i_outputFileName)[0]+'.c'
     for l_matmul in i_matmulConfigList:
         # for plain assembly code (rather than inline assembly) choose dense_asm
-        l_commandLineArguments = ' ' + "dense_asm"  + \
+        l_commandLineArguments = ' ' + "dense"  + \
                                  ' ' + os.path.join(g_config['pathToOutputDirectory'],l_pathToAsmFile) + \
                                  ' ' + g_config['codeNamespace'] + '::' + l_matmul.baseroutinename + \
                                  ' ' + str(l_matmul.M) + \
