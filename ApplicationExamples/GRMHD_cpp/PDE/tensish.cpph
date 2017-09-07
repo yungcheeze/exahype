@@ -156,39 +156,6 @@ namespace tensish {
 		};
 	} // ns sym
 
-
-	/**
-	* The 3-Metric as an up/lo structure, ie. being a Full<sym::stored<3> , sym::shadow>.
-	* Therefore we assume the lower metric to be stored so the upper can be completed.
-	**/
-	struct metric3  {
-		sym::stored<3> up;
-		const sym::const_shadow lo;
-		
-		metric3(const double* const lo_)
-			: lo(lo_)
-			/* up: */ { complete_from_lower(); }
-		
-		void complete_from_lower() {
-			double d = sym::det(lo);
-
-			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) );
-			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) );
-			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) );
-			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) );
-			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) );
-			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) );
-
-			DFOR(i) DFOR(j) up(i,j) /= d;
-			//vc = sqrt(fabs(d));
-		}
-
-		// chainable raise and lower operations for vectors
-		template<class Full> metric3& raise(Full vec) { DFOR(i) CONTRACT(j) vec.up(i) = up(i,j)*vec.lo(j); return *this; }
-		template<class Full> metric3& lower(Full vec) { DFOR(i) CONTRACT(j) vec.lo(i) = lo(i,j)*vec.up(j); return *this; }
-	};
-
-
 	/*****************************************************************************/
 	/*                                                                           */
 	/*  Semantics                                                                */
@@ -271,6 +238,38 @@ namespace tensish {
 		U up; // upper indices
 		M ul; // upper-lower mixed (2-tensor)
 		//double& lu(int i, int j) { return ul(i,j); } // ul = lu
+	};
+	
+	/**
+	* The 3-Metric as an up/lo structure, ie. being effectively a
+	*     UpLo<sym::stored<3>, sym::const_shadow>::ConstLo
+	* Therefore we assume the lower metric to be stored so the upper can be completed.
+	**/
+	struct metric3 {
+		sym::stored<3> up;
+		const sym::const_shadow lo;
+		
+		metric3(const double* const lo_)
+			: lo(lo_)
+			/* up: */ { complete_from_lower(); }
+		
+		void complete_from_lower() {
+			double d = sym::det(lo);
+
+			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) );
+			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) );
+			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) );
+			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) );
+			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) );
+			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) );
+
+			DFOR(i) DFOR(j) up(i,j) /= d;
+			//vc = sqrt(fabs(d));
+		}
+
+		// chainable raise and lower operations for vectors
+		template<class Full> metric3& raise(Full vec) { DFOR(i) CONTRACT(j) vec.up(i) = up(i,j)*vec.lo(j); return *this; }
+		template<class Full> metric3& lower(Full vec) { DFOR(i) CONTRACT(j) vec.lo(i) = lo(i,j)*vec.up(j); return *this; }
 	};
 
 } // namespace tensish

@@ -1,5 +1,3 @@
-// The Con2Prim from the primitive variables
-
 #include "PDE.h"
 #include <cmath> // max, sqrt
 #include <algorithm> // max
@@ -12,88 +10,74 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d, dou
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
-/**
- * W: Lorentz factor
- * enth: Enthalpy (h)
- **/
-template<class PrimType, class ConsType>
-void Prim2Cons(const PrimType &V, ConsType &Q, double W, double enth) {
-	// The hydro exact known prim2cons
-	Q.Dens = V.rho * W;
-	DFOR(i) Q.Si.lo(i) = V.rho * enth * W*W * V.vel.up(i); // danger. Looks wrong.
-	Q.tau = V.rho*W * (enth*W - 1) - V.press;
-}
-
-template<class PrimType, class ConsType>
-void Prim2Cons(const PrimType &V, ConsType &Q) {
-	// Determine v^2 = v_i * v^i from  an existing vel.lo.
-	// If there is no vel.lo, this will not compile.
-	double VelVel = 0; DFOR(i) VelVel += V.vel.lo(i) * V.vel.up(i);
+void GRMHD::Cons2Prim::prepare() {
+	// NEED to prepare:
+	// Generic for Sij and preparation:
+	DFOR(i) CONTRACT(j) Bmag.lo(i) = gam.lo(i,j) * Bmag.up(j);
+	// vel.up is needed, but in the primrecovery not known! We reconstruct it
+	// in the Cons2Prim operation.
+	//// DFOR(i) CONTRACT(j) vel.up(i)  = gam.up(i,j) * vel.lo(j);
+	// S^i is needed in both flux and ncp
+	DFOR(i) CONTRACT(j) Si.up(i)   = gam.up(i,j) * Si.lo(j);
 	
-	double W = 1. / std::sqrt(1.0 - VelVel);
-	double enth = 5; // Enthalpy (h) TODO
-	// I think that enth = ww= w * lf^2 = (rho+gamma/(gamma-1)*p)*lf^2
+	WW = SQ(Dens/rho); // W^2
+	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
+	SconScon = 0; CONTRACT(k) SconScon += Si.lo(k)*Si.up(k);     // S^j * S_j // needed for c2p
+	BmagScon = 0; CONTRACT(k) BmagScon += Bmag.lo(k)*Si.up(k);   // B^j * S_j // needed for c2p
+}
+
+void GRMHD::Cons2Prim::followup() {
+	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
+	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
+}
+
+void GRMHD::Cons2Prim::copyFullStateVector() {
+	copy_c2p_invariant(V + Conserved::Indices::c2p_invariant_start);
+	copy_admvars(V + ADMBase::Indices::adm_start);
+}
+
+void GRMHD::Cons2Prim::perform() {
+	constexpr double tol       = 1e-8;
+	constexpr double p_floor   = 1.0e-5;
+	constexpr double rho_floor = 1.0e-4;
 	
-	Prim2Cons(V, Q, W, enth);
+	constexpr double gamma = 5; // TODO
+	
+	// wee need: S.up, B.lo but we don't need to recompute it locally when using
+	// appropriate types. For the time being (compilation), use:
+	// we also need the metric!
+
+	// First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)];
+	bool failed   = false;
+	double gamma1 = gamma/(gamma - 1.0);
+	double gam    = 1.0/gamma1;
+	//double e      = Q[4]; // TODO: We need the energy here, not tau. Do we store tau?
+	double e      = tau + Dens;
+
+	constexpr double eps    = 1.e-10;
+	double x1     = 0.;
+	double x2     = 1.-eps;
+
+	double w;     // input var
+	double v2     = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,2,e,SconScon,BmagBmag,BmagScon*BmagScon,&w,&failed); // w is input parameter
+	//
+	if (failed) {
+		// We should raise an error instead, the c2p failed.
+		rho = rho_floor;
+		press = p_floor;
+		DFOR(i) vel.up(i) = 0;
+	} else {
+		double den  = 1.0/(w+BmagBmag);
+		double vb   = BmagVel/w;
+		using namespace std; // sqrt, max
+		rho  = Dens*sqrt(1.-v2);
+		DFOR(i) vel.up(i) = (Si.up(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong. CHECK
+		// Could easily compute here also:
+		DFOR(i) vel.lo(i) = (Si.lo(i) + vb * Bmag.lo(i))*den;
+		press     = gam*(w*(1.-v2)-rho); // EOS
+		press     = max(1.e-15, press); // bracketing
+	}
 }
-
-void Prim2Cons(const double* const V_, double* Q_) {
-	const ConstPrimitivesFull V(V_);
-	ConservedVariableShadow Q(Q_);
-	Prim2Cons(V,Q);
-}
-
-void GRMHD::PDE::Cons2Prim(){//const double* const Q_, double* V_) {
-  constexpr double tol       = 1e-8;
-  constexpr double p_floor   = 1.0e-5;
-  constexpr double rho_floor = 1.0e-4;
-  
-  constexpr double gamma = 5; // TODO
-  
-  // wee need: S.up, B.lo but we don't need to recompute it locally when using
-  // appropriate types. For the time being (compilation), use:
-  //const ConservedConstFull Q(Q_);
-  //PrimitiveVariableShadow(V_);
-
-  // we also need the metric!
-  //FullADMBase adm(Q_);
-  
-  // Compute the lower/upper variants
-  // We assume this to be filled already:
-  //DFOR(i) CONTRACT(j) Q.Bmag.lo(i) = adm.gam.lo(i,j) * Q.Bmag.up(j);
-  //DFOR(i) CONTRACT(j) Q.Si.up(i)   = adm.gam.up(i,j) * Q.Si.lo(j);
-
-  // First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)];
-  bool failed   = false;
-  double gamma1 = gamma/(gamma - 1.0);
-  double gam    = 1.0/gamma1;
-  //double e      = Q[4]; // TODO: We need the energy here, not tau. Do we store tau?
-  double e      = tau + Dens;
-
-  constexpr double eps    = 1.e-10;
-  double x1     = 0.;
-  double x2     = 1.-eps;
-
-  double w;     // input var
-  double v2     = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,2,e,SconScon,BmagBmag,BmagVel*BmagVel,&w,&failed); // w is input parameter
-  //
-  if (failed) {
-    // We should raise an error instead, the c2p failed.
-    rho = rho_floor;
-    press = p_floor;
-    DFOR(i) vel.up(i) = 0;
-  } else {
-    double den  = 1.0/(w+BmagBmag);
-    double vb   = BmagVel/w;
-    using namespace std; // sqrt, max
-    rho  = DIMENSIONS*sqrt(1.-v2);
-    DFOR(i) vel.up(i) = (Si.lo(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong.
-    press     = gam*(w*(1.-v2)-rho); // EOS
-    press     = max(1.e-15, press); // bracketing
-  }
-}
-
-
 
 
 void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2,

@@ -13,21 +13,6 @@
  *   spacetime.
  *****************************************************************************/
 
-void GRMHD::PDE::prepare() {
-	// NEED to prepare:
-	// Generic for Sij and preparation:
-	DFOR(i) CONTRACT(j) Bmag.lo(i) = gam.lo(i,j) * Bmag.up(j);
-	DFOR(i) CONTRACT(j) vel.up(i)  = gam.up(i,j) * vel.lo(j);
-	// S^i is needed in both flux and ncp
-	DFOR(i) CONTRACT(j) Si.up(i)   = gam.up(i,j) * Si.lo(j);
-	
-	WW = SQ(Dens/rho); // W^2
-	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
-	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
-	SconScon = 0; CONTRACT(k) SconScon += Si.lo(k)*Si.up(k);     // S^j * S_j // needed for c2p
-	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
-}
-
 void GRMHD::PDE::flux(double** Fluxes) {
 	// Fluxes Shape: F[nDim][nVar]
 	

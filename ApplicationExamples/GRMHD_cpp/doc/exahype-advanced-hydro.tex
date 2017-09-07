@@ -115,7 +115,7 @@ Q_\hydro
 \begin{pmatrix} D \\ S_j \\ \tau \end{pmatrix}
 \\
 &
-\desc{related by Cons2Prim}
+\desc{related by Prim2Cons}
 &
 Q(u)
 &=
@@ -124,6 +124,7 @@ Q(u)
 \rho h W^2 v_j \\
 \rho h W^2 - p - \rho W
 \end{pvector}
+\label{eq.grhd.Qu}
 \end{alignat}
 \begin{alignat}{4}
 &\text{with}
@@ -180,7 +181,9 @@ The hydrodynamic 3-energy-momentum-tensor is given by
 W^{ij} = S^i v^j + p \gamma^{ij}
 \end{equation}
 and is also refered to as $W^{ij}=S^{ij}$ in the literature and as
-$W_\hydro^{ij}(p)$ in the subsequent chapters.
+$W_\hydro^{ij}(p)$ in the subsequent chapters. Note that if you add terms
+to the energy-momentum tensor (such as the magnetic terms), also $S_j$
+will change (c.f. \eqref{eq.grhd.Qu} to XXX).
 
 \subsection{Conformal treatment}
 In the Valencia formulation, the whole system is written in terms
@@ -370,6 +373,25 @@ thus the
 &\desc{giving}
 & W^{ij} &= 
 S^i v^j + p_\text{tot} \gamma^{ij} - \frac{B^i B^j}{W^2} - (B^k v_k)v^i B^j
+\end{alignat}
+Consequently, also the conserved momentum changes to the 
+\begin{alignat}{3}
+\desc{GRMHD Prim2Cons}
+&
+Q(u)
+&=
+\begin{pvector}
+D \\
+S_j \\
+\tau
+\end{pvector}
+&=
+\begin{pvector}
+\rho W \\
+\rho h W^2 v_j + B^2 v_j - (B^i v_i) B_j \\
+\rho h W^2 - p + \frac 12 \left( B^2 (1 + v^2) - (B^j v_j)^2 \right)
+\end{pvector}
+\label{eq.grhd.Qu}
 \end{alignat}
 
 \subsection{Fluxes and sources}
