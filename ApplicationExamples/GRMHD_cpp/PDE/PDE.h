@@ -12,6 +12,18 @@
 #ifndef GRMHD_PDE_CPP
 #define GRMHD_PDE_CPP
 
+#ifdef TEST_NEW_PDE_AUTONOMOUSLY
+	// in order to autonomously test/copmile this C++ file:
+	#define DIMENSIONS 3
+	namespace GRMHD { constexpr int nVar = 19; }
+	int main() { return 0; }
+#else
+	// If you include to ExaHyPE instead:
+	#include "peano/utils/Dimensions.h" // Defines DIMENSIONS
+	#include "AbstractGRMHDSolver_FV.h" // Defines:
+	namespace GRMHD { constexpr int nVar = GRMHD::AbstractGRMHDSolver_FV::NumberOfVariables; }
+#endif
+
 /* This header file needs the definition of a constexpr int GRMHD::nVar
  * as well as a preprocessor variable DIMENSIONS.
  * You should provide this in the including file, for instance:
@@ -167,30 +179,62 @@ namespace GRMHD {
 	 * They should only store the hydro variables.
 	 * 
 	 **/
-	struct Primitives { // are always read only in our formulation, no need for P2C after ID
-		double V[nVar];
+	template<typename vector, /*typename vector_lo, */typename vector_up, typename scalar>
+	struct Primitives {
+		vector V;
 		const GRMHD::PrimitiveIndices Vi;
 		
 		// Primitive Scalars
-		const double &rho, &press;
+		scalar &rho, &press;
 		
 		// Primitive vectors
-		ConstUp<vec::const_shadow, vec::stored<3>> vel; /* vel is vec_up */
+		vector_up vel;
 		
-		Primitives(const double* const Q) :
+		Primitives(vector V_) :
+			V(V_),
 			Vi(),
 			// Primitive Scalars
 			rho  (V[Vi.rho]),
 			press(V[Vi.press]),
 			// Primitive vectors
 			vel  (V+Vi.vec_up)
-			{
-				//Cons2Prim(Q, V); // TODO include
-			}
+			{}
 		
 		void toConserved(double* Q); // P2C Prims2Cons operation
 	};
-
+	
+	typedef GRMHD::Primitives<
+		double*,
+		new_Up<vec::shadow, double* const>,
+		double
+		> PrimitiveVariableShadow;
+		
+	typedef GRMHD::Primitives<
+		const double* const,
+		ConstUp<vec::const_shadow, vec::stored<3>>,
+		const double
+		> ConstPrimitivesFull;
+	
+	// Writable primitives with velocity up. dont know if we need that yet
+	typedef GRMHD::Primitives<
+		double*,
+		StoredUp<vec::shadow, vec::stored<3>>,
+		double
+		> PrimitiveVariableShadowFull;
+		
+	// this is what PDE inherits from. A read only version with storage and a constructor
+	struct ConstPrimitivesFromConserved : public ConstPrimitivesFull {
+		double V[nVar];
+		ConstPrimitivesFromConserved(const double* const Q_) :
+			ConstPrimitivesFull(V) {
+				// do the Cons2Prim here.
+			}
+	};
+	
+	struct PrimitiveVariableStored : public PrimitiveVariableShadowFull {
+		double V[nVar];
+		PrimitiveVariableStored() : PrimitiveVariableShadowFull(V) {}
+	};
 
 	/*
 	// You could define this if you'd like:
@@ -201,15 +245,15 @@ namespace GRMHD {
 	};
 	*/
 
-	template<typename vector_up, typename metric_lo>
+	template<typename vector, typename vector_up, typename metric_lo, typename scalar>
 	class ADMBase { // Material Parameters, always read only
 		const GRMHD::ConservedIndices Ai;
 	public:
-		const double &alpha, &detg; // Scalars: Lapse, Determinant of g_ij
+		scalar &alpha, &detg; // Scalars: Lapse, Determinant of g_ij
 		vector_up beta; // Shift vector: (Conserved) Material parameter vector
 		metric_lo gam;  // 3-Metric: (Conserved) Material parameter tensor
 		
-		constexpr ADMBase(const double* const Q) :
+		constexpr ADMBase(vector Q) :
 			Ai(),
 			alpha(Q[Ai.lapse]),
 			detg (Q[Ai.detg]),
@@ -223,17 +267,38 @@ namespace GRMHD {
 	};
 	
 	typedef GRMHD::ADMBase<
+		const double* const,
 		// ConstUp<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
 		new_Up<vec::const_shadow, const double* const>, // if you never need beta_lo
-		metric3> FullADMBase;
+		metric3,
+		const double
+		> FullADMBase;
 	
 	// A version of the ADMVariables where beta_lo and the upper metric
 	// are not recovered.
 	typedef GRMHD::ADMBase<
+		const double* const,
 		const new_Up<vec::const_shadow, const double* const>,
-		const new_Lo<sym::const_shadow, const double* const>
+		const new_Lo<sym::const_shadow, const double* const>,
+		const double
 		> BasicADMBase;
-
+	
+	// A writable shadowed ADMBase. Writeable is only useful for setting the initial data.
+	typedef GRMHD::ADMBase<
+		double* const,
+		new_Up<vec::shadow, double* const>,
+		new_Lo<vec::shadow, double* const>,
+		double
+		> WritableADMBase;
+	
+	// A full state vector, containing the primitives and the ADMBase, as
+	// read only shadowed option
+	/// -> Has ambiguity whether we want to recover beta_lo, upper metric, etc.
+	
+	// A fully writable and shadowed state vector
+	struct StateVector : public ConservedVariableShadow, public WritableADMBase {
+		StateVector(double* const Q) : ConservedVariableShadow(Q), WritableADMBase(Q) {}
+	};
 
 	// A type storing the gradients of the conserved vector in one direction.
 	// Since it does not make sense to
@@ -248,7 +313,7 @@ namespace GRMHD {
 		const Gradient dir[DIMENSIONS];
 		// Access an element in some direction
 		const Gradient& operator[](int i) const { return dir[i]; }
-		// Access an element, indicating that it's partial_i
+		// Access an element, indicating that it's partial_i, not partial^i
 		const Gradient& lo(int i) const { return dir[i]; }
 		
 		Gradients(const double* const gradQ, const int nVar) :
@@ -271,7 +336,7 @@ namespace GRMHD {
 	 * stored directly in the methods because they need different forms (S_ij, S^ij or S^i_j)
 	 * which we address differently in the current formalism.
 	 **/
-	struct PDE : public ConservedConstFull, public Primitives, public FullADMBase {
+	struct PDE : public ConservedConstFull, public PrimitiveVariableStored, public FullADMBase {
 		// 3-Energy momentum tensor
 		// Full<sym::stored<3>, sym::stored<3>> Sij;
 		
@@ -280,16 +345,19 @@ namespace GRMHD {
 		
 		PDE(const double*const Q_) :
 			ConservedConstFull(Q_),
-			Primitives(Q_),
-			ADMBase(Q_)
-			{ prepare(); }
+			PrimitiveVariableStored(/*Q_*/),
+			FullADMBase(Q_)
+			{ prepare(); Cons2Prim(); }
 
 		// Quantities for computing the energy momentum tensor
-		double WW, BmagBmag, BmagVel, ptot;
+		double WW, SconScon, BmagBmag, BmagVel, ptot;
 		
 		/// Prepares the Conserved B_i, S^i as well as the quantities neccessary to compute
 		/// The energy momentum tensor.
 		void prepare();
+		
+		/// Computes the primitive variables with knowledge of all conserved/adm/local class variables.
+		void Cons2Prim();
 		
 		/// This is the algebraic conserved flux. Chainable.
 		void flux(/* const double* const Q, */ double** Fluxes);

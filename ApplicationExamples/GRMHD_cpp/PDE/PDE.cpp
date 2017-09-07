@@ -4,20 +4,7 @@
  * Written at 2017-08-06 by SvenK.
  **/
 
-#ifdef TEST_NEW_PDE_AUTONOMOUSLY
-	// in order to autonomously test/copmile this C++ file:
-	#define DIMENSIONS 3
-	namespace GRMHD { constexpr int nVar = 19; }
-	int main() { return 0; }
-#else
-	// If you include to ExaHyPE instead:
-	#include "peano/utils/Dimensions.h" // Defines DIMENSIONS
-	#include "AbstractGRMHDSolver_FV.h" // Defines:
-	namespace GRMHD { constexpr int nVar = GRMHD::AbstractGRMHDSolver_FV::NumberOfVariables; }
-#endif
-
 #include "PDE.h"
-#include "really.h"
 
 /******************************************************************************
  * Status of the PDE system:
@@ -30,14 +17,15 @@ void GRMHD::PDE::prepare() {
 	// NEED to prepare:
 	// Generic for Sij and preparation:
 	DFOR(i) CONTRACT(j) Bmag.lo(i) = gam.lo(i,j) * Bmag.up(j);
-	DFOR(i) CONTRACT(j) vel.lo(i)  = gam.lo(i,j) * vel.up(j);
+	DFOR(i) CONTRACT(j) vel.up(i)  = gam.up(i,j) * vel.lo(j);
 	// S^i is needed in both flux and ncp
 	DFOR(i) CONTRACT(j) Si.up(i)   = gam.up(i,j) * Si.lo(j);
 	
 	WW = SQ(Dens/rho); // W^2
-	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^2
-	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j); // B^j * v_j
-	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field
+	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
+	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
+	SconScon = 0; CONTRACT(k) SconScon += Si.lo(k)*Si.up(k);     // S^j * S_j // needed for c2p
+	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
 }
 
 void GRMHD::PDE::flux(double** Fluxes) {
@@ -45,7 +33,7 @@ void GRMHD::PDE::flux(double** Fluxes) {
 	
 	// Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
 	Ul<sym::stored<3>> Sij;
-	DFOR(i) DFOR(j) Sij.ul(i,j) = Si.up(i)*vel.lo(j) + ptot*delta(i,j) - Bmag.up(i)*Bmag.lo(j)/WW - BmagVel * vel.up(i) * Bmag.lo(j);
+	SYMFOR(i,j) Sij.ul(i,j) = Si.up(i)*vel.lo(j) + ptot*delta(i,j) - Bmag.up(i)*Bmag.lo(j)/WW - BmagVel * vel.up(i) * Bmag.lo(j);
 	
 	// Zeta is the transport velocity (curly V in BHAC paper)
 	Up<vec::stored<3>> zeta; DFOR(k) zeta.up(k) = alpha*vel.up(k) - beta.up(k);
@@ -73,8 +61,8 @@ void GRMHD::PDE::RightHandSide(const double* const gradQ_Data, double* fusedSour
 	
 	// Sij is the 3-Energy-Momentum tensor. We need S^{ij} and S^i_j in the NCP.	
 	UpSym<sym::stored<3>, sym::stored<3>> Sij;
-	DFOR(i) DFOR(j) Sij.up(i,j) = Si.up(i)*vel.up(j) + gam.up(i,j)*ptot - Bmag.up(i)*Bmag.up(j)/WW - BmagVel * vel.up(i) * Bmag.up(j);
-	Sij.ul_from_up(gam);
+	SYMFOR(i,j) Sij.up(i,j) = Si.up(i)*vel.up(j) + gam.up(i,j)*ptot - Bmag.up(i)*Bmag.up(j)/WW - BmagVel * vel.up(i) * Bmag.up(j);
+	SYMFOR(i,j) CONTRACT(k) Sij.ul(i,j) = Sij.up(i,k) * gam.lo(j,k); // Sij^i_j = Sij^{ik} gam_{jk}
 
 	// Source for D
 	Source.Dens = 0;

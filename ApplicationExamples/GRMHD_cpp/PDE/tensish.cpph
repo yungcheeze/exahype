@@ -45,10 +45,14 @@
  */
 
 #define DFOR(i) for(int i=0; i<DIMENSIONS; i++)
+
+// We use "CONTRACT" as a synonym to indicate that contractions are happening.
 #define CONTRACT DFOR
 #define CONTRACT2(i,j) DFOR(i) DFOR(j)
 #define CONTRACT3(i,j,k) DFOR(i) DFOR(j) DFOR(k)
 #define CONTRACT4(i,j,k,l) DFOR(i) DFOR(j) DFOR(k) DFOR(l)
+
+// just because it is handy to have a SQUARE macro.
 #define SQ(d) ((d)*(d))
 
 namespace tensish {
@@ -113,6 +117,11 @@ namespace tensish {
 		*                          row-first ordering (xx,xy,xz,yy,yz,zz).
 		**/
 		constexpr int index(int i,int j) {return  j<=i ? j+(i*(i+1))/2 : i+(j*(j+1))/2; }
+		
+		/**
+		 * A loop for the symmetric matrix. Useful for setting it's entries.
+		 **/
+		#define SYMFOR(i,j) DFOR(i) for(int j=0; j<=i; j++)
 		
 		/// Compute determinant of a symmetric matrix
 		template<class T> constexpr double det(const T &lo) {
@@ -242,9 +251,6 @@ namespace tensish {
 		U up; // upper indices
 		M ul; // upper-lower mixed (2-tensor)
 		//double& lu(int i, int j) { return ul(i,j); } // ul = lu
-
-		// Fixme: This assumes U/M to be 2-tensors. This is bad.
-		void ul_from_up(metric3& gam) { DFOR(i) DFOR(j) CONTRACT(k) ul(i,j) = up(i,k) * gam.lo(j,k); }	
 	};
 
 	/**
