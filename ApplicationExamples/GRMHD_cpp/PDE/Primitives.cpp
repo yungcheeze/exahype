@@ -12,17 +12,30 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d, dou
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
+/**
+ * W: Lorentz factor
+ * enth: Enthalpy (h)
+ **/
 template<class PrimType, class ConsType>
-void Prim2Cons(const PrimType &V, ConsType &Q) {
-	double W = 5; // Lorentz factor TODO
-	double enth = 5; // Enthalpy (h) TODO
-	
+void Prim2Cons(const PrimType &V, ConsType &Q, double W, double enth) {
 	// The hydro exact known prim2cons
 	Q.Dens = V.rho * W;
 	DFOR(i) Q.Si.lo(i) = V.rho * enth * W*W * V.vel.up(i); // danger. Looks wrong.
 	Q.tau = V.rho*W * (enth*W - 1) - V.press;
 }
 
+template<class PrimType, class ConsType>
+void Prim2Cons(const PrimType &V, ConsType &Q) {
+	// Determine v^2 = v_i * v^i from  an existing vel.lo.
+	// If there is no vel.lo, this will not compile.
+	double VelVel = 0; DFOR(i) VelVel += V.vel.lo(i) * V.vel.up(i);
+	
+	double W = 1. / std::sqrt(1.0 - VelVel);
+	double enth = 5; // Enthalpy (h) TODO
+	// I think that enth = ww= w * lf^2 = (rho+gamma/(gamma-1)*p)*lf^2
+	
+	Prim2Cons(V, Q, W, enth);
+}
 
 void Prim2Cons(const double* const V_, double* Q_) {
 	const ConstPrimitivesFull V(V_);

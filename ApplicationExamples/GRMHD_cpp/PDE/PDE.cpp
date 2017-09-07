@@ -39,7 +39,7 @@ void GRMHD::PDE::flux(double** Fluxes) {
 	Up<vec::stored<3>> zeta; DFOR(k) zeta.up(k) = alpha*vel.up(k) - beta.up(k);
 
 	DFOR(k) { // F^k: flux in direction k.
-		ConservedVariableShadow Flux(Fluxes[k]);
+		Conserved::Shadow Flux(Fluxes[k]);
 		Flux.Dens = Dens * zeta.up(k);
 		DFOR(i) Flux.Si.lo(i) = alpha*Sij.ul(k,i) - beta.up(k)*Si.lo(i);
 		Flux.tau = alpha*(Si.up(k) - vel.up(k)*Dens) - beta.up(k)*tau;
@@ -56,7 +56,7 @@ void GRMHD::PDE::flux(double** Fluxes) {
 void GRMHD::PDE::RightHandSide(const double* const gradQ_Data, double* fusedSource_Data) {
 	// This is the fusedSource = -NCP + AlgebraicSource
 
-	ConservedVariableShadow Source(fusedSource_Data);
+	Conserved::Shadow Source(fusedSource_Data);
 	const Gradients grad(gradQ_Data, nVar);
 	
 	// Sij is the 3-Energy-Momentum tensor. We need S^{ij} and S^i_j in the NCP.	

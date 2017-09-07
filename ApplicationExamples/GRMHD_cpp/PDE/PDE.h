@@ -47,34 +47,7 @@ namespace GRMHD {
 	using sym::delta; // Kronecker symbol
 	
 	/**
-	 * These structs store the index positions of fields, i.e. Q.Dens=0.
-	 * They are similiar to the VariableShortcuts which are generated
-	 * by the ExaHyPE java toolkit. However, by defining our own we are
-	 * independent and can make use of the functional notation.
-	 **/
-	struct ConservedIndices {
-		// Conservatives
-		static constexpr int   Dens = 0;
-		static constexpr int   Si_lo = 1;
-		static constexpr int   tau = 4;
-		// Conserved (C2P invariant)
-		static constexpr int   Bmag_up = 5;    /* length: 3 */
-		static constexpr int   Phi = 8;
-		// material parameters
-		static constexpr int   lapse = 9;
-		static constexpr int   shift_lo = 10;  /* length: 3 */
-		static constexpr int   gam_lo = 13;    /* length: 6 */
-		static constexpr int   detg = 19;
-	};
-	
-	struct PrimitiveIndices { // no correspondence in ExaHyPE
-		static constexpr int rho = 0;
-		static constexpr int vec_up = 1; /* sic */
-		static constexpr int press = 4;
-	};
-	
-	/**
-	* Storage for the conserved hydro variables, i.e. the tuple
+	* Storage for the conserved MHD variables, i.e. the tuple
 	*   Q = (Dens, S_i, tau, B^i, phi).
 	* The structure allows addressing the vector Q with names.
 	* The template allows to specify types for the scalars and 3-vectors inside Q.
@@ -83,229 +56,254 @@ namespace GRMHD {
 	* In principle, this structure mimics the ExaHyPE generated variables structure
 	* but in a much more usable manner (exploiting all the substructure of Q).
 	**/
-	template<typename vector, typename vector_lo, typename vector_up, typename scalar>
-	struct Conserved {
-		vector Q; // const double* const
-		const GRMHD::ConservedIndices Qi;
+	namespace Conserved {
+		/**
+		* These structs store the index positions of fields, i.e. Q.Dens=0.
+		* They are similiar to the VariableShortcuts which are generated
+		* by the ExaHyPE java toolkit. However, by defining our own we are
+		* independent and can make use of the functional notation.
+		**/
+		namespace Indices {
+			// Conservatives
+			constexpr int Dens = 0;
+			constexpr int Si_lo = 1;
+			constexpr int tau = 4;
+			// Conserved (C2P invariant)
+			constexpr int Bmag_up = 5;    /* length: 3 */
+			constexpr int Phi = 8;
+		};
 		
-		// Conserved Scalars
-		scalar &Dens, &tau, &phi; // const double
-		
-		// Conserved vectors
-		vector_lo Si; /* sic */
-		vector_up Bmag; /* sic */
-		
-		constexpr Conserved(vector Q_) :
-			Q(Q_),
-			Qi(),
-			// Conserved scalars
-			Dens (Q[Qi.Dens]),
-			tau  (Q[Qi.tau]),
-			phi  (Q[Qi.Phi]),
+		template<typename state_vector, typename vector_lo, typename vector_up, typename scalar>
+		struct StateVector {
+			state_vector Q; // const double* const
+			
+			// Conserved Scalars
+			scalar &Dens, &tau, &phi;
+			
 			// Conserved vectors
-			Si   (Q+Qi.Si_lo),
-			Bmag (Q+Qi.Bmag_up)
-			{}
+			vector_lo Si; /* sic */
+			vector_up Bmag; /* sic */
+			
+			constexpr StateVector(state_vector Q_) :
+				Q(Q_),
+				// Conserved scalars
+				Dens (Q[Indices::Dens]),
+				tau  (Q[Indices::tau]),
+				phi  (Q[Indices::Phi]),
+				// Conserved vectors
+				Si   (Q+Indices::Si_lo),
+				Bmag (Q+Indices::Bmag_up)
+				{}
+		};
 		
+		/**
+		* Access the Conserved Variables Q fully read-only without access to anything
+		* beyond what's inside Q (no further storage allocated except pointers to Q).
+		* That is, you cannot access S^i or B_i as we don't compute it. Therefore, we
+		* say this structure is just "shadowing" Q. You might want to use it like
+		* 
+		*    const ConservedConstShadow Q(Q_);
+		*    double foo = Q.Bmag.up(1) * Q.Dens;
+		* 
+		**/
+		typedef StateVector<
+			const double* const,
+			const ConstLo<vec::const_shadow>,
+			const ConstUp<vec::const_shadow>,
+			const double> ConstShadow;
+			
+		/**
+		* The variable version of the ConservedConstShadow: Allows to change all
+		* entries of Q by their aliases, as well as directly changing the vectors, i.e.
+		*
+		*    ConservedVariableShadow Q(Q_);
+		*    Q.Bmag.up(2) = Q.Dens + 15;
+		* 
+		* But not:
+		* 
+		*    Q.Bmag.lo(2) = 15; 
+		* 
+		* That is, we dont' allow setting (or even getting) B_i or S^j. This can be
+		* helpful to avoid errors in the formulation.
+		**/
+		typedef StateVector<
+			double* const,
+			Lo<vec::shadow>,
+			Up<vec::shadow>,
+			double> Shadow;
+			
+		/**
+		* Access to the full set of conserved variables in a read only fashion which
+		* however allows you to retrieve B_i and S^j, i.e. we have storage for these
+		* variables. These two vectors are the only non-constant members of the
+		* data structure as you need to fill them after construction.
+		**/
+		typedef StateVector<
+			const double* const,
+			UpLo<vec::stored<3>,vec::const_shadow>::ConstLo,
+			UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
+			const double> ConstShadowExtendable;
+			
+		/**
+		* The variable version of ConservedConstFull: You can change all conserved
+		* variables as well access the B_i and S^j. Note that
+		* 
+		*   Q.Bmag.lo(2) = 15;
+		* 
+		* will not change the shadowed double* Q_.
+		**/
+		typedef StateVector<
+			double* const,
+			UpLo<vec::stored<3>, vec::shadow>::InitLo,
+			UpLo<vec::shadow, vec::stored<3>>::InitUp,
+			double> ShadowExtendable;
+
+		// to be sorted:
 		void toPrimitives(double* V); // C2P Cons2Prim operation
-	};
-
-	/**
-	 * Access the Conserved Variables Q fully read-only without access to anything
-	 * beyond what's inside Q (no further storage allocated except pointers to Q).
-	 * That is, you cannot access S^i or B_i as we don't compute it. Therefore, we
-	 * say this structure is just "shadowing" Q. You might want to use it like
-	 * 
-	 *    const ConservedConstShadow Q(Q_);
-	 *    double foo = Q.Bmag.up(1) * Q.Dens;
-	 * 
-	 **/
-	typedef GRMHD::Conserved<
-		const double* const,
-		const ConstLo<vec::const_shadow>,
-		const ConstUp<vec::const_shadow>,
-		const double> ConservedConstShadow;
-
-	/**
-	 * The variable version of the ConservedConstShadow: Allows to change all
-	 * entries of Q by their aliases, as well as directly changing the vectors, i.e.
-	 *
-	 *    ConservedVariableShadow Q(Q_);
-	 *    Q.Bmag.up(2) = Q.Dens + 15;
-	 * 
-	 * But not:
-	 * 
-	 *    Q.Bmag.lo(2) = 15; 
-	 * 
-	 * That is, we dont' allow setting (or even getting) B_i or S^j. This can be
-	 * helpful to avoid errors in the formulation.
-	 **/
-	typedef GRMHD::Conserved<
-		double* const,
-		Lo<vec::shadow>,
-		Up<vec::shadow>,
-		double> ConservedVariableShadow;
-		
-	/**
-	 * Access to the full set of conserved variables in a read only fashion which
-	 * however allows you to retrieve B_i and S^j, i.e. we have storage for these
-	 * variables. These two vectors are the only non-constant members of the
-	 * data structure as you need to fill them after construction.
-	 **/
-	typedef GRMHD::Conserved<
-		const double* const,
-		UpLo<vec::stored<3>,vec::const_shadow>::ConstLo,
-		UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
-		const double> ConservedConstFull;
-
-	/**
-	 * The variable version of ConservedConstFull: You can change all conserved
-	 * variables as well access the B_i and S^j. Note that
-	 * 
-	 *   Q.Bmag.lo(2) = 15;
-	 * 
-	 * will not change the shadowed double* Q_.
-	 **/
-	typedef GRMHD::Conserved<
-		double* const,
-		UpLo<vec::stored<3>, vec::shadow>::InitLo,
-		UpLo<vec::shadow, vec::stored<3>>::InitUp,
-		double> ConservedVariableFull;
+	} // ns ConservedHydro
 	
-
 	/**
 	 * Prmitive Variables.
-	 * 
 	 * They should only store the hydro variables.
-	 * 
 	 **/
-	template<typename vector, /*typename vector_lo, */typename vector_up, typename scalar>
-	struct Primitives {
-		vector V;
-		const GRMHD::PrimitiveIndices Vi;
-		
-		// Primitive Scalars
-		scalar &rho, &press;
-		
-		// Primitive vectors
-		vector_up vel;
-		
-		Primitives(vector V_) :
-			V(V_),
-			Vi(),
-			// Primitive Scalars
-			rho  (V[Vi.rho]),
-			press(V[Vi.press]),
-			// Primitive vectors
-			vel  (V+Vi.vec_up)
-			{}
-		
-		void toConserved(double* Q); // P2C Prims2Cons operation
-	};
-	
-	typedef GRMHD::Primitives<
-		double*,
-		Up<vec::shadow>,
-		double
-		> PrimitiveVariableShadow;
-		
-	typedef GRMHD::Primitives<
-		const double* const,
-		UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
-		const double
-		> ConstPrimitivesFull;
-	
-	// Writable primitives with velocity up. dont know if we need that yet
-	typedef GRMHD::Primitives<
-		double*,
-		UpLo<vec::shadow, vec::stored<3>>::InitUp,
-		double
-		> PrimitiveVariableShadowFull;
-		
-	// this is what PDE inherits from. A read only version with storage and a constructor
-	struct ConstPrimitivesFromConserved : public ConstPrimitivesFull {
-		double V[nVar];
-		ConstPrimitivesFromConserved(const double* const Q_) :
-			ConstPrimitivesFull(V) {
-				// do the Cons2Prim here.
-			}
-	};
-	
-	struct PrimitiveVariableStored : public PrimitiveVariableShadowFull {
-		double V[nVar];
-		PrimitiveVariableStored() : PrimitiveVariableShadowFull(V) {}
-	};
-
-	/*
-	// You could define this if you'd like:
-	struct GRMHD::HydroBase : public GRMHD::ConservedVariables, public GRMHD::PrimitiveVariables {
-		HydroBase(const double* const Q) :
-			ConservedVariables(Q),
-			PrimitiveVariables(Q) {}
-	};
-	*/
-
-	template<typename vector, typename vector_up, typename metric_lo, typename scalar>
-	class ADMBase { // Material Parameters, always read only
-		const GRMHD::ConservedIndices Ai;
-	public:
-		scalar &alpha, &detg; // Scalars: Lapse, Determinant of g_ij
-		vector_up beta; // Shift vector: (Conserved) Material parameter vector
-		metric_lo gam;  // 3-Metric: (Conserved) Material parameter tensor
-		
-		constexpr ADMBase(vector Q) :
-			Ai(),
-			alpha(Q[Ai.lapse]),
-			detg (Q[Ai.detg]),
-			beta (Q+Ai.shift_lo),
-			gam  (Q+Ai.gam_lo)
-			{}
-		
-		void complete(/* some vector */) {
-			// should (could) provide this.
+	namespace Primitives {
+		namespace Indices {
+			constexpr int rho = 0;
+			constexpr int vec_up = 1; /* sic */
+			constexpr int press = 4;
 		}
-	};
+		
+		template<typename state_vector, /*typename vector_lo, */typename vector_up, typename scalar>
+		struct StateVector {
+			state_vector V;
+			
+			// Primitive Scalars
+			scalar &rho, &press;
+			
+			// Primitive vectors
+			vector_up vel;
+			
+			constexpr StateVector(state_vector V_) :
+				V(V_),
+				// Primitive Scalars
+				rho  (V[Indices::rho]),
+				press(V[Indices::press]),
+				// Primitive vectors
+				vel  (V+Indices::vec_up)
+				{}
+			
+			void toConserved(double* Q); // P2C Prims2Cons operation
+		};
 	
-	typedef GRMHD::ADMBase<
-		const double* const,
-		// ConstUp_Lo<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
-		ConstUp<vec::const_shadow>, // if you never need beta_lo
-		metric3,
-		const double
-		> FullADMBase;
-	
-	// A version of the ADMVariables where beta_lo and the upper metric
-	// are not recovered.
-	typedef GRMHD::ADMBase<
-		const double* const,
-		const ConstUp<vec::const_shadow>,
-		const ConstLo<sym::const_shadow>,
-		const double
-		> BasicADMBase;
-	
-	// A writable shadowed ADMBase. Writeable is only useful for setting the initial data.
-	typedef GRMHD::ADMBase<
-		double* const,
-		Up<vec::shadow>,
-		Lo<vec::shadow>,
-		double
-		> WritableADMBase;
+		typedef StateVector<
+			double*,
+			Up<vec::shadow>,
+			double
+			> Shadow;
+			
+		typedef StateVector<
+			const double* const,
+			UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
+			const double
+			> ConstShadowExtendable;
+		
+		// Writable primitives with velocity up. dont know if we need that yet
+		typedef StateVector<
+			double*,
+			UpLo<vec::shadow, vec::stored<3>>::InitUp,
+			double
+			> ShadowExtendable;
+			
+		struct Stored : public ShadowExtendable {
+			double V[nVar];
+			Stored() : ShadowExtendable(V) {}
+		};
+
+		// this is what PDE inherits from. It immediately does the cons2prim
+		// => CANNOT WORK because we need the ADM variables and several reconstructions
+		/*
+		struct StoredFromConserved : public Stored {
+			StoredFromConserved(const double* const Q_) : Stored() {
+				// do the Cons2Prim here.
+				// i.e. use Q -> write to V
+			}
+		};*/
+	} // ns Primitives
+		
+
+	namespace ADMBase {
+		namespace Indices {
+			// material parameters
+			constexpr int lapse = 9;
+			constexpr int shift_lo = 10;  /* length: 3 */
+			constexpr int gam_lo = 13;    /* length: 6 */
+			constexpr int detg = 19;
+		}
+		
+		template<typename state_vector, typename vector_up, typename metric_lo, typename scalar>
+		struct StateVector { // Material Parameters
+			scalar &alpha, &detg; // Scalars: Lapse, Determinant of g_ij
+			vector_up beta; // Shift vector: (Conserved) Material parameter vector
+			metric_lo gam;  // 3-Metric: (Conserved) Material parameter tensor
+			
+			constexpr StateVector(state_vector Q) :
+				alpha(Q[Indices::lapse]),
+				detg (Q[Indices::detg]),
+				beta (Q+Indices::shift_lo),
+				gam  (Q+Indices::gam_lo)
+				{}
+		};
+		
+		// A version of the ADMVariables where beta_lo and the upper metric
+		// are not recovered.
+		typedef StateVector<
+			const double* const,
+			const ConstUp<vec::const_shadow>, // shift
+			const ConstLo<sym::const_shadow>, // metric
+			const double
+			> ConstShadow;
+			
+		// A writable shadowed ADMBase. Writeable is only useful for setting the initial data.
+		// You can only set the lower components of the metric.
+		typedef StateVector<
+			double* const,
+			Up<vec::shadow>,
+			Lo<vec::shadow>,
+			double
+			> Shadow;
+		
+		// This is what the PDE needs: A working metric (upper and lower) but only upper shift
+		typedef StateVector<
+			const double* const,
+			// ConstUp_Lo<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
+			ConstUp<vec::const_shadow>, // if you never need beta_lo
+			metric3, // could store only parts of the metric here, too.
+			const double
+			> Full;
+		
+	} // ns ADM
 	
 	// A full state vector, containing the primitives and the ADMBase, as
 	// read only shadowed option
 	/// -> Has ambiguity whether we want to recover beta_lo, upper metric, etc.
 	
-	// A fully writable and shadowed state vector
-	struct StateVector : public ConservedVariableShadow, public WritableADMBase {
-		StateVector(double* const Q) : ConservedVariableShadow(Q), WritableADMBase(Q) {}
-	};
+	namespace HydroBase {
+		// for convenience: A GRMHD HydroBase.
+		
+		// A fully writable and shadowed state vector for the conserved variables
+		struct StateVector : public Conserved::Shadow, public ADMBase::Shadow {
+			constexpr StateVector(double* const Q) : Conserved::Shadow(Q), ADMBase::Shadow(Q) {}
+		};
+		
+		// etc.
+	}
 
 	// A type storing the gradients of the conserved vector in one direction.
 	// Since it does not make sense to
 	// retrieve the lower/upper components of gradients, we don't even allocate storage or
 	// provide conversion strategies.
-	struct Gradient : public BasicADMBase, public ConservedConstShadow {
-		constexpr Gradient(const double* const Q) : BasicADMBase(Q), ConservedConstShadow(Q) {}
+	struct Gradient : public ADMBase::ConstShadow, public Conserved::ConstShadow {
+		constexpr Gradient(const double* const Q) : ADMBase::ConstShadow(Q), Conserved::ConstShadow(Q) {}
 	};
 
 	// Gradients in each direction: partial_i * something
@@ -336,7 +334,7 @@ namespace GRMHD {
 	 * stored directly in the methods because they need different forms (S_ij, S^ij or S^i_j)
 	 * which we address differently in the current formalism.
 	 **/
-	struct PDE : public ConservedConstFull, public PrimitiveVariableStored, public FullADMBase {
+	struct PDE : public Conserved::ConstShadowExtendable, public Primitives::Stored, public ADMBase::Full {
 		// 3-Energy momentum tensor
 		// Full<sym::stored<3>, sym::stored<3>> Sij;
 		
@@ -344,9 +342,9 @@ namespace GRMHD {
 		const double damping_term_kappa = 5;
 		
 		PDE(const double*const Q_) :
-			ConservedConstFull(Q_),
-			PrimitiveVariableStored(/*Q_*/),
-			FullADMBase(Q_)
+			Conserved::ConstShadowExtendable(Q_),
+			Primitives::Stored(/*Q_*/),
+			ADMBase::Full(Q_)
 			{ prepare(); Cons2Prim(); }
 
 		// Quantities for computing the energy momentum tensor
