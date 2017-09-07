@@ -207,7 +207,7 @@ void MHDSolver::MHDSolver::Cons2Prim(const double* Q,double* V) {
   bool failed   = false;
   double gamma1 = gamma/(gamma - 1.0);
   double gam    = 1.0/gamma1;
-//  double d      = Q[0]; // unused for this Cons2Prim
+  double d      = Q[0];
   double sx     = Q[1];
   double sy     = Q[2];
   double sz     = Q[3];
@@ -251,7 +251,7 @@ void MHDSolver::MHDSolver::Cons2Prim(const double* Q,double* V) {
     double den  = 1.0/(w+b2);
     double vb   = sb/w;
     //
-    double rho  = DIMENSIONS*sqrt(1.-v2);
+    double rho  = d*sqrt(1.-v2);
     double vx   = (sx + vb*bx)*den;
     double vy   = (sy + vb*by)*den;
     double vz   = (sz + vb*bz)*den;
