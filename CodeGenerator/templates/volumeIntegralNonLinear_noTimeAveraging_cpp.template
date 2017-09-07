@@ -19,6 +19,7 @@
 #include "{{pathToOptKernel}}/DGMatrices.h"
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
+{% if useLibxsmm %}
 {% for namespaceName in codeNamespaceList %}
 namespace {{namespaceName}} {
 {% endfor %}
@@ -32,6 +33,7 @@ namespace {{namespaceName}} {
 {% endfor %}
 
 #include "{{pathToOptKernel}}/asm_volumeIntegral.c"
+{% endif %}
 
 void {{codeNamespace}}::volumeIntegral( 
   double* restrict lduh, 
@@ -58,9 +60,6 @@ void {{codeNamespace}}::volumeIntegral(
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
 {% for j in j_seq %} {# if nDim == 2 then j_seq == [0] #}
 {% for i in i_seq %}
-  // #pragma vector aligned
-  // for(int it=0;it<{{nDof*nDofPad}};it++) 
-    // s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
   //x
   std::memset(lFhi_loc, 0, {{nDof*nVarPad}} * sizeof(double));
@@ -75,9 +74,18 @@ void {{codeNamespace}}::volumeIntegral(
       }  
     }
   }
+{% if useLibxsmm %}
   #pragma forceinline
   {{gemm_x}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
-  
+{% else %}
+  for(int l=0; l<{{nDof}}; l++) {
+    for(int k=0; k<{{nDof}}; k++) {
+      for(int n=0; n<{{nVar}}; n++) {
+        lduh[{{(j*nDof+i) * nVar * nDof}}+l*{{nVar}}+n] += lFhi_loc[k*{{nVarPad}}+n] * Kxi_T[{{nDof}}*l+k];
+      }
+    }
+  }
+{% endif %}
   //y
   std::memset(lFhi_loc, 0, {{nDof*nVarPad}} * sizeof(double));
   // Matrix-Vector Products
@@ -91,8 +99,19 @@ void {{codeNamespace}}::volumeIntegral(
       }  
     }
   }
+{% if useLibxsmm %}
   #pragma forceinline
   {{gemm_y}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
+{% else %}
+  for(int l=0; l<{{nDof}}; l++) {
+    for(int k=0; k<{{nDof}}; k++) {
+      #pragma simd
+      for(int n=0; n<{{nVar}}; n++) {
+        lduh[{{(j*nDof*nDof+i) * nVar}}+l*{{nVar*nDof}}+n]+= lFhi_loc[k*{{nVarPad}}+n] * Kxi_T[{{nDof}}*l+k];
+      }
+    }
+  }
+{% endif %}
 {% if nDim == 3 %} 
 
   //z
@@ -108,8 +127,19 @@ void {{codeNamespace}}::volumeIntegral(
       }  
     }
   }
+{% if useLibxsmm %}
   #pragma forceinline
   {{gemm_z}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar}}]);
+{% else %}
+  for(int l=0; l<{{nDof}}; l++) {
+    for(int k=0; k<{{nDof}}; k++) {
+      #pragma simd
+      for(int n=0; n<{{nVar}}; n++) {
+        lduh[{{(j*nDof+i) * nVar}}+l*{{nVar*nDof**2}}+n] += lFhi_loc[k*{{nVarPad}}+n] * Kxi_T[{{nDof}}*l+k];
+      }
+    }
+  }
+{% endif %}
 {% endif %}  
 {% endfor %}
 {% endfor %}

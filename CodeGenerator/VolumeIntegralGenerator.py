@@ -43,7 +43,6 @@ class VolumeIntegralGenerator:
         if(self.m_context['isLinear']):
             pass
         else:
-            self.generateNonlinearGemms() # generates gemms
             # initialize context
             gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
             self.m_context['gemm_x'] = gemmName+'_lduh_x'
@@ -61,6 +60,10 @@ class VolumeIntegralGenerator:
                 TemplatingUtils.renderAsFile('volumeIntegralNonLinear_noTimeAveraging_cpp.template', self.m_filename, self.m_context)
             else:
                 TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
+            
+            # generates gemms
+            if(self.m_context['useLibxsmm']):
+                self.generateNonlinearGemms() 
 
 
     def generateNonlinearGemms(self):
@@ -78,58 +81,58 @@ class VolumeIntegralGenerator:
 
         # (1) MATMUL( lFhi_x(:,:,j,k), TRANSPOSE(Kxi) )
         l_matmul_x = MatmulConfig(  # M
-                                    self.m_context['nVar'],                             \
+                                    self.m_context['nVar'],       \
                                     # N
-                                    self.m_context['nDof'],                             \
+                                    self.m_context['nDof'],       \
                                     # K
-                                    self.m_context['nDof'],                             \
+                                    self.m_context['nDof'],       \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
+                                    self.m_context['nVarPad'],    \
                                     # LDB
-                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
+                                    self.m_context['nDofPad'],    \
                                     # LDC
-                                    self.m_context['nVar'],                             \
+                                    self.m_context['nVar'],       \
                                     # alpha 
-                                    1,                                                 \
+                                    1,                            \
                                     # beta
-                                    1,                                                 \
+                                    1,                            \
                                     # alignment A
-                                    0,                                                 \
+                                    0,                            \
                                     # alignment C
-                                    0,                                                 \
+                                    0,                            \
                                     # name
-                                    "lduh_x",                                          \
+                                    "lduh_x",                     \
                                     # prefetching
-                                    "nopf",                                            \
+                                    "nopf",                       \
                                     # type
                                     "gemm")
         l_matmulList.append(l_matmul_x)
 
         # (2) MATMUL( lFhi_y(:,:,i,k), TRANSPOSE(Kxi) )
         l_matmul_y = MatmulConfig(  # M
-                                    self.m_context['nVar'],                             \
+                                    self.m_context['nVar'],                         \
                                     # N
-                                    self.m_context['nDof'],                             \
+                                    self.m_context['nDof'],                         \
                                     # K
-                                    self.m_context['nDof'],                             \
+                                    self.m_context['nDof'],                         \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
+                                    self.m_context['nVarPad'],                      \
                                     # LDB
-                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
+                                    self.m_context['nDofPad'],                      \
                                     # LDC
-                                    self.m_context['nVar']*self.m_context['nDof'],       \
+                                    self.m_context['nVar']*self.m_context['nDof'],  \
                                     # alpha 
-                                    1,                                                 \
+                                    1,                                              \
                                     # beta
-                                    1,                                                 \
+                                    1,                                              \
                                     # alignment A
-                                    0,                                                 \
+                                    0,                                              \
                                     # alignment C
-                                    0,                                                 \
+                                    0,                                              \
                                     # name
-                                    "lduh_y",                                          \
+                                    "lduh_y",                                       \
                                     # prefetching
-                                    "nopf",                                            \
+                                    "nopf",                                         \
                                     # type
                                     "gemm")
         l_matmulList.append(l_matmul_y)
@@ -143,23 +146,23 @@ class VolumeIntegralGenerator:
                                         # K
                                         self.m_context['nDof'],                             \
                                         # LDA
-                                        Backend.getSizeWithPadding(self.m_context['nVar']), \
+                                        self.m_context['nVarPad'],                          \
                                         # LDB
-                                        Backend.getSizeWithPadding(self.m_context['nDof']), \
+                                        self.m_context['nDofPad'],                          \
                                         # LDC
-                                        self.m_context['nVar']*(self.m_context['nDof']**2),  \
+                                        self.m_context['nVar']*(self.m_context['nDof']**2), \
                                         # alpha 
-                                        1,                                                 \
+                                        1,                                                  \
                                         # beta
-                                        1,                                                 \
+                                        1,                                                  \
                                         # alignment A
-                                        0,                                                 \
+                                        0,                                                  \
                                         # alignment C
-                                        0,                                                 \
+                                        0,                                                  \
                                         # name
-                                        "lduh_z",                                          \
+                                        "lduh_z",                                           \
                                         # prefetching
-                                        "nopf",                                            \
+                                        "nopf",                                             \
                                         # type
                                         "gemm")
             l_matmulList.append(l_matmul_z)
