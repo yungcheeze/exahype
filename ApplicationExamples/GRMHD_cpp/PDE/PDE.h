@@ -122,8 +122,8 @@ namespace GRMHD {
 	 **/
 	typedef GRMHD::Conserved<
 		const double* const,
-		const new_Lo<vec::const_shadow, const double* const>,
-		const new_Up<vec::const_shadow, const double* const>,
+		const ConstLo<vec::const_shadow>,
+		const ConstUp<vec::const_shadow>,
 		const double> ConservedConstShadow;
 
 	/**
@@ -142,8 +142,8 @@ namespace GRMHD {
 	 **/
 	typedef GRMHD::Conserved<
 		double* const,
-		new_Lo<vec::shadow, double* const>,
-		new_Up<vec::shadow, double* const>,
+		Lo<vec::shadow>,
+		Up<vec::shadow>,
 		double> ConservedVariableShadow;
 		
 	/**
@@ -154,8 +154,8 @@ namespace GRMHD {
 	 **/
 	typedef GRMHD::Conserved<
 		const double* const,
-		ConstLo<vec::stored<3>,vec::const_shadow>,
-		ConstUp<vec::const_shadow, vec::stored<3>>,
+		UpLo<vec::stored<3>,vec::const_shadow>::ConstLo,
+		UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
 		const double> ConservedConstFull;
 
 	/**
@@ -168,8 +168,8 @@ namespace GRMHD {
 	 **/
 	typedef GRMHD::Conserved<
 		double* const,
-		StoredLo<vec::stored<3>, vec::shadow>,
-		StoredUp<vec::shadow, vec::stored<3>>,
+		UpLo<vec::stored<3>, vec::shadow>::InitLo,
+		UpLo<vec::shadow, vec::stored<3>>::InitUp,
 		double> ConservedVariableFull;
 	
 
@@ -205,20 +205,20 @@ namespace GRMHD {
 	
 	typedef GRMHD::Primitives<
 		double*,
-		new_Up<vec::shadow, double* const>,
+		Up<vec::shadow>,
 		double
 		> PrimitiveVariableShadow;
 		
 	typedef GRMHD::Primitives<
 		const double* const,
-		ConstUp<vec::const_shadow, vec::stored<3>>,
+		UpLo<vec::const_shadow, vec::stored<3>>::ConstUp,
 		const double
 		> ConstPrimitivesFull;
 	
 	// Writable primitives with velocity up. dont know if we need that yet
 	typedef GRMHD::Primitives<
 		double*,
-		StoredUp<vec::shadow, vec::stored<3>>,
+		UpLo<vec::shadow, vec::stored<3>>::InitUp,
 		double
 		> PrimitiveVariableShadowFull;
 		
@@ -268,8 +268,8 @@ namespace GRMHD {
 	
 	typedef GRMHD::ADMBase<
 		const double* const,
-		// ConstUp<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
-		new_Up<vec::const_shadow, const double* const>, // if you never need beta_lo
+		// ConstUp_Lo<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
+		ConstUp<vec::const_shadow>, // if you never need beta_lo
 		metric3,
 		const double
 		> FullADMBase;
@@ -278,16 +278,16 @@ namespace GRMHD {
 	// are not recovered.
 	typedef GRMHD::ADMBase<
 		const double* const,
-		const new_Up<vec::const_shadow, const double* const>,
-		const new_Lo<sym::const_shadow, const double* const>,
+		const ConstUp<vec::const_shadow>,
+		const ConstLo<sym::const_shadow>,
 		const double
 		> BasicADMBase;
 	
 	// A writable shadowed ADMBase. Writeable is only useful for setting the initial data.
 	typedef GRMHD::ADMBase<
 		double* const,
-		new_Up<vec::shadow, double* const>,
-		new_Lo<vec::shadow, double* const>,
+		Up<vec::shadow>,
+		Lo<vec::shadow>,
 		double
 		> WritableADMBase;
 	

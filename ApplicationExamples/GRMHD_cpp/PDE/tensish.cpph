@@ -199,52 +199,72 @@ namespace tensish {
 	template<class U> struct Up {
 		U up;
 		Up() {}
-		Up(double*const payload) : up(payload) {}
-		Up(const double*const payload) : up(payload) {}
+		Up(double* const payload) : up(payload) {}
+	};
+
+	/// Represents a read-only fully contravariant tensor (only upper indices)
+	template<class U> struct ConstUp {
+		const U up;
+		ConstUp(const double* const payload) : up(payload) {}
 	};
 
 	/// Represents a fully covariant tensor (only lower indices)
-	template<class L> struct Lo   {
+	template<class L> struct Lo {
 		L lo;
 		Lo() {}
-		Lo(double*const payload) : lo(payload) {}
-		Lo(const double*const payload) : lo(payload) {}
+		Lo(double* const payload) : lo(payload) {}
 	};
 
-	// These are the successors of Up and Lo. We should not have the original
-	// Lo and Up any more.
-	template<class U, typename constructor>
-	struct new_Up {
-		U up;
-		new_Up() {}
-		new_Up(constructor payload) : up(payload) {}
+	/// Represents a read-only fully covariant tensor (only lower indices)	
+	template<class L> struct ConstLo {
+		const L lo;
+		ConstLo(const double* const payload) : lo(payload) {}
 	};
-
-	// Successor type, as above
-	template<class L, typename constructor>
-	struct new_Lo {
-		L lo;
-		new_Lo() {}
-		new_Lo(constructor payload) : lo(payload) {}
-	};
-
 
 	/**
 	* Represents a mixed tensor with upper and lower indices.
 	* The naming makes most sense for 2-tensors, i.e. ul(i,j).
 	**/
-	template<class M> struct Ul {
+	template<class M> struct Mixed {
 		M ul;
-		Ul() {}
 	};
 
 	/**
 	* Represents a Tensor from which both the fully contravariant
 	* (upper) as well as the fully covariant (lower) version is
 	* accessible/stored.
+	* 
+	* Const* classes:
+	* Represents a Full<U,L> object which is constructed by
+	* passing constant data to the lower part. Therefore, the
+	* lower part is supposed to be constant while the upper may
+	* be changable.
+	* 
+	* Init* classes:
+	* Represents a Full<U,L> object which is constructed by
+	* passing data to the lower part, i.e. the Full<U,L> is
+	* initialized.
 	**/
-	template<class U, class L> struct Full {
+	template<class U, class L> struct UpLo {
 		U up; L lo;
+		
+		struct InitLo {
+			U up; L lo;
+			InitLo(double* const payload) : lo(payload) {}
+		};
+		struct InitUp {
+			U up; L lo;
+			InitUp(double* const payload) : up(payload) {}
+		};
+		struct ConstLo {
+			U up; const L lo;
+			ConstLo(const double* const payload) : lo(payload) {}
+		};
+		struct ConstUp {
+			const U up; L lo;
+			ConstUp(const double* const payload) : up(payload) {}
+		};
+
 	};
 
 	template<class U, class M> struct UpSym {
@@ -253,46 +273,5 @@ namespace tensish {
 		//double& lu(int i, int j) { return ul(i,j); } // ul = lu
 	};
 
-	/**
-	* Represents a Full<U,L> object which is constructed by
-	* passing constant data to the lower part. Therefore, the
-	* lower part is supposed to be constant while the upper may
-	* be changable.
-	**/
-	template<class U, class L> struct ConstLo {
-		U up; L lo;
-		ConstLo(const double* const payload) : lo(payload) {}
-	};
-
-	/// Same as ConstLo but inverted
-	template<class U, class L> struct ConstUp {
-		U up; L lo;
-		ConstUp(const double* const payload) : up(payload) {}
-	};
-
-	/**
-	* Represents a Full<U,L> object which is constructed by
-	* passing data to the lower part, i.e. the Full<U,L> is
-	* initialized.
-	**/
-	template<class U, class L> struct StoredLo {
-		U up; L lo;
-		StoredLo(double* const payload) : lo(payload) {}
-	};
-
-	/// Same as StoredLo but inverted
-	template<class U, class L> struct StoredUp {
-		U up; L lo;
-		StoredUp(double* const payload) : up(payload) {}
-	};
-
-	// Typical types used
-	typedef Lo<vec::const_shadow> vec_lo;
-	typedef Up<vec::const_shadow> vec_up;
-
-
-	typedef Full<vec::stored<3>, vec::const_shadow> VecConstLo;
-	typedef Full<vec::const_shadow, vec::stored<3>> VecConstUp;
-	
 } // namespace tensish
 #endif /* IT_REALLY_WHIPS_THE_LLAMAS_ASS */

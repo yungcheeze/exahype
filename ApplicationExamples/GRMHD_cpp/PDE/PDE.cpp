@@ -32,7 +32,7 @@ void GRMHD::PDE::flux(double** Fluxes) {
 	// Fluxes Shape: F[nDim][nVar]
 	
 	// Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
-	Ul<sym::stored<3>> Sij;
+	Mixed<sym::stored<3>> Sij;
 	SYMFOR(i,j) Sij.ul(i,j) = Si.up(i)*vel.lo(j) + ptot*delta(i,j) - Bmag.up(i)*Bmag.lo(j)/WW - BmagVel * vel.up(i) * Bmag.lo(j);
 	
 	// Zeta is the transport velocity (curly V in BHAC paper)
