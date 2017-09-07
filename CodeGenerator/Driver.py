@@ -116,7 +116,8 @@ config = {
            "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,l_commandLineArguments.pathToApplication,l_commandLineArguments.pathToOptKernel),
            "architecture"          : l_commandLineArguments.architecture,
            "precision"             : "DP", #l_commandLineArguments.precision,
-           "pathToLibxsmmGemmGenerator"  : os.path.join(os.path.dirname(__file__),pathToLibxsmmGemmGenerator)
+           "pathToLibxsmmGemmGenerator"  : os.path.join(os.path.dirname(__file__),pathToLibxsmmGemmGenerator),
+           "useLibxsmm"            : True
           }
 
 # configure global setup of the code generator

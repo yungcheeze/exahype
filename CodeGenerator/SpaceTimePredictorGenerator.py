@@ -56,7 +56,9 @@ class SpaceTimePredictorGenerator:
             TemplatingUtils.renderAsFile('spaceTimePredictor_predictor_cpp.template', self.m_filename_predictor, self.m_context)
             TemplatingUtils.renderAsFile('spaceTimePredictor_extrapolator_cpp.template', self.m_filename_extrapolator, self.m_context)
         
-        self.generateGemms()
+        # generates gemms
+        if(self.m_context['useLibxsmm']):
+            self.generateGemms()
 
     def generateGemms(self):
         l_matmulList = []
@@ -122,12 +124,11 @@ class SpaceTimePredictorGenerator:
                                         # K
                                         self.m_context['nDof'],                             \
                                         # LDA
-                                        Backend.getSizeWithPadding(self.m_context['nVar'])
-                                        * self.m_context['nDof']**2,     \
+                                        self.m_context['nVarPad'] * (self.m_context['nDof']**2),     \
                                         # LDB
                                         Backend.getSizeWithPadding(self.m_context['nDof']), \
                                         # LDC
-                                        self.m_context['nVarPad'] * self.m_context['nDof']**2,  \
+                                        self.m_context['nVarPad'] * (self.m_context['nDof']**2),  \
                                         # alpha
                                         1,                                                 \
                                         # beta
