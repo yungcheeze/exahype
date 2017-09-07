@@ -20,3 +20,6 @@ export COMPILER=Intel
 export DISTRIBUTEDMEM=MPI
 export ARCHITECTURE=hsw
 export GPROF=off
+
+# optimised kernels
+export USE_IPO=on

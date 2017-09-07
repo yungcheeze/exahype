@@ -364,6 +364,11 @@ buildinfo:
 		"CC = $(CC)" \
 		"BOUNDARYCONDITIONS = $(BOUNDARYCONDITIONS)" \
 		"------" \
+		"COMPILER_CFLAGS = $(COMPILER_CFLAGS)" \
+		"COMPILER_LFLAGS = $(COMPILER_LFLAGS)" \
+		"FCOMPILER_CFLAGS = $(FCOMPILER_CFLAGS)" \
+		"FCOMPILER_LFLAGS = $(FCOMPILER_LFLAGS)" \
+		"------" \
 		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
 		"PROJECT_PATH = $(PROJECT_PATH)" \
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
@@ -419,26 +424,39 @@ mergeipoobjects:  $(CIPOOBJECTS)
 #	combine all the ipo objects into one object (with ipo between the merged objects)
 	
 header:
-	@echo ================================
+	@echo "================================================================================"
 	@echo
 	@echo  www.exahype.eu
 	@echo
-	@echo ================================
+	@echo "================================================================================"
 	@echo
 	@echo The project has received funding from the European Union\'s
 	@echo Horizon 2020 research and innovation programme under grant
 	@echo agreement No 671698 \(ExaHyPE\). It is based upon the PDE
 	@echo framework Peano \(www.peano-framework.org\).
 	@echo 
-	@echo ================================
-	@echo "Building ExaHyPE with options:"
-	@echo ================================
-	@echo "COMPILER       | $(COMPILER)"
-	@echo "MODE           | $(MODE)"
-	@echo "SHAREDMEM      | $(SHAREDMEM)"
-	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
-	@echo "ARCHITECTURE   | $(ARCHITECTURE)"
-	@echo ================================
+	@echo "================================================================================"
+	@echo "Building ExaHyPE project with the following options:"
+	@echo "================================================================================"
+	@echo "COMPILER               = $(COMPILER)"
+	@echo "MODE                   = $(MODE)"
+	@echo "SHAREDMEM              = $(SHAREDMEM)"
+	@echo "DISTRIBUTEDMEM         = $(DISTRIBUTEDMEM)"
+	@echo "ARCHITECTURE           = $(ARCHITECTURE)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "EXAHYPE_CC             = $(EXAHYPE_CC)"
+	@echo "EXAHYPE_FC             = $(EXAHYPE_FC)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "CC                     = $(CC)"
+	@echo "FC                     = $(FC)"
+	@echo "COMPILER_CFLAGS        = $(COMPILER_CFLAGS)"
+	@echo "COMPILER_LFLAGS        = $(COMPILER_LFLAGS)"
+	@echo "FCOMPILER_CFLAGS       = $(FCOMPILER_CFLAGS)"
+	@echo "FCOMPILER_LFLAGS       = $(FCOMPILER_LFLAGS)"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "PROJECT_CFLAGS         = $(PROJECT_CFLAGS)"
+	@echo "PROJECT_LFLAGS         = $(PROJECT_LFLAGS)"
+	@echo "================================================================================"
 	@echo
 	@echo ExaHyPE uses environment variables EXAHYPE_CC and EXAHYPE_FC for the 
 	@echo C++ or Fortran compiler, respectively. If you haven\'t defined EXAHYPE_CC
@@ -447,11 +465,14 @@ header:
 	@echo compilers via EXAHYPE_CC and EXAHYPE_FC, please specify a valid COMPILER 
 	@echo mode nevertheless.
 	@echo
-	@echo The compiler variant does set various compiler flags that can be 
-	@echo augmented by setting COMPILER_FLAGS before you invoke make. If you select
-	@echo the compiler manual, ExaHyPE does not set any COMPILER_CFLAGS, i.e. it is up 
-	@echo to you to initialise all compiler settings. Notably, you have to specify 
-	@echo through EXAHYPE_CC which compiler to use.
+	@echo The compiler variant does set various compiler and linker flags. 
+	@echo You cann supplement you own by setting the variables 
+	@echo COMPILER_CFLAGS, COMPILER_LFLAGS, FCOMPILER_CFLAGS and FCOMPILER_LFLAGS prior 
+	@echo running make.
+	@echo
+	@echo NOTE: If you select the compiler manually, ExaHyPE does not set any compiler 
+	@echo flags, i.e. it is up  to you to initialise all compiler settings. Notably, 
+	@echo you have to specify through EXAHYPE_CC which compiler to use.
 	
 build:  $(FOBJECTS) mergeipoobjects $(COBJECTS) 
 	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) -no-ipo $(SYSTEM_LFLAGS) $(SOLVERKERNELS_IPO_OBJ)

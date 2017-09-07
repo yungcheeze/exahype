@@ -55,6 +55,7 @@ void Euler::EulerSolver_ADERDG::init(std::vector<std::string>& cmdlineargs, exah
 }
 
 void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
+  #ifdef SymbolicVariables
   ReadOnlyVariables vars(Q);
   Fluxes f(F);
 
@@ -70,11 +71,45 @@ void Euler::EulerSolver_ADERDG::flux(const double* const Q, double** F) {
   f.rho ( vars.j()                                 );
   f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
   f.E   ( irho * (vars.E() + p) * vars.j()         );
+  #else // SymbolicVariables
+  constexpr double gamma = 1.4;
+  const double irho = 1./Q[0];
+  #if DIMENSIONS==3
+  const double j2 = Q[1]*Q[1]+Q[2]*Q[2]+Q[3]*Q[3];
+  #else
+  const double j2 = Q[1]*Q[1]+Q[2]*Q[2];
+  #endif
+  const double p = (gamma-1) * (Q[4] - 0.5*irho*j2);
+
+  // col 1
+  F[0][0] = Q[1];
+  F[0][1] = irho*Q[1]*Q[1] + p;
+  F[0][2] = irho*Q[2]*Q[1];
+  F[0][3] = irho*Q[3]*Q[1];
+  F[0][4] = irho*(Q[4]+p)*Q[1];
+
+  // col 2
+  F[1][0] = Q[2];
+  F[1][1] = irho*Q[1]*Q[2];
+  F[1][2] = irho*Q[2]*Q[2] + p;
+  F[1][3] = irho*Q[3]*Q[2];
+  F[1][4] = irho*(Q[4]+p)*Q[2];
+
+  #if DIMENSIONS==3
+  // col 3
+  F[2][0] = Q[3];
+  F[2][1] = irho*Q[1]*Q[3];
+  F[2][2] = irho*Q[2]*Q[3];
+  F[2][3] = irho*Q[3]*Q[3] + p;
+  F[2][4] = irho*(Q[4]+p)*Q[3];
+  #endif
+  #endif
 }
 
 void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
     const int direction,
     double* lambda) {
+  #ifdef SymbolicVariables
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
@@ -88,6 +123,23 @@ void Euler::EulerSolver_ADERDG::eigenvalues(const double* const Q,
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
   eigs.j(u_n,u_n,u_n);
+  #else // SymbolicVariables
+  constexpr double gamma = 1.4;
+  const double irho = 1./Q[0];
+  #if DIMENSIONS==3
+  const double j2 = Q[1]*Q[1]+Q[2]*Q[2]+Q[3]*Q[3];
+  #else
+  const double j2 = Q[1]*Q[1]+Q[2]*Q[2];
+  #endif
+  const double p = (gamma-1) * (Q[4] - 0.5*irho*j2);
+
+  const double u_n = Q[direction + 1] * irho;
+  const double c   = std::sqrt(gamma * p * irho);
+
+  std::fill_n(lambda,5,u_n);
+  lambda[0] -= c;
+  lambda[4] += c;
+  #endif
 }
 
 void Euler::EulerSolver_ADERDG::entropyWave(const double* const x,double t, double* Q) {
@@ -239,11 +291,11 @@ void Euler::EulerSolver_ADERDG::rarefactionWave(const double* const x,double t, 
     Q[1] = 0.;
     Q[2] = 0.;
     Q[3] = 0.;
-#if DIMENSIONS==2
+    #if DIMENSIONS==2
     const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]);
-#else
+    #else
     const double norm2Squared = (x[0]-x0[0])*(x[0]-x0[0]) + (x[1]-x0[1])*(x[1]-x0[1]) + (x[2]-x0[2])*(x[2]-x0[2]);
-#endif
+    #endif
     Q[4] = 1. / (gamma - 1) + // pressure is set to one
         exp(-std::sqrt(norm2Squared) / pow(width, DIMENSIONS)) * 2;
   }
