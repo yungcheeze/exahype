@@ -13,12 +13,12 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d, dou
 void GRMHD::Cons2Prim::prepare() {
 	// NEED to prepare:
 	// Generic for Sij and preparation:
-	DFOR(i) CONTRACT(j) Bmag.lo(i) = gam.lo(i,j) * Bmag.up(j);
+	Bmag.lo=0; DFOR(i) CONTRACT(j) Bmag.lo(i) += gam.lo(i,j) * Bmag.up(j);
 	// vel.up is needed, but in the primrecovery not known! We reconstruct it
 	// in the Cons2Prim operation.
 	//// DFOR(i) CONTRACT(j) vel.up(i)  = gam.up(i,j) * vel.lo(j);
 	// S^i is needed in both flux and ncp
-	DFOR(i) CONTRACT(j) Si.up(i)   = gam.up(i,j) * Si.lo(j);
+	Si.up=0; DFOR(i) CONTRACT(j) Si.up(i)   += gam.up(i,j) * Si.lo(j);
 	
 	WW = SQ(Dens/rho); // W^2
 	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
@@ -32,8 +32,10 @@ void GRMHD::Cons2Prim::followup() {
 }
 
 void GRMHD::Cons2Prim::copyFullStateVector() {
-	copy_c2p_invariant(V + Conserved::Indices::c2p_invariant_start);
-	copy_admvars(V + ADMBase::Indices::adm_start);
+	// 1) Assume that hydro variables have been set
+	// 2) Copy only:
+	copy_magneto(V);
+	copy_adm(V);
 }
 
 void GRMHD::Cons2Prim::perform() {

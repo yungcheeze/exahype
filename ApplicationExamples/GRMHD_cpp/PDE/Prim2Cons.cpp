@@ -5,29 +5,38 @@
 using namespace GRMHD;
 
 void GRMHD::Prim2Cons::perform() {
-	/**
-	* W: Lorentz factor
-	* enth: Enthalpy (h)
-	**/
-
-	// The hydro exact known prim2cons
+	// The hydro + magneto exact known prim2cons
 	Dens = rho * W;
-	DFOR(i) Si.lo(i) = rho * enth * W*W * vel.up(i); // danger. Looks wrong.
-	tau = rho*W * (enth*W - 1) - press;
+	DFOR(i) Si.lo(i) = Dens*enth*W*vel.lo(i) + BmagBmag*vel.lo(i) - BmagVel*Bmag.lo(i);
+	tau = Dens*enth*W - press + 0.5*(BmagBmag*(1+VelVel) - BmagVel*BmagVel);
 }
 
 void GRMHD::Prim2Cons::prepare() {
-	// We start with vel.up computed and assume vel.lo ALSO computed.
+	constexpr double gamma = GRMHD::Parameters::gamma;
+	double epsilon;
+
+	// we compute v_i and B_i on our own. Of course they could in principle also
+	// be given by some ID code or so.
+	vel.lo   = 0; DFOR(i) CONTRACT(j)  vel.lo(i) +=  vel.up(j) * gam.lo(i,j);
+	Bmag.lo  = 0; DFOR(i) CONTRACT(j) Bmag.lo(i) += Bmag.up(j) * gam.lo(i,j);
 	
-	// Determine v^2 = v_i * v^i from  an existing vel.lo.
-	double VelVel = 0; DFOR(i) VelVel += vel.lo(i) * vel.up(i);
+	VelVel   = 0; CONTRACT(i)   VelVel +=  vel.lo(i) *  vel.up(i); // v^2 = v_i * v^i
+	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k) * Bmag.up(k); // B^2 = B^j * B_j
+	BmagVel  = 0; CONTRACT(k)  BmagVel += Bmag.lo(k) *  vel.up(k); // B^j * v_j
 	
-	W = 1. / std::sqrt(1.0 - VelVel);
-	enth = 5; // Enthalpy (h) TODO
-	// I think that enth = ww= w * lf^2 = (rho+gamma/(gamma-1)*p)*lf^2
+	W = 1. / std::sqrt(1.0 - VelVel); // Lorentz factor
+
+	// If we store the pressure (as we do currently in ExaHyPE) in the primitive variables, i.e.
+	// V=(rho,vel,press) instead of V=(rho,vel,eps) with internal energy eps, we need to recover
+	// eps = eps(press) as the equation of state:
+	epsilon = press / (rho * (gamma-1));
+	// The specific enthalpy including restmass is now independent of the EOS:
+	enth = 1 + epsilon + press / rho;
 }
 
 void GRMHD::Prim2Cons::copyFullStateVector() {
-	copy_c2p_invariant(Q + Conserved::Indices::c2p_invariant_start);
-	copy_admvars(Q + ADMBase::Indices::adm_start);
+	// 1) Assume that Conserved Hydro vars have been set
+	// 2) Copy Magneto variables
+	copy_magneto(Q);
+	copy_adm(Q);
 }

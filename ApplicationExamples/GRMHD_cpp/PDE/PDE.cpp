@@ -24,7 +24,7 @@ void GRMHD::PDE::flux(double** Fluxes) {
 	Up<vec::stored<3>> zeta; DFOR(k) zeta.up(k) = alpha*vel.up(k) - beta.up(k);
 
 	DFOR(k) { // F^k: flux in direction k.
-		Conserved::Shadow Flux(Fluxes[k]);
+		GRMHDSystem::Shadow Flux(Fluxes[k]);
 		Flux.Dens = Dens * zeta.up(k);
 		DFOR(i) Flux.Si.lo(i) = alpha*Sij.ul(k,i) - beta.up(k)*Si.lo(i);
 		Flux.tau = alpha*(Si.up(k) - vel.up(k)*Dens) - beta.up(k)*tau;
@@ -41,13 +41,13 @@ void GRMHD::PDE::flux(double** Fluxes) {
 void GRMHD::PDE::RightHandSide(const double* const gradQ_Data, double* fusedSource_Data) {
 	// This is the fusedSource = -NCP + AlgebraicSource
 
-	Conserved::Shadow Source(fusedSource_Data);
-	const Gradients grad(gradQ_Data, nVar);
+	GRMHDSystem::Shadow Source(fusedSource_Data);
+	const Gradients grad(gradQ_Data);
 	
 	// Sij is the 3-Energy-Momentum tensor. We need S^{ij} and S^i_j in the NCP.	
 	UpSym<sym::stored<3>, sym::stored<3>> Sij;
 	SYMFOR(i,j) Sij.up(i,j) = Si.up(i)*vel.up(j) + gam.up(i,j)*ptot - Bmag.up(i)*Bmag.up(j)/WW - BmagVel * vel.up(i) * Bmag.up(j);
-	SYMFOR(i,j) CONTRACT(k) Sij.ul(i,j) = Sij.up(i,k) * gam.lo(j,k); // Sij^i_j = Sij^{ik} gam_{jk}
+	Sij.ul=0; SYMFOR(i,j) CONTRACT(k) Sij.ul(i,j) += Sij.up(i,k) * gam.lo(j,k); // Sij^i_j = Sij^{ik} gam_{jk}
 
 	// Source for D
 	Source.Dens = 0;

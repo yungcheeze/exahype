@@ -55,6 +55,17 @@
 // just because it is handy to have a SQUARE macro.
 #define SQ(d) ((d)*(d))
 
+// Length assertions with Tensish. Should use Peano assertions here.
+constexpr bool debug_tensish = true;
+
+#include <iostream>
+#include <cstdlib>
+#define tensish_assert(expr,explanation) if(debug_tensish && !(expr)){ std::cerr << \
+   "assertion in file " << __FILE__ << ", line " << __LINE__ << " failed: " << #expr <<  std::endl; std::abort(); }
+#define tensish_bound(expr) tensish_assert(expr, "out of bounds access")
+
+#include <cstring> // memset
+
 namespace tensish {
 	/*****************************************************************************/
 	/*                                                                           */
@@ -69,24 +80,31 @@ namespace tensish {
 		/// Storing an array and allowing () accss.
 		template<int N> struct stored {
 			double data[N];
-			double& operator()(int j) {return data[j];}
-			const double& operator()(int j) const {return data[j];}
+			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
+			const double& operator()(int j) const { tensish_bound(j<N);  return data[j]; }
+			double operator=(double val) { memset(data,val,N); return val; }
 		};
 
 		/// Shadows a linear storage
-		struct shadow {
+		template<int N> struct shadow {
 			double *const data;
-			shadow(double* const foreign) : data(foreign) {}
-			double& operator()(int j) { return data[j]; }
-			const double& operator()(int j) const { return data[j]; }
+			constexpr shadow(double* const foreign) : data(foreign) {}
+			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
+			const double& operator()(int j) const { tensish_bound(j<N); return data[j]; }
+			double operator=(double val) { memset(data,val,N); return val; }
 		};
 		
 		/// same as shadow but does not allow changing the storage location
-		struct const_shadow {
+		template<int N> struct const_shadow {
 			const double *const data;
-			const_shadow(const double* const foreign) : data(foreign) {}
-			const double& operator()(int j) const { return data[j]; }
+			constexpr const_shadow(const double* const foreign) : data(foreign) {}
+			const double& operator()(int j) const { tensish_bound(j<N); return data[j]; }
 		};
+		
+		// abbreviations for typical uses in 3 dimensions.
+		typedef stored<3> stored3;
+		typedef shadow<3> shadow3;
+		typedef const_shadow<3> const_shadow3;
 	} // ns vec
 
 	/**
@@ -115,8 +133,16 @@ namespace tensish {
 		*        V    2 |3 4 5|
 		*               +-----+    Note that this is differnt to the usual
 		*                          row-first ordering (xx,xy,xz,yy,yz,zz).
+		* 
+		* Note that this ordering is the integer sequence http://oeis.org/A084855:
+		* "Triangular array, read by rows: T(n,k) = concatenated decimal
+		* representations of k and n, 1<=k<=n."
 		**/
 		constexpr int index(int i,int j) {return  j<=i ? j+(i*(i+1))/2 : i+(j*(j+1))/2; }
+		
+		// TODO: Find an analytic expression for the row-first ordering:
+		// We have (Pizza/C):  11 12 22 13 23 33
+		// We want (Trento/F): 11 12 13 22 23 33
 		
 		/**
 		 * A loop for the symmetric matrix. Useful for setting it's entries.
@@ -136,24 +162,31 @@ namespace tensish {
 		/// Stores a linearized NxN matrix and allows 2D index access
 		template<int N> struct stored {
 			double data[size(N)];
-			double& operator()(int i, int j) {return data[index(i,j)];}
-			const double& operator()(int i, int j) const {return data[index(i,j)];}
+			double& operator()(int i, int j) { tensish_bound(i<N && j<N); return data[index(i,j)]; }
+			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)];}
+			double operator=(double val) { memset(data,val,size(N)); return val; }
 		};
 
 		/// Shadows (refers to) a linearized NxN and allows 2D index access
-		struct shadow {
+		template<int N> struct shadow {
 			double *const data;
-			shadow(double* const foreign) : data(foreign) {}
-			double& operator()(int i, int j) { return data[index(i,j)]; }
-			const double& operator()(int i, int j) const { return data[index(i,j)]; }
+			constexpr shadow(double* const foreign) : data(foreign) {}
+			double& operator()(int i, int j) { tensish_bound(i<N && j<N); return data[index(i,j)]; }
+			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)]; }
+			double operator=(double val) { memset(data,val,size(N)); return val; }
 		};
 		
 		/// Same as shadow but does not allow chaning the storage location
-		struct const_shadow {
+		template<int N> struct const_shadow {
 			const double *const data;
-			const_shadow(const double* const foreign) : data(foreign) {}
-			const double& operator()(int i, int j) const { return data[index(i,j)]; }
+			constexpr const_shadow(const double* const foreign) : data(foreign) {}
+			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)]; }
 		};
+		
+		// abbreviations for typical uses in 3 dimensions.
+		typedef stored<3> stored3;
+		typedef shadow<3> shadow3;
+		typedef const_shadow<3> const_shadow3;
 	} // ns sym
 
 	/*****************************************************************************/
@@ -246,8 +279,8 @@ namespace tensish {
 	* Therefore we assume the lower metric to be stored so the upper can be completed.
 	**/
 	struct metric3 {
-		sym::stored<3> up;
-		const sym::const_shadow lo;
+		sym::stored3 up;
+		const sym::const_shadow3 lo;
 		
 		metric3(const double* const lo_)
 			: lo(lo_)
@@ -256,20 +289,26 @@ namespace tensish {
 		void complete_from_lower() {
 			double d = sym::det(lo);
 
-			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) );
-			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) );
-			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) );
-			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) );
-			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) );
-			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) );
+			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) )/d;
+			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) )/d;
+			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) )/d;
+			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) )/d;
+			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) )/d;
+			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) )/d;
 
-			DFOR(i) DFOR(j) up(i,j) /= d;
 			//vc = sqrt(fabs(d));
 		}
 
-		// chainable raise and lower operations for vectors
-		template<class Full> metric3& raise(Full vec) { DFOR(i) CONTRACT(j) vec.up(i) = up(i,j)*vec.lo(j); return *this; }
-		template<class Full> metric3& lower(Full vec) { DFOR(i) CONTRACT(j) vec.lo(i) = lo(i,j)*vec.up(j); return *this; }
+		// Provide lowering and raising for vectors, just for convenience.
+		// However, in principle you should do this on your own.
+		
+		template<class UpLo1, class UpLo2> void raise_vec(UpLo1& source, UpLo2& target) {
+			target.up=0; DFOR(i) CONTRACT(j) target.up(i) += up(i,j)*source.lo(j); }
+		template<class UpLo1, class UpLo2> void lower_vec(UpLo1& source, UpLo2& target) {
+			target.lo=0; DFOR(i) CONTRACT(j) target.lo(i) += lo(i,j)*source.up(j); }
+		template<class UpLo> void raise_vec(UpLo& source) { raise_vec(source,source); }
+		template<class UpLo> void lower_vec(UpLo& source) { raise_vec(source,source); }
+
 	};
 
 } // namespace tensish
