@@ -2,27 +2,26 @@
 #include <cmath> // max, sqrt
 #include <algorithm> // max
 
+#include <stdio.h> // printf
+
 using namespace GRMHD;
+using namespace std; // sqrt, max
 
 // The C2P-Routines ported from Fortran for the SRMHD by Dominic, fully correct also for GRMHD.
+double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d, const double e, const double s2, const double b2, const double sb2, double* w,bool* failed);
 void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double* w_out);
-double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d, double e,double s2,double b2,double sb2,double* w,bool* failed);
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
 void GRMHD::Cons2Prim::prepare() {
-	// NEED to prepare:
-	// Generic for Sij and preparation:
+	// B_i: Needed for Sij and preparation:
+	// v^i: is needed for the PDE system (Sij) and is either computed in the followup() or by the Cons2Prim operation.
+	// S^i: is needed in both flux and ncp
 	Bmag.lo=0; DFOR(i) CONTRACT(j) Bmag.lo(i) += gam.lo(i,j) * Bmag.up(j);
-	// vel.up is needed, but in the primrecovery not known! We reconstruct it
-	// in the Cons2Prim operation.
-	//// DFOR(i) CONTRACT(j) vel.up(i)  = gam.up(i,j) * vel.lo(j);
-	// S^i is needed in both flux and ncp
-	Si.up=0; DFOR(i) CONTRACT(j) Si.up(i)   += gam.up(i,j) * Si.lo(j);
-	
+	Si.up  =0; DFOR(i) CONTRACT(j) Si.up(i)   += gam.up(i,j) * Si.lo(j);
 	WW = SQ(Dens/rho); // W^2
 	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
-	SconScon = 0; CONTRACT(k) SconScon += Si.lo(k)*Si.up(k);     // S^j * S_j // needed for c2p
+	SconScon = 0; CONTRACT(k) SconScon +=   Si.lo(k)*Si.up(k);   // S^j * S_j // needed for c2p
 	BmagScon = 0; CONTRACT(k) BmagScon += Bmag.lo(k)*Si.up(k);   // B^j * S_j // needed for c2p
 }
 
@@ -43,42 +42,154 @@ void GRMHD::Cons2Prim::perform() {
 	constexpr double p_floor   = 1.0e-5;
 	constexpr double rho_floor = 1.0e-4;
 	
-	constexpr double gamma = 5; // TODO
+	constexpr double gamma = GRMHD::Parameters::gamma;
 	
-	// wee need: S.up, B.lo but we don't need to recompute it locally when using
-	// appropriate types. For the time being (compilation), use:
-	// we also need the metric!
+	// TODO here: Removal of 1./\sqrt{gamma}.
 
-	// First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)];
-	bool failed   = false;
-	double gamma1 = gamma/(gamma - 1.0);
-	double gam    = 1.0/gamma1;
-	//double e      = Q[4]; // TODO: We need the energy here, not tau. Do we store tau?
-	double e      = tau + Dens;
+	// First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)]
+	constexpr double gamma1    = (gamma - 1.0)/gamma;
+	double e      = tau; // sic! My naming is probably sick.
 
 	constexpr double eps    = 1.e-10;
-	double x1     = 0.;
-	double x2     = 1.-eps;
+	constexpr double x1     = 0.;
+	constexpr double x2     = 1.-eps;
 
-	double w;     // input var
-	double v2     = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,2,e,SconScon,BmagBmag,BmagScon*BmagScon,&w,&failed); // w is input parameter
-	//
+	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v2}.
+	double w=0; bool failed=false;
+	double v2 = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,&w,&failed);
+	
+	printf("CC2P: v2=%e w=%e\n", v2, w);
+	
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
+		printf("CC2P FAILED\n");
 		rho = rho_floor;
 		press = p_floor;
 		DFOR(i) vel.up(i) = 0;
 	} else {
 		double den  = 1.0/(w+BmagBmag);
-		double vb   = BmagVel/w;
-		using namespace std; // sqrt, max
+		double vb   = BmagScon/w;
 		rho  = Dens*sqrt(1.-v2);
 		DFOR(i) vel.up(i) = (Si.up(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong. CHECK
-		// Could easily compute here also:
 		DFOR(i) vel.lo(i) = (Si.lo(i) + vb * Bmag.lo(i))*den;
-		press     = gam*(w*(1.-v2)-rho); // EOS
+		press     = gamma1*(w*(1.-v2)-rho); // EOS
 		press     = max(1.e-15, press); // bracketing
 	}
+}
+
+double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d,
+    const double e, const double s2, const double b2, const double sb2, double* w,bool* failed) {
+  int MAXIT=200;
+  *failed = false;
+  double FL;
+  double DF;
+
+#ifdef USE_FORTRAN_HELPER_FUNCS
+  func_c2p_rmhd1_(&X1,&FL,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+#else
+  FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
+  double FL_test,DF_test,w_test;
+  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+//  assertionNumericalEquals(FL,FL_test);
+//  assertionNumericalEquals(DF,DF_test);
+//  assertionNumericalEquals(*w,w_test);
+
+  double v2 = 0; // don't know if this is a good init value but flag failed should safe us
+  if(FL==0) {
+    v2=X1;
+    return v2;
+  }
+
+  double FH;
+#ifdef USE_FORTRAN_HELPER_FUNCS
+  func_c2p_rmhd1_(&X2,&FH,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+#else
+  FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
+  double FH_test;
+  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+//  assertionNumericalEquals(FH,FH_test);
+//  assertionNumericalEquals(DF,DF_test);
+//  assertionNumericalEquals(*w,w_test);
+
+  if(FH==0) {
+     v2=X2;
+     return v2;
+  }
+  if(FL*FH>0) {
+     *failed = true;
+     return v2;
+  }
+
+  double XL,XH;
+  double SWAP;
+  if(FL<0) {
+    XL=X1;
+    XH=X2;
+  } else {
+    XH=X1;
+    XL=X2;
+
+    SWAP=FL;
+    FL=FH;
+    FH=SWAP;
+  }
+  v2=.5*(X1+X2);
+  double DXOLD=std::abs(X2-X1);
+  double DX=DXOLD;
+
+  double F;
+#ifdef USE_FORTRAN_HELPER_FUNCS
+  func_c2p_rmhd1_(&v2,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+#else
+  FUNC_C2P_RMHD1(v2,&DF,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
+  //double F_test;
+  //FUNC_C2P_RMHD1(v2,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+//  assertionNumericalEquals(F,F_test);
+//  assertionNumericalEquals(DF,DF_test);
+//  assertionNumericalEquals(*w,w_test);
+  for (int J=1; J<MAXIT; ++J) {
+     if(((v2-XH)*DF-F)*((v2-XL)*DF-F)>=0
+          || std::abs(2.*F)>std::abs(DXOLD*DF) ) {
+        DXOLD=DX;
+        DX=0.5*(XH-XL);
+        v2=XL+DX;
+        if(XL==v2) {
+          return v2;
+        }
+     } else {
+        DXOLD=DX;
+        DX=F/DF;
+        double TEMP=v2;
+        v2=v2-DX;
+        if (TEMP==v2) {
+          return v2;
+        }
+     }
+     if (std::abs(DX)<XACC) {
+       return v2;
+     }
+#ifdef USE_FORTRAN_HELPER_FUNCS
+     func_c2p_rmhd1_(&v2,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+#else
+     FUNC_C2P_RMHD1(v2,&F,&DF,gam,d,e,s2,b2,sb2,w);
+     //FUNC_C2P_RMHD1(v2,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+#endif
+//     assertionNumericalEquals(F,F_test);
+//     assertionNumericalEquals(DF,DF_test);
+//     assertionNumericalEquals(*w,w_test);
+     if(F<0) {
+        XL=v2;
+        FL=F;
+     } else {
+        XH=v2;
+        FH=F;
+     }
+  }
+  *failed = true;
+  return v2;
 }
 
 
@@ -129,119 +240,4 @@ void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const d
 //  std::cout << "w_out="<<*w_out;
 //  std::cout << ",f="<<*f;
 //  std::cout << ",df="<<*df << std::endl;
-}
-
-double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
-    double e,double s2,double b2,double sb2,double* w,bool* failed) {
-  int MAXIT=200;
-  *failed = false;
-  double FL;
-  double DF;
-
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&X1,&FL,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  double FL_test,DF_test,w_test;
-  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-//  assertionNumericalEquals(FL,FL_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
-
-  double RTSAFE_C2P_RMHD1_result = 0; // don't know if this is a good init value but flag failed should safe us
-  if(FL==0) {
-    RTSAFE_C2P_RMHD1_result=X1;
-    return RTSAFE_C2P_RMHD1_result;
-  }
-
-  double FH;
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&X2,&FH,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  double FH_test;
-  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-//  assertionNumericalEquals(FH,FH_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
-
-  if(FH==0) {
-     RTSAFE_C2P_RMHD1_result=X2;
-     return RTSAFE_C2P_RMHD1_result;
-  }
-  if(FL*FH>0) {
-     *failed = true;
-     return RTSAFE_C2P_RMHD1_result;
-  }
-
-  double XL,XH;
-  double SWAP;
-  if(FL<0) {
-    XL=X1;
-    XH=X2;
-  } else {
-    XH=X1;
-    XL=X2;
-
-    SWAP=FL;
-    FL=FH;
-    FH=SWAP;
-  }
-  RTSAFE_C2P_RMHD1_result=.5*(X1+X2);
-  double DXOLD=std::abs(X2-X1);
-  double DX=DXOLD;
-
-  double F;
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  //double F_test;
-  //FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-//  assertionNumericalEquals(F,F_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
-  for (int J=1; J<MAXIT; ++J) {
-     if(((RTSAFE_C2P_RMHD1_result-XH)*DF-F)*((RTSAFE_C2P_RMHD1_result-XL)*DF-F)>=0
-          || std::abs(2.*F)>std::abs(DXOLD*DF) ) {
-        DXOLD=DX;
-        DX=0.5*(XH-XL);
-        RTSAFE_C2P_RMHD1_result=XL+DX;
-        if(XL==RTSAFE_C2P_RMHD1_result) {
-          return RTSAFE_C2P_RMHD1_result;
-        }
-     } else {
-        DXOLD=DX;
-        DX=F/DF;
-        double TEMP=RTSAFE_C2P_RMHD1_result;
-        RTSAFE_C2P_RMHD1_result=RTSAFE_C2P_RMHD1_result-DX;
-        if (TEMP==RTSAFE_C2P_RMHD1_result) {
-          return RTSAFE_C2P_RMHD1_result;
-        }
-     }
-     if (std::abs(DX)<XACC) {
-       return RTSAFE_C2P_RMHD1_result;
-     }
-#ifdef USE_FORTRAN_HELPER_FUNCS
-     func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-     FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
-     //FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-#endif
-//     assertionNumericalEquals(F,F_test);
-//     assertionNumericalEquals(DF,DF_test);
-//     assertionNumericalEquals(*w,w_test);
-     if(F<0) {
-        XL=RTSAFE_C2P_RMHD1_result;
-        FL=F;
-     } else {
-        XH=RTSAFE_C2P_RMHD1_result;
-        FH=F;
-     }
-  }
-  *failed = true;
-  return RTSAFE_C2P_RMHD1_result;
 }

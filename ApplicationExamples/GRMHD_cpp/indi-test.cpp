@@ -2,6 +2,8 @@
 #include "PDE/PDE.h"
 #include "InitialData.h"
 #include <cmath>
+#include <algorithm>
+using namespace std;
 
 // Fortran
 extern "C" {
@@ -34,7 +36,11 @@ int main() {
 	constexpr int nSize = 30;
 	constexpr double eps = 1e-7;
 	double QC[nSize], QF[nSize], VC[nSize], VF[nSize];
-	
+	double VVC[nSize], VVF[nSize]; // Cons2Prim test
+	fill_n(QC, nSize, 137);
+	fill_n(QF, nSize, 137);
+	fill_n(VC, nSize, 137);
+	fill_n(VF, nSize, 137);
 	InitialState q(QC); // NaN default
 	
 	for(int i=0; i<N; i++) {
@@ -73,14 +79,27 @@ int main() {
 		
 		// Do the c2p:
 		pdeprim2cons_(QF, VF);
-		GRMHD::Prim2Cons(QC, VC).copyFullStateVector(); // without copy, get random numbers beyond hydro
+		GRMHD::Prim2Cons(QC, VC).copyFullStateVector();
 		
 		// do again the comparison
-		printf("x=[%f %f %f]\n", x[0], x[1], x[2]);
+		printf("Prim2Cons:\n");
 		for(int j=0; j<nCheck; j++) {
 			double difference = std::abs(QC[j] - QF[j]);
 			bool differ = ( difference > eps );
 			printf("Q[%2d]: QC=%15e QF=%15e %s\t(diff=%e)\n", j, QC[j], QF[j], differ ? "differ" : "SAME", difference);
+		}
+		
+		// do the conversion back
+		int iErr;
+		pdecons2prim_(VVF, QF, &iErr);
+		GRMHD::Cons2Prim(VVC, QC);
+		
+		// Compare again:
+		printf("Cons2Prim:\n");
+		for(int j=0; j<nCheck; j++) {
+			double difference = std::abs(VVC[j] - VVF[j]);
+			bool differ = ( difference > eps );
+			printf("VV[%2d]: VVC=%15e VVF=%15e %s\t(diff=%e)\n", j, VVC[j], VVF[j], differ ? "differ" : "SAME", difference);
 		}
 	}
 }

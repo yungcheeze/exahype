@@ -64,7 +64,7 @@ constexpr bool debug_tensish = true;
    "assertion in file " << __FILE__ << ", line " << __LINE__ << " failed: " << #expr <<  std::endl; std::abort(); }
 #define tensish_bound(expr) tensish_assert(expr, "out of bounds access")
 
-#include <cstring> // memset
+#include <algorithm> // fill_n
 
 namespace tensish {
 	/*****************************************************************************/
@@ -82,7 +82,7 @@ namespace tensish {
 			double data[N];
 			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
 			const double& operator()(int j) const { tensish_bound(j<N);  return data[j]; }
-			double operator=(double val) { memset(data,val,N); return val; }
+			double operator=(double val) { std::fill_n(data,N,val); return val; }
 		};
 
 		/// Shadows a linear storage
@@ -91,7 +91,7 @@ namespace tensish {
 			constexpr shadow(double* const foreign) : data(foreign) {}
 			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
 			const double& operator()(int j) const { tensish_bound(j<N); return data[j]; }
-			double operator=(double val) { memset(data,val,N); return val; }
+			double operator=(double val) { std::fill_n(data,N,val); return val; }
 		};
 		
 		/// same as shadow but does not allow changing the storage location
@@ -164,7 +164,7 @@ namespace tensish {
 			double data[size(N)];
 			double& operator()(int i, int j) { tensish_bound(i<N && j<N); return data[index(i,j)]; }
 			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)];}
-			double operator=(double val) { memset(data,val,size(N)); return val; }
+			double operator=(double val) { std::fill_n(data,size(N),val); return val; }
 		};
 
 		/// Shadows (refers to) a linearized NxN and allows 2D index access
@@ -173,7 +173,7 @@ namespace tensish {
 			constexpr shadow(double* const foreign) : data(foreign) {}
 			double& operator()(int i, int j) { tensish_bound(i<N && j<N); return data[index(i,j)]; }
 			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)]; }
-			double operator=(double val) { memset(data,val,size(N)); return val; }
+			double operator=(double val) { std::fill_n(data,size(N),val); return val; }
 		};
 		
 		/// Same as shadow but does not allow chaning the storage location

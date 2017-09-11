@@ -92,8 +92,7 @@ namespace GRMHD {
 			
 			template<typename state_vector, typename vector_lo, typename scalar>
 			struct StateVector {
-				state_vector Q; // const double* const
-				
+				state_vector Q;
 				scalar &Dens, &tau;
 				vector_lo Si; /* sic */
 				
@@ -234,7 +233,7 @@ namespace GRMHD {
 				{}
 			
 			void copy_magneto(double* target) {
-				std::memcpy(target + AbsoluteIndices::offset, Q_Magneto + AbsoluteIndices::offset, size);
+				std::memcpy(target + AbsoluteIndices::offset, Q_Magneto + AbsoluteIndices::offset, size*sizeof(double));
 			}
 		};
 		
@@ -278,7 +277,7 @@ namespace GRMHD {
 				{}
 				
 			void copy_adm(double* target) {
-				std::memcpy(target + AbsoluteIndices::offset, Q_ADM + AbsoluteIndices::offset, size);
+				std::memcpy(target + AbsoluteIndices::offset, Q_ADM + AbsoluteIndices::offset, size*sizeof(double));
 			}
 		};
 		
@@ -364,7 +363,7 @@ namespace GRMHD {
 	 * which we address differently in the current formalism.
 	 **/
 	struct Cons2Prim : public Hydro::Conserved::ConstShadowExtendable, public Hydro::Primitives::ShadowExtendable, public Magneto::ConstShadowExtendable, public ADMBase::Full {
-		Cons2Prim(const double*const Q_, double* const V) :
+		Cons2Prim(double* const V, const double*const Q_) :
 			Hydro::Conserved::ConstShadowExtendable(Q_),
 			Hydro::Primitives::ShadowExtendable(V),
 			Magneto::ConstShadowExtendable(Q_),
@@ -398,7 +397,7 @@ namespace GRMHD {
 	/// A version which does not write to a shadowed storage but a local one
 	struct Cons2Prim::Stored : public Cons2Prim {
 		double V[Hydro::size];
-		Stored(const double* const Q_) : Cons2Prim(Q_, V) {}
+		Stored(const double* const Q_) : Cons2Prim(V, Q_) {}
 	};
 	
 	struct PDE : private Cons2Prim::Stored {

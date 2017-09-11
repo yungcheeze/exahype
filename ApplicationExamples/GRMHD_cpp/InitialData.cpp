@@ -48,7 +48,6 @@ AlfenWave::AlfenWave(const double* const x, const double t, double* Q) : VacuumI
 	vel.up(2) = - vax * Bmag.up(2) / B0;
 
 	//Prim2Cons(Q,V);
-	// Just copy primitives to conservatives
 	Dens = rho;
 	tau = press;
 	DFOR(i) Si.lo(i) = vel.up(i);
