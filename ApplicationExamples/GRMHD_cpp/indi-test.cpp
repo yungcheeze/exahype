@@ -5,11 +5,13 @@
 #include <algorithm>
 using namespace std;
 
+#include "Fortran/PDE.h"
+
 // Fortran
 extern "C" {
 void alfenwave_(const double* x,const double* const t,  double* Q);
-void pdeprim2cons_(double* /* OUT */ Q, double* /* IN */ V);
-void pdecons2prim_(double* /* OUT */ V, double* /* IN */ Q, int* iErr);
+//void pdeprim2cons_(double* /* OUT */ Q, double* /* IN */ V);
+//void pdecons2prim_(double* /* OUT */ V, double* /* IN */ Q, int* iErr);
 }
 
 int vacuumtest() {
@@ -100,6 +102,24 @@ int main() {
 			double difference = std::abs(VVC[j] - VVF[j]);
 			bool differ = ( difference > eps );
 			printf("VV[%2d]: VVC=%15e VVF=%15e %s\t(diff=%e)\n", j, VVC[j], VVF[j], differ ? "differ" : "SAME", difference);
+		}
+		
+		// Fluxes in one test direction
+		constexpr int dir = 0;
+		double FC[3][nSize], FF[3][nSize];
+		double *FCp[3] = {FC[0],FC[1],FC[2]};
+		// to detect non set values
+		std::fill_n(FC[0], 3*nSize, 123456789);
+		std::fill_n(FF[0], 3*nSize, 123456789);
+		
+		PDE(QC).flux(FCp);
+		pdeflux_(FF[0], FF[1], FF[2], QF);
+		
+		printf("Fluxes in direction dir=%i\n", dir);
+		for(int j=0; j<nCheck; j++) {
+			double difference = std::abs(FC[dir][j] - FF[dir][j]);
+			bool differ = ( difference > eps );
+			printf("F[%d][%2d]: CF=%15e FF=%15e %s\t(diff=%e)\n", dir, j, FC[dir][j], FF[dir][j], differ ? "differ" : "SAME", difference);
 		}
 	}
 }

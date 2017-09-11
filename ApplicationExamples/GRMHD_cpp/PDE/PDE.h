@@ -372,7 +372,7 @@ namespace GRMHD {
 
 		// Quantities for computing the energy momentum tensor
 		// as well as the C2P.
-		double WW, SconScon, BmagBmag, BmagVel, BmagScon, ptot;
+		double WLorentz, WW, SconScon, BmagBmag, BmagVel, BmagScon, VelVel, ptot;
 		
 		/// Prepares the Conserved B_i, S^i as well as the quantities neccessary to compute
 		/// The energy momentum tensor.

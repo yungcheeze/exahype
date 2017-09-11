@@ -5,6 +5,7 @@
  **/
 
 #include "PDE.h"
+#include <cmath> // NAN
 
 /******************************************************************************
  * Status of the PDE system:

@@ -13,20 +13,23 @@ void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const d
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
+// At this stage, we can prepare conservative variables but do not yet have access to primitive ones.
 void GRMHD::Cons2Prim::prepare() {
 	// B_i: Needed for Sij and preparation:
 	// v^i: is needed for the PDE system (Sij) and is either computed in the followup() or by the Cons2Prim operation.
 	// S^i: is needed in both flux and ncp
 	Bmag.lo=0; DFOR(i) CONTRACT(j) Bmag.lo(i) += gam.lo(i,j) * Bmag.up(j);
 	Si.up  =0; DFOR(i) CONTRACT(j) Si.up(i)   += gam.up(i,j) * Si.lo(j);
-	WW = SQ(Dens/rho); // W^2
 	BmagBmag = 0; CONTRACT(k) BmagBmag += Bmag.lo(k)*Bmag.up(k); // B^j * B_j // needed for ptot
 	SconScon = 0; CONTRACT(k) SconScon +=   Si.lo(k)*Si.up(k);   // S^j * S_j // needed for c2p
 	BmagScon = 0; CONTRACT(k) BmagScon += Bmag.lo(k)*Si.up(k);   // B^j * S_j // needed for c2p
 }
 
+// At this stage, we have all primitives recovered and can postcompute some quantities. This is as a
+// service or can be used for 
 void GRMHD::Cons2Prim::followup() {
 	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
+	WW = SQ(WLorentz); // W^2: Lorentz factor squared
 	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
 }
 
@@ -54,23 +57,24 @@ void GRMHD::Cons2Prim::perform() {
 	constexpr double x1     = 0.;
 	constexpr double x2     = 1.-eps;
 
-	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v2}.
-	double w=0; bool failed=false;
-	double v2 = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,w,failed);
+	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v^2}.
+	bool failed=false;
+	WLorentz=0;
+	VelVel = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,WLorentz,failed);
 	
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
-		printf("CC2P FAILED\n");
+		printf("C C2P FAILED\n");
 		rho = rho_floor;
 		press = p_floor;
 		DFOR(i) vel.up(i) = 0;
 	} else {
-		double den  = 1.0/(w+BmagBmag);
-		double vb   = BmagScon/w;
-		rho  = Dens*sqrt(1.-v2);
+		double den  = 1.0/(WLorentz+BmagBmag);
+		double vb   = BmagScon/WLorentz;
+		rho  = Dens*sqrt(1.-VelVel);
 		DFOR(i) vel.up(i) = (Si.up(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong. CHECK
 		DFOR(i) vel.lo(i) = (Si.lo(i) + vb * Bmag.lo(i))*den;
-		press     = gamma1*(w*(1.-v2)-rho); // EOS
+		press     = gamma1*(WLorentz*(1.-VelVel)-rho); // EOS
 		press     = max(1.e-15, press); // bracketing
 	}
 }
