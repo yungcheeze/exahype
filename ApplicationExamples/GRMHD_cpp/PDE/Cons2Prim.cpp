@@ -8,8 +8,8 @@ using namespace GRMHD;
 using namespace std; // sqrt, max
 
 // The C2P-Routines ported from Fortran for the SRMHD by Dominic, fully correct also for GRMHD.
-double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d, const double e, const double s2, const double b2, const double sb2, double* w,bool* failed);
-void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double* w_out);
+double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d, const double e, const double s2, const double b2, const double sb2, double& w,bool& failed);
+void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double& w);
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
@@ -56,9 +56,7 @@ void GRMHD::Cons2Prim::perform() {
 
 	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v2}.
 	double w=0; bool failed=false;
-	double v2 = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,&w,&failed);
-	
-	printf("CC2P: v2=%e w=%e\n", v2, w);
+	double v2 = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,w,failed);
 	
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
@@ -78,9 +76,9 @@ void GRMHD::Cons2Prim::perform() {
 }
 
 double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d,
-    const double e, const double s2, const double b2, const double sb2, double* w,bool* failed) {
+    const double e, const double s2, const double b2, const double sb2, double& w,bool& failed) {
   int MAXIT=200;
-  *failed = false;
+  failed = false;
   double FL;
   double DF;
 
@@ -90,7 +88,7 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
   FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
 #endif
   double FL_test,DF_test,w_test;
-  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,w_test);
 //  assertionNumericalEquals(FL,FL_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -108,7 +106,7 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
   FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
 #endif
   double FH_test;
-  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,w_test);
 //  assertionNumericalEquals(FH,FH_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -118,7 +116,7 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
      return v2;
   }
   if(FL*FH>0) {
-     *failed = true;
+     failed = true;
      return v2;
   }
 
@@ -188,13 +186,13 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
         FH=F;
      }
   }
-  *failed = true;
+  failed = true;
   return v2;
 }
 
 
 void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2,
-    const double sb2,double* w_out) {
+    const double sb2,double& w) {
   //
   // This is the CONS2PRIM strategy adopted by Del Zanna et al. (2007) A&A, 473, 11-30
   // and it corresponds to their choice 3 in Section 3.2
@@ -214,7 +212,6 @@ void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const d
   //  w = -c2/c3 > 0 and dw = 0 in the do loop below.
   //  If -c2/c3 < 0 when sb=0, which makes w=0,
   //  this is a signature that something was wrong before.
-  double w;
   if ( abs ( c0) < 1.0e-20) {
     w = -c2 / c3;
   } else {
@@ -227,7 +224,6 @@ void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const d
       w = w + dw;
     }
   };
-  *w_out = w;
 
   double dc3   = gam;
   double dc2   = 0.5 * ( b2 - gam * rho / (1.0 - v2));

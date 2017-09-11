@@ -92,7 +92,7 @@ int main() {
 		// do the conversion back
 		int iErr;
 		pdecons2prim_(VVF, QF, &iErr);
-		GRMHD::Cons2Prim(VVC, QC);
+		GRMHD::Cons2Prim(VVC, QC).copyFullStateVector();
 		
 		// Compare again:
 		printf("Cons2Prim:\n");
