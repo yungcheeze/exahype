@@ -29,6 +29,11 @@ void GRMHD::Cons2Prim::prepare() {
 // service or can be used for 
 void GRMHD::Cons2Prim::followup() {
 	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
+	WLorentz = Dens/rho;
+	// Obtain a very different value then in Fortran.
+	// Determine it similar as done in Fortran:
+	double VelVel=0; CONTRACT(j) VelVel  += vel.up(j)*vel.lo(j);
+	WLorentz = 1.0 / std::sqrt(1.0 - VelVel);
 	WW = SQ(WLorentz); // W^2: Lorentz factor squared
 	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
 }
@@ -59,8 +64,8 @@ void GRMHD::Cons2Prim::perform() {
 
 	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v^2}.
 	bool failed=false;
-	WLorentz=0;
-	VelVel = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,WLorentz,failed);
+	double w=0; // This is not the lorentz factor.
+	VelVel = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,w,failed);
 	
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
@@ -69,12 +74,12 @@ void GRMHD::Cons2Prim::perform() {
 		press = p_floor;
 		DFOR(i) vel.up(i) = 0;
 	} else {
-		double den  = 1.0/(WLorentz+BmagBmag);
-		double vb   = BmagScon/WLorentz;
+		double den  = 1.0/(w+BmagBmag);
+		double vb   = BmagScon/w;
 		rho  = Dens*sqrt(1.-VelVel);
 		DFOR(i) vel.up(i) = (Si.up(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong. CHECK
 		DFOR(i) vel.lo(i) = (Si.lo(i) + vb * Bmag.lo(i))*den;
-		press     = gamma1*(WLorentz*(1.-VelVel)-rho); // EOS
+		press     = gamma1*(w*(1.-VelVel)-rho); // EOS
 		press     = max(1.e-15, press); // bracketing
 	}
 }

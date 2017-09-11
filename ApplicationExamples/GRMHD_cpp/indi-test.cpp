@@ -28,15 +28,25 @@ int vacuumtest() {
 	}
 }
 
+
+constexpr double eps = 1e-7;
+constexpr int nCheck = 5; // hydro vars
+#define CHECK(A,B) check(#A, A, #B, B)
+void check(const char* const labelA, const double* const A, const char* const labelB, const double* const B) {
+	for(int j=0; j<nCheck; j++) {
+		double difference = std::abs(A[j] - B[j]);
+		bool differ = ( difference > eps );
+		printf("[%2d]: %s=%15e %s=%15e %s\t(diff=%e)\n", j, labelA, A[j], labelB, B[j], differ ? "differ" : "SAME", difference);
+	}
+}
+
 int main() {
 	double x[3] = {0};
 	double t = 0;
 	double dx = 0.1;
 	int N = 1;
 	
-	constexpr int nCheck = 19;
 	constexpr int nSize = 30;
-	constexpr double eps = 1e-7;
 	double QC[nSize], QF[nSize], VC[nSize], VF[nSize];
 	double VVC[nSize], VVF[nSize]; // Cons2Prim test
 	fill_n(QC, nSize, 137);
@@ -50,13 +60,9 @@ int main() {
 		AlfenWave id(x,t,VC);
 		alfenwave_(x,&t,VF);
 		
-		// Prim check: works:
+		printf("Initial Data (Primitives) from Fortran and C:\n");
 		printf("x=[%f %f %f]\n", x[0], x[1], x[2]);
-		for(int j=0; j<nCheck; j++) {
-			double difference = std::abs(VC[j] - VF[j]);
-			bool differ = ( difference > eps );
-			printf("V[%2d]: VC=%15e VF=%15e %s\t(diff=%e)\n", j, VC[j], VF[j], differ ? "differ" : "SAME", difference);
-		}
+		CHECK(VC, VF);
 		
 		// understand whether raising works correctly
 		//Hydro::Conserved::ConstShadowExtendable
@@ -85,11 +91,7 @@ int main() {
 		
 		// do again the comparison
 		printf("Prim2Cons:\n");
-		for(int j=0; j<nCheck; j++) {
-			double difference = std::abs(QC[j] - QF[j]);
-			bool differ = ( difference > eps );
-			printf("Q[%2d]: QC=%15e QF=%15e %s\t(diff=%e)\n", j, QC[j], QF[j], differ ? "differ" : "SAME", difference);
-		}
+		CHECK(QC, QF);
 		
 		// do the conversion back
 		int iErr;
@@ -98,11 +100,12 @@ int main() {
 		
 		// Compare again:
 		printf("Cons2Prim:\n");
-		for(int j=0; j<nCheck; j++) {
-			double difference = std::abs(VVC[j] - VVF[j]);
-			bool differ = ( difference > eps );
-			printf("VV[%2d]: VVC=%15e VVF=%15e %s\t(diff=%e)\n", j, VVC[j], VVF[j], differ ? "differ" : "SAME", difference);
-		}
+		CHECK(VVC, VVF);
+		
+		printf("Cons2Prim C outcome with original C prims (REALLY BAD!):\n");
+		CHECK(VC, VVC);
+		printf("Cons2Prim F outcome with original F prims (REALLY BAD!!!):\n");
+		CHECK(VF, VVF);
 		
 		// Fluxes in one test direction
 		constexpr int dir = 0;
@@ -111,15 +114,11 @@ int main() {
 		// to detect non set values
 		std::fill_n(FC[0], 3*nSize, 123456789);
 		std::fill_n(FF[0], 3*nSize, 123456789);
-		
+
 		PDE(QC).flux(FCp);
 		pdeflux_(FF[0], FF[1], FF[2], QF);
 		
 		printf("Fluxes in direction dir=%i\n", dir);
-		for(int j=0; j<nCheck; j++) {
-			double difference = std::abs(FC[dir][j] - FF[dir][j]);
-			bool differ = ( difference > eps );
-			printf("F[%d][%2d]: CF=%15e FF=%15e %s\t(diff=%e)\n", dir, j, FC[dir][j], FF[dir][j], differ ? "differ" : "SAME", difference);
-		}
+		CHECK(FC[dir], FF[dir]);
 	}
 }
