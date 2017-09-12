@@ -13,6 +13,11 @@ public class KernelEuler2d implements Solver {
     _projectName = projectName;
     _solverName = solverName;
   }
+    
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
   
   public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {

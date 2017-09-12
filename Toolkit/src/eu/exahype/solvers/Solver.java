@@ -7,6 +7,8 @@ public interface Solver {
    */
   public boolean supportsVariables();
   
+  public String getSolverName();
+  
   public void writeHeader(java.io.BufferedWriter writer) throws java.io.IOException;
   
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException;

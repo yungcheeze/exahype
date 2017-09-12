@@ -38,6 +38,11 @@ public class GenericADERDG implements Solver {
     _isLinear           = isLinear;
     _isFortran          = isFortran;
   }
+  
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
 
   @Override
   public void writeHeader(java.io.BufferedWriter writer)

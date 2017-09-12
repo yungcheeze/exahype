@@ -35,6 +35,11 @@ class GenericFiniteVolumesInC implements Solver {
     _enableProfiler     = enableProfiler;
     _hasConstants       = hasConstants;
   }
+    
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
 
   public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {

@@ -23,6 +23,11 @@ public class UserDefinedFiniteVolumesinFortran implements Solver {
   }
 
   @Override
+  public String getSolverName() {
+    return _solverName;
+  }
+
+  @Override
   public void writeAbstractHeader(BufferedWriter writer) throws IOException {
     // TODO Auto-generated method stub
     

@@ -131,11 +131,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
       // write the files
       try {
-        tryWriteSolverHeader(solver, solverName);
-        tryWriteSolverUserImplementation(solver,solverName);
+        tryWriteSolverHeader(solver);
+        tryWriteSolverUserImplementation(solver);
         
-        tryWriteAbstractSolverHeader(solver,solverName);
-        tryWriteAbstractSolverImplementation(solver,solverName);
+        tryWriteAbstractSolverHeader(solver);
+        tryWriteAbstractSolverImplementation(solver);
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName);
@@ -169,11 +169,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
       // write the files
       try {
-        tryWriteSolverHeader(solver, solverName);
-        tryWriteSolverUserImplementation(solver,solverName);
+        tryWriteSolverHeader(solver);
+        tryWriteSolverUserImplementation(solver);
         
-        tryWriteAbstractSolverHeader(solver,solverName);
-        tryWriteAbstractSolverImplementation(solver,solverName);
+        tryWriteAbstractSolverHeader(solver);
+        tryWriteAbstractSolverImplementation(solver);
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName);
@@ -217,16 +217,16 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
       // write the files
       try {
-        tryWriteSolverHeader(solver, solverNameADERDG);
-        tryWriteSolverHeader(limiter, solverNameFV);
+        tryWriteSolverHeader(solver);
+        tryWriteSolverHeader(limiter);
 
-        tryWriteSolverUserImplementation(solver,solverNameADERDG);
-        tryWriteSolverUserImplementation(limiter,solverNameFV);
+        tryWriteSolverUserImplementation(solver);
+        tryWriteSolverUserImplementation(limiter);
         
-        tryWriteAbstractSolverHeader(solver,solverNameADERDG);
-        tryWriteAbstractSolverHeader(limiter,solverNameFV);
-        tryWriteAbstractSolverImplementation(solver,solverNameADERDG);
-        tryWriteAbstractSolverImplementation(limiter,solverNameFV);
+        tryWriteAbstractSolverHeader(solver);
+        tryWriteAbstractSolverHeader(limiter);
+        tryWriteAbstractSolverImplementation(solver);
+        tryWriteAbstractSolverImplementation(limiter);
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverNameADERDG);
@@ -244,69 +244,69 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
   
-  private void tryWriteSolverHeader(Solver solver,String solverName) throws IOException {
+  private void tryWriteSolverHeader(Solver solver) throws IOException {
     java.io.File solverHeaderFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solver.getSolverName() + ".h");
     
     if (solverHeaderFile.exists()) {
-      System.out.println("create header of solver " + solverName + " ... header "
+      System.out.println("create header of solver " + solver.getSolverName() + " ... header "
           + solverHeaderFile.getAbsoluteFile()
           + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)");
     } else {
       BufferedWriter headerWriter =
           new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
       solver.writeHeader(headerWriter);
-      System.out.println("create header of solver " + solverName + " ... ok");
+      System.out.println("create header of solver " + solver.getSolverName() + " ... ok");
       headerWriter.close();
     }
   }
   
-  private void tryWriteSolverUserImplementation(Solver solver, String solverName) throws IOException {
+  private void tryWriteSolverUserImplementation(Solver solver) throws IOException {
     java.io.File solverUserImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solver.getSolverName() + ".cpp");
     
     if (solverUserImplementationFile.exists()) {
-      System.out.println("user's implementation file of solver " + solverName
+      System.out.println("user's implementation file of solver " + solver.getSolverName()
           + " ... does exist already. Is not overwritten");
     } else {
       BufferedWriter userImplementationWriter =
           new BufferedWriter(new java.io.FileWriter(solverUserImplementationFile));
       solver.writeUserImplementation(userImplementationWriter);
       System.out.println(
-          "create user implementation template of solver " + solverName + " ... please complete");
+          "create user implementation template of solver " + solver.getSolverName() + " ... please complete");
       userImplementationWriter.close();
     }
   }
 
-  private void tryWriteAbstractSolverHeader(Solver solver, String solverName) throws IOException {
+  private void tryWriteAbstractSolverHeader(Solver solver) throws IOException {
     java.io.File abstractSolverHeaderFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".h");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solver.getSolverName() + ".h");
     
     if (abstractSolverHeaderFile.exists()) {
-      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+      System.out.println("implementation file for abstract solver superclass Abstract" + solver.getSolverName()
           + " ... does exist already. Is overwritten");
     }
 
     BufferedWriter writer =
         new BufferedWriter(new java.io.FileWriter(abstractSolverHeaderFile));
     solver.writeAbstractHeader(writer);
-    System.out.println("create header file for abstract solver superclass Abstract" + solverName + " ... ok");
+    System.out.println("create header file for abstract solver superclass Abstract" + solver.getSolverName() + " ... ok");
     writer.close();
   }
   
-  private void tryWriteAbstractSolverImplementation(Solver solver, String solverName) throws IOException {
+  private void tryWriteAbstractSolverImplementation(Solver solver) throws IOException {
     java.io.File abstractSolverImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".cpp");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solver.getSolverName() + ".cpp");
     
     if (abstractSolverImplementationFile.exists()) {
-      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+      System.out.println("implementation file for abstract solver superclass Abstract" + solver.getSolverName()
           + " ... does exist already. Is overwritten");
     }
 
     BufferedWriter writer =
         new BufferedWriter(new java.io.FileWriter(abstractSolverImplementationFile));
     solver.writeAbstractImplementation(writer);
-    System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
+    System.out.println("create implementation file for abstract solver superclass Abstract" + solver.getSolverName() + " ... ok");
     writer.close();
   }
   

@@ -14,6 +14,12 @@ public class UserDefinedADER_DGinFortran implements Solver {
     _solverName = solverName;
   }
   
+    
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
+  
   @Override
   public void writeAbstractHeader(BufferedWriter writer) throws IOException {
     // TODO Auto-generated method stub

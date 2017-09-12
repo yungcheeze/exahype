@@ -33,6 +33,12 @@ public class UserDefinedADER_DGinC implements Solver {
     _hasConstants = hasConstants;
     _enableProfiler = enableProfiler;
   }
+  
+    
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
 
   public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {

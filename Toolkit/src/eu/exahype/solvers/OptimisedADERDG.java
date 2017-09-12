@@ -88,6 +88,11 @@ public class OptimisedADERDG implements Solver {
   public boolean isValid() {
     return _isValid;
   }
+    
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
   
   private String getAbstractSolverName() {
     return "Abstract"+_solverName;
