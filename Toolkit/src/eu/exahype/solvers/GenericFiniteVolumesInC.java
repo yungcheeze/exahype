@@ -156,14 +156,6 @@ class GenericFiniteVolumesInC implements Solver {
     writer.write(content.toString());
   }
 
-  /**
-   * @deprecated This will be removed after the optimised kernel code generation
-   * supports the abstract solvers.
-   */
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-   // do nothing
-  }
-  
   @Override
   public void writeAbstractHeader(BufferedWriter writer) throws IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(

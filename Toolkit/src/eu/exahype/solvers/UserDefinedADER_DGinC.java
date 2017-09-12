@@ -44,17 +44,6 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("};\n\n\n");
   }
 
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    writer.write("// ==============================================\n");
-    writer.write("// Please do not change the implementations below\n");
-    writer.write("// =============================---==============\n");
-    writer.write("#include \"" + _solverName + ".h\"\n");
-    writer.write("\n\n\n");
-    writer.write("// This file is empty as a user::defined kernel is chosen, i.e. the user\n");
-    writer.write("// wants to implement everything.");
-    writer.write("\n\n\n");
-  }
-
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     writer.write("#include \"" + _solverName + ".h\"\n");
     writer.write("\n\n\n");

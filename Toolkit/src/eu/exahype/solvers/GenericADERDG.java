@@ -74,14 +74,6 @@ public class GenericADERDG implements Solver {
     writer.write(content.toString());
   }
   
-  /**
-   * @deprecated This will be removed soon.
-   */
-  @Override
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    // do nothing
-  }
-  
   @Override
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(

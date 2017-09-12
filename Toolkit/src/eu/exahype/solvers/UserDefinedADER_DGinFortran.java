@@ -32,11 +32,6 @@ public class UserDefinedADER_DGinFortran implements Solver {
     System.err.println("not implemented yet\n");
   }
 
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    // @todo Implement
-    System.err.println("not implemented yet\n");
-  }
-
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     // @todo Implement
     System.err.println("not implemented yet\n");

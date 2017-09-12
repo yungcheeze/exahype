@@ -386,10 +386,6 @@ public class OptimisedADERDG implements Solver {
     writer.write(content.toString());
   }
   
-  @Deprecated
-  @Override
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer) {}
-  
   @Override
   public boolean supportsVariables() {
     return true;

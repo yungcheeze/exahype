@@ -134,14 +134,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         tryWriteSolverHeader(solver, solverName);
         tryWriteSolverUserImplementation(solver,solverName);
         
-        // TODO(Dominic): Please remove as soon as the optimised solvers
-        // are using an abstract base class as well.
-        {
-          tryWriteSolverGeneratedImplementation(solver,solverName);
-          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
-          if (kernel.startsWith("optimised")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
-        }
-        
         tryWriteAbstractSolverHeader(solver,solverName);
         tryWriteAbstractSolverImplementation(solver,solverName);
 
@@ -179,13 +171,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       try {
         tryWriteSolverHeader(solver, solverName);
         tryWriteSolverUserImplementation(solver,solverName);
-        
-        // TODO(Dominic): Please remove as soon as the optimised solvers
-        // are using an abstract base class as well.
-        {
-          tryWriteSolverGeneratedImplementation(solver,solverName);
-          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
-        }
         
         tryWriteAbstractSolverHeader(solver,solverName);
         tryWriteAbstractSolverImplementation(solver,solverName);
@@ -237,17 +222,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
         tryWriteSolverUserImplementation(solver,solverNameADERDG);
         tryWriteSolverUserImplementation(limiter,solverNameFV);
-
-        // TODO(Dominic): Please remove as soon as the optimised solvers
-        // are using an abstract base class as well.
-        {
-          tryWriteSolverGeneratedImplementation(solver,solverNameADERDG);
-          tryWriteSolverGeneratedImplementation(limiter,solverNameFV);
-          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverNameADERDG); }
-          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverNameFV); }
-          
-          if (kernel.startsWith("optimised")) { tryDeleteSolverGeneratedImplementation(solver,solverNameADERDG); }
-        }
         
         tryWriteAbstractSolverHeader(solver,solverNameADERDG);
         tryWriteAbstractSolverHeader(limiter,solverNameFV);
@@ -301,40 +275,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       System.out.println(
           "create user implementation template of solver " + solverName + " ... please complete");
       userImplementationWriter.close();
-    }
-  }
-  
-  /**
-   * @deprecated
-   */
-  private void tryWriteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
-    java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
-    
-    if (solverGeneratedImplementationFile.exists()) {
-      System.out.println("generated implementation file for solver " + solverName
-          + " ... does exist already. Is overwritten");
-    }
-
-    BufferedWriter generatedImplementationWriter =
-        new BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
-    solver.writeGeneratedImplementation(generatedImplementationWriter);
-    System.out.println("create generated implementation file for solver " + solverName + " ... ok");
-    generatedImplementationWriter.close();
-  }
-  
-  /**
-   * @deprecated This is only for cleaning up old projects.
-   * Remove if not needed anymore.
-   */
-  private void tryDeleteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
-    java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
-    
-    if (solverGeneratedImplementationFile.exists()) {
-      System.out.println("deprecated generated implementation file for solver " + solverName
-          + " ... does exist. Is");
-      solverGeneratedImplementationFile.delete();
     }
   }
 
