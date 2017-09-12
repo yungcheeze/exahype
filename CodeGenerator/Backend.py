@@ -42,7 +42,7 @@ import DGMatrixGenerator
 import ConfigurationParametersGenerator
 import BoundaryConditionsGenerator
 import ConverterGenerator
-
+import GemmsCPPGenerator
 
 g_config                 = {}
 g_simdWidth              =  {'SP':  {'noarch' : 1,
@@ -125,9 +125,8 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(generateContext(g_config))
     dgMatrixGenerator.generateCode()
-    # no ccph anymore => not needed anymore. Legacy TODO JMG clean later
-    #cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(g_config))
-    #cpphGemmsGenerator.generateCode()
+    gemmsCPPGenerator = GemmsCPPGenerator.GemmsCPPGenerator(generateContext(g_config))
+    gemmsCPPGenerator.generateCode()
     configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(g_config))
     configurationParametersGenerator.generateCode()
     boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(g_config))

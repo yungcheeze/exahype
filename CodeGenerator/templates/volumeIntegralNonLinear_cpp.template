@@ -20,20 +20,9 @@
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 {% if useLibxsmm %}
-{% for namespaceName in codeNamespaceList %}
-namespace {{namespaceName}} {
-{% endfor %}
-  void {{gemm_x}}(const double* A, const double* B, double* C);
-  void {{gemm_y}}(const double* A, const double* B, double* C);
-{% if nDim==3 %}
-  void {{gemm_z}}(const double* A, const double* B, double* C);
+#include "{{pathToOptKernel}}/gemmsCPP.h"
 {% endif %}
-{% for namespaceName in codeNamespaceList %}
-}
-{% endfor %}
 
-#include "{{pathToOptKernel}}/asm_volumeIntegral.c"
-{% endif %}
 
 void {{codeNamespace}}::volumeIntegral( 
   double* restrict lduh, 
@@ -64,12 +53,18 @@ void {{codeNamespace}}::volumeIntegral(
     s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
 {% if useLibxsmm %}
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_x}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_y}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
 {% if nDim == 3 %} 
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_z}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {% endif %} 
 {% else %}
