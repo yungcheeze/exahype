@@ -53,9 +53,10 @@ public class SolverFactory {
           _enableProfiler, _enableDeepProfiler, hasConstants, Arrays.asList(kernel.split("::")));
       return (solver.isValid() ? solver : null);
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
-      return new eu.exahype.solvers.KernelEuler2d(_projectName, solvername);
-    }
+    // TODO JMG Clean when confirmed legacy
+    // else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
+      // return new eu.exahype.solvers.KernelEuler2d(_projectName, solvername);
+    // }
     
     return null;
   }
