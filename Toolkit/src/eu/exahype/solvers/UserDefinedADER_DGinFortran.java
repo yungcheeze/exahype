@@ -6,43 +6,47 @@ import java.io.IOException;
 public class UserDefinedADER_DGinFortran implements Solver {
   public static final String Identifier = UserDefinedADER_DGinC.Identifier;
 
+  private String _projectName;
+  private String _solverName;
+ 
+  public UserDefinedADER_DGinFortran(String projectName, String solverName) {
+    _projectName = projectName;
+    _solverName = solverName;
+  }
+  
   @Override
-  public void writeAbstractHeader(BufferedWriter writer, String solverName,
-      String projectName) throws IOException {
+  public void writeAbstractHeader(BufferedWriter writer) throws IOException {
     // TODO Auto-generated method stub
     
   }
   
   @Override
-  public void writeAbstractImplementation(BufferedWriter writer,
-      String solverName, String projectName) throws IOException {
+  public void writeAbstractImplementation(BufferedWriter writer) throws IOException {
     // TODO Auto-generated method stub
     
   }
   
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo
     System.err.println("not implemented yet\n");
   }
 
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     // @todo Implement
     System.err.println("not implemented yet\n");
   }
 
-  public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     // @todo Implement
     System.err.println("not implemented yet\n");
   }
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeUserPDE(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("not implemented yet\n");
   }
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeTypesDef(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("not implemented yet\n");

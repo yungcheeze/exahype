@@ -281,7 +281,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     } else {
       BufferedWriter headerWriter =
           new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
-      solver.writeHeader(headerWriter, solverName, _projectName);
+      solver.writeHeader(headerWriter);
       System.out.println("create header of solver " + solverName + " ... ok");
       headerWriter.close();
     }
@@ -297,7 +297,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     } else {
       BufferedWriter userImplementationWriter =
           new BufferedWriter(new java.io.FileWriter(solverUserImplementationFile));
-      solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
+      solver.writeUserImplementation(userImplementationWriter);
       System.out.println(
           "create user implementation template of solver " + solverName + " ... please complete");
       userImplementationWriter.close();
@@ -318,7 +318,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
     BufferedWriter generatedImplementationWriter =
         new BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
-    solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
+    solver.writeGeneratedImplementation(generatedImplementationWriter);
     System.out.println("create generated implementation file for solver " + solverName + " ... ok");
     generatedImplementationWriter.close();
   }
@@ -349,7 +349,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
     BufferedWriter writer =
         new BufferedWriter(new java.io.FileWriter(abstractSolverHeaderFile));
-    solver.writeAbstractHeader(writer, solverName, _projectName);
+    solver.writeAbstractHeader(writer);
     System.out.println("create header file for abstract solver superclass Abstract" + solverName + " ... ok");
     writer.close();
   }
@@ -365,7 +365,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
     BufferedWriter writer =
         new BufferedWriter(new java.io.FileWriter(abstractSolverImplementationFile));
-    solver.writeAbstractImplementation(writer, solverName, _projectName);
+    solver.writeAbstractImplementation(writer);
     System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
     writer.close();
   }

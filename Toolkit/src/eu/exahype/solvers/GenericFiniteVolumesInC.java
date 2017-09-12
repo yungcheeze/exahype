@@ -9,6 +9,8 @@ import eu.exahype.io.SourceTemplate;
 
 class GenericFiniteVolumesInC implements Solver {
   private String _type;
+  private String _projectName;
+  private String _solverName;
   private int _dimensions;
   private int _numberOfVariables;
   private int _numberOfParameters;
@@ -19,26 +21,28 @@ class GenericFiniteVolumesInC implements Solver {
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
-  public GenericFiniteVolumesInC(String type, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
+  public GenericFiniteVolumesInC(String type, String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
       int ghostLayerWidth, boolean enableProfiler, boolean hasConstants) {
-    _type=type;
-    _dimensions = dimensions;
-    _numberOfVariables = numberOfVariables;
+    _type               = type;
+    _projectName        = projectName;
+    _solverName         = solverName;
+    _dimensions         = dimensions;
+    _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
-    _namingSchemeNames = namingSchemeNames;
-    _patchSize = patchSize;
-    _ghostLayerWidth=ghostLayerWidth;
-    _enableProfiler = enableProfiler;
-    _hasConstants = hasConstants;
+    _namingSchemeNames  = namingSchemeNames;
+    _patchSize          = patchSize;
+    _ghostLayerWidth    = ghostLayerWidth;
+    _enableProfiler     = enableProfiler;
+    _hasConstants       = hasConstants;
   }
 
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -62,13 +66,12 @@ class GenericFiniteVolumesInC implements Solver {
     writer.write(content.toString());
   }
   
-  public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
             "eu/exahype/solvers/templates/GenericFiniteVolumesSolverInCUserCode.template");
     
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
     
     content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content.put("Dimensions",String.valueOf(_dimensions));
@@ -157,19 +160,17 @@ class GenericFiniteVolumesInC implements Solver {
    * @deprecated This will be removed after the optimised kernel code generation
    * supports the abstract solvers.
    */
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeGeneratedImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
    // do nothing
   }
   
   @Override
-  public void writeAbstractHeader(BufferedWriter writer, String solverName,
-      String projectName) throws IOException {
+  public void writeAbstractHeader(BufferedWriter writer) throws IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverHeader.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -205,13 +206,12 @@ class GenericFiniteVolumesInC implements Solver {
   }
   
   @Override
-  public void writeAbstractImplementation(BufferedWriter writer,
-      String solverName, String projectName) throws IOException {
+  public void writeAbstractImplementation(BufferedWriter writer) throws IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverInCImplementation.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
     
     content.put("FiniteVolumesType", _type);
     //
@@ -248,14 +248,14 @@ class GenericFiniteVolumesInC implements Solver {
     writer.write(content.toString()); 
   }
 
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeUserPDE(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a PDF.f90.\n");
   }
 
 
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeTypesDef(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a typesDef.f90.\n");

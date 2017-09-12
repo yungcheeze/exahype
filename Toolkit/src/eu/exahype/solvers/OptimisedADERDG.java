@@ -24,6 +24,8 @@ public class OptimisedADERDG implements Solver {
 
   //Internal states
   //---------------
+  private String  _projectName;
+  private String  _solverName;
   private int     _dimensions;
   private int     _numberOfVariables;
   private int     _numberOfParameters;
@@ -48,6 +50,8 @@ public class OptimisedADERDG implements Solver {
     
     _isValid = options.contains(Identifier); //should be true or something is wrong with the factory
     
+    _projectName        = projectName;
+    _solverName         = solverName;
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -59,7 +63,7 @@ public class OptimisedADERDG implements Solver {
     _hasConstants       = hasConstants;
     
     if(options.contains(linearId) ^ options.contains(nonlinearId)) //should be only one
-      _isLinear = options.contains(linearId);
+      _isLinear         = options.contains(linearId);
     else
       _isValid = false;
     _useFlux            = options.contains(fluxOptionId);
@@ -69,9 +73,9 @@ public class OptimisedADERDG implements Solver {
 
     //generate the optimised kernel
     try {
-      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(_projectName, _solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
           _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
-      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
+      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(_projectName, _solverName);
     } catch(IOException e) {
       _isValid = false;      
     }
@@ -85,8 +89,8 @@ public class OptimisedADERDG implements Solver {
     return _isValid;
   }
   
-  private String getAbstractSolverName(String solverName) {
-    return "Abstract"+solverName;
+  private String getAbstractSolverName() {
+    return "Abstract"+_solverName;
   }
   
   private String boolToTemplate(boolean b) {
@@ -94,14 +98,14 @@ public class OptimisedADERDG implements Solver {
   }
   
   @Override
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
 	  SourceTemplate content = SourceTemplate.fromRessourceContent(
 			  "eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
 
-	  content.put("Project", projectName);
-	  content.put("Solver", solverName);
-    content.put("AbstractSolver", getAbstractSolverName(solverName));
+	  content.put("Project", _projectName);
+	  content.put("Solver", _solverName);
+    content.put("AbstractSolver", getAbstractSolverName());
 
 	  String profilerInclude                     = "";
     String parserInclude                       = "";
@@ -131,7 +135,7 @@ public class OptimisedADERDG implements Solver {
 
   
   @Override
-  public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeAbstractHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
     
     if(_optKernelPath == null) {
@@ -141,9 +145,9 @@ public class OptimisedADERDG implements Solver {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
-    content.put("AbstractSolver", getAbstractSolverName(solverName));
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
+    content.put("AbstractSolver", getAbstractSolverName());
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -175,8 +179,7 @@ public class OptimisedADERDG implements Solver {
   }
   
   @Override
-  public void writeAbstractImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
         
     if(_optKernelPath == null) {
       throw new IOException("Optimised kernel generation failed.");
@@ -185,9 +188,9 @@ public class OptimisedADERDG implements Solver {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
     
-	  content.put("Project", projectName);
-	  content.put("Solver", solverName);
-    content.put("AbstractSolver", getAbstractSolverName(solverName));
+	  content.put("Project", _projectName);
+	  content.put("Solver", _solverName);
+    content.put("AbstractSolver", getAbstractSolverName());
 	  //
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -278,13 +281,12 @@ public class OptimisedADERDG implements Solver {
   
   //same as generic
   @Override
-  public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
     
     content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content.put("Dimensions",String.valueOf(_dimensions));
@@ -386,8 +388,7 @@ public class OptimisedADERDG implements Solver {
   
   @Deprecated
   @Override
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) {}
+  public void writeGeneratedImplementation(java.io.BufferedWriter writer) {}
   
   @Override
   public boolean supportsVariables() {
