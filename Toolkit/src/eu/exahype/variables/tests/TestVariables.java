@@ -35,7 +35,7 @@ public class TestVariables {
     parametersMap.put("matScalar", 1);
     parametersMap.put("matVector", 3);
     
-    Variables variables = new Variables(variablesMap,parametersMap,namingSchemesMap,dimensions);
+    Variables variables = new Variables("TestVariables", variablesMap,parametersMap,namingSchemesMap,dimensions);
     
     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out));
     

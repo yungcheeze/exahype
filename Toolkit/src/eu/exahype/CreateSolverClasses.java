@@ -118,7 +118,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     order        = Integer.parseInt(node.getOrder().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node);
+    Variables variables  = new Variables(solverName, node);
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
@@ -138,7 +138,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         tryWriteAbstractSolverImplementation(solver);
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverName);
+          tryWriteVariablesHeader(variables);
         }
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
@@ -155,7 +155,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     patchSize    = Integer.parseInt(node.getPatchSize().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node);
+    Variables variables  = new Variables(solverName, node);
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
@@ -176,7 +176,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         tryWriteAbstractSolverImplementation(solver);
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverName);
+          tryWriteVariablesHeader(variables);
         }
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
@@ -193,7 +193,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     order        = Integer.parseInt(node.getOrder().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node);
+    
     boolean isFortran    = language.equals("Fortran");
     
     int     patchSize       = 2*order+1;
@@ -203,14 +203,17 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String solverNameADERDG = solverName+"_ADERDG";
     String solverNameFV     = solverName+"_FV";
     
+    Variables variablesSolver  = new Variables(solverNameADERDG, node);
+    Variables variablesLimiter = new Variables(solverNameFV, node);
+    
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
     Solver solver  = solverFactory.createADERDGSolver(
-        solverNameADERDG, kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),order,hasConstants);
+        solverNameADERDG, kernel,isFortran,variablesSolver.getNumberOfVariables(),variablesSolver.getNumberOfParameters(),variablesSolver.getNamingSchemeNames(),order,hasConstants);
     Solver limiter = solverFactory.createFiniteVolumesSolver(
-        solverNameFV, limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),patchSize,hasConstants);
+        solverNameFV, limiterKernel,isFortran,variablesLimiter.getNumberOfVariables(),variablesLimiter.getNumberOfParameters(),variablesLimiter.getNamingSchemeNames(),patchSize,hasConstants);
 
-    valid  = validate(variables,order,kernel,language,solverName,solver);
-    valid &= validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
+    valid  = validate(variablesSolver,order,kernel,language,solverName,solver);
+    valid &= validate(variablesLimiter,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
     
     if (valid) {        
       _definedSolvers.add(solverName);
@@ -229,11 +232,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         tryWriteAbstractSolverImplementation(limiter);
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverNameADERDG);
+          tryWriteVariablesHeader(variablesSolver);
         }
         
         if (limiter.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverNameFV);
+          tryWriteVariablesHeader(variablesLimiter);
         }
         
       } catch (Exception exc) {
@@ -309,24 +312,25 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     System.out.println("create implementation file for abstract solver superclass Abstract" + solver.getSolverName() + " ... ok");
     writer.close();
   }
+
   
-  private void tryWriteVariablesHeader(Variables variables,String solverName) throws IOException {
+  private void tryWriteVariablesHeader(Variables variables) throws IOException {
     java.io.File solverHeaderFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_Variables.h");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + variables.getSolverName() + "_Variables.h");
     
     if (solverHeaderFile.exists()) {
       BufferedWriter headerWriter =
           new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
-      variables.writeHeader(headerWriter, solverName, _projectName);
-      System.out.println("create header of variables for solver " + solverName + " ... header "
+      variables.writeHeader(headerWriter, variables.getSolverName(), _projectName);
+      System.out.println("create header of variables for solver " + variables.getSolverName() + " ... header "
           + solverHeaderFile.getAbsoluteFile()
           + " does exist already and will be overwritten");
       headerWriter.close();
     } else {
       BufferedWriter headerWriter =
           new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
-      variables.writeHeader(headerWriter, solverName, _projectName);
-      System.out.println("create header of variables for solver " + solverName + " ... ok");
+      variables.writeHeader(headerWriter, variables.getSolverName(), _projectName);
+      System.out.println("create header of variables for solver " + variables.getSolverName() + " ... ok");
       headerWriter.close();
     }
   }

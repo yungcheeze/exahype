@@ -21,6 +21,7 @@ import eu.exahype.node.PSolver;
 import eu.exahype.node.PVariable;
 
 public class Variables {
+  String                          _solverName;
   Map<String,Integer>             _variablesMap;
   int                             _numberOfVariables;
   Map<String,Integer>             _parametersMap;
@@ -31,6 +32,10 @@ public class Variables {
     return _variablesMap;
   }
 
+  public String getSolverName() {
+    return _solverName;
+  }
+  
   public int getNumberOfVariables() {
     return _numberOfVariables;
   }
@@ -197,7 +202,8 @@ public class Variables {
     return sumOfMultiplicities;
   }
   
-  public Variables(PSolver node) {
+  public Variables(String solverName, PSolver node) {
+    _solverName         = solverName;
     _variablesMap       = getVariables(node,"Q");
     _parametersMap      = getParameters(node,"params");
     _namingSchemesMap   = getNamingSchemes(node);
@@ -205,7 +211,8 @@ public class Variables {
     _numberOfParameters = sumMultiplicities(_parametersMap);
   }
   
-  public Variables(Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, Map<String,Map<String, Integer>> namingSchemesMap, int dimensions) {
+  public Variables(String solverName, Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, Map<String,Map<String, Integer>> namingSchemesMap, int dimensions) {
+    _solverName         = solverName;
     _variablesMap       = variablesMap;
     _parametersMap      = parametersMap;
     _namingSchemesMap   = namingSchemesMap;
