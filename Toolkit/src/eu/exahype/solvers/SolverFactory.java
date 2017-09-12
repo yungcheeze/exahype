@@ -48,9 +48,10 @@ public class SolverFactory {
           // _enableProfiler, hasConstants);
     // }
     else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
-      return new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
+      eu.exahype.solvers.OptimisedADERDG solver =  new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
-          _enableProfiler, _enableDeepProfiler, hasConstants, false, Arrays.asList(generalKernel.split("::")));
+          _enableProfiler, _enableDeepProfiler, hasConstants, Arrays.asList(kernel.split("::")));
+      return (solver.isValid() ? solver : null);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
       return new eu.exahype.solvers.KernelEuler2d();

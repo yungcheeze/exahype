@@ -13,7 +13,10 @@ public class OptimisedADERDG implements Solver {
   
   //configuration parameters
   //------------------------
-  public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options::nonlinear"
+
+  public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options"
+  public static final String linearId = "linear";
+  public static final String nonlinearId = "nonlinear";
   public static final String noTimeAveragingOptionId = "notimeavg";
   public static final String fluxOptionId = "fluxes";
   public static final String sourceOptionId = "sources";
@@ -31,27 +34,34 @@ public class OptimisedADERDG implements Solver {
   private boolean _enableDeepProfiler;
   private boolean _hasConstants;
   private boolean _isLinear;
-  private boolean _isFortran;
   private boolean _useFlux;
   private boolean _useSource;
   private boolean _useNCP;
   private boolean _noTimeAveraging;
   private String  _optKernelPath;
   private String  _optNamespace;
+  
+  private boolean _isValid; //if false the solverFactory will return null
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
+      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, List<String> options) {
+    
+    _isValid = options.contains(Identifier); //should be true or something is wrong with the factory
+    
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _namingSchemeNames  = namingSchemeNames;
     _order              = order;
-//    _patchSize = patchSize;
     _microarchitecture  = microarchitecture;
     _enableProfiler     = enableProfiler;
     _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
-    _isLinear           = isLinear;
+    
+    if(options.contains(linearId) ^ options.contains(nonlinearId)) //should be only one
+      _isLinear = options.contains(linearId);
+    else
+      _isValid = false;
     _useFlux            = options.contains(fluxOptionId);
     _useSource          = options.contains(sourceOptionId);
     _useNCP             = options.contains(ncpOptionId);
@@ -63,9 +73,16 @@ public class OptimisedADERDG implements Solver {
           _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
       _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
     } catch(IOException e) {
-      _optKernelPath = null; //this will trigger the error later during the generation of the abstract header/implementation, where it will be properly handled
-      _optNamespace = null;  //this will trigger the error later during the generation of the abstract header/implementation, where it will be properly handled
+      _isValid = false;      
     }
+    
+    //TODO JMG: linear kernels unsupported for now
+    if(_isLinear) 
+      _isValid = false;
+  }
+  
+  public boolean isValid() {
+    return _isValid;
   }
   
   private String getAbstractSolverName(String solverName) {
