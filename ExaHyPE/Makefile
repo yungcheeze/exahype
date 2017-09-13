@@ -78,32 +78,32 @@ endif
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS +=
-	COMPILER_LFLAGS +=
+	#COMPILER_CFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),peanoprofile)
 	# Settings for the Release mode
 	# ----------------------------------------------
 	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
-	COMPILER_LFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
 	# Settings for the Debug mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
-	COMPILER_LFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
 	# Settings for the Profile mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
-	COMPILER_LFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),asserts)
 	# Settings for the Asserts mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DAsserts -DTrackGridStatistics
-	COMPILER_LFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else
 	# Option not recognized
@@ -144,7 +144,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	LINK_FORTRAN	  += -lifcore
 
 	COMPILER_CFLAGS   += -restrict -std=c++11 -pedantic -Wall
-	COMPILER_LFLAGS   +=
+	#COMPILER_LFLAGS   +=
 	
 	
 	ifeq ($(call tolower,$(MODE)),debug)
@@ -167,10 +167,8 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 		COMPILER_LFLAGS   += -lrt
 	endif
 	
-	ifeq ($(call tolower,$(ARCHITECTURE)),)
-		COMPILER_CFLAGS +=
-		COMPILER_LFLAGS +=
-	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+
+	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
 		COMPILER_CFLAGS += -xHost
 		COMPILER_LFLAGS += -xHost
 	else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
@@ -235,17 +233,14 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
-		COMPILER_CFLAGS  +=
-		COMPILER_LFLAGS  +=
+		#COMPILER_CFLAGS  +=
+		#COMPILER_LFLAGS  +=
 	else
 		#COMPILER_CFLAGS  += -fno-rtti
 		COMPILER_LFLAGS  += -lrt
 	endif
 
 	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-		COMPILER_CFLAGS  +=
-		COMPILER_LFLAGS  +=
-	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
 		COMPILER_CFLAGS  += -march=native
 		COMPILER_LFLAGS  += -march=native
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
