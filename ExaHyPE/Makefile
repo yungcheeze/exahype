@@ -408,9 +408,6 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
 ifneq ($(call tolower,$(USE_IPO)),on)
-ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
-	find -H $(OPT_KERNEL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-endif
 	find -H $(EXAHYPE_PATH)'/exahype/solvers' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
@@ -421,9 +418,6 @@ cipofiles.mk:
 	touch cipofiles.mk
 	echo -n CIPOSOURCES= > cipofiles.mk
 ifeq ($(call tolower,$(USE_IPO)),on)
-ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
-	find -H $(OPT_KERNEL_PATH) -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
-endif
 	find -H $(EXAHYPE_PATH)'/exahype/solvers' -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
 	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
 endif

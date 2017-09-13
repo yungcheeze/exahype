@@ -106,13 +106,14 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("#"                                                                                                    + "\n");
       _writer.write("# export variable  |  default-value  |  further values         |  description"                        + "\n");
       _writer.write("#--------------------------------------------------------------------------------------------------"  + "\n");
-      _writer.write("# ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-platform"                 + "\n");
+      _writer.write("# ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-platform"                  + "\n");
       _writer.write("# COMPILER            Intel             GNU                       Used compiler (and linker)"         + "\n");
       _writer.write("# MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level"          + "\n");
       _writer.write("# SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation"      + "\n");
       _writer.write("# DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation" + "\n");
       _writer.write("# BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions"        + "\n");
-      _writer.write("# *********************************************************************************************"      + "\n");
+      _writer.write("# USE_IPO             Off               On                        IPO during compilation (intel only)"+ "\n");
+      _writer.write("# *********************************************************************************************"      + "\n\n");
 
       _writer.write("PEANO_KERNEL_PEANO_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/peano\n");
       _writer.write("PEANO_KERNEL_TARCH_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/tarch\n");
@@ -133,18 +134,18 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
 
       if (architecture.equals("wsm")) {
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=16");
       } else if (architecture.equals("snb")) {
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=32");
       } else if (architecture.equals("hsw")) {
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=32");
       } else if (architecture.equals("knc")) {
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=64");
       } else if (architecture.equals("knl")) {
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=64");
       } else {
         // noarch or unsupported architecture or undefined
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+        _writer.write("PROJECT_CFLAGS+= -DALIGNMENT=16");
       }
 
       _writer.write("\n");
@@ -152,7 +153,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("# such issues multiple times, we disable by default multithreaded MPI in ExaHyE. \n");
       _writer.write("# However, feel free to give it a try in your code on your system by disabling \n");
       _writer.write("# this flag. \n");
-      _writer.write("PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
+      _writer.write("PROJECT_CFLAGS+= -DnoMultipleThreadsMayTriggerMPICalls\n");
 
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
@@ -221,39 +222,31 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
       if (_useOptimisedKernels) {
         _writer.write("PROJECT_CFLAGS += -DOPT_KERNELS\n");
-        String paths = "";
-        for(String subPath : CodeGeneratorHelper.getInstance().getIncludePaths()) {
-          paths = _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/" + subPath + " ";
-        }
-        _writer.write("OPT_KERNEL_PATH=" + paths + "\n"); 
         _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");
         _writer.write("ifneq ($(call tolower,$(MODE)),)\n");
         _writer.write(" PROJECT_CFLAGS += -DTEST_OPT_KERNEL\n");
         _writer.write("endif\n");
         _writer.write("endif\n");
         _writer.write("\n\n");
-        _writer.write("ifeq ($(COMPILE_OPT_KERNEL),)\n");
-        _writer.write("  COMPILE_OPT_KERNEL=Yes\n");
-        _writer.write("endif\n");
         String architecture = node.getArchitecture().toString().trim().toLowerCase();
         if(!architecture.equals("noarch")) _writer.write("ARCHITECTURE="+architecture+"\n");
       }
       if (_likwidInc != null) {
-        _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
-        _writer.write("PROJECT_CFLAGS+=-DLIKWID_AVAILABLE\n");
+        _writer.write("PROJECT_CFLAGS+= -I" + _likwidInc + "\n");
+        _writer.write("PROJECT_CFLAGS+= -DLIKWID_AVAILABLE\n");
       }
       if (_ipcmInc != null) {
-        _writer.write("PROJECT_CFLAGS+=-I" + _ipcmInc + "\n");
-        _writer.write("PROJECT_CFLAGS+=-DIPCM_AVAILABLE\n");
+        _writer.write("PROJECT_CFLAGS+= -I" + _ipcmInc + "\n");
+        _writer.write("PROJECT_CFLAGS+= -DIPCM_AVAILABLE\n");
       }
       if (_likwidLib != null) {
-        _writer.write("PROJECT_LFLAGS+=$(LIKWID_LIB)");
+        _writer.write("PROJECT_LFLAGS+= $(LIKWID_LIB)");
       }
       if (_ipcmLib != null) {
-        _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");
+        _writer.write("PROJECT_LFLAGS+= -L" + _ipcmLib + " -lintelpcm\n");
       }
       if (_opt_noTimeAveraging) {
-         _writer.write("PROJECT_CFLAGS+=-DNO_TIME_AVERAGING \n");
+         _writer.write("PROJECT_CFLAGS+= -DNO_TIME_AVERAGING\n");
       }
       _writer.write("\n\n");
       _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
