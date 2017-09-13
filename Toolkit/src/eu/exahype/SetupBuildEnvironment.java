@@ -256,15 +256,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
          _writer.write("PROJECT_CFLAGS+=-DNO_TIME_AVERAGING \n");
       }
       _writer.write("\n\n");
-      if (_useOptimisedKernels) {
-        _writer.write("ifeq ($(USE_IPO),on)\n");
-        _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile_with_ipo\n");
-        _writer.write("else\n");
-      }
       _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
-      if (_useOptimisedKernels) {
-        _writer.write("endif\n");
-      }
       _writer.write("\n\n\n\n");
       _writer.write("all: \n");
       _writer.write("\t@echo " + node.getName() + "\n");
@@ -300,9 +292,13 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           "  export TBB_INC=-I...\t\t\tIndicate where to find TBB headers (only required if SHAREDMEM=TBB). Please add -I (Linux) prefix to path\n");
       System.out.print(
           "  export TBB_SHLIB=\"-L... -ltbb\"\tIndicate where to find TBB's shared libraries (only required if SHAREDMEM=TBB). Variable has to comprise both search path and library name\n");
+      System.out.print("\n");
+      System.out.print("  export USE_IPO=on\t\t\tCompile using IPO for the solvers and kernels (only with Intel compilers)");
       System.out.print("\n\n");
       System.out.print(
           "  If SHAREDMEM or DISTRIBUTEDMEM are not specified, they fall back to \"None\".\n");
+      System.out.print(
+          "  If USE_IPO is not specified, it falls back to \"off\" (compilation without IPO).\n");
       System.out.print("\n");
       System.out.print(
           "  If you run CSH, please replace \"export ARG=VALUE\" with \"setenv ARG VALUE\".\n");
