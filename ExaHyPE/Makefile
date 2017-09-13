@@ -101,20 +101,20 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	# Settings for the Intel Compiler
 	# ----------------------------------------------
 	ifndef EXAHYPE_CC 
-	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpiicpc
-	  else
-	    CC=icpc
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			CC=mpiicpc
+		else
+			CC=icpc
+		endif
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	ifndef EXAHYPE_FC
-	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    FC=mpiifort
-	  else
-	    FC=ifort
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			FC=mpiifort
+		else
+			FC=ifort
+		endif
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
@@ -122,128 +122,128 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	#TODO SVENK shouldn't have to go O0
 	FCOMPILER_CFLAGS  += -O0 -r8 -cpp -auto 
 	# REMOVING "-fast" as it induces compiler bugs!
-	LINK_FORTRAN      += -lifcore
+	LINK_FORTRAN	  += -lifcore
 
 	COMPILER_CFLAGS   += -restrict -std=c++11 -pedantic -Wall  
 	COMPILER_LFLAGS   +=
 	
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS   += -O0 -ggdb
+	    COMPILER_CFLAGS += -O0 -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-	  COMPILER_CFLAGS += -g3
-	  COMPILER_LFLAGS += -g3
+		COMPILER_CFLAGS += -g3
+		COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-	  #COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
-	  COMPILER_CFLAGS += -p -pg -g3 -O3 -no-ipo -ip
-	  COMPILER_LFLAGS += -p -pg
+		#COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
+		COMPILER_CFLAGS += -p -pg -g3 -O3 -no-ipo -ip
+		COMPILER_LFLAGS += -p -pg
 	else
-	  #COMPILER_CFLAGS   += -fast -no-ipo -ip
-	  COMPILER_CFLAGS   += -O3 -no-ipo -ip
+		#COMPILER_CFLAGS   += -fast -no-ipo -ip
+		COMPILER_CFLAGS   += -O3 -no-ipo -ip
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	else
-	  COMPILER_CFLAGS   +=# -fno-rtti  
-	  COMPILER_LFLAGS   += -lrt
+		COMPILER_CFLAGS   +=# -fno-rtti
+		COMPILER_LFLAGS   += -lrt
 	endif
 	
-    ifeq ($(call tolower,$(ARCHITECTURE)),)
-	  COMPILER_CFLAGS += 
-      COMPILER_LFLAGS += 
-    else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
- 	  COMPILER_CFLAGS += -xHost
-      COMPILER_LFLAGS += -xHost
+	ifeq ($(call tolower,$(ARCHITECTURE)),)
+		COMPILER_CFLAGS +=
+		COMPILER_LFLAGS +=
+	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+		COMPILER_CFLAGS += -xHost
+		COMPILER_LFLAGS += -xHost
 	else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-	  COMPILER_CFLAGS += -mmic
-	  COMPILER_LFLAGS += -mmic
+		COMPILER_CFLAGS += -mmic
+		COMPILER_LFLAGS += -mmic
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	  COMPILER_CFLAGS += -xMIC-AVX512 -fma
-      #FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
-	  #TODO SVENK: make fortran code compatible with these flags
-      COMPILER_LFLAGS += -xMIC-AVX512 -fma
-    else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-      COMPILER_CFLAGS += -xCORE-AVX2 -fma
-      #FCOMPILER_CFLAGS += -xCORE-AVX2 -fma 
-	  #TODO SVENK: make fortran code compatible with these flags
-      COMPILER_LFLAGS += -xCORE-AVX2 -fma
-    else
-      $(error Unknown option for variable [ARCHITECTURE])
-    endif
+		COMPILER_CFLAGS += -xMIC-AVX512 -fma
+		#FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+		#TODO SVENK: make fortran code compatible with these flags
+		COMPILER_LFLAGS += -xMIC-AVX512 -fma
+	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+		COMPILER_CFLAGS += -xCORE-AVX2 -fma
+		#FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+		#TODO SVENK: make fortran code compatible with these flags
+		COMPILER_LFLAGS += -xCORE-AVX2 -fma
+	else
+		$(error Unknown option for variable [ARCHITECTURE])
+	endif
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
 	# --------------------------------------------
 	ifndef EXAHYPE_CC 
-	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpicc
-	  else
-	    CC=g++
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			CC=mpicc
+		else
+			CC=g++
+		endif
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	ifndef EXAHYPE_FC
-	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    FC=mpifort
-	  else
-	    FC=gfortran
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			FC=mpifort
+		else
+			FC=gfortran
+		endif
 	else
-	  FC=$(EXAHYPE_FC)
+		FC=$(EXAHYPE_FC)
 	endif
 	
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp -Wall -Wno-tabs -Wno-unused-variable
 	# REMOVING "-O3"  as it creates compiler bugs!
-	LINK_FORTRAN      += -lgfortran
+	LINK_FORTRAN	  += -lgfortran
 
 	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
 	COMPILER_LFLAGS   += -lm -lstdc++
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS  += -O0 -ggdb
-          FCOMPILER_CFLAGS += -ggdb
+		COMPILER_CFLAGS  += -O0 -ggdb
+		FCOMPILER_CFLAGS += -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-          COMPILER_CFLAGS += -g3
-          COMPILER_LFLAGS += -g3
-          FCOMPILER_CFLAGS += -g3
+		COMPILER_CFLAGS  += -g3
+		COMPILER_LFLAGS  += -g3
+		FCOMPILER_CFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-          COMPILER_CFLAGS += -p -pg -g3 -O3
-          COMPILER_LFLAGS += -p -pg
+		COMPILER_CFLAGS  += -p -pg -g3 -O3
+		COMPILER_LFLAGS  += -p -pg
 	else
-	  COMPILER_CFLAGS   += -O3
-      FCOMPILER_CFLAGS  += -O3
+		COMPILER_CFLAGS  += -O3
+		FCOMPILER_CFLAGS += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
-	  COMPILER_CFLAGS += 
-	  COMPILER_LFLAGS += 
+		COMPILER_CFLAGS  +=
+		COMPILER_LFLAGS  +=
 	else
-	  COMPILER_CFLAGS   += #-fno-rtti
-	  COMPILER_LFLAGS   += -lrt
+		COMPILER_CFLAGS  += #-fno-rtti
+		COMPILER_LFLAGS  += -lrt
 	endif
 
 	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	  COMPILER_CFLAGS += 
-	  COMPILER_LFLAGS += 
+		COMPILER_CFLAGS  +=
+		COMPILER_LFLAGS  +=
 	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	  COMPILER_CFLAGS += -march=native
-	  COMPILER_LFLAGS += -march=native
+		COMPILER_CFLAGS  += -march=native
+		COMPILER_LFLAGS  += -march=native
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	  COMPILER_CFLAGS += -march=knl
-	  COMPILER_LFLAGS += -march=knl
+		COMPILER_CFLAGS  += -march=knl
+		COMPILER_LFLAGS  += -march=knl
 	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-	  COMPILER_CFLAGS += -march=haswell
-      COMPILER_LFLAGS += -march=haswell
-    else
-	  $(error Unknown option for variable [ARCHITECTURE])
+		COMPILER_CFLAGS  += -march=haswell
+		COMPILER_LFLAGS  += -march=haswell
+	else
+		$(error Unknown option for variable [ARCHITECTURE])
 	endif
 
 else ifeq ($(call tolower,$(COMPILER)),manual)
 	ifndef EXAHYPE_CC
-	  $(error COMPILER=manual at least requries user to set EXAHYPE_CC)
+		$(error COMPILER=manual at least requries user to set EXAHYPE_CC)
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	FC=$(EXAHYPE_FC)
 else
