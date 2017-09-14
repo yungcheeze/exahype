@@ -4,6 +4,10 @@
 
 using namespace GRMHD;
 
+constexpr bool debug_p2c = false;
+#define S(x) printf(#x " = %e\n", x);
+#define SI(x) S(x(0));S(x(1));S(x(2));
+
 void GRMHD::Prim2Cons::perform() {
 	// The hydro + magneto exact known prim2cons
 	Dens = rho * W;
@@ -25,6 +29,7 @@ void GRMHD::Prim2Cons::prepare() {
 	BmagVel  = 0; CONTRACT(k)  BmagVel += Bmag.lo(k) *  vel.up(k); // B^j * v_j
 	
 	W = 1. / std::sqrt(1.0 - VelVel); // Lorentz factor
+	if(debug_p2c) { printf("P2C: "); S(W); S(VelVel); }
 
 	// If we store the pressure (as we do currently in ExaHyPE) in the primitive variables, i.e.
 	// V=(rho,vel,press) instead of V=(rho,vel,eps) with internal energy eps, we need to recover

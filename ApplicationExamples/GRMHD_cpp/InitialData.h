@@ -48,3 +48,10 @@ struct VacuumInitialData : public InitialState {
 struct AlfenWave : public VacuumInitialData {
 	AlfenWave(const double* const x, const double t, double* Q);
 };
+
+struct AlfenWaveCons : public AlfenWave {
+	double V[100];
+	AlfenWaveCons(const double* const x, const double t, double* Q) : AlfenWave(x,t,V) {
+			GRMHD::Prim2Cons(Q, V).copyFullStateVector();
+		}
+};

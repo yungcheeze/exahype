@@ -279,6 +279,12 @@ namespace GRMHD {
 			void copy_adm(double* target) {
 				std::memcpy(target + AbsoluteIndices::offset, Q_ADM + AbsoluteIndices::offset, size*sizeof(double));
 			}
+			
+			// set all ADM components to zero. This is unphysical (not identity) for real metric but
+			// practical if gradients of the metric are stored.
+			void zero_adm() {
+				alpha = beta.up = gam.lo = 0;
+			}
 		};
 		
 		// A version of the ADMVariables where beta_lo and the upper metric
@@ -342,11 +348,11 @@ namespace GRMHD {
 		// Access an element, indicating that it's partial_i, not partial^i
 		const GRMHDSystem::Gradient& lo(int i) const { return dir[i]; }
 		
-		Gradients(const double* const gradQ) :
+		Gradients(const double* const Qx, const double* const Qy, const double* const Qz) :
 			#if DIMENSIONS == 3
-			dir{gradQ+0, gradQ+nVar, gradQ+2*nVar}
+			dir{Qx,Qy,Qz}
 			#elif DIMENSIONS == 2
-			dir{gradQ+0, gradQ+nVar}
+			dir{Qy,Qy}
 			#endif
 			// function body:
 			{}
@@ -372,7 +378,15 @@ namespace GRMHD {
 
 		// Quantities for computing the energy momentum tensor
 		// as well as the C2P.
-		double WLorentz, WW, SconScon, BmagBmag, BmagVel, BmagScon, VelVel, ptot;
+		double	WLorentz,	///< Lorentz factor (Gamma)
+			WW,		///< Squared Lorentz factor (Gamma^2)
+			RhoEnthWW,	///< rho*h*Gamma^2 as given by rtsafe
+			SconScon,	///< S^2 = S_i*S^i: Squared conserved momentum
+			BmagBmag,	///< B^2 = B_i*B^i: Squared magnetic field
+			BmagVel,	///< B_i*v^i: Magn field times three velocity
+			BmagScon,	///< B_i*S^i: Magn field times squared cons momentum
+			VelVel,		///< V^2 = v_i*v^i: Squared three velocity
+			ptot;		///< ptot = p_hydro + p_mag: Total pressure
 		
 		/// Prepares the Conserved B_i, S^i as well as the quantities neccessary to compute
 		/// The energy momentum tensor.
@@ -380,6 +394,9 @@ namespace GRMHD {
 		
 		/// Computes the primitive variables with knowledge of all conserved/adm/local class variables.
 		void perform();
+		
+		/// A modern interface to the RTSAFE C2P root finding procedure
+		bool rtsafe(double& x, double& y);
 		
 		/// Compute the magnetic pressure and thelike. 
 		void followup();
@@ -400,18 +417,29 @@ namespace GRMHD {
 		Stored(const double* const Q_) : Cons2Prim(V, Q_) {}
 	};
 	
-	struct PDE : private Cons2Prim::Stored {
+
+	struct PDE : public Cons2Prim::Stored {
+		typedef GRMHDSystem::Shadow Source;
+		typedef GRMHDSystem::Shadow Flux;
+		
 		// Constraint damping constant
 		static constexpr double damping_term_kappa = Parameters::DivCleaning_a;
 		
 		PDE(const double* const Q) : Cons2Prim::Stored(Q) {}
+
+		// fluxes moved to own class in order to be able to compute them also in only one direction.
 		
-		/// This is the algebraic conserved flux. Chainable.
-		void flux(/* const double* const Q, */ double** Fluxes);
+		//void flux(Flux& flux, int direction); // not that easy again because in each direction we have shared Sij and zeta.
+		//Flux& Flux(double* Fk);
+		//Fluxes& Fluxes(double** F);
+		//Fluxes& Fluxes(double* Fx, double* Fy, double* Fz);
+		// void flux(/* const double* const Q, */ double** Fluxes); // -> Moved to struct Fluxes.
 		
 		/// This is the fusedSource, but we just call it RightHandSide because it is on the RHS
-		/// of the PDE. Chainable.
+		/// of the PDE.
 		void RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data);
+		void RightHandSide(/* const double* const Q, */const double* const gradQx, const double* const gradQy, const double* const gradQz, double* Source_data);
+		void RightHandSide(const Gradients& grad, Source& source);
 		
 		// You can recover these functions by just reworking what's in the fusedSource.
 		//void nonConservativeProduct(/* const double* const Q, */ const double* const gradQ_Data, double* BgradQ_Data);
@@ -421,6 +449,43 @@ namespace GRMHD {
 		// access in order to avoid unneccessary boilerplate work.
 		static void eigenvalues(const double* const Q, const int d,double* lambda);
 	};
+	
+	// Compute a single flux in some direction
+	struct FluxBase : public PDE {
+		Mixed<sym::stored<3>> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
+		Up<vec::stored<3>> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
+		typedef GRMHDSystem::Shadow Flux;
+		FluxBase(const double* const Q) : PDE(Q) { /* prepare() */ }
+		void prepare();
+		void compute(Flux& flux, int k);
+	};
+	
+	// Compute all fluxes at once
+	struct Fluxes : public FluxBase {
+		Flux F[DIMENSIONS];
+		Fluxes(double** _F, const double* const Q) : FluxBase(Q), F{ _F[0], _F[1], _F[2] } { DFOR(i) compute(F[i], i); }
+		Fluxes(double* Fx, double* Fy, double* Fz, const double* const Q) : FluxBase(Q), F{Fx,Fy,Fz} { DFOR(i) compute(F[i], i); }
+		void zeroMaterialFluxes();
+	};
+
+	/*
+	/// This is the algebraic conserved flux
+	struct Fluxes : public PDE {
+		typedef GRMHDSystem::Shadow Flux;
+		Flux F[DIMENSIONS];
+		Mixed<sym::stored<3>> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
+		Up<vec::stored<3>> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
+		
+		// other constructors:
+		Fluxes(double** _F, const double* const Q) : PDE(Q), F{ _F[0], _F[1], _F[2] } { prepare(); DFOR(i) compute(i); }
+		Fluxes(double* Fx, double* Fy, double* Fz, const double* const Q) : PDE(Q), F{Fx,Fy,Fz} { prepare(); DFOR(i) compute(i); }
+
+		void prepare(); ///< compute Sij, zeta.
+		void compute(int k);
+		void zeroMaterialFluxes();
+	};
+	*/
+	
 	
 	/// A first attempt. This definition is useful for initial data.
 	struct Prim2Cons : public Hydro::Conserved::ShadowExtendable, public Magneto::ConstShadowExtendable, public Hydro::Primitives::ConstShadowExtendable, public ADMBase::Full {

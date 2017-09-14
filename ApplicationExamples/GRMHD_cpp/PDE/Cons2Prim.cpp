@@ -1,6 +1,7 @@
 #include "PDE.h"
 #include <cmath> // max, sqrt
 #include <algorithm> // max
+#include <utility> // swap
 
 #include <stdio.h> // printf
 
@@ -9,7 +10,7 @@ using namespace std; // sqrt, max
 
 // The C2P-Routines ported from Fortran for the SRMHD by Dominic, fully correct also for GRMHD.
 double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d, const double e, const double s2, const double b2, const double sb2, double& w,bool& failed);
-void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double& w);
+void FUNC_C2P_RMHD1(const double x,double& f,double& df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double& w);
 
 // Remember: The removal or adding of \sqrt{gamma} to the quantities.
 
@@ -25,17 +26,23 @@ void GRMHD::Cons2Prim::prepare() {
 	BmagScon = 0; CONTRACT(k) BmagScon += Bmag.lo(k)*Si.up(k);   // B^j * S_j // needed for c2p
 }
 
+constexpr bool debug_c2p = false;
+#define S(x) printf(#x " = %e\n", x);
+#define SI(x) S(x(0));S(x(1));S(x(2));
+
 // At this stage, we have all primitives recovered and can postcompute some quantities. This is as a
 // service or can be used for 
 void GRMHD::Cons2Prim::followup() {
 	BmagVel = 0;  CONTRACT(j) BmagVel  += Bmag.up(j)*vel.lo(j);  // B^j * v_j // needed for ptot
 	WLorentz = Dens/rho;
-	// Obtain a very different value then in Fortran.
-	// Determine it similar as done in Fortran:
-	double VelVel=0; CONTRACT(j) VelVel  += vel.up(j)*vel.lo(j);
-	WLorentz = 1.0 / std::sqrt(1.0 - VelVel);
 	WW = SQ(WLorentz); // W^2: Lorentz factor squared
 	ptot = press + 0.5*(BmagBmag/WW + SQ(BmagVel)); // total pressure incl magn. field, needed in 3-energy-mom-tensor
+
+
+	double VelVel2=0; CONTRACT(j) VelVel2  += vel.up(j)*vel.lo(j);
+	double WLorentz2 = 1.0 / std::sqrt(1.0 - VelVel2);
+
+	if(debug_c2p) { S(WLorentz); S(WW); S(Dens/rho); S(WLorentz2); S(VelVel2); }
 }
 
 void GRMHD::Cons2Prim::copyFullStateVector() {
@@ -46,27 +53,15 @@ void GRMHD::Cons2Prim::copyFullStateVector() {
 }
 
 void GRMHD::Cons2Prim::perform() {
-	constexpr double tol       = 1e-8;
 	constexpr double p_floor   = 1.0e-5;
 	constexpr double rho_floor = 1.0e-4;
-	
 	constexpr double gamma = GRMHD::Parameters::gamma;
-	
+
 	// TODO here: Removal of 1./\sqrt{gamma}.
 
-	// First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)]
-	constexpr double gamma1    = (gamma - 1.0)/gamma;
-	double e      = tau; // sic! My naming is probably sick.
-
-	constexpr double eps    = 1.e-10;
-	constexpr double x1     = 0.;
-	constexpr double x2     = 1.-eps;
-
-	// RTSAFE_C2P_RMHD1 has output {Gamma Factor w, Squared 3-velocity v^2}.
-	bool failed=false;
-	double w=0; // This is not the lorentz factor.
-	VelVel = RTSAFE_C2P_RMHD1(x1,x2,tol,gamma1,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,w,failed);
-	
+	// RTSAFE gives us x = v^2, y = rho * h * Gamma^2.
+	bool failed = rtsafe(VelVel, RhoEnthWW);
+	if(debug_c2p) { printf("Outcome: "); S(VelVel); S(RhoEnthWW);}
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
 		printf("C C2P FAILED\n");
@@ -74,51 +69,50 @@ void GRMHD::Cons2Prim::perform() {
 		press = p_floor;
 		DFOR(i) vel.up(i) = 0;
 	} else {
-		double den  = 1.0/(w+BmagBmag);
-		double vb   = BmagScon/w;
 		rho  = Dens*sqrt(1.-VelVel);
-		DFOR(i) vel.up(i) = (Si.up(i) + vb * Bmag.up(i))*den; // TODO: This looks wrong. CHECK
-		DFOR(i) vel.lo(i) = (Si.lo(i) + vb * Bmag.lo(i))*den;
-		press     = gamma1*(w*(1.-VelVel)-rho); // EOS
+		DFOR(i) vel.up(i) = (Si.up(i) + BmagScon/RhoEnthWW * Bmag.up(i)) / (RhoEnthWW+BmagBmag);
+		//DFOR(i) vel.lo(i) = (Si.lo(i) + BmagScon/RhoEnthWW * Bmag.lo(i)) / (RhoEnthWW+BmagBmag);
+		//vel.up=0; DFOR(i) CONTRACT(j)  vel.up(i) +=  vel.lo(j) * gam.up(i,j);
+		vel.lo=0; DFOR(i) CONTRACT(j)  vel.lo(i) +=  vel.up(j) * gam.lo(i,j);
+		press     = (gamma-1)/gamma*((1.-VelVel)*RhoEnthWW - rho); // Ideal EOS
 		press     = max(1.e-15, press); // bracketing
+		if(debug_c2p) { S(rho); SI(vel.up); SI(vel.lo); S(press); }
 	}
 }
 
-double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d,
-    const double e, const double s2, const double b2, const double sb2, double& w,bool& failed) {
-  int MAXIT=200;
+bool GRMHD::Cons2Prim::rtsafe(double& x, double& y) {
+	constexpr double tol       = 1e-8;
+	constexpr double eps    = 1.e-10;
+	constexpr double x1     = 0.;
+	constexpr double x2     = 1.-eps;
+	
+	constexpr double gamma = GRMHD::Parameters::gamma;
+	double e      = tau;// + Dens; // sic! My naming is probably sick.
+
+	// This is ECHO paper, first option
+	// [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)]
+	// x = v^2, y = rho * h * Gamma^2.
+	bool failed=false;
+	y = 0;
+	x = RTSAFE_C2P_RMHD1(x1,x2,tol,(gamma-1.0)/gamma,Dens,e,SconScon,BmagBmag,BmagScon*BmagScon,y,failed);
+	return failed;
+}
+
+double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, const double gam, const double d, const double e, const double s2, const double b2, const double sb2, double& w,bool& failed) {
+  constexpr int MAXIT=200;
+  double FL, DF;
+
   failed = false;
-  double FL;
-  double DF;
+  FUNC_C2P_RMHD1(X1,FL,DF,gam,d,e,s2,b2,sb2,w);
 
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&X1,&FL,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  double FL_test,DF_test,w_test;
-  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,w_test);
-//  assertionNumericalEquals(FL,FL_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
-
-  double v2 = 0; // don't know if this is a good init value but flag failed should safe us
+  double v2 = NAN;
   if(FL==0) {
     v2=X1;
     return v2;
   }
 
   double FH;
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&X2,&FH,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  double FH_test;
-  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,w_test);
-//  assertionNumericalEquals(FH,FH_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
+  FUNC_C2P_RMHD1(X2,FH,DF,gam,d,e,s2,b2,sb2,w);
 
   if(FH==0) {
      v2=X2;
@@ -130,33 +124,20 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
   }
 
   double XL,XH;
-  double SWAP;
   if(FL<0) {
     XL=X1;
     XH=X2;
   } else {
     XH=X1;
     XL=X2;
-
-    SWAP=FL;
-    FL=FH;
-    FH=SWAP;
+    std::swap(FL,FH);
   }
   v2=.5*(X1+X2);
   double DXOLD=std::abs(X2-X1);
   double DX=DXOLD;
 
   double F;
-#ifdef USE_FORTRAN_HELPER_FUNCS
-  func_c2p_rmhd1_(&v2,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-  FUNC_C2P_RMHD1(v2,&DF,&DF,gam,d,e,s2,b2,sb2,w);
-#endif
-  //double F_test;
-  //FUNC_C2P_RMHD1(v2,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-//  assertionNumericalEquals(F,F_test);
-//  assertionNumericalEquals(DF,DF_test);
-//  assertionNumericalEquals(*w,w_test);
+  FUNC_C2P_RMHD1(v2,F,DF,gam,d,e,s2,b2,sb2,w); // Dominic made an error here: &DF,&DF
   for (int J=1; J<MAXIT; ++J) {
      if(((v2-XH)*DF-F)*((v2-XL)*DF-F)>=0
           || std::abs(2.*F)>std::abs(DXOLD*DF) ) {
@@ -178,15 +159,7 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
      if (std::abs(DX)<XACC) {
        return v2;
      }
-#ifdef USE_FORTRAN_HELPER_FUNCS
-     func_c2p_rmhd1_(&v2,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-#else
-     FUNC_C2P_RMHD1(v2,&F,&DF,gam,d,e,s2,b2,sb2,w);
-     //FUNC_C2P_RMHD1(v2,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-#endif
-//     assertionNumericalEquals(F,F_test);
-//     assertionNumericalEquals(DF,DF_test);
-//     assertionNumericalEquals(*w,w_test);
+     FUNC_C2P_RMHD1(v2,F,DF,gam,d,e,s2,b2,sb2,w);
      if(F<0) {
         XL=v2;
         FL=F;
@@ -200,20 +173,19 @@ double RTSAFE_C2P_RMHD1(const double X1, const double X2, const double XACC, con
 }
 
 
-void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2,
-    const double sb2,double& w) {
+void FUNC_C2P_RMHD1(const double x,double& f,double& df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double& wo) {
   //
   // This is the CONS2PRIM strategy adopted by Del Zanna et al. (2007) A&A, 473, 11-30
   // and it corresponds to their choice 3 in Section 3.2
   //
-  double third = 1./3.;
+  constexpr int maxiter = 200; // in F it is 100
 
-  double v2=x;
-  double rho=d*std::sqrt(1.-v2);
+  const double v2=x;
+  const double rho=d*std::sqrt(1.-v2);
 
-  double c3=1.-gam*(1.-v2);
-  double c2=gam*rho+.5*b2*(1.+v2)-e;
-  double c0=-0.5*sb2;
+  const double c3=1.-gam*(1.-v2);
+  const double c2=gam*rho+.5*b2*(1.+v2)-e;
+  const double c0=-0.5*sb2;
 
   //  For every x=v2, we solve a cubic in W of the form:
   //  c3*W^3+c2*W^2+c0=0 (c3>0, c0<=0)
@@ -221,28 +193,32 @@ void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const d
   //  w = -c2/c3 > 0 and dw = 0 in the do loop below.
   //  If -c2/c3 < 0 when sb=0, which makes w=0,
   //  this is a signature that something was wrong before.
-  if ( abs ( c0) < 1.0e-20) {
+  double w;
+  if (std::abs(c0) < 1.0e-20) {
     w = -c2 / c3;
   } else {
-    w = std::max ( - c2 / c3, std::pow(( -c0 / c3), third));   // ( -c0 / c3)**third
-    for(int iter = 0; iter < 200; iter++) {
+    w = std::max(-c2/c3, std::pow(-c0/c3, 1./3.));
+    for(int iter = 0; iter < maxiter; iter++) {
       double dw = -((c3*w + c2)*w*w + c0)/((3*c3*w + 2*c2)*w);
       if (std::abs(dw/w)<1.e-10) {
         break; // happy breakdown
       }
       w = w + dw;
     }
-  };
+  }
 
-  double dc3   = gam;
-  double dc2   = 0.5 * ( b2 - gam * rho / (1.0 - v2));
-  double dlogw = -( dc3 * w + dc2 ) / ( 3.0 * c3 * w + 2.0 * c2);
-  double wb    = w + b2;
-  double vb2 = sb2 / (w*w);
-  *f   = wb*wb * v2 - ( 2.0 * w + b2) * vb2 - s2;
-  *df  = wb * ( wb + 2.0 * dlogw * ( w * v2 + vb2));
+  const double dc3   = gam;
+  const double dc2   = 0.5 * ( b2 - gam * rho / (1.0 - v2));
+  const double dlogw = -( dc3 * w + dc2 ) / ( 3.0 * c3 * w + 2.0 * c2);
+  const double wb    = w + b2;
+  const double vb2 = sb2 / (w*w);
+  
+  // set output:
+  f   = wb*wb * v2 - ( 2.0 * w + b2) * vb2 - s2;
+  df  = wb * ( wb + 2.0 * dlogw * ( w * v2 + vb2));
+  wo  = w;
 
-//  std::cout << "w_out="<<*w_out;
+//  std::cout << "wo="<<*wo;
 //  std::cout << ",f="<<*f;
 //  std::cout << ",df="<<*df << std::endl;
 }
