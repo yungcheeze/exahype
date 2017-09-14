@@ -3,3 +3,4 @@ dependencies
 
 markupsafe
 jinja2
+libxsmm_gemm_generator

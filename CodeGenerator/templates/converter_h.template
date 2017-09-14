@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#ifndef EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
-#define EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
+#ifndef EXAHYPE_{{guardNamespace}}_CONVERTER_H_
+#define EXAHYPE_{{guardNamespace}}_CONVERTER_H_
 #include <cstring>
 
 #include "kernels/KernelUtils.h"
@@ -53,5 +53,5 @@ namespace converter {
 }
 {% endfor %}
 
-#endif //EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
+#endif //EXAHYPE_{{guardNamespace}}_CONVERTER_H_
 

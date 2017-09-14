@@ -18,31 +18,11 @@
 #include "{{pathToOptKernel}}/DGMatrices.h"
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
-#include "{{solverHeader}}"
-
 {% if useLibxsmm %}
-{% for namespaceName in codeNamespaceList %}
-namespace {{namespaceName}} {
-{% endfor %}
-  void {{gemm_rhs_x}}(const double* A, const double* B, double* C);
-  void {{gemm_rhs_y}}(const double* A, const double* B, double* C);
-{% if nDim==3 %}
-  void {{gemm_rhs_z}}(const double* A, const double* B, double* C);
+#include "{{pathToOptKernel}}/gemmsCPP.h"
 {% endif %}
-{% if useNCP %}
-  void {{gemm_gradQ_x}}(const double* A, const double* B, double* C);
-  void {{gemm_gradQ_y}}(const double* A, const double* B, double* C);
-{% if nDim==3 %}
-  void {{gemm_gradQ_z}}(const double* A, const double* B, double* C);
-{% endif %}
-{% endif %}
-  void {{gemm_lqi}}(const double* A, const double* B, double* C);
-{% for namespaceName in codeNamespaceList %}
-}
-{% endfor %}
 
-#include "{{pathToOptKernel}}/asm_picard.c"
-{% endif %}
+#include "{{solverHeader}}"
 
 
 void {{codeNamespace}}::picardLoopNonlinear(
@@ -163,7 +143,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -179,7 +161,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
 {% endif %}
 {% if useNCP %}
 {% if useLibxsmm %}
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -207,7 +191,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -226,7 +212,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
           
           */
 {% if useLibxsmm %}
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -255,7 +243,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
           for(int it=0;it<{{nDof*nDofPad}};it++) {
             s_m[it] = -updateSize * Kxi[it];
           }
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -271,7 +261,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
 {% endif %}
 {% if useNCP %}
 {% if useLibxsmm %}
+#ifdef USE_IPO
           #pragma forceinline
+#endif
           {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
 {% else %}
           for (int l = 0; l < {{nDof}}; l++) {
@@ -335,7 +327,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
         s_m[it] = iweight * iK1[it];
       }
 {% if useLibxsmm %}
+#ifdef USE_IPO
       #pragma forceinline
+#endif
       {{gemm_lqi}}(&rhs[{{nVarPad}}*ijk], &s_m[0], &new_lQi_slice[0]); //Note: the gemm performs C = A*B, no need to initialize C to 0
 {% else %}
       std::memset(new_lQi_slice, 0, {{nDof*nVarPad}} * sizeof(double));

@@ -9,7 +9,9 @@ import eu.exahype.io.SourceTemplate;
 
 public class GenericADERDG implements Solver {
   public static final String Identifier = "generic::fluxes";
-
+  
+  private String _projectName;
+  private String _solverName;
   private int _dimensions;
   private int _numberOfVariables;
   private int _numberOfParameters;
@@ -21,8 +23,10 @@ public class GenericADERDG implements Solver {
   private boolean _isLinear;
   private boolean _isFortran;
 
-  public GenericADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
+  public GenericADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order, boolean enableProfiler, boolean hasConstants, boolean isLinear, boolean isFortran) {
+    _projectName        = projectName;
+    _solverName         = solverName;
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -34,15 +38,20 @@ public class GenericADERDG implements Solver {
     _isLinear           = isLinear;
     _isFortran          = isFortran;
   }
+  
+  @Override
+  public String getSolverName() {
+    return _solverName;
+  }
 
   @Override
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -70,23 +79,13 @@ public class GenericADERDG implements Solver {
     writer.write(content.toString());
   }
   
-  /**
-   * @deprecated This will be removed soon.
-   */
   @Override
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
-    // do nothing
-  }
-  
-  @Override
-  public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
     
     content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content.put("Dimensions",String.valueOf(_dimensions));
@@ -187,13 +186,13 @@ public class GenericADERDG implements Solver {
   }
   
   @Override
-  public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeAbstractHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericADERDGSolverHeader.template");
 
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -227,13 +226,12 @@ public class GenericADERDG implements Solver {
   }
   
   @Override
-  public void writeAbstractImplementation(BufferedWriter writer,
-      String solverName, String projectName) throws IOException {
+  public void writeAbstractImplementation(BufferedWriter writer) throws IOException {
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericADERDGSolverImplementation.template");
     
-    content.put("Project", projectName);
-    content.put("Solver", solverName);
+    content.put("Project", _projectName);
+    content.put("Solver", _solverName);
     //
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -327,14 +325,14 @@ public class GenericADERDG implements Solver {
     writer.write(content.toString());
   }
 
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeUserPDE(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a PDF.f90.\n");
   }
 
 
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
+  public void writeTypesDef(java.io.BufferedWriter writer)
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a typesDef.f90.\n");

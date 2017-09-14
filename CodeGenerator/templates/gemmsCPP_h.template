@@ -11,21 +11,30 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#ifndef EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
-#define EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
+#ifndef EXAHYPE_{{guardNamespace}}_GEMMSCPP_H_
+#define EXAHYPE_{{guardNamespace}}_GEMMSCPP_H_
 
+{% for namespaceName in codeNamespaceList %}
+namespace {{namespaceName}} {
+{% endfor %}
 {% if isLinear %}
 {% else %}
 // picard gemms
 void {{gemm_a_b_c}}_rhs_x(const double* A, const double* B, double* C);
-void {{gemm_a_b_c}}_gradQ_x(const double* A, const double* B, double* C);
 void {{gemm_a_b_c}}_rhs_y(const double* A, const double* B, double* C);
-void {{gemm_a_b_c}}_gradQ_y(const double* A, const double* B, double* C);
 {% if nDim == 3 %} 
 void {{gemm_a_b_c}}_rhs_z(const double* A, const double* B, double* C);
+
+{% endif %}  
+void {{gemm_a_b_c}}_lqi(const double* A, const double* B, double* C);
+{% endif %}
+
+{% if useNCP %}
+void {{gemm_a_b_c}}_gradQ_x(const double* A, const double* B, double* C);
+void {{gemm_a_b_c}}_gradQ_y(const double* A, const double* B, double* C);
+{% if nDim == 3 %} 
 void {{gemm_a_b_c}}_gradQ_z(const double* A, const double* B, double* C);
 {% endif %}  
-void {{gemm_a_b_c}}_lqh(const double* A, const double* B, double* C);
 {% endif %}
 
 // volume integral gemms
@@ -35,5 +44,9 @@ void {{gemm_a_b_c}}_lduh_y(const double* A, const double* B, double* C);
 void {{gemm_a_b_c}}_lduh_z(const double* A, const double* B, double* C);
 {% endif %}
 
-#endif //EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
+{% for namespaceName in codeNamespaceList %}
+}
+{% endfor %}
+
+#endif //EXAHYPE_{{guardNamespace}}_GEMMSCPP_H_
 

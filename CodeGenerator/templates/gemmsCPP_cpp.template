@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#include "{{pathToOptKernel}}/CpphGemms.h"
-#include "{{pathToOptKernel}}/Kernels.h"
+#include "{{pathToOptKernel}}/gemmsCPP.h"
+#include "{{pathToOptKernel}}/Kernels.h" //for the libxsmm flop counter
 
 // picard gemms
 {% if isLinear %}

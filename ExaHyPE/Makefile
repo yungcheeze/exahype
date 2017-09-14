@@ -17,10 +17,16 @@
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
+# USE_IPO             Off               On                        IPO during compilation (intel only)
 # *********************************************************************************************
 
 SHELL = bash
 tolower = $(shell echo $(1) | tr '[:upper:]' '[:lower:]')
+ifeq ($(call tolower,$(USE_IPO)),on)
+	SOLVERKERNELS_IPO_OBJ=$(PROJECT_PATH)/solver_ipo.o
+else
+	SOLVERKERNELS_IPO_OBJ=
+endif
 
 # ************************************************
 
@@ -44,11 +50,25 @@ endif
 ifeq ($(BOUNDARYCONDITIONS),)
 	BOUNDARYCONDITIONS=None
 endif
+ifeq ($(USE_IPO),)
+	USE_IPO=Off
+endif
 
 ifeq ($(call tolower,$(GPROF)),on)
 	COMPILER_CFLAGS += -pg 
 	COMPILER_LFLAGS += -pg 
 endif
+
+# ************************************************
+
+ifeq ($(call tolower,$(USE_IPO)),on)
+	ifneq ($(call tolower,$(COMPILER)),intel)
+$(error USE_IPO=on only works with COMPILER=Intel)
+	endif
+endif
+
+
+
 # ************************************************
 #
 #Set compiler and linker flags for the different Debug/Release modes
@@ -59,37 +79,37 @@ endif
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS +=
-	COMPILER_LFLAGS +=
+	#COMPILER_CFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),peanoprofile)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
-	COMPILER_LFLAGS +=
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
 	# Settings for the Debug mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
-	COMPILER_LFLAGS +=
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
 	# Settings for the Profile mode
 	# --------------------------------------------
-	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
-	COMPILER_LFLAGS += 
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
+	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),asserts)
 	# Settings for the Asserts mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DAsserts -DTrackGridStatistics
-	COMPILER_LFLAGS += 
+	#COMPILER_LFLAGS +=
 
 else
 	# Option not recognized
 	# ----------------------------------------------
-	$(error Unknown option '$(MODE)' for variable [MODE])
+$(error Unknown option '$(MODE)' for variable [MODE])
 endif
 
 
@@ -100,156 +120,153 @@ endif
 ifeq ($(call tolower,$(COMPILER)),intel)
 	# Settings for the Intel Compiler
 	# ----------------------------------------------
+	IPO_FLAG= -ipo
+	NO_IPO_FLAG = -no-ipo
 	ifndef EXAHYPE_CC 
-	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpiicpc
-	  else
-	    CC=icpc
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			CC=mpiicpc
+		else
+			CC=icpc
+		endif
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	ifndef EXAHYPE_FC
-	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    FC=mpiifort
-	  else
-	    FC=ifort
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			FC=mpiifort
+		else
+			FC=ifort
+		endif
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
 	
 	#TODO SVENK shouldn't have to go O0
-	FCOMPILER_CFLAGS  += -O0 -r8 -cpp -auto 
+	FCOMPILER_CFLAGS  += -O0 -r8 -cpp -auto
 	# REMOVING "-fast" as it induces compiler bugs!
-	LINK_FORTRAN      += -lifcore
+	LINK_FORTRAN	  += -lifcore
 
-	COMPILER_CFLAGS   += -restrict -std=c++11 -pedantic -Wall  
-	COMPILER_LFLAGS   +=
+	COMPILER_CFLAGS   += -restrict -std=c++11 -pedantic -Wall
+	#COMPILER_LFLAGS   +=
 	
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS   += -O0 -ggdb
+	    COMPILER_CFLAGS += -O0 -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-	  COMPILER_CFLAGS += -g3
-	  COMPILER_LFLAGS += -g3
+		COMPILER_CFLAGS += -g3
+		COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-	  #COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
-	  COMPILER_CFLAGS += -p -pg -g3 -O3 -no-ipo -ip
-	  COMPILER_LFLAGS += -p -pg
+		#COMPILER_CFLAGS += -p -pg -g3 -fast -ip
+		COMPILER_CFLAGS += -p -pg -g3 -O3 -ip
+		COMPILER_LFLAGS += -p -pg
 	else
-	  #COMPILER_CFLAGS   += -fast -no-ipo -ip
-	  COMPILER_CFLAGS   += -O3 -no-ipo -ip
+		#COMPILER_CFLAGS   += -fast -ip
+		COMPILER_CFLAGS   += -O3 -ip
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	else
-	  COMPILER_CFLAGS   +=# -fno-rtti  
-	  COMPILER_LFLAGS   += -lrt
+		#COMPILER_CFLAGS   += -fno-rtti
+		COMPILER_LFLAGS   += -lrt
 	endif
 	
-    ifeq ($(call tolower,$(ARCHITECTURE)),)
-	  COMPILER_CFLAGS += 
-      COMPILER_LFLAGS += 
-    else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
- 	  COMPILER_CFLAGS += -xHost
-      COMPILER_LFLAGS += -xHost
+
+	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+		COMPILER_CFLAGS += -xHost
+		COMPILER_LFLAGS += -xHost
 	else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-	  COMPILER_CFLAGS += -mmic
-	  COMPILER_LFLAGS += -mmic
+		COMPILER_CFLAGS += -mmic
+		COMPILER_LFLAGS += -mmic
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	  COMPILER_CFLAGS += -xMIC-AVX512 -fma
-      #FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
-	  #TODO SVENK: make fortran code compatible with these flags
-      COMPILER_LFLAGS += -xMIC-AVX512 -fma
-    else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-      COMPILER_CFLAGS += -xCORE-AVX2 -fma
-      #FCOMPILER_CFLAGS += -xCORE-AVX2 -fma 
-	  #TODO SVENK: make fortran code compatible with these flags
-      COMPILER_LFLAGS += -xCORE-AVX2 -fma
-    else
-      $(error Unknown option for variable [ARCHITECTURE])
-    endif
+		COMPILER_CFLAGS += -xMIC-AVX512 -fma
+		#FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+		#TODO SVENK: make fortran code compatible with these flags
+		COMPILER_LFLAGS += -xMIC-AVX512 -fma
+	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+		COMPILER_CFLAGS += -xCORE-AVX2 -fma
+		#FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+		#TODO SVENK: make fortran code compatible with these flags
+		COMPILER_LFLAGS += -xCORE-AVX2 -fma
+	else
+$(error Unknown option for variable [ARCHITECTURE])
+	endif
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
 	# --------------------------------------------
 	ifndef EXAHYPE_CC 
-	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpicc
-	  else
-	    CC=g++
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			CC=mpicc
+		else
+			CC=g++
+		endif
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	ifndef EXAHYPE_FC
-	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    FC=mpifort
-	  else
-	    FC=gfortran
-	  endif
+		ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+			FC=mpifort
+		else
+			FC=gfortran
+		endif
 	else
-	  FC=$(EXAHYPE_FC)
+		FC=$(EXAHYPE_FC)
 	endif
 	
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp -Wall -Wno-tabs -Wno-unused-variable
 	# REMOVING "-O3"  as it creates compiler bugs!
-	LINK_FORTRAN      += -lgfortran
+	LINK_FORTRAN	  += -lgfortran
 
-	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
+	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing
 	COMPILER_LFLAGS   += -lm -lstdc++
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS  += -O0 -ggdb
-          FCOMPILER_CFLAGS += -ggdb
+		COMPILER_CFLAGS  += -O0 -ggdb
+		FCOMPILER_CFLAGS += -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-          COMPILER_CFLAGS += -g3
-          COMPILER_LFLAGS += -g3
-          FCOMPILER_CFLAGS += -g3
+		COMPILER_CFLAGS  += -g3
+		COMPILER_LFLAGS  += -g3
+		FCOMPILER_CFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-          COMPILER_CFLAGS += -p -pg -g3 -O3
-          COMPILER_LFLAGS += -p -pg
+		COMPILER_CFLAGS  += -p -pg -g3 -O3
+		COMPILER_LFLAGS  += -p -pg
 	else
-	  COMPILER_CFLAGS   += -O3
-      FCOMPILER_CFLAGS  += -O3
+		COMPILER_CFLAGS  += -O3
+		FCOMPILER_CFLAGS += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
-	  COMPILER_CFLAGS += 
-	  COMPILER_LFLAGS += 
+		#COMPILER_CFLAGS  +=
+		#COMPILER_LFLAGS  +=
 	else
-	  COMPILER_CFLAGS   += #-fno-rtti
-	  COMPILER_LFLAGS   += -lrt
+		#COMPILER_CFLAGS  += -fno-rtti
+		COMPILER_LFLAGS  += -lrt
 	endif
 
 	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	  COMPILER_CFLAGS += 
-	  COMPILER_LFLAGS += 
-	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	  COMPILER_CFLAGS += -march=native
-	  COMPILER_LFLAGS += -march=native
+		COMPILER_CFLAGS  += -march=native
+		COMPILER_LFLAGS  += -march=native
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	  COMPILER_CFLAGS += -march=knl
-	  COMPILER_LFLAGS += -march=knl
+		COMPILER_CFLAGS  += -march=knl
+		COMPILER_LFLAGS  += -march=knl
 	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-	  COMPILER_CFLAGS += -march=haswell
-      COMPILER_LFLAGS += -march=haswell
-    else
-	  $(error Unknown option for variable [ARCHITECTURE])
+		COMPILER_CFLAGS  += -march=haswell
+		COMPILER_LFLAGS  += -march=haswell
+	else
+$(error Unknown option for variable [ARCHITECTURE])
 	endif
 
 else ifeq ($(call tolower,$(COMPILER)),manual)
 	ifndef EXAHYPE_CC
-	  $(error COMPILER=manual at least requries user to set EXAHYPE_CC)
+$(error COMPILER=manual at least requries user to set EXAHYPE_CC)
 	else
-	  CC=$(EXAHYPE_CC)
+		CC=$(EXAHYPE_CC)
 	endif
 	FC=$(EXAHYPE_FC)
 else
 	# Option not recognized
 	# ----------------------------------------------
-	$(error Unknown option for variable [COMPILER])
+$(error Unknown option for variable [COMPILER])
 endif
 
 
@@ -262,6 +279,7 @@ endif
 # list of files to compile. Remember that make evaluates expressions lazy, thus we can
 # do an include here but run the make target afterwards to fill the actual files.
 -include cfiles.mk
+-include cipofiles.mk
 -include ffiles.mk
 
 
@@ -316,6 +334,7 @@ LL=$(CC)
 
 
 COBJECTS=$(CSOURCES:.cpp=.o)
+CIPOOBJECTS=$(CIPOSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 FMODULEOBJECTS=$(FMODULESOURCES:.f90=.o)
 FOBJECTS+=$(FMODULEOBJECTS)
@@ -341,7 +360,7 @@ all: wellsortedbuild
 # results in all text over each other and a race condition when buildinfo
 # has not finished yet but the main.cpp code is already compiling.
 
-wellsortedbuild: header buildinfo ffiles.mk cfiles.mk
+wellsortedbuild: header buildinfo ffiles.mk cfiles.mk cipofiles.mk
 ifneq ($(FMODULEOBJECTS),)
 		$(MAKE) $(FMODULEOBJECTS)
 endif
@@ -387,13 +406,23 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> cfiles.mk
-	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/exahype/solvers/*' | tr '\n' ' ' >> cfiles.mk
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))  
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
-ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
-	find -H $(OPT_KERNEL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+ifneq ($(call tolower,$(USE_IPO)),on)
+	find -H $(EXAHYPE_PATH)'/exahype/solvers' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+endif
+
+
+#	ipo for kernel + application + exahype/solvers
+cipofiles.mk:
+	touch cipofiles.mk
+	echo -n CIPOSOURCES= > cipofiles.mk
+ifeq ($(call tolower,$(USE_IPO)),on)
+	find -H $(EXAHYPE_PATH)'/exahype/solvers' -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
+	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cipofiles.mk
 endif
 
 ffiles.mk:
@@ -410,7 +439,13 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
 
-	
+mergeipoobjects:  $(CIPOOBJECTS)
+ifeq ($(call tolower,$(USE_IPO)),on)
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -wd10015 -DUSE_IPO -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH) -ipo-c $(CIPOOBJECTS) -o $(SOLVERKERNELS_IPO_OBJ)
+#	-wd10015: disable the specific warning from ipo-c: icpc: warning #10015: multi-file optimization .o file produced; no link
+#	combine all the ipo objects into one object (with ipo between the merged objects)
+endif
+
 header:
 	@echo "================================================================================"
 	@echo
@@ -431,6 +466,7 @@ header:
 	@echo "SHAREDMEM              = $(SHAREDMEM)"
 	@echo "DISTRIBUTEDMEM         = $(DISTRIBUTEDMEM)"
 	@echo "ARCHITECTURE           = $(ARCHITECTURE)"
+	@echo "USE_IPO                = $(USE_IPO)"
 	@echo "--------------------------------------------------------------------------------"
 	@echo "EXAHYPE_CC             = $(EXAHYPE_CC)"
 	@echo "EXAHYPE_FC             = $(EXAHYPE_FC)"
@@ -462,8 +498,8 @@ header:
 	@echo flags, i.e. it is up  to you to initialise all compiler settings. Notably, 
 	@echo you have to specify through EXAHYPE_CC which compiler to use.
 
-build:  $(FOBJECTS) $(COBJECTS)
-	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+build:  $(FOBJECTS) mergeipoobjects $(COBJECTS)
+	$(LL) $(COBJECTS) $(FOBJECTS) $(SOLVERKERNELS_IPO_OBJ) $(PROJECT_LINK) $(LINK_FORTRAN) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(NO_IPO_FLAG) $(SYSTEM_LFLAGS) -o $(EXECUTABLE)
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument
@@ -474,11 +510,19 @@ clean:
 	rm -f ffiles.mk
 	rm -f $(COBJECTS)
 	rm -f cfiles.mk
+ifeq ($(call tolower,$(USE_IPO)),on)	
+	rm -f $(CIPOOBJECTS)
+	rm -f $(SOLVERKERNELS_IPO_OBJ)
+endif
+	rm -f cipofiles.mk
 	rm -f buildinfo.h
 
 
 $(COBJECTS): %.o : %.cpp
-	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(NO_IPO_FLAG) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+
+$(CIPOOBJECTS): %.o : %.cpp
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(IPO_FLAG) -DUSE_IPO $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90
 	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@

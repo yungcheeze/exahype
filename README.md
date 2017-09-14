@@ -42,7 +42,7 @@ A script is provided to import all the dependencies locally
 
 Quick installation:
 
-    ./ExaHyPE-Engine/importDependenciesLocally.sh 
+    ./ExaHyPE-Engine/CodeGenerator/importDependenciesLocally.sh 
 
 If Jinja2 is provided by your python installation you can safelly edit the value of the import script configuration parameter ``JINJA2_ALREADY_AVAILABLE`` to remove its and MarkupSafe local imports.
 

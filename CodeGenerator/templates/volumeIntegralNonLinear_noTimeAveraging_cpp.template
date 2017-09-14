@@ -20,19 +20,7 @@
 #include "{{pathToOptKernel}}/GaussLegendreQuadrature.h"
 
 {% if useLibxsmm %}
-{% for namespaceName in codeNamespaceList %}
-namespace {{namespaceName}} {
-{% endfor %}
-  void {{gemm_x}}(const double* A, const double* B, double* C);
-  void {{gemm_y}}(const double* A, const double* B, double* C);
-{% if nDim==3 %}
-  void {{gemm_z}}(const double* A, const double* B, double* C);
-{% endif %}
-{% for namespaceName in codeNamespaceList %}
-}
-{% endfor %}
-
-#include "{{pathToOptKernel}}/asm_volumeIntegral.c"
+#include "{{pathToOptKernel}}/gemmsCPP.h"
 {% endif %}
 
 void {{codeNamespace}}::volumeIntegral( 
@@ -42,7 +30,6 @@ void {{codeNamespace}}::volumeIntegral(
   const tarch::la::Vector<DIMENSIONS,double> &inverseDx
 ) {
 
-  
 #ifdef __INTEL_COMPILER
   __assume_aligned(lFi, ALIGNMENT);
   __assume_aligned(Kxi_T, ALIGNMENT);
@@ -75,7 +62,9 @@ void {{codeNamespace}}::volumeIntegral(
     }
   }
 {% if useLibxsmm %}
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_x}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
 {% else %}
   for(int l=0; l<{{nDof}}; l++) {
@@ -100,7 +89,9 @@ void {{codeNamespace}}::volumeIntegral(
     }
   }
 {% if useLibxsmm %}
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_y}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
 {% else %}
   for(int l=0; l<{{nDof}}; l++) {
@@ -128,7 +119,9 @@ void {{codeNamespace}}::volumeIntegral(
     }
   }
 {% if useLibxsmm %}
+#ifdef USE_IPO
   #pragma forceinline
+#endif
   {{gemm_z}}(&lFhi_loc[0],&Kxi_T[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {% else %}
   for(int l=0; l<{{nDof}}; l++) {
