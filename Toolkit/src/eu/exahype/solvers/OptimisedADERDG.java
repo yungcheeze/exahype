@@ -2,6 +2,7 @@ package eu.exahype.solvers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 
@@ -11,16 +12,7 @@ import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
   
-  //configuration parameters
-  //------------------------
-
   public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options"
-  public static final String linearId = "linear";
-  public static final String nonlinearId = "nonlinear";
-  public static final String noTimeAveragingOptionId = "notimeavg";
-  public static final String fluxOptionId = "fluxes";
-  public static final String sourceOptionId = "sources";
-  public static final String ncpOptionId = "ncp";
 
   //Internal states
   //---------------
@@ -46,10 +38,8 @@ public class OptimisedADERDG implements Solver {
   private boolean _isValid; //if false the solverFactory will return null
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, List<String> options) {
-    
-    _isValid = options.contains(Identifier); //should be true or something is wrong with the factory
-    
+      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, List<String> options) 
+      throws IOException, IllegalArgumentException {    
     _projectName        = projectName;
     _solverName         = solverName;
     _dimensions         = dimensions;
@@ -62,31 +52,24 @@ public class OptimisedADERDG implements Solver {
     _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
     
-    if(options.contains(linearId) ^ options.contains(nonlinearId)) //should be only one
-      _isLinear         = options.contains(linearId);
+    if(options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) //should be only one
+      _isLinear         = options.contains(LINEAR_OPTION_ID);
     else
-      _isValid = false;
-    _useFlux            = options.contains(fluxOptionId);
-    _useSource          = options.contains(sourceOptionId);
-    _useNCP             = options.contains(ncpOptionId);
-    _noTimeAveraging    = options.contains(noTimeAveragingOptionId); 
+      throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the options ("+options+")");
+    _useFlux            = options.contains(FLUX_OPTION_ID);
+    _useSource          = options.contains(SOURCE_OPTION_ID);
+    _useNCP             = options.contains(NCP_OPTION_ID);
+    _noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
 
-    //generate the optimised kernel
-    try {
-      _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(_projectName, _solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-          _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
-      _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(_projectName, _solverName);
-    } catch(IOException e) {
-      _isValid = false;      
-    }
+    //generate the optimised kernel, can throw IOException
+    _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(_projectName, _solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+        _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
+    _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(_projectName, _solverName);
+    
     
     //TODO JMG: linear kernels unsupported for now
     if(_isLinear) 
-      _isValid = false;
-  }
-  
-  public boolean isValid() {
-    return _isValid;
+      throw new IllegalArgumentException("Linear kernels not supported yet");
   }
     
   @Override
@@ -104,7 +87,7 @@ public class OptimisedADERDG implements Solver {
   
   @Override
   public void writeHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException {
+      throws IOException {
 	  SourceTemplate content = SourceTemplate.fromRessourceContent(
 			  "eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
 

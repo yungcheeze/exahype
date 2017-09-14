@@ -2,13 +2,15 @@ package eu.exahype.solvers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.IllegalArgumentException;
 import java.util.Set;
+import java.util.List;
 
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class GenericADERDG implements Solver {
-  public static final String Identifier = "generic::fluxes";
+  public static final String Identifier = "generic";
   
   private String _projectName;
   private String _solverName;
@@ -17,14 +19,17 @@ public class GenericADERDG implements Solver {
   private int _numberOfParameters;
   private Set<String> _namingSchemeNames;
   private int _order;
-//  private int _patchSize;
   private boolean _enableProfiler;
   private boolean _hasConstants;
-  private boolean _isLinear;
   private boolean _isFortran;
+  private boolean _isLinear;
+  private boolean _useFlux;
+  private boolean _useSource;
+  private boolean _useNCP;
 
   public GenericADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order, boolean enableProfiler, boolean hasConstants, boolean isLinear, boolean isFortran) {
+      int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, List<String> options) throws IllegalArgumentException {
+
     _projectName        = projectName;
     _solverName         = solverName;
     _dimensions         = dimensions;
@@ -32,11 +37,14 @@ public class GenericADERDG implements Solver {
     _numberOfParameters = numberOfParameters;
     _namingSchemeNames  = namingSchemeNames;
     _order              = order;
-//    _patchSize = patchSize;
     _enableProfiler     = enableProfiler;
     _hasConstants       = hasConstants;
-    _isLinear           = isLinear;
     _isFortran          = isFortran;
+    
+    if(options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) //should be only one
+      _isLinear         = options.contains(LINEAR_OPTION_ID);
+    else
+      throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the options ("+options+")");
   }
   
   @Override

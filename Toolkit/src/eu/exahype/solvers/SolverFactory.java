@@ -27,38 +27,42 @@ public class SolverFactory {
   }
   
   public Solver createADERDGSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
-    String generalKernel = kernel.substring(0, kernel.lastIndexOf("::"));
-    boolean isLinear     = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("::linear");
-    
-    if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
-      return new eu.exahype.solvers.UserDefinedADER_DGinFortran(_projectName, solvername);
+    List<String> options = Arrays.asList(kernel.split("::"));
+
+    try { //some solver initialisation can throw IllegalArgumentException if the options are wrong or IOException
+      if (kernel.startsWith( eu.exahype.solvers.GenericADERDG.Identifier )) {
+        return new eu.exahype.solvers.GenericADERDG(_projectName, solvername, _dimensions,
+            numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isFortran, options );
+      }
+      // TODO JMG Clean
+      // else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
+        // return new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
+            // numberOfVariables, numberOfParameters, order, _microarchitecture,
+            // _enableProfiler, hasConstants);
+      // }
+      else if (!isFortran && kernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
+        return new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
+            numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
+            _enableProfiler, _enableDeepProfiler, hasConstants, options);
+        
+      }
+      // TODO JMG Clean when confirmed legacy
+      // else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
+        // return new eu.exahype.solvers.KernelEuler2d(_projectName, solvername);
+      // }
+      else if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
+        return new eu.exahype.solvers.UserDefinedADER_DGinFortran(_projectName, solvername);
+      }
+      else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
+        return new eu.exahype.solvers.UserDefinedADER_DGinC(_projectName, solvername, numberOfVariables,
+            numberOfParameters, order, hasConstants, _enableProfiler);
+      }
+      
+      return null;
+    } catch(Exception e) {
+      System.err.println("ERROR: can't create the solver. Error: "+e );
+      return null;
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
-      return new eu.exahype.solvers.UserDefinedADER_DGinC(_projectName, solvername, numberOfVariables,
-          numberOfParameters, order, hasConstants, _enableProfiler);
-    }
-    else if (generalKernel.equals( eu.exahype.solvers.GenericADERDG.Identifier )) {
-      return new eu.exahype.solvers.GenericADERDG(_projectName, solvername, _dimensions,
-          numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isLinear, isFortran );
-    }
-    // TODO JMG Clean
-    // else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
-      // return new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
-          // numberOfVariables, numberOfParameters, order, _microarchitecture,
-          // _enableProfiler, hasConstants);
-    // }
-    else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
-      eu.exahype.solvers.OptimisedADERDG solver =  new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
-          numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
-          _enableProfiler, _enableDeepProfiler, hasConstants, Arrays.asList(kernel.split("::")));
-      return (solver.isValid() ? solver : null);
-    }
-    // TODO JMG Clean when confirmed legacy
-    // else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
-      // return new eu.exahype.solvers.KernelEuler2d(_projectName, solvername);
-    // }
-    
-    return null;
   }
   
   public Solver createFiniteVolumesSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
