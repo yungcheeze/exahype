@@ -1140,7 +1140,7 @@ int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
   ss >> result;
 
   if (ss) {
-    return true;
+    return result;
   } else {
     assertion(!isValueValidInt(key));
     assertionMsg(false, "shall not happen. Please call isValueValidXXX before");
@@ -1172,7 +1172,7 @@ double exahype::Parser::ParserView::getValueAsDouble(
   std::string value = getValue(key);
 
   double result;
-  std::istringstream ss(value);
+  std::istringstream ss(value); // TODO(Dominic)
   ss >> result;
 
   if (ss) {
