@@ -148,58 +148,6 @@ private:
   bool _stabilityConditionWasViolated;
 
   /**
-   * The number of unknowns/basis functions associated with each face of an
-   * element.
-   * This number includes the unknowns of all state variables.
-   */
-  const int _dofPerFace;
-
-  /**
-   * The total number of unknowns/basis functions associated with the 2^d faces
-   * of an element.
-   * This number includes the unknowns of all state variables.
-   */
-  const int _dofPerCellBoundary;
-
-  /**
-   * The total number of unknowns/basis functions associated with the volume of
-   * a cell.
-   * This number includes the unknowns of all state variables.
-   */
-  const int _dofPerCell;
-
-  /**
-   * The total number of volume flux unknowns/basis functions PLUS the number of
-   * source unknowns
-   * associated with the volume of a cell.
-   * This number includes the unknowns of all state variables.
-   *
-   *
-   */
-  const int _fluxDofPerCell;
-
-  /**
-   * The total number of space-time unknowns/basis functions associated with the
-   * space-time volume of a cell and its time stepping interval.
-   * This number includes the unknowns of all state variables.
-   */
-  const int _spaceTimeDofPerCell;
-
-  /**
-   * The total number of space-time volume flux unknowns/basis functions
-   * PLUS the number of space-time source unknowns associated with the
-   * space-time volume of a cell and its time stepping interval.
-   * This number includes the unknowns of all state variables.
-   */
-  const int _spaceTimeFluxDofPerCell;
-
-  /**
-   * The size of data required to store cell volume based unknowns and
-   * associated parameters.
-   */
-  const int _dataPointsPerCell;
-
-  /**
    * !!! LimitingADERDGSolver functionality !!!
    *
    * The number of observables

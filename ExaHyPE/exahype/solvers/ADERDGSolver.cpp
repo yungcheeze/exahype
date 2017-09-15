@@ -492,13 +492,6 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
      _minPredictorTimeStepSize( std::numeric_limits<double>::max() ),
      _minNextPredictorTimeStepSize( std::numeric_limits<double>::max() ),
      _stabilityConditionWasViolated( false ),
-     _dofPerFace( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS - 1) ),
-     _dofPerCellBoundary( DIMENSIONS_TIMES_TWO * _dofPerFace ),
-     _dofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
-     _fluxDofPerCell( _dofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
-     _spaceTimeDofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 1) ),
-     _spaceTimeFluxDofPerCell( _spaceTimeDofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
-     _dataPointsPerCell( (numberOfVariables+numberOfParameters) * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
      _DMPObservables(DMPObservables),
      _minimumLimiterStatusForActiveFVPatch(limiterHelperLayers+1),
      _minimumLimiterStatusForTroubledCell (2*limiterHelperLayers+1) {
@@ -515,27 +508,27 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerFace() const {
-  return _dofPerFace;
+  return _numberOfVariables * power(_nodesPerCoordinateAxis, DIMENSIONS - 1);
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerCellBoundary() const {
-  return _dofPerCellBoundary;
+  return DIMENSIONS_TIMES_TWO * getUnknownsPerFace();
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerCell() const {
-  return _dofPerCell;
+  return _numberOfVariables * power(_nodesPerCoordinateAxis, DIMENSIONS + 0);
 }
 
 int exahype::solvers::ADERDGSolver::getFluxUnknownsPerCell() const {
-  return _fluxDofPerCell;
+  return (DIMENSIONS + 1) * getUnknownsPerCell(); // +1 for sources
 }
 
 int exahype::solvers::ADERDGSolver::getSpaceTimeUnknownsPerCell() const {
-  return _spaceTimeDofPerCell;
+  return _numberOfVariables * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
 }
 
 int exahype::solvers::ADERDGSolver::getSpaceTimeFluxUnknownsPerCell() const {
-  return _spaceTimeFluxDofPerCell;
+  return (DIMENSIONS + 1) * getSpaceTimeUnknownsPerCell();  // +1 for sources
 }
 
 int exahype::solvers::ADERDGSolver::getDataPerFace() const {
@@ -1579,10 +1572,10 @@ void exahype::solvers::ADERDGSolver::prepareVolumeDataRestriction(
     CellDescription& cellDescription) const {
   double* solution =
       DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  std::fill_n(solution,_dataPointsPerCell,0.0);
+  std::fill_n(solution,getDataPerCell(),0.0);
   double* previousSolution =
       DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
-  std::fill_n(previousSolution,_dataPointsPerCell,0.0);
+  std::fill_n(previousSolution,getDataPerCell(),0.0);
 }
 
 void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations(
@@ -2215,7 +2208,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       cellDescription.getRefinementEvent()==CellDescription::None) {
     double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
     double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    std::copy(newSolution,newSolution+_dofPerCell,solution); // Copy (current solution) in old solution field.
+    std::copy(newSolution,newSolution+getUnknownsPerCell(),solution); // Copy (current solution) in old solution field.
 
     double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
     double* lFhbnd = exahype::DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
@@ -4186,17 +4179,17 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_timeStepping:" << exahype::solvers::Solver::toString(_timeStepping); // only solver attributes
   out << ",";
-  out << "_unknownsPerFace:" << _dofPerFace;
+  out << "_unknownsPerFace:" << getUnknownsPerFace();
   out << ",";
-  out << "_unknownsPerCellBoundary:" << _dofPerCellBoundary;
+  out << "_unknownsPerCellBoundary:" << getUnknownsPerCellBoundary();
   out << ",";
-  out << "_unknownsPerCell:" << _dofPerCell;
+  out << "_unknownsPerCell:" << getUnknownsPerCell();
   out << ",";
-  out << "_fluxUnknownsPerCell:" << _fluxDofPerCell;
+  out << "_fluxUnknownsPerCell:" << getFluxUnknownsPerCell();
   out << ",";
-  out << "_spaceTimeUnknownsPerCell:" << _spaceTimeDofPerCell;
+  out << "_spaceTimeUnknownsPerCell:" << getSpaceTimeUnknownsPerCell();
   out << ",";
-  out << "_spaceTimeFluxUnknownsPerCell:" << _spaceTimeFluxDofPerCell;
+  out << "_spaceTimeFluxUnknownsPerCell:" << getSpaceTimeFluxUnknownsPerCell();
   out << ",";
   out << "_previousMinCorrectorTimeStepSize:" << _previousMinCorrectorTimeStepSize;
   out << ",";

@@ -159,7 +159,6 @@ void exahype::mappings::TimeStepSizeComputation::weighMinNextPredictorTimeStepSi
 
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
-    double usedTimeStepSize         = aderdgSolver->getMinPredictorTimeStepSize();
     logDebug("weighMinNextPredictorTimeStepSize(...)","stableTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
     logDebug("weighMinNextPredictorTimeStepSize(...)","usedTimeStepSize="  <<std::setprecision(12)<<aderdgSolver->getMinPredictorTimeStepSize());
 

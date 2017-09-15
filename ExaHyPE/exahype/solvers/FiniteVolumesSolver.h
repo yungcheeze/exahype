@@ -85,29 +85,6 @@ private:
   int _ghostLayerWidth;
 
   /**
-   * Total number of volume averages and ghost values in a patch.
-   * This number does include ghost values.
-   */
-  int _dataPerPatch;
-
-  /**
-   * Total number of ghost values surrounding a patch.
-   */
-  int _ghostDataPerPatch;
-
-  /**
-   * Total number of volume averages per face of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchFace;
-
-  /**
-   * Total number of volume averages per boundary of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchBoundary;
-
-  /**
    * Synchonises the cell description time stamps
    * and time step sizes with the solver ones
    * according to the time stepping mode that
