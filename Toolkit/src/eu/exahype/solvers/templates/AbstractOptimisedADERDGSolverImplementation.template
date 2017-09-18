@@ -16,24 +16,19 @@
 #include <stdio.h>
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs  {%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler
-  {%- endif %}
-  {%- if hasConstants %}
-    , exahype::Parser::ParserView constants
-  {%- endif %}
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs 
+{%- if enableProfiler %}
+, std::unique_ptr<exahype::profilers::Profiler> profiler
+{%- endif %}
+{%- if hasConstants %}
+, exahype::Parser::ParserView constants
+{%- endif %}
 ):
-  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping  {%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler
-  {%- endif %}
-  ) {
+  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping {%- if enableProfiler %}, std::move(profiler) {%- endif %}) {
   init(cmdlineargs {%- if hasConstants %}, constants{% endif %});
 }
 
-{{project}}::{{abstractSolver}}::{{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler
-  {%- endif %}
-):
+{{project}}::{{abstractSolver}}::{{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping {%- if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler {%- endif %} ):
   exahype::solvers::ADERDGSolver("{{solver}}",{{optNamespace}}::getNumberOfVariable(),{{optNamespace}}::getNumberOfParameter(),{{optNamespace}}::getBasisSize(),
                                  maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping {%- if enableProfiler %}, std::move(profiler){% endif %}) {
 }
@@ -249,6 +244,12 @@ void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 
 void {{project}}::{{abstractSolver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
   //TODO JMG
+{%- if enableProfiler %}
+  _profiler->start("pointSource");
+{%- endif %}
+{%- if enableProfiler %}
+  _profiler->stop("pointSource");
+{%- endif %}
 }
 
 void {{project}}::{{abstractSolver}}::flux(const double* const Q,double** F) {

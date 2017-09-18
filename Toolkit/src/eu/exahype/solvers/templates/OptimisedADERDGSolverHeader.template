@@ -41,8 +41,7 @@ private:
   {%- endif %}
   {%- if hasConstants %}
     , exahype::Parser::ParserView& constants
-  {%- endif %}
-    );
+  {%- endif %}    );
 
     /**
      * Initialise the solver.

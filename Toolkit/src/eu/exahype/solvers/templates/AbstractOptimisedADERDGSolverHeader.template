@@ -53,9 +53,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     {{namingSchemes}}
     
     {{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping  {%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler
-  {%- endif %}
-    );
+    , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});
 
     /**
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation

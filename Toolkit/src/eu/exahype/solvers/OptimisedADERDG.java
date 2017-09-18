@@ -6,12 +6,15 @@ import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 
+// template engine
+import minitemp.Context;
+import minitemp.TemplateEngine;
+
 import eu.exahype.CodeGeneratorHelper;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
-import minitemp.Context;
-import minitemp.TemplateEngine;
+
 
 public class OptimisedADERDG implements Solver {
   
@@ -44,45 +47,47 @@ public class OptimisedADERDG implements Solver {
     context = new Context();
     
     //String
-    context.put("project", projectName);
-    context.put("solver" , solverName);
-    context.put("abstractSolver" , getAbstractSolverName());
-    
-    //TODO JM support for loop (for writeAbstractImplementation)
-    String namingSchemes = "";
-    for (String name : namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    context.put("namingSchemes" , namingSchemes);
+    context.put("project"           , projectName);
+    context.put("solver"            , solverName);
+    context.put("abstractSolver"    , getAbstractSolverName());
     
     //int
-    context.put("dimensions" , dimensions);
-    context.put("order" , order);
+    context.put("dimensions"        , dimensions);
+    context.put("order"             , order);
     context.put("numberOfVariables" , numberOfVariables);
-    context.put("numberOfParameters" , numberOfParameters);
+    context.put("numberOfParameters", numberOfParameters);
     
     //boolean
-    context.put("enableProfiler" , enableProfiler);
-    context.put("enableDeepProfiler" , enableDeepProfiler);
-    context.put("hasConstants" , hasConstants);
-    context.put("isLinear" , isLinear);
-    context.put("useFlux" , useFlux);
-    context.put("useSource" , useSource);
-    context.put("useNCP" , useNCP);
-    context.put("noTimeAveraging" , noTimeAveraging);
+    context.put("enableProfiler"    , enableProfiler);
+    context.put("enableDeepProfiler", enableDeepProfiler);
+    context.put("hasConstants"      , hasConstants);
+    context.put("isLinear"          , isLinear);
+    context.put("useFlux"           , useFlux);
+    context.put("useSource"         , useSource);
+    context.put("useNCP"            , useNCP);
+    context.put("noTimeAveraging"   , noTimeAveraging);
     
     //boolean as String
-    context.put("useFlux_s", boolToTemplate(useFlux));
-    context.put("useSource_s", boolToTemplate(useSource));
-    context.put("useNCP_s", boolToTemplate(useNCP));
+    context.put("useFlux_s"         , boolToTemplate(useFlux));
+    context.put("useSource_s"       , boolToTemplate(useSource));
+    context.put("useNCP_s"          , boolToTemplate(useNCP));
 
     //generate the optimised kernel, can throw IOException
     final String optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, numberOfVariables, numberOfParameters, order, isLinear, dimensions,
         microarchitecture, enableDeepProfiler, useFlux, useSource, useNCP, noTimeAveraging);
     final String optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
     
-    context.put("optKernelPath", optKernelPath);
-    context.put("optNamespace", optNamespace);
+    context.put("optKernelPath"     , optKernelPath);
+    context.put("optNamespace"      , optNamespace);
+    
+    
+    //TODO JM support for loop (for writeAbstractImplementation)
+    String namingSchemes = "";
+    for (String name : namingSchemeNames) {
+      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+    }
+    context.put("namingSchemes"     , namingSchemes);
+    
     
     //TODO JMG: linear kernels unsupported for now
     if(isLinear) 

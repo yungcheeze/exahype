@@ -23,7 +23,7 @@ public class Context {
    * If corrupted this context cannot perform any evaluation
    * Used to avoid throwing exceptions to handle during put operations
    */
-  private boolean corrupted = false; //
+  private boolean corrupted = false;
   /** epsilon = 10^-11, use find int returned as double */
   private static final double EPS = 0.00000000001;
   
@@ -53,33 +53,28 @@ public class Context {
     }
   }
   
-  /** Get a String from the context */
+  /** Get a String from the context, null => "" */
   public String evaluateString(String expression) throws IllegalArgumentException { 
     if(corrupted) {
       throw new IllegalArgumentException("Cannot evaluate corrupted context");
     }
-    
-    Object valueRaw;
     try {
-      valueRaw = engine.eval(expression);
+      Object valueRaw = engine.eval(expression);
+      if(valueRaw == null) {
+        return "";
+      }
+      if(valueRaw instanceof Double) { //need to detect int returned as double to not print .0
+         Double value = (Double)valueRaw;
+        if(Math.abs(Math.floor(value)-value) < EPS && Math.abs(value) < Integer.MAX_VALUE) {
+          return Integer.toString(value.intValue()); //return double as an int
+        } else {
+          return value.toString(); 
+        }
+      }
+      return valueRaw.toString();
     } catch (ScriptException e) {
       throw new IllegalArgumentException("Cannot evaluate token's expression: "+expression);
     }
-    
-    if(valueRaw instanceof String) {
-      return (String)valueRaw;
-    } else if(valueRaw instanceof Double) {
-      double value = (Double)valueRaw;
-      String output = "";
-      if(Math.abs(Math.floor(value)-value) < EPS) {
-        output += ((int)value);
-      } else {
-        output = ""+value;
-      }
-      return output;
-    }
-    
-    throw new IllegalArgumentException("Cannot evaluate token's expression as String: "+expression);
   }
   
   /** Get a boolean from the context */
@@ -87,18 +82,12 @@ public class Context {
     if(corrupted) {
       throw new IllegalArgumentException("Cannot evaluate corrupted context");
     }
-    
-    Object valueRaw;
     try {
-      valueRaw = engine.eval(expression);
-    } catch (ScriptException e) {
-      throw new IllegalArgumentException("Cannot evaluate token's expression: "+expression);
-    }
-    
-    if(valueRaw instanceof Boolean) {
-      return ((Boolean)valueRaw).booleanValue();
-    }
-    
+      Object valueRaw = engine.eval(expression);
+      if(valueRaw instanceof Boolean) {
+        return ((Boolean)valueRaw).booleanValue();
+      }
+    } catch (ScriptException e) {} //throw an exception later reach that point
     throw new IllegalArgumentException("Cannot evaluate token's expression as boolean: "+expression);
   }
   
