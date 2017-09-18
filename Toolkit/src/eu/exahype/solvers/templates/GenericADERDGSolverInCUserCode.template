@@ -1,58 +1,54 @@
-#include "{{Solver}}.h"
+#include "{{solver}}.h"
 
-#include "{{Solver}}_Variables.h"
-
-
-tarch::logging::Log {{Project}}::{{Solver}}::_log( "{{Project}}::{{Solver}}" );
+#include "{{solver}}_Variables.h"
 
 
-void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
+tarch::logging::Log {{project}}::{{solver}}::_log( "{{project}}::{{solver}}" );
+
+
+void {{project}}::{{solver}}::init(std::vector<std::string>& cmdlineargs{%- if hasConstants %} , exahype::Parser::ParserView& constants {%- endif %}) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue {{project}}::{{solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
   return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void {{Project}}::{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+void {{project}}::{{solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
   
   // @todo Please implement/augment if required
-{{AdjustedSolutionValues}}
 }
 
-void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+void {{project}}::{{solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
   
   // @todo Please implement/augment if required
-{{Eigenvalues}}
-}
-
-
-void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
-  
-  // @todo Please implement/augment if required
-{{Flux}}
 }
 
 
-void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
+void {{project}}::{{solver}}::flux(const double* const Q,double** F) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
+  
+  // @todo Please implement/augment if required
+}
+
+
+void {{project}}::{{solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
 
   // @todo Please implement/augment if required
-{{BoundaryValues}}
 }
 
 
-exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
+exahype::solvers::Solver::RefinementControl {{project}}::{{solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
   // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
 }

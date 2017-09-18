@@ -99,37 +99,11 @@ public class GenericADERDG implements Solver {
   
   @Override
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
-/*    SourceTemplate content = SourceTemplate.fromRessourceContent(
+    final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
-    
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-    
-    content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content.put("Dimensions",String.valueOf(_dimensions));
-
-    String SolverInitSignatureExtension = "";
-    if (_hasConstants) {
-        SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
-    }
-    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
-    //
-    String solverConstructorArgumentExtension  = "";
-    String solverConstructorSignatureExtension = "";
-    String SolverInitCallExtension             = "";
-    if (_enableProfiler) {
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension  += ", std::move(profiler)";
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView& constants";
-       SolverInitCallExtension = ", constants";
-    }
-
-    content.put("SolverInitCallExtension",SolverInitCallExtension);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
-    
+    writer.write(templateEngine.render(template, context));
+    //TODO implement in template with for logic
+    /* 
     // user functions
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
     
@@ -190,18 +164,8 @@ public class GenericADERDG implements Solver {
     for (int i = 0; i < _numberOfVariables*_numberOfVariables; i++) {
       matrixb += "  Bn[" + String.format("%" + digits + "d", i) + "] = 0.0;";
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
-    }
-    
-    content.put("AdjustedSolutionValues",adjustSolution);
-    content.put("Eigenvalues",eigenvalues);
-    content.put("Flux",flux);
-    content.put("Source",source);
-    content.put("BoundaryValues",boundaryValues);
-    content.put("NonConservativeProduct",ncp);
-    content.put("MatrixB",matrixb);
-    
-    writer.write(content.toString());
- */ }
+    } */
+  }
   
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer)
