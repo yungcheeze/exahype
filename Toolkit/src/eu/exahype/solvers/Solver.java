@@ -20,12 +20,12 @@ public interface Solver {
   
   public String getSolverName();
   
-  public void writeHeader(java.io.BufferedWriter writer) throws java.io.IOException;
+  public void writeHeader(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException;
   
-  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException;
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException;
   
-  public void writeAbstractHeader(java.io.BufferedWriter writer) throws java.io.IOException;
+  public void writeAbstractHeader(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException;
   
-  public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException;
+  public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException;
 
 }
