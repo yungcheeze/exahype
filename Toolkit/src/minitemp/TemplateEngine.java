@@ -29,6 +29,11 @@ public class TemplateEngine {
   public static final String LOGIC_ELSE_TAG  = "else";
   public static final String LOGIC_ENDIF_TAG = "endif";
   
+  /** Tags of the logic block for Loops */
+  public static final String LOGIC_FOR_TAG     = "for";
+  public static final String LOGIC_FOR_SET_TAG = "in"; // {% for value in collection %}
+  public static final String LOGIC_ENDFOR_TAG  = "endfor";
+  
   /** The size of the content of a grammar token has to be constrained for the look trick */
   private static final int TOKEN_MAX_SIZE = 99999;
   

@@ -4,11 +4,13 @@ import minitemp.TemplateEngine;
 
 public class Token {
   
-  public static final int VAR_TOKEN      = 0; /** type of variable grammar token*/
-  public static final int TEXT_TOKEN     = 1; /** type of text token*/
-  public static final int IF_OPEN_TOKEN  = 2; /** type of logic grammar token: if */
-  public static final int IF_ELSE_TOKEN  = 3; /** type of logic grammar token: else */
-  public static final int IF_CLOSE_TOKEN = 4; /** type of logic grammar token: endif */
+  public static final int VAR_TOKEN       = 0; /** type of variable grammar token*/
+  public static final int TEXT_TOKEN      = 1; /** type of text token*/
+  public static final int IF_OPEN_TOKEN   = 2; /** type of logic grammar token: if */
+  public static final int IF_ELSE_TOKEN   = 3; /** type of logic grammar token: else */
+  public static final int IF_CLOSE_TOKEN  = 4; /** type of logic grammar token: endif */
+  public static final int FOR_OPEN_TOKEN  = 5; /** type of logic grammar token: for */
+  public static final int FOR_CLOSE_TOKEN = 6; /** type of logic grammar token: endfor */
   
   
   public int type = -1; /** type of token, matched with the constant, by default -1 = invalid */
@@ -16,7 +18,7 @@ public class Token {
   
   
   public Token(String tokenAsString) {
-    this.rawContent = tokenAsString;
+    rawContent = tokenAsString;
     defineType();
   }
   
@@ -37,6 +39,10 @@ public class Token {
         type = IF_ELSE_TOKEN;
       } else if(tag.startsWith(TemplateEngine.LOGIC_IF_TAG)) {
         type = IF_OPEN_TOKEN;
+      } else if(tag.startsWith(TemplateEngine.LOGIC_FOR_TAG)) {
+        type = FOR_OPEN_TOKEN;
+      } else if(tag.startsWith(TemplateEngine.LOGIC_ENDFOR_TAG)) {
+        type = FOR_CLOSE_TOKEN;
       }
     } else {
       type = TEXT_TOKEN;
@@ -54,13 +60,14 @@ public class Token {
    * Grammar token: the inside of the delimiters - tag + trim()
    */
   public String getContentClean() {
-    if(type == VAR_TOKEN || type == IF_ELSE_TOKEN || type == IF_CLOSE_TOKEN) {
+    if(type == VAR_TOKEN || type == IF_ELSE_TOKEN 
+        || type == IF_CLOSE_TOKEN || type == FOR_CLOSE_TOKEN) {
       String clean = rawContent.substring(TemplateEngine.BLOCK_TOKEN_START.length());
       clean = clean.substring(0, clean.length()-TemplateEngine.BLOCK_TOKEN_END.length());
       return clean.trim();
     } else if (type == TEXT_TOKEN) {
       return rawContent;
-    } else if(type == IF_OPEN_TOKEN) {
+    } else if(type == IF_OPEN_TOKEN || type == FOR_OPEN_TOKEN) {
       String clean = rawContent;
       if(clean.startsWith(TemplateEngine.STRIP_BLOCK_TOKEN_START)) 
       {
@@ -69,7 +76,12 @@ public class Token {
         clean = clean.substring(TemplateEngine.BLOCK_TOKEN_START.length());
       }
       clean = clean.substring(0, clean.length()-TemplateEngine.BLOCK_TOKEN_END.length());
-      clean = clean.trim().substring(TemplateEngine.LOGIC_IF_TAG.length()).trim(); //remove the tag
+      //remove the tag
+      if(type == IF_OPEN_TOKEN) {
+        clean = clean.trim().substring(TemplateEngine.LOGIC_IF_TAG.length()).trim(); 
+      } else if(type == FOR_OPEN_TOKEN) {
+        clean = clean.trim().substring(TemplateEngine.LOGIC_FOR_TAG.length()).trim(); 
+      }  
       return clean;
     }
     

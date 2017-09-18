@@ -11,13 +11,13 @@ public class VariableLeaf extends SyntaxTree {
   /** Store the token for later rendering */
   private Token token;
   
-  public VariableLeaf(Token t) {
-    token = t;
+  public VariableLeaf(Token token) {
+    this.token = token;
   }
 
   @Override
-  public String render(Context c) throws IllegalArgumentException {    
-    return c.evaluateString(token.getContentClean());
+  public String render(Context context) throws IllegalArgumentException {    
+    return context.evaluateString(token.getContentClean());
   }
   
 }
