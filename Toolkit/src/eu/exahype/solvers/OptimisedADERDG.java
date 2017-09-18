@@ -10,65 +10,82 @@ import eu.exahype.CodeGeneratorHelper;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
+import minitemp.Context;
+import minitemp.TemplateEngine;
+
 public class OptimisedADERDG implements Solver {
   
   public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options"
 
   //Internal states
-  //---------------
-  private String  _projectName;
-  private String  _solverName;
-  private int     _dimensions;
-  private int     _numberOfVariables;
-  private int     _numberOfParameters;
-  private Set<String> _namingSchemeNames;
-  private int     _order;
-  private String  _microarchitecture;
-  private boolean _enableProfiler;
-  private boolean _enableDeepProfiler;
-  private boolean _hasConstants;
-  private boolean _isLinear;
-  private boolean _useFlux;
-  private boolean _useSource;
-  private boolean _useNCP;
-  private boolean _noTimeAveraging;
-  private String  _optKernelPath;
-  private String  _optNamespace;
+  //--------------- 
+  private String _solverName;
+  private Context context;
+  private TemplateEngine templateEngine;
   
   private boolean _isValid; //if false the solverFactory will return null
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, List<String> options) 
       throws IOException, IllegalArgumentException {    
-    _projectName        = projectName;
-    _solverName         = solverName;
-    _dimensions         = dimensions;
-    _numberOfVariables  = numberOfVariables;
-    _numberOfParameters = numberOfParameters;
-    _namingSchemeNames  = namingSchemeNames;
-    _order              = order;
-    _microarchitecture  = microarchitecture;
-    _enableProfiler     = enableProfiler;
-    _enableDeepProfiler = enableDeepProfiler;
-    _hasConstants       = hasConstants;
     
-    if(options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) //should be only one
-      _isLinear         = options.contains(LINEAR_OPTION_ID);
-    else
+    _solverName         = solverName;
+    
+    if(!options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) {//should be only one
       throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the options ("+options+")");
-    _useFlux            = options.contains(FLUX_OPTION_ID);
-    _useSource          = options.contains(SOURCE_OPTION_ID);
-    _useNCP             = options.contains(NCP_OPTION_ID);
-    _noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
+    }
+    final boolean isLinear           = options.contains(LINEAR_OPTION_ID);
+    final boolean useFlux            = options.contains(FLUX_OPTION_ID);
+    final boolean useSource          = options.contains(SOURCE_OPTION_ID);
+    final boolean useNCP             = options.contains(NCP_OPTION_ID);
+    final boolean noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
+    
+    templateEngine = new TemplateEngine();
+    context = new Context();
+    
+    //String
+    context.put("project", projectName);
+    context.put("solver" , solverName);
+    context.put("abstractSolver" , getAbstractSolverName());
+    
+    //TODO JM support for loop (for writeAbstractImplementation)
+    String namingSchemes = "";
+    for (String name : namingSchemeNames) {
+      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+    }
+    context.put("namingSchemes" , namingSchemes);
+    
+    //int
+    context.put("dimensions" , dimensions);
+    context.put("order" , order);
+    context.put("numberOfVariables" , numberOfVariables);
+    context.put("numberOfParameters" , numberOfParameters);
+    
+    //boolean
+    context.put("enableProfiler" , enableProfiler);
+    context.put("enableDeepProfiler" , enableDeepProfiler);
+    context.put("hasConstants" , hasConstants);
+    context.put("isLinear" , isLinear);
+    context.put("useFlux" , useFlux);
+    context.put("useSource" , useSource);
+    context.put("useNCP" , useNCP);
+    context.put("noTimeAveraging" , noTimeAveraging);
+    
+    //boolean as String
+    context.put("useFlux_s", boolToTemplate(useFlux));
+    context.put("useSource_s", boolToTemplate(useSource));
+    context.put("useNCP_s", boolToTemplate(useNCP));
 
     //generate the optimised kernel, can throw IOException
-    _optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(_projectName, _solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _enableDeepProfiler, _useFlux, _useSource, _useNCP, _noTimeAveraging);
-    _optNamespace = CodeGeneratorHelper.getInstance().getNamespace(_projectName, _solverName);
+    final String optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, numberOfVariables, numberOfParameters, order, isLinear, dimensions,
+        microarchitecture, enableDeepProfiler, useFlux, useSource, useNCP, noTimeAveraging);
+    final String optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
     
+    context.put("optKernelPath", optKernelPath);
+    context.put("optNamespace", optNamespace);
     
     //TODO JMG: linear kernels unsupported for now
-    if(_isLinear) 
+    if(isLinear) 
       throw new IllegalArgumentException("Linear kernels not supported yet");
   }
     
@@ -78,7 +95,7 @@ public class OptimisedADERDG implements Solver {
   }
   
   private String getAbstractSolverName() {
-    return "Abstract"+_solverName;
+    return "Abstract"+getSolverName();
   }
   
   private String boolToTemplate(boolean b) {
@@ -87,190 +104,30 @@ public class OptimisedADERDG implements Solver {
   
   @Override
   public void writeHeader(java.io.BufferedWriter writer)
-      throws IOException {
-	  SourceTemplate content = SourceTemplate.fromRessourceContent(
-			  "eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
-
-	  content.put("Project", _projectName);
-	  content.put("Solver", _solverName);
-    content.put("AbstractSolver", getAbstractSolverName());
-
-	  String profilerInclude                     = "";
-    String parserInclude                       = "";
-	  String solverConstructorSignatureExtension = "";
-    String solverInitSignatureExtension        = "";
-	  if (_enableProfiler) {
-		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-	  }
-	  if (_hasConstants) {
-      solverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
-      parserInclude = "#include \"exahype/Parser.h\"";
-      solverConstructorSignatureExtension += solverInitSignatureExtension;
-	  }
-	  content.put("ProfilerInclude",profilerInclude);
-    content.put("ParserInclude", parserInclude);
-	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
-
-	  content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-	  content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-	  content.put("Dimensions",String.valueOf( _dimensions));
-	  content.put("Order", String.valueOf(_order));
-    
-	  writer.write(content.toString());
+      throws IOException, IllegalArgumentException {
+	  final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
+	  writer.write(templateEngine.render(template, context));
   }
 
   
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException {
-    
-    if(_optKernelPath == null) {
-      throw new IOException("Optimised kernel generation failed.");
-    }
-        
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-        "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-    content.put("AbstractSolver", getAbstractSolverName());
-
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String abstractSolverConstructorSignatureExtension = "";
-    String solverInitSignatureExtension        = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-    }
-    content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
-    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    
-    content.put("useFlux", boolToTemplate(_useFlux));
-    content.put("useSource", boolToTemplate(_useSource));
-    content.put("useNCP", boolToTemplate(_useNCP));
-
-    String namingSchemes = "";
-    for (String name : _namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    content.put("NamingSchemes", namingSchemes);
-    content.put("optKernelPath", _optKernelPath);
-    content.put("optNamespace", _optNamespace);
-    
-    writer.write(content.toString());
+      throws java.io.IOException, IllegalArgumentException {      
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
+    writer.write(templateEngine.render(template, context));
   }
   
   @Override
-  public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-        
-    if(_optKernelPath == null) {
-      throw new IOException("Optimised kernel generation failed.");
-    }
-        
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-        "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
-    
-	  content.put("Project", _projectName);
-	  content.put("Solver", _solverName);
-    content.put("AbstractSolver", getAbstractSolverName());
-	  //
-	  String profilerInclude                     = "";
-	  String solverConstructorSignatureExtension = "";
-	  String solverConstructorArgumentExtension  = "";
-    String abstractSolverConstructorSignatureExtension = "";
-    String abstractSolverConstructorArgumentExtension = "";
-    String solverInitCallExtension             = "";    
-    
-	  if (_enableProfiler) {
-		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-		  solverConstructorArgumentExtension  += ", std::move(profiler)";
-      abstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
-      
-      if(_enableDeepProfiler) {
-        content.put("DeepProfilerArg", ", _profiler.get()");
-      } else {
-        content.put("DeepProfilerArg", "");  
-      }
-		  
-      content.put("BeforeSpaceTimePredictor", "  _profiler->start(\"spaceTimePredictor\");");  
-      content.put("AfterSpaceTimePredictor", "  _profiler->stop(\"spaceTimePredictor\");"); 
-      content.put("BeforeSolutionUpdate", "  _profiler->start(\"solutionUpdate\");"); 
-      content.put("AfterSolutionUpdate", "  _profiler->stop(\"solutionUpdate\");"); 
-      content.put("BeforeVolumeIntegral", "  _profiler->start(\"volumeIntegral\");"); 
-      content.put("AfterVolumeIntegral", "  _profiler->stop(\"volumeIntegral\");"); 
-      content.put("BeforeSurfaceIntegral", "  _profiler->start(\"surfaceIntegral\");"); 
-      content.put("AfterSurfaceIntegral", "  _profiler->stop(\"surfaceIntegral\");"); 
-      content.put("BeforeRiemannSolver", "  _profiler->start(\"riemannSolver\");"); 
-      content.put("AfterRiemannSolver", "  _profiler->stop(\"riemannSolver\");"); 
-      content.put("BeforeBoundaryConditions", "  _profiler->start(\"boundaryConditions\");"); 
-      content.put("AfterBoundaryConditions", "  _profiler->stop(\"boundaryConditions\");"); 
-      content.put("BeforeStableTimeStepSize", "  _profiler->start(\"stableTimeStepSize\");"); 
-      content.put("AfterStableTimeStepSize", "  _profiler->stop(\"stableTimeStepSize\");"); 
-      content.put("BeforeSolutionAdjustment", "  _profiler->start(\"solutionAdjustment\");"); 
-      content.put("AfterSolutionAdjustment", "  _profiler->stop(\"solutionAdjustment\");"); 
-      content.put("BeforeFaceUnknownsProlongation", "  _profiler->start(\"faceUnknownsProlongation\");"); 
-      content.put("AfterFaceUnknownsProlongation", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
-      content.put("BeforeFaceUnknownsRestriction", "  _profiler->start(\"faceUnknownsRestriction\");"); 
-      content.put("AfterFaceUnknownsRestriction", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
-      content.put("BeforeVolumeUnknownsProlongation", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
-      content.put("AfterVolumeUnknownsProlongation", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
-      content.put("BeforeVolumeUnknownsRestriction", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
-      content.put("AfterVolumeUnknownsRestriction", "  _profiler->stop(\"volumeUnknownsRestriction\");");
-	  } else {
-      content.put("DeepProfilerArg", "");  
-      content.put("BeforeSpaceTimePredictor", "");  
-      content.put("AfterSpaceTimePredictor", ""); 
-      content.put("BeforeSolutionUpdate", ""); 
-      content.put("AfterSolutionUpdate", ""); 
-      content.put("BeforeVolumeIntegral", ""); 
-      content.put("AfterVolumeIntegral", ""); 
-      content.put("BeforeSurfaceIntegral", ""); 
-      content.put("AfterSurfaceIntegral", ""); 
-      content.put("BeforeRiemannSolver", ""); 
-      content.put("AfterRiemannSolver", ""); 
-      content.put("BeforeBoundaryConditions", ""); 
-      content.put("AfterBoundaryConditions", ""); 
-      content.put("BeforeStableTimeStepSize", ""); 
-      content.put("AfterStableTimeStepSize", ""); 
-      content.put("BeforeSolutionAdjustment", ""); 
-      content.put("AfterSolutionAdjustment", ""); 
-      content.put("BeforeFaceUnknownsProlongation", ""); 
-      content.put("AfterFaceUnknownsProlongation", ""); 
-      content.put("BeforeFaceUnknownsRestriction", ""); 
-      content.put("AfterFaceUnknownsRestriction", ""); 
-      content.put("BeforeVolumeUnknownsProlongation", ""); 
-      content.put("AfterVolumeUnknownsProlongation", ""); 
-      content.put("BeforeVolumeUnknownsRestriction", ""); 
-      content.put("AfterVolumeUnknownsRestriction", "");
-	  }
-	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-      solverInitCallExtension = ", constants";
-	  }
-    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
-    content.put("AbstractSolverConstructorArgumentExtension", abstractSolverConstructorArgumentExtension);
-	  content.put("SolverInitCallExtension",solverInitCallExtension);
-	  content.put("ProfilerInclude",profilerInclude);
-	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-	  content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
-    content.put("optKernelPath", _optKernelPath);
-    content.put("optNamespace", _optNamespace);
-	  
-	  writer.write(content.toString());
+  public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
+
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); 
+    writer.write(templateEngine.render(template, context));
   }
   
-  //same as generic
+  //TODO JMG move to template engine
   @Override
-  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
+/*     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
     content.put("Project", _projectName);
@@ -371,7 +228,7 @@ public class OptimisedADERDG implements Solver {
     content.put("NonConservativeProduct",ncp);
     content.put("MatrixB",matrixb);
     
-    writer.write(content.toString());
+    writer.write(content.toString()); */
   }
   
   @Override

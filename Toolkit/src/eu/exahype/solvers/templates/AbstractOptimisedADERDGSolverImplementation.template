@@ -8,27 +8,39 @@
 // ==============================================
 // Please do not change the implementations below
 // =============================---==============
-#include "{{AbstractSolver}}.h"
+#include "{{abstractSolver}}.h"
 #include "{{optKernelPath}}/Kernels.h"
 
-#include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
+#include "{{solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
 #include <stdio.h>
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  {{AbstractSolver}}::{{AbstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
-  init(cmdlineargs{{SolverInitCallExtension}});
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs  {%- if enableProfiler %}
+    , std::unique_ptr<exahype::profilers::Profiler> profiler
+  {%- endif %}
+  {%- if hasConstants %}
+    , exahype::Parser::ParserView constants
+  {%- endif %}
+):
+  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping  {%- if enableProfiler %}
+    , std::unique_ptr<exahype::profilers::Profiler> profiler
+  {%- endif %}
+  ) {
+  init(cmdlineargs {%- if hasConstants %}, constants{% endif %});
 }
 
-{{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
-  exahype::solvers::ADERDGSolver("{{Solver}}",{{optNamespace}}::getNumberOfVariable(),{{optNamespace}}::getNumberOfParameter(),{{optNamespace}}::getBasisSize(),
-                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{project}}::{{abstractSolver}}::{{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{%- if enableProfiler %}
+    , std::unique_ptr<exahype::profilers::Profiler> profiler
+  {%- endif %}
+):
+  exahype::solvers::ADERDGSolver("{{solver}}",{{optNamespace}}::getNumberOfVariable(),{{optNamespace}}::getNumberOfParameter(),{{optNamespace}}::getBasisSize(),
+                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping {%- if enableProfiler %}, std::move(profiler){% endif %}) {
 }
 
-void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
+void {{project}}::{{abstractSolver}}::constantsToString(std::ostream& os) {
 	// This string is used in the --version output to identify compile time constants
-	os << "{{Project}}::{{AbstractSolver}}("
+	os << "{{project}}::{{abstractSolver}}("
 	   << "nVar=" << NumberOfVariables << ", "
 	   << "nParam=" << NumberOfParameters << ", "
 	   << "nDim=" << Dimensions << ", "
@@ -36,106 +48,136 @@ void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
-void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
-{{BeforeSpaceTimePredictor}} 
+void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
+{%- if enableProfiler %}
+  _profiler->start("spaceTimePredictor");
+{%- endif %}
 
-#if DIMENSIONS==2
+{%- if dimensions == 2 %}
   constexpr int lSi_offset  = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
-#else
+{% else %}
   constexpr int lSi_offset  = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
-#endif
+{% endif %}
 
-#ifdef NO_TIME_AVERAGING
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
+{%- if noTimeAveraging %}
+  //No Time Averaging scheme
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
   {{optNamespace}}::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
-#else
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{Solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors{{DeepProfilerArg}}); //lSi, gradQ, BGradQ
+{% else %}
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
   {{optNamespace}}::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
   {{optNamespace}}::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
-#endif
+{% endif %}
   
-{{AfterSpaceTimePredictor}}
+{%- if enableProfiler %}
+  _profiler->stop("spaceTimePredictor");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
-{{BeforeSolutionUpdate}}
+void {{project}}::{{abstractSolver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
+{%- if enableProfiler %}
+  _profiler->start("solutionUpdate");
+{%- endif %}
   {{optNamespace}}::solutionUpdate( luh, lduh, dt );
-{{AfterSolutionUpdate}}
+{%- if enableProfiler %}
+  _profiler->stop("solutionUpdate");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
-{{BeforeVolumeIntegral}}
+void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+{%- if enableProfiler %}
+  _profiler->start("volumeIntegral");
+{%- endif %}
 
-#if DIMENSIONS==2
+{%- if dimensions == 2 %}
   constexpr int lSi_offset  = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 2*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
-#else
+{% else %}
   constexpr int lSi_offset  = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
   constexpr int lShi_offset = 3*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getBasisSize()*{{optNamespace}}::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
-#endif
+{% endif %}
 
-#ifdef NO_TIME_AVERAGING
+{%- if noTimeAveraging %}
+  //No Time Averaging scheme
   {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lSi_offset], inverseDx ); //lFhi is actually lFi
-#else
+{% else %}
   {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
-#endif
+{% endif %}
 
-{{AfterVolumeIntegral}}
+{%- if enableProfiler %}
+  _profiler->stop("volumeIntegral");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
-{{BeforeSurfaceIntegral}}
+void {{project}}::{{abstractSolver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+{%- if enableProfiler %}
+  _profiler->start("surfaceIntegral");
+{%- endif %}
   {{optNamespace}}::surfaceIntegral( lduh, lFhbnd, inverseDx );
-{{AfterSurfaceIntegral}}
+{%- if enableProfiler %}
+  _profiler->stop("surfaceIntegral");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
+void {{project}}::{{abstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
-{{BeforeRiemannSolver}}
-
-  {{optNamespace}}::riemannSolver(*static_cast<{{Solver}}*>(this), FL, FR, QL, QR, dt, normalNonZeroIndex{{DeepProfilerArg}});
-
-{{AfterRiemannSolver}}
+{%- if enableProfiler %}
+  _profiler->start("riemannSolver");
+{%- endif %}
+  {{optNamespace}}::riemannSolver(*static_cast<{{solver}}*>(this), FL, FR, QL, QR, dt, normalNonZeroIndex {%- if enableDeepProfiler %}, _profiler.get(){% endif %});
+{%- if enableProfiler %}
+  _profiler->stop("riemannSolver");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-{{BeforeBoundaryConditions}}
-  {{optNamespace}}::boundaryConditions(*static_cast<{{Solver}}*>(this), fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
-{{AfterBoundaryConditions}}
+void {{project}}::{{abstractSolver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
+{%- if enableProfiler %}
+  _profiler->start("boundaryConditions");
+{%- endif %}
+  {{optNamespace}}::boundaryConditions(*static_cast<{{solver}}*>(this), fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
+{%- if enableProfiler %}
+  _profiler->stop("boundaryConditions");
+{%- endif %}
 }
 
 
 
-double {{Project}}::{{AbstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
-{{BeforeStableTimeStepSize}}
-  double d = {{optNamespace}}::stableTimeStepSize(*static_cast<{{Solver}}*>(this), luh, inverseDx );
-{{AfterStableTimeStepSize}}
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+{%- if enableProfiler %}
+  _profiler->start("stableTimeStepSize");
+{%- endif %}
+  double d = {{optNamespace}}::stableTimeStepSize(*static_cast<{{solver}}*>(this), luh, inverseDx );
+{%- if enableProfiler %}
+  _profiler->stop("stableTimeStepSize");
+{%- endif %}
   return d;
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
-{{BeforeSolutionAdjustment}}
+void {{project}}::{{abstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+{%- if enableProfiler %}
+  _profiler->start("solutionAdjustment");
+{%- endif %}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
       assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
-      {{optNamespace}}::adjustPointSolution(*static_cast<{{Solver}}*>(this), luh, center, dx, t, dt );
+      {{optNamespace}}::adjustPointSolution(*static_cast<{{solver}}*>(this), luh, center, dx, t, dt );
       break;
     case AdjustSolutionValue::PatchWisely:
       printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
@@ -143,74 +185,92 @@ void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la
      //TODO JMG not implemented
       break;
   }
-{{AfterSolutionAdjustment}}
+{%- if enableProfiler %}
+  _profiler->stop("solutionAdjustment");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
-{{BeforeFaceUnknownsProlongation}}
+void {{project}}::{{abstractSolver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
+{%- if enableProfiler %}
+  _profiler->start("faceUnknownsProlongation");
+{%- endif %}
   // {{optNamespace}}::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
-{{AfterFaceUnknownsProlongation}}
+{%- if enableProfiler %}
+  _profiler->start("false");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
-{{BeforeFaceUnknownsRestriction}}
+void {{project}}::{{abstractSolver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
+{%- if enableProfiler %}
+  _profiler->start("faceUnknownsRestriction");
+{%- endif %}
   // {{optNamespace}}::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
-{{AfterFaceUnknownsRestriction}}
+{%- if enableProfiler %}
+  _profiler->stop("faceUnknownsRestriction");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
-{{BeforeVolumeUnknownsProlongation}}
+void {{project}}::{{abstractSolver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
+{%- if enableProfiler %}
+  _profiler->start("volumeUnknownsProlongation");
+{%- endif %}
   // {{optNamespace}}::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
-{{AfterVolumeUnknownsProlongation}}
+{%- if enableProfiler %}
+  _profiler->stop("volumeUnknownsProlongation");
+{%- endif %}
 }
 
 
 
-void {{Project}}::{{AbstractSolver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
-{{BeforeVolumeUnknownsRestriction}}
+void {{project}}::{{abstractSolver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
+{%- if enableProfiler %}
+  _profiler->start("volumeUnknownsRestriction");
+{%- endif %}
   // {{optNamespace}}::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented
-{{AfterVolumeUnknownsRestriction}}
+{%- if enableProfiler %}
+  _profiler->stop("volumeUnknownsRestriction");
+{%- endif %}
 }
 
 //--------
 
-void {{Project}}::{{AbstractSolver}}::abortWithMsg(const char* const msg) {
+void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 	// verbosily fail even without assertions turned on
 	puts(msg);
 	abort();
 }
 
 
-void {{Project}}::{{AbstractSolver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
+void {{project}}::{{abstractSolver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
   //TODO JMG
 }
 
-void {{Project}}::{{AbstractSolver}}::flux(const double* const Q,double** F) {
+void {{project}}::{{abstractSolver}}::flux(const double* const Q,double** F) {
   abortWithMsg("If this operation is entered (flux), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::{{AbstractSolver}}::algebraicSource(const double* const Q,double* S) {
+void {{project}}::{{abstractSolver}}::algebraicSource(const double* const Q,double* S) {
   abortWithMsg("If this operation is entered (algebraicSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
-void {{Project}}::{{AbstractSolver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+void {{project}}::{{abstractSolver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   abortWithMsg("If this operation is entered (nonConservativeProduct), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::{{AbstractSolver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void {{project}}::{{abstractSolver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   abortWithMsg("If this operation is entered (pointSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::{{AbstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   abortWithMsg("If this operation is entered (adjustPointSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
-void {{Project}}::{{AbstractSolver}}::adjustPatchSolution(
+void {{project}}::{{abstractSolver}}::adjustPatchSolution(
   const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
   const tarch::la::Vector<DIMENSIONS, double>& dx,
   const double t,
@@ -220,10 +280,10 @@ void {{Project}}::{{AbstractSolver}}::adjustPatchSolution(
 }
 
 
-void {{Project}}::{{AbstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+void {{project}}::{{abstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
   abortWithMsg("If this operation is entered (fusedSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::{{AbstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+void {{project}}::{{abstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // needed ?
 }
