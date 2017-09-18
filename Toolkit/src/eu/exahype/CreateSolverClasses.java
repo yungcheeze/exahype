@@ -247,7 +247,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
   
-  private void tryWriteSolverHeader(Solver solver) throws IOException {
+  private void tryWriteSolverHeader(Solver solver) throws IOException,IllegalArgumentException {
     java.io.File solverHeaderFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solver.getSolverName() + ".h");
     
@@ -264,7 +264,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
   
-  private void tryWriteSolverUserImplementation(Solver solver) throws IOException {
+  private void tryWriteSolverUserImplementation(Solver solver) throws IOException,IllegalArgumentException {
     java.io.File solverUserImplementationFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solver.getSolverName() + ".cpp");
     
@@ -281,7 +281,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
 
-  private void tryWriteAbstractSolverHeader(Solver solver) throws IOException {
+  private void tryWriteAbstractSolverHeader(Solver solver) throws IOException,IllegalArgumentException {
     java.io.File abstractSolverHeaderFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solver.getSolverName() + ".h");
     
@@ -297,7 +297,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     writer.close();
   }
   
-  private void tryWriteAbstractSolverImplementation(Solver solver) throws IOException {
+  private void tryWriteAbstractSolverImplementation(Solver solver) throws IOException,IllegalArgumentException {
     java.io.File abstractSolverImplementationFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solver.getSolverName() + ".cpp");
     

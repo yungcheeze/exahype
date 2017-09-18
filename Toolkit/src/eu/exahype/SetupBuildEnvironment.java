@@ -188,7 +188,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
                                 && (kernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
     
     if (_useOptimisedKernels)  {  
-      _opt_noTimeAveraging = kernel.contains( eu.exahype.solvers.OptimisedADERDG.noTimeAveragingOptionId );
+      _opt_noTimeAveraging = kernel.contains( eu.exahype.solvers.Solver.NO_TIME_AVG_OPTION_ID );
     }
   }
   
