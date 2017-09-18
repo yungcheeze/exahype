@@ -12,6 +12,7 @@ public interface Solver {
   public String SOURCE_OPTION_ID      = "sources";
   public String NCP_OPTION_ID         = "ncp";
   public String NO_TIME_AVG_OPTION_ID = "notimeavg";
+  public String POINTSOURCE_OPTION_ID = "pointsources";
  
   /**
    * @return true if the solver supports generation of Variables classes.

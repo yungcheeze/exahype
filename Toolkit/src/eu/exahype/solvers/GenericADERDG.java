@@ -6,90 +6,100 @@ import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 
+// template engine
+import minitemp.Context;
+import minitemp.TemplateEngine;
+
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class GenericADERDG implements Solver {
   public static final String Identifier = "generic";
   
-  private String _projectName;
   private String _solverName;
-  private int _dimensions;
-  private int _numberOfVariables;
-  private int _numberOfParameters;
-  private Set<String> _namingSchemeNames;
-  private int _order;
-  private boolean _enableProfiler;
-  private boolean _hasConstants;
-  private boolean _isFortran;
-  private boolean _isLinear;
-  private boolean _useFlux;
-  private boolean _useSource;
-  private boolean _useNCP;
+  private Context context;
+  private TemplateEngine templateEngine;
 
   public GenericADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, List<String> options) throws IllegalArgumentException {
 
-    _projectName        = projectName;
     _solverName         = solverName;
-    _dimensions         = dimensions;
-    _numberOfVariables  = numberOfVariables;
-    _numberOfParameters = numberOfParameters;
-    _namingSchemeNames  = namingSchemeNames;
-    _order              = order;
-    _enableProfiler     = enableProfiler;
-    _hasConstants       = hasConstants;
-    _isFortran          = isFortran;
     
-    if(options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) //should be only one
-      _isLinear         = options.contains(LINEAR_OPTION_ID);
-    else
+    if(!options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) {//should be only one
       throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the options ("+options+")");
+    }
+    final boolean isLinear           = options.contains(LINEAR_OPTION_ID);
+    final boolean useFlux            = options.contains(FLUX_OPTION_ID);
+    final boolean useSource          = options.contains(SOURCE_OPTION_ID);
+    final boolean useNCP             = options.contains(NCP_OPTION_ID);
+    final boolean usePointSource     = options.contains(POINTSOURCE_OPTION_ID);
+    final boolean noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
+    
+    templateEngine = new TemplateEngine();
+    context = new Context();
+    
+    //String
+    context.put("project"           , projectName);
+    context.put("solver"            , solverName);
+    context.put("abstractSolver"    , getAbstractSolverName());
+    context.put("linearOrNonlinear" , isLinear? "Linear" : "Nonlinear");
+    context.put("language"          , isFortran? "fortran" : "c");
+    
+    
+    
+    //int
+    context.put("dimensions"        , dimensions);
+    context.put("order"             , order);
+    context.put("numberOfVariables" , numberOfVariables);
+    context.put("numberOfParameters", numberOfParameters);
+    
+    //boolean
+    context.put("enableProfiler"    , enableProfiler);
+    context.put("hasConstants"      , hasConstants);
+    context.put("isLinear"          , isLinear);
+    context.put("isFortran"         , isFortran);
+    context.put("useFlux"           , useFlux);
+    context.put("useSource"         , useSource);
+    context.put("useNCP"            , useNCP);
+    context.put("noTimeAveraging"   , noTimeAveraging);
+    
+    //boolean as String
+    context.put("useFlux_s"         , boolToTemplate(useFlux));
+    context.put("useSource_s"       , boolToTemplate(useSource));
+    context.put("useNCP_s"          , boolToTemplate(useNCP));
+    
+    //TODO JM support for loop (for writeAbstractImplementation)
+    String namingSchemes = "";
+    for (String name : namingSchemeNames) {
+      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+    }
+    context.put("namingSchemes"     , namingSchemes);
   }
   
   @Override
   public String getSolverName() {
     return _solverName;
   }
+  
+  private String getAbstractSolverName() {
+    return "Abstract"+getSolverName();
+  }
+  
+  private String boolToTemplate(boolean b) {
+    return b? "true" : "false";
+  }
 
   @Override
   public void writeHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+      throws java.io.IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String SolverInitSignatureExtension        = "";
-    String ParserInclude                       = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-    }
-    if (_hasConstants) {
-      SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
-      ParserInclude = "#include \"exahype/Parser.h\"";
-      solverConstructorSignatureExtension += SolverInitSignatureExtension;
-    }
-    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
-    content.put("ParserInclude", ParserInclude);
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    content.put("Dimensions",String.valueOf( _dimensions));
-    content.put("Order", String.valueOf(_order));
-
-    writer.write(content.toString());
+    writer.write(templateEngine.render(template, context));
   }
   
   @Override
-  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
+/*    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
     content.put("Project", _projectName);
@@ -191,146 +201,21 @@ public class GenericADERDG implements Solver {
     content.put("MatrixB",matrixb);
     
     writer.write(content.toString());
-  }
+ */ }
   
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+      throws java.io.IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/AbstractGenericADERDGSolverHeader.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String AbstractSolverConstructorSignatureExtension = "";
-    String SolverInitSignatureExtension        = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-    }
-    //if (_hasConstants) {
-    //  AbstractSolverConstructorSignatureExtension += ", exahype::Parser::ParserView constants";
-    //}
-    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
-    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    content.put("Dimensions",String.valueOf( _dimensions));
-    content.put("Order", String.valueOf(_order));
-    
-    String namingSchemes = "";
-    for (String name : _namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    content.put("NamingSchemes", namingSchemes);
-
-    writer.write(content.toString());
+    writer.write(templateEngine.render(template, context));
   }
   
   @Override
-  public void writeAbstractImplementation(BufferedWriter writer) throws IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+  public void writeAbstractImplementation(BufferedWriter writer) throws IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/AbstractGenericADERDGSolverImplementation.template");
-    
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-    //
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String solverConstructorArgumentExtension  = "";
-    String AbstractSolverConstructorSignatureExtension = "";
-    String AbstractSolverConstructorArgumentExtension = "";
-    String SolverInitCallExtension             = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension          += ", std::move(profiler)";
-      AbstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
-      
-      content.put("BeforeSpaceTimePredictor", "  _profiler->start(\"spaceTimePredictor\");");  
-      content.put("AfterSpaceTimePredictor", "  _profiler->stop(\"spaceTimePredictor\");"); 
-      content.put("BeforeSolutionUpdate", "  _profiler->start(\"solutionUpdate\");"); 
-      content.put("AfterSolutionUpdate", "  _profiler->stop(\"solutionUpdate\");"); 
-      content.put("BeforeVolumeIntegral", "  _profiler->start(\"volumeIntegral\");"); 
-      content.put("AfterVolumeIntegral", "  _profiler->stop(\"volumeIntegral\");"); 
-      content.put("BeforeSurfaceIntegral", "  _profiler->start(\"surfaceIntegral\");"); 
-      content.put("AfterSurfaceIntegral", "  _profiler->stop(\"surfaceIntegral\");"); 
-      content.put("BeforeRiemannSolver", "  _profiler->start(\"riemannSolver\");"); 
-      content.put("AfterRiemannSolver", "  _profiler->stop(\"riemannSolver\");"); 
-      content.put("BeforeBoundaryConditions", "  _profiler->start(\"boundaryConditions\");"); 
-      content.put("AfterBoundaryConditions", "  _profiler->stop(\"boundaryConditions\");"); 
-      content.put("BeforeStableTimeStepSize", "  _profiler->start(\"stableTimeStepSize\");"); 
-      content.put("AfterStableTimeStepSize", "  _profiler->stop(\"stableTimeStepSize\");"); 
-      content.put("BeforeSolutionAdjustment", "  _profiler->start(\"solutionAdjustment\");"); 
-      content.put("AfterSolutionAdjustment", "  _profiler->stop(\"solutionAdjustment\");"); 
-      content.put("BeforeFaceUnknownsProlongation", "  _profiler->start(\"faceUnknownsProlongation\");"); 
-      content.put("AfterFaceUnknownsProlongation", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
-      content.put("BeforeFaceUnknownsRestriction", "  _profiler->start(\"faceUnknownsRestriction\");"); 
-      content.put("AfterFaceUnknownsRestriction", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
-      content.put("BeforeVolumeUnknownsProlongation", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
-      content.put("AfterVolumeUnknownsProlongation", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
-      content.put("BeforeVolumeUnknownsRestriction", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
-      content.put("AfterVolumeUnknownsRestriction", "  _profiler->stop(\"volumeUnknownsRestriction\");");
-      content.put("BeforePointSource", "  _profiler->start(\"pointSource\");"); //TODO KD adapt name
-      content.put("AfterPointSource", "  _profiler->stop(\"pointSource\");");
-    } else {
-      content.put("BeforeSpaceTimePredictor", "");  
-      content.put("AfterSpaceTimePredictor", ""); 
-      content.put("BeforeSolutionUpdate", ""); 
-      content.put("AfterSolutionUpdate", ""); 
-      content.put("BeforeVolumeIntegral", ""); 
-      content.put("AfterVolumeIntegral", ""); 
-      content.put("BeforeSurfaceIntegral", ""); 
-      content.put("AfterSurfaceIntegral", ""); 
-      content.put("BeforeRiemannSolver", ""); 
-      content.put("AfterRiemannSolver", ""); 
-      content.put("BeforeBoundaryConditions", ""); 
-      content.put("AfterBoundaryConditions", ""); 
-      content.put("BeforeStableTimeStepSize", ""); 
-      content.put("AfterStableTimeStepSize", ""); 
-      content.put("BeforeSolutionAdjustment", ""); 
-      content.put("AfterSolutionAdjustment", ""); 
-      content.put("BeforeFaceUnknownsProlongation", ""); 
-      content.put("AfterFaceUnknownsProlongation", ""); 
-      content.put("BeforeFaceUnknownsRestriction", ""); 
-      content.put("AfterFaceUnknownsRestriction", ""); 
-      content.put("BeforeVolumeUnknownsProlongation", ""); 
-      content.put("AfterVolumeUnknownsProlongation", ""); 
-      content.put("BeforeVolumeUnknownsRestriction", ""); 
-      content.put("AfterVolumeUnknownsRestriction", "");
-      content.put("BeforePointSource", ""); //TODO KD adapt name
-      content.put("AfterPointSource", "");
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value?
-      SolverInitCallExtension = ", constants";
-      
-    }
-
-    content.put("SolverInitCallExtension",SolverInitCallExtension);
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
-    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
-    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
-    
-    //TODO JMG move this to template when using template engine
-    //     SK: I just moved the logic to C++ level. There is no reason this could not stay there.
-    //     If we have a decent template engine, you can move it from C++ to template level, thought.
-    String linearStr = _isLinear ? "Linear" : "Nonlinear";
-    content.put("NonlinearOrLinear", linearStr);
-    content.put("defineLinear", _isLinear ? "#define isLinear" : "/* #define isLinear */");
-    content.put("defineFortran", _isFortran ? "#define isFortran" : "/* #define isFortran */");
-    content.put("Language", _isFortran ? "fortran" : "c");
-    
-    writer.write(content.toString());
+    writer.write(templateEngine.render(template, context));
   }
 
   public void writeUserPDE(java.io.BufferedWriter writer)
