@@ -99,7 +99,9 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
 
     // we use the fusedSource in this C++ formulation. Can easily switch over to algebraicSource/coefficientMatrix also.
     //void algebraicSource(const double* const Q, double* S) override;
-    //void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+
+    // the NCP is needed for the Riemann Solver...
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
 };
 
 

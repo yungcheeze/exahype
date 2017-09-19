@@ -47,29 +47,16 @@ void GRMHD::Fluxes::zeroMaterialFluxes() {
 		F[k].gam.lo = 0;
 	}
 }
-
-GRMHD::PDE& GRMHD::PDE::RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data) {
-	GRMHDSystem::Shadow source(Source_data);
-	const Gradients grad(gradQ_Data+0,gradQ_Data+nVar,gradQ_Data+2*nVar);
-	return RightHandSide(grad,source);
-}
-			
-GRMHD::PDE& GRMHD::PDE::RightHandSide(const double* const Qx, const double* const Qy, const double* const Qz, double* fusedSource_Data) {
-	GRMHDSystem::Shadow source(fusedSource_Data);
-	const Gradients grad(Qx,Qy,Qz);
-	return RightHandSide(grad,source);
-}
-	
-GRMHD::PDE& GRMHD::PDE::RightHandSide(const Gradients& grad, Source& source) {
-	// This is the fusedSource = -NCP + AlgebraicSource
+GRMHD::PDE& GRMHD::PDE::nonConservativeProduct(const Gradients& grad, Source& ncp) {
+	// This is the NCP = matrixB * gradQ
 	
 	// Sij is the 3-Energy-Momentum tensor. We need S^{ij} and S^i_j in the NCP.	
 	UpSym<sym::stored<3>, sym::stored<3>> Sij;
 	SYMFOR(i,j) Sij.up(i,j) = Si.up(i)*vel.up(j) + gam.up(i,j)*ptot - Bmag.up(i)*Bmag.up(j)/WW - BmagVel * vel.up(i) * Bmag.up(j);
 	Sij.ul=0; SYMFOR(i,j) CONTRACT(k) Sij.ul(i,j) += Sij.up(i,k) * gam.lo(j,k); // Sij^i_j = Sij^{ik} gam_{jk}
 
-	// source for D
-	source.Dens = 0;
+	// ncp for D
+	ncp.Dens = 0;
 	
 	// U is the total energy seen by Eulerian observer
 	// D is the density
@@ -79,60 +66,61 @@ GRMHD::PDE& GRMHD::PDE::RightHandSide(const Gradients& grad, Source& source) {
 
 	// S_i
 	DFOR(i) {
-		source.Si.lo(i) = - U * grad.lo(i).alpha;
-		CONTRACT(k) source.Si.lo(i) += Si.lo(k) * grad.lo(i).beta.up(k);
-		CONTRACT2(l,m) source.Si.lo(i) += alpha/2. * Sij.up(l,m) * grad.lo(i).gam.lo(l,m);
+		ncp.Si.lo(i) = U * grad.lo(i).alpha;
+		CONTRACT(k) ncp.Si.lo(i) -= Si.lo(k) * grad.lo(i).beta.up(k);
+		CONTRACT2(l,m) ncp.Si.lo(i) -= alpha/2. * Sij.up(l,m) * grad.lo(i).gam.lo(l,m);
 	}
 	
 	// tau
-	CONTRACT(k) source.tau = -Si.up(k) * grad.lo(k).alpha;
+	CONTRACT(k) ncp.tau = Si.up(k) * grad.lo(k).alpha;
 	// further BHAC terms for tau:
-	CONTRACT2(i,j) source.tau += Sij.ul(j,i) * grad.lo(j).beta.up(i);
-	CONTRACT3(i,k,j) source.tau += 1./2. * Sij.up(i,k)*beta.up(j) * grad.lo(j).gam.lo(i,k);
+	CONTRACT2(i,j) ncp.tau -= Sij.ul(j,i) * grad.lo(j).beta.up(i);
+	CONTRACT3(i,k,j) ncp.tau -= 0.5 * Sij.up(i,k)*beta.up(j) * grad.lo(j).gam.lo(i,k);
 	
 	//CONTRACT3(k,i,j) { printf("%d,%d,%d: ",k,i,j); S(grad.lo(k).gam.lo(i,j)); }
-	//S(source.tau);
+	//S(ncp.tau);
 	
 	// Starting from here:
 	// Divergence Cleaning/Constraint damping sources for B^j and Phi.
-	// In case no cleaning would be applied, source.Bmag == source.phi == 0.
+	// In case no cleaning would be applied, ncp.Bmag == ncp.phi == 0.
 	
 	// B^i magnetic field
 	DFOR(i) {
-		source.Bmag.up(i) = 0;
-		CONTRACT(k) source.Bmag.up(i) -= Bmag.up(k) * grad.lo(k).beta.up(i);
-		CONTRACT(j) source.Bmag.up(i) -= alpha * gam.up(i,j) * grad.lo(j).phi;
+		ncp.Bmag.up(i) = 0;
+		CONTRACT(k) ncp.Bmag.up(i) += Bmag.up(k) * grad.lo(k).beta.up(i);
+		CONTRACT(j) ncp.Bmag.up(i) += alpha * gam.up(i,j) * grad.lo(j).phi;
 	}
 	
 	// phi
-	source.phi = - alpha * damping_term_kappa * phi; // algebraic source
-	CONTRACT(k) source.phi += Bmag.up(k) * grad.lo(k).alpha;
-	CONTRACT(k) source.phi -= phi * grad.lo(k).beta.up(k);
-	CONTRACT3(k,l,m) source.phi += alpha/2 * gam.up(l,m) * beta.up(k) * grad.lo(k).gam.lo(l,m);
+	ncp.phi = 0; // remember the algebraic source: alpha * damping_term_kappa * phi
+	CONTRACT(k) ncp.phi -= Bmag.up(k) * grad.lo(k).alpha;
+	CONTRACT(k) ncp.phi += phi * grad.lo(k).beta.up(k);
+	CONTRACT3(k,l,m) ncp.phi -= alpha/2 * gam.up(l,m) * beta.up(k) * grad.lo(k).gam.lo(l,m);
 	
 	return *this; // chainable
 }
 
-/*
-void GRMHD::PDE::algebraicSource(double* Source_data) {
-	ConservedVariables Source(Source_data);
-	// we could put the following term here:
-	// Source.phi = - alpha * kappa * phi; // algebraic source
-	// All other terms should be zero.
+void GRMHD::PDE::algebraicSource(Source& source) {
+	source.Dens = source.tau = source.Si.lo = source.Bmag.up = source.phi = 0;
+	addAlgebraicSource(source);
 }
 
-void GRMHD::PDE::fusedSource(const double* const gradQ_Data, double* Source) {
-	// Variables Source(Source_data, nVar);
-	// 1. Compute NCP
-	nonConservativeProduct(gradQ_Data, Source);
-	// 2. Flip sign
-	NVARS(m) Source[m] = - Source[m];
-	// 3. Add the algebraic source terms:
+void GRMHD::PDE::addAlgebraicSource(Source &source) {
+	// assumes the source to be zero or so.
+	source.phi += alpha * damping_term_kappa * phi; // algebraic source
 	// CONTRACT2(l,m) Source.tau += lapse * Sij.up(l,m) * Kextr.lo(l,m);
-	// Source.phi = - lapse * kappa * phi;
-	// 4. Done.
 }
-*/
+
+void GRMHD::PDE::fusedSource(const Gradients& grad, Source& source) {
+	// This is the fusedSource = -NCP + AlgebraicSource
+
+	// 1. Compute NCP
+	nonConservativeProduct(grad, source);
+	// 2. Flip sign (move from lhs to rhs)
+	NVARS(m) source.Q[m] = -source.Q[m];
+	// 3. Add the algebraic source
+	addAlgebraicSource(source);
+}
 
 void GRMHD::PDE::eigenvalues(const double* const Q, const int d, double* lambda) {
 	//std::fill_n(lambda, nVar, 1.0);

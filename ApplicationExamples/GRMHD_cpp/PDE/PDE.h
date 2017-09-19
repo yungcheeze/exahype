@@ -347,14 +347,16 @@ namespace GRMHD {
 		// Access an element, indicating that it's partial_i, not partial^i
 		const GRMHDSystem::Gradient& lo(int i) const { return dir[i]; }
 		
-		Gradients(const double* const Qx, const double* const Qy, const double* const Qz) :
-			#if DIMENSIONS == 3
-			dir{Qx,Qy,Qz}
-			#elif DIMENSIONS == 2
-			dir{Qy,Qy}
-			#endif
-			// function body:
-			{}
+		#define dbl const double* const // shorthand
+		
+		#if DIMENSIONS == 3
+		Gradients(dbl gradQ) : dir{gradQ+0,gradQ+nVar,gradQ+2*nVar} {}
+		Gradients(dbl Qx, dbl Qy, dbl Qz) : dir{Qx,Qy,Qz} {}
+		#elif DIMENSIONS == 2
+		Gradients(dbl gradQ) : dir{gradQ+0,gradQ+nVar} {}
+		Gradients(dbl Qx, dbl Qy) : dir{Qx,Qy} {}
+		Gradients(dbl Qx, dbl Qy, dbl Qz) : Gradients(Qx,Qy) {} // for convenience
+		#endif
 	};
 
 	/**
@@ -419,6 +421,7 @@ namespace GRMHD {
 
 	struct PDE : public Cons2Prim::Stored {
 		typedef GRMHDSystem::Shadow Source;
+		typedef GRMHDSystem::Shadow NCP;
 		typedef GRMHDSystem::Shadow Flux;
 		
 		// Constraint damping constant
@@ -434,19 +437,42 @@ namespace GRMHD {
 		//Fluxes& Fluxes(double* Fx, double* Fy, double* Fz);
 		// void flux(/* const double* const Q, */ double** Fluxes); // -> Moved to struct Fluxes.
 		
-		/// This is the fusedSource, but we just call it RightHandSide because it is on the RHS
-		/// of the PDE.
-		PDE& RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data);
-		PDE& RightHandSide(/* const double* const Q, */const double* const gradQx, const double* const gradQy, const double* const gradQz, double* Source_data);
-		PDE& RightHandSide(const Gradients& grad, Source& source);
+		/************************* High level classy access ***************************/
 		
-		// You can recover these functions by just reworking what's in the fusedSource.
-		//void nonConservativeProduct(/* const double* const Q, */ const double* const gradQ_Data, double* BgradQ_Data);
-		//void algebraicSource(/* const double* const Q, */ double* Source_data);
+		/// The BgradQ
+		PDE& nonConservativeProduct(const Gradients& grad, NCP& ncp);
+		/// Sets the algebraic source
+		void algebraicSource(Source& Source_data);
+		/// Adds the algebraic source (assumes Source=0 or similiar)
+		void addAlgebraicSource(Source& Source_data);
+		/// Computes the fusedSource = algebraicSource - NCP
+		void fusedSource(const Gradients& grad, Source& source);
+		/// Computes the fused Source, just an alias
+		void RightHandSide(const Gradients& grad, Source& source) { fusedSource(grad, source); }
 		
-		// currently trivial. Since we don't need to access Q, we provide static
-		// access in order to avoid unneccessary boilerplate work.
+		/// Eigenvalues: Currently trivially 1. We provide static access in order
+		/// to avoid unneccessary boilerplate work.
 		static void eigenvalues(const double* const Q, const int d,double* lambda);
+		
+		/*************************** Double pointer access ****************************/
+		
+		PDE& nonConservativeProduct(const double* const gradQ, double* ncp)
+			{ Gradients g(gradQ); NCP n(ncp); return nonConservativeProduct(g, n); }
+		PDE& nonConservativeProduct(const double* const Qx, const double* const Qy, const double* const Qz, double* ncp)
+			{ Gradients g(Qx,Qy,Qz); NCP n(ncp); return nonConservativeProduct(g,n); }
+		void algebraicSource(double* Source_data)
+			{ Source s(Source_data); algebraicSource(s); }
+		void RightHandSide(const double* const gradQ, double* source)
+			{ Gradients g(gradQ); Source s(source); fusedSource(g, s); }
+		void RightHandSide(const double* const Qx, const double* const Qy, const double* const Qz, double* source)
+			{ Gradients g(Qx,Qy,Qz); Source s(source); fusedSource(g, s); }
+			
+		void RightHandSide(const double* const gradQ, Source& source)
+			{ Gradients g(gradQ); fusedSource(g, source); }
+		void RightHandSide(const double* const Qx, const double* const Qy, const double* const Qz, Source& source)
+			{ Gradients g(Qx,Qy,Qz); fusedSource(g, source); }
+		
+
 	};
 	
 	// Compute a single flux in some direction
@@ -454,7 +480,7 @@ namespace GRMHD {
 		Mixed<sym::stored<3>> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
 		Up<vec::stored<3>> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
 		typedef GRMHDSystem::Shadow Flux;
-		FluxBase(const double* const Q) : PDE(Q) { /* prepare() */ }
+		FluxBase(const double* const Q) : PDE(Q) { prepare(); }
 		void prepare();
 		void compute(Flux& flux, int k);
 	};

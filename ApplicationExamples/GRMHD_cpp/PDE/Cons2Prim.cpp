@@ -65,6 +65,7 @@ void GRMHD::Cons2Prim::perform() {
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
 		printf("C C2P FAILED\n");
+		std::abort();
 		rho = rho_floor;
 		press = p_floor;
 		DFOR(i) vel.up(i) = 0;
@@ -81,7 +82,7 @@ void GRMHD::Cons2Prim::perform() {
 }
 
 bool GRMHD::Cons2Prim::rtsafe(double& x, double& y) {
-	constexpr double tol       = 1e-8;
+	constexpr double tol    = 1e-8;
 	constexpr double eps    = 1.e-10;
 	constexpr double x1     = 0.;
 	constexpr double x2     = 1.-eps;

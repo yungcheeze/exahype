@@ -6,6 +6,7 @@
 #include "PDE/PDE.h"
 
 #include "InitialData.h"
+#include "GRMHDSolver_FV_Variables.h"
 
 constexpr int nDim = DIMENSIONS;
 
@@ -28,7 +29,14 @@ void GRMHD::GRMHDSolver_FV::adjustSolution(const double* const x,const double w,
 	double V[nVar];
 	AlfenWave id(x,t,V);
 	GRMHD::Prim2Cons(Q, V).copyFullStateVector();
-	NVARS(m) printf("Qid[%d]=%e\n", m, Q[m]);
+	
+	// also store the positions for debugging
+	GRMHD::AbstractGRMHDSolver_FV::Variables var(Q);
+	DFOR(i) var.pos(i) = x[i];
+	var.check() = 15;
+	
+	//NVARS(m) printf("Qid[%d]=%e\n", m, Q[m]);
+
 }
 
 exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
@@ -40,8 +48,7 @@ void GRMHD::GRMHDSolver_FV::eigenvalues(const double* const Q, const int dIndex,
 	// Provide eigenvalues for the 9 SRMHD variables (D,S_j,tau,B^j),
 	// we split off the 11 ADM material parameters (N^i,g_ij,detg)
 	PDE::eigenvalues(Q, dIndex, lambda);
-	
-	NVARS(m) printf("EV[%d]=%f\n", m, lambda[m]);
+	//NVARS(m) printf("EV[%d]=%f\n", m, lambda[m]);
 }
 
 void GRMHD::GRMHDSolver_FV::flux(const double* const Q, double** F) {
@@ -61,14 +68,25 @@ void GRMHD::GRMHDSolver_FV::boundaryValues(
     const int d,
     const double* const stateIn,
     double* stateOut) {
-
 	// SET BV for all 9 variables + 11 parameters.
 	// EXACT FV AlfenWave BC
 	adjustSolution(x, 0/*not sure, not used anyway*/, t, dt, stateOut);
 }
 
-void GRMHD::GRMHDSolver_FV::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+void GRMHD::GRMHDSolver_FV::fusedSource(const double* const Q, const double* const gradQ, double* S_) {
+	NVARS(m) printf("FusedSource input: Q[%d]=%e\n", m, Q[m]);
+	GRMHD::AbstractGRMHDSolver_FV::ReadOnlyVariables var(Q);
+	std::cout << "pos: " << var.pos() << " check: " << var.check() <<  std::endl;
+	
+	PDE::Source S(S_);
 	PDE(Q).RightHandSide(gradQ, S);
-	PDE::Source(S).zero_adm();
+	S.zero_adm();
+}
+
+void GRMHD::GRMHDSolver_FV::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+	PDE::NCP ncp(BgradQ);
+	const Gradients g(gradQ);
+	PDE(Q).nonConservativeProduct(g, ncp);
+	ncp.zero_adm();
 }
 
