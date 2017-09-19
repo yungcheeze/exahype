@@ -53,30 +53,11 @@ public:
   virtual double constexpr_getCFLNumber()       const = 0;
   ///@}
 
+  //TODO JMG remove
  /**
   * @defgroup Guards
   */
-  ///@{
-
-  /**
-   * Guard to enable conservative fluxes in the User PDE,
-   * ie terms $\nabla F(Q)$.
-   **/
-  virtual bool useConservativeFlux()       const = 0;
-  
-  /**
-   * Guard to enable non conservative contributions in the User PDE,
-   * ie. terms $B(Q) \nabla Q$.
-   **/
-  virtual bool useNonConservativeProduct() const = 0;
-  
-  /**
-   * Guard to enable algebaric source terms in the User PDE,
-   * ie. terms $S(Q)$ typically written on the right hand side of the
-   * equation.
-   **/
-  virtual bool useAlgebraicSource()                 const = 0;
-  
+  ///@{  
   /**
    * Guard to enable dirac point source terms in the User PDE.
    **/
