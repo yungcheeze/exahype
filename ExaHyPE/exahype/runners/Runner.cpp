@@ -827,7 +827,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         // ADER-DG
         auto* aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
         if (!exahype::State::fuseADERDGPhases()) {
-          assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0); // TODDO(Dominic): Revision
+          assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0); // TODO(Dominic): Revision
         }
         assertion1(std::isfinite(aderdgSolver->getMinPredictorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
@@ -847,7 +847,9 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
       } break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         auto* finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(solver);
-        assertionEquals(finiteVolumesSolver->getPreviousMinTimeStepSize(),0.0);
+        if (!exahype::State::fuseADERDGPhases()) {
+          assertionEquals(finiteVolumesSolver->getPreviousMinTimeStepSize(),0.0);
+        }
         break;
     }
   }
