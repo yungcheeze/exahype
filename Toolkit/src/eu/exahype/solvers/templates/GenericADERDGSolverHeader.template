@@ -78,15 +78,6 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
     void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
     
     /**
-     * Compute the flux tensor.
-     *
-     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-     *                 as C array (already allocated).
-     * \param[inout] F the fluxes at that point as C array (already allocated).
-     */
-    virtual void flux(const double* const Q,double** F);
-    
-    /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
      *
      * \param[in] Q  the conserved variables associated with a quadrature node
@@ -132,6 +123,77 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      * \return One of exahype::solvers::Solver::RefinementControl::{Erase,Keep,Refine}.
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+    
+    //PDE
+    
+{%- if useFlux %}
+    /**
+     * Compute the flux tensor.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] F the fluxes at that point as C array (already allocated).
+     */
+    virtual void flux(const double* const Q,double** F);
+{%- endif %}
+    
+{%- if (useSource || useNCP) %}
+    /**
+     * Compute the fused Source.
+     * 
+     * The fused source is the sum $S(Q) - B(Q)\nabla Q$ stemming
+     * from the algebraicSource and the nonConservativeProduct functions.
+     * 
+     * In most ExaHyPE kernels, this function is the only one called and
+     * there is an adapter calling the old functions if neccessary.
+     **/
+    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
+{%- endif %}
+
+{%- if useSource %}
+   /**
+   * Compute the Algebraic Sourceterms.
+   * 
+   * You may want to overwrite this with your PDE Source (algebraic RHS contributions).
+   * However, in all schemes we have so far, the source-type contributions are
+   * collected with non-conservative contributions into a fusedSource, see the
+   * fusedSource method. From the kernels given with ExaHyPE, only the fusedSource
+   * is called and there is a default implementation for the fusedSource calling
+   * again seperately the nonConservativeProduct function and the algebraicSource
+   * function.
+   *
+   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+   *                 as C array (already allocated).
+   * \param[inout] S the source point as C array (already allocated).
+   */
+  virtual void algebraicSource(const double* const Q,double* S) = 0;
+{%- endif %}
+
+{%- if useNCP %}
+    /**
+     * Compute the nonconservative term $B(Q) \nabla Q$.
+     * 
+     * This function shall return a vector BgradQ which holds the result
+     * of the full term. To do so, it gets the vector Q and the matrix
+     * gradQ which holds the derivative of Q in each spatial direction.
+     * Currently, the gradQ is a continous storage and users can use the
+     * kernels::idx2 class in order to compute the positions inside gradQ.
+     *
+     * @TODO: Check if the following is still right:
+     * 
+     * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
+     * use the ADER-DG kernels for nonlinear PDEs. If you use
+     * the kernels for linear PDEs, it is a tensor with dimensions
+     * Dim x NumberOfVariables.
+     * 
+     * \param[in]   Q   the vector of unknowns at the given position
+     * \param[in]   gradQ   the gradients of the vector of unknowns,
+     *                  stored in a linearized array.
+     * \param[inout]  The vector BgradQ (extends nVar), already allocated. 
+     *
+     **/
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
+{%- endif %}
 };
 
 #endif // __{{solver}}_CLASS_HEADER__

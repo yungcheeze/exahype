@@ -91,8 +91,7 @@ public class GenericADERDG implements Solver {
   }
 
   @Override
-  public void writeHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException, IllegalArgumentException {
+  public void writeHeader(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
     final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
     writer.write(templateEngine.render(template, context));
@@ -106,8 +105,7 @@ public class GenericADERDG implements Solver {
   }
   
   @Override
-  public void writeAbstractHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException, IllegalArgumentException {
+  public void writeAbstractHeader(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
     final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/AbstractGenericADERDGSolverHeader.template");
     writer.write(templateEngine.render(template, context));

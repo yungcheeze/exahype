@@ -108,16 +108,21 @@ public class OptimisedADERDG implements Solver {
   }
   
   @Override
-  public void writeHeader(java.io.BufferedWriter writer)
-      throws IOException, IllegalArgumentException {
-	  final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
+  public void writeHeader(java.io.BufferedWriter writer) throws IOException, IllegalArgumentException {
+    //reuse the generic template
+	  final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
 	  writer.write(templateEngine.render(template, context));
   }
-
   
   @Override
-  public void writeAbstractHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException, IllegalArgumentException {      
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
+      //reuse the generic template
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
+    writer.write(templateEngine.render(template, context));
+  }
+  
+  @Override
+  public void writeAbstractHeader(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {      
     final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
     writer.write(templateEngine.render(template, context));
   }
@@ -125,12 +130,6 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeAbstractImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
     final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); 
-    writer.write(templateEngine.render(template, context));
-  }
-  
-  @Override
-  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException, IllegalArgumentException {
-    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     writer.write(templateEngine.render(template, context));
   }
   
