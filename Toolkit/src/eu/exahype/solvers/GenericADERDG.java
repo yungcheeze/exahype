@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // template engine
 import minitemp.Context;
@@ -45,8 +46,6 @@ public class GenericADERDG implements Solver {
     context.put("linearOrNonlinear" , isLinear? "Linear" : "Nonlinear");
     context.put("language"          , isFortran? "fortran" : "c");
     
-    
-    
     //int
     context.put("dimensions"        , dimensions);
     context.put("order"             , order);
@@ -68,12 +67,12 @@ public class GenericADERDG implements Solver {
     context.put("useSource_s"       , boolToTemplate(useSource));
     context.put("useNCP_s"          , boolToTemplate(useNCP));
     
-    //TODO JM support for loop (for writeAbstractImplementation)
-    String namingSchemes = "";
-    for (String name : namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    context.put("namingSchemes"     , namingSchemes);
+    //Set<String>
+    Set<String> namingSchemeNamesCapitalized = namingSchemeNames
+                                        .stream()
+                                        .map(e -> e.substring(0, 1).toUpperCase()+e.substring(1))
+                                        .collect(Collectors.toSet());
+    context.put("namingSchemes"     , namingSchemeNamesCapitalized);
   }
   
   @Override

@@ -49,8 +49,9 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     class VariableShortcuts;
     class VariableMultiplicities;
     class VariableNames;
-    //TODO JMG support template set
-    {{namingSchemes}}
+    {%- for className in namingSchemes %}
+    class {{className}};
+    {%- endfor %}
     
     {{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping  {%- if enableProfiler %}
     , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});

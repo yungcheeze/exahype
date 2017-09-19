@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // template engine
 import minitemp.Context;
@@ -43,6 +44,11 @@ public class OptimisedADERDG implements Solver {
     final boolean useNCP             = options.contains(NCP_OPTION_ID);
     final boolean noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
     
+    //generate the optimised kernel, can throw IOException
+    final String optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, numberOfVariables, numberOfParameters, order, isLinear, dimensions,
+        microarchitecture, enableDeepProfiler, useFlux, useSource, useNCP, noTimeAveraging);
+    final String optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
+    
     templateEngine = new TemplateEngine();
     context = new Context();
     
@@ -50,6 +56,8 @@ public class OptimisedADERDG implements Solver {
     context.put("project"           , projectName);
     context.put("solver"            , solverName);
     context.put("abstractSolver"    , getAbstractSolverName());
+    context.put("optKernelPath"     , optKernelPath);
+    context.put("optNamespace"      , optNamespace);
     
     //int
     context.put("dimensions"        , dimensions);
@@ -72,22 +80,12 @@ public class OptimisedADERDG implements Solver {
     context.put("useSource_s"       , boolToTemplate(useSource));
     context.put("useNCP_s"          , boolToTemplate(useNCP));
 
-    //generate the optimised kernel, can throw IOException
-    final String optKernelPath = CodeGeneratorHelper.getInstance().invokeCodeGenerator(projectName, solverName, numberOfVariables, numberOfParameters, order, isLinear, dimensions,
-        microarchitecture, enableDeepProfiler, useFlux, useSource, useNCP, noTimeAveraging);
-    final String optNamespace = CodeGeneratorHelper.getInstance().getNamespace(projectName, solverName);
-    
-    context.put("optKernelPath"     , optKernelPath);
-    context.put("optNamespace"      , optNamespace);
-    
-    
-    //TODO JM support for loop (for writeAbstractImplementation)
-    String namingSchemes = "";
-    for (String name : namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    context.put("namingSchemes"     , namingSchemes);
-    
+    //Set<String>
+    Set<String> namingSchemeNamesCapitalized = namingSchemeNames
+                                        .stream()
+                                        .map(e -> e.substring(0, 1).toUpperCase()+e.substring(1))
+                                        .collect(Collectors.toSet());
+    context.put("namingSchemes"     , namingSchemeNamesCapitalized);
     
     //TODO JMG: linear kernels unsupported for now
     if(isLinear) 
