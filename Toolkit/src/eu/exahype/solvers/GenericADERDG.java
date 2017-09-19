@@ -6,6 +6,7 @@ import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // template engine
 import minitemp.Context;
@@ -68,11 +69,12 @@ public class GenericADERDG implements Solver {
     context.put("useNCP_s"          , boolToTemplate(useNCP));
     
     //Set<String>
-    Set<String> namingSchemeNamesCapitalized = namingSchemeNames
-                                        .stream()
-                                        .map(e -> e.substring(0, 1).toUpperCase()+e.substring(1))
-                                        .collect(Collectors.toSet());
-    context.put("namingSchemes"     , namingSchemeNamesCapitalized);
+    context.put("namingSchemes"     , namingSchemeNames.stream().map(s -> s.substring(0, 1).toUpperCase()+s.substring(1)).collect(Collectors.toSet())); //capitalize
+    
+    //List<Integer> , range used by for loops
+    context.put("range_0_nDim"      , IntStream.range(0, dimensions)                          .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVar"      , IntStream.range(0, numberOfVariables)                   .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVarParam" , IntStream.range(0, numberOfVariables+numberOfParameters).boxed().collect(Collectors.toList()));
   }
   
   @Override
@@ -101,69 +103,6 @@ public class GenericADERDG implements Solver {
     final String template = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     writer.write(templateEngine.render(template, context));
-    //TODO implement in template with for logic
-    /* 
-    // user functions
-    int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
-    
-    String adjustSolution = "  // State variables:\n";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      adjustSolution += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) adjustSolution += "\n";
-    }
-    if (_numberOfParameters>0) {
-      adjustSolution += "  // Material parameters:\n";
-      for (int i = 0; i < _numberOfParameters; i++) {
-        adjustSolution += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
-        if (i<_numberOfParameters-1) adjustSolution += "\n";
-      }
-    }
-
-    String eigenvalues = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 1.0;";
-      if (i<_numberOfVariables-1) eigenvalues += "\n";
-    }
-
-    String flux = "";
-    for (int d=0; d<_dimensions; ++d) {
-      for (int i = 0; i < _numberOfVariables; i++) {
-        flux += "  F["+d+"][" + String.format("%" + digits + "d", i) + "] = 0.0;";
-        if (i<_numberOfVariables-1) flux += "\n";
-      }
-      if (d<_dimensions-1) {
-        flux += "\n\n";    
-      }
-    }
-    
-    String source = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      source += "  S[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) source += "\n";
-    }
-    
-    String boundaryValues = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      boundaryValues += "  stateOut[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) boundaryValues += "\n";
-    }
-    boundaryValues += "\n\n";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      boundaryValues += "  fluxOut[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) boundaryValues += "\n";
-    }
-    
-    String ncp = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      ncp += "  BgradQ[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) ncp += "\n";
-    }
-    
-    String matrixb = "";
-    for (int i = 0; i < _numberOfVariables*_numberOfVariables; i++) {
-      matrixb += "  Bn[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
-    } */
   }
   
   @Override

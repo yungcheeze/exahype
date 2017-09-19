@@ -6,6 +6,7 @@ import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // template engine
 import minitemp.Context;
@@ -81,11 +82,12 @@ public class OptimisedADERDG implements Solver {
     context.put("useNCP_s"          , boolToTemplate(useNCP));
 
     //Set<String>
-    Set<String> namingSchemeNamesCapitalized = namingSchemeNames
-                                        .stream()
-                                        .map(e -> e.substring(0, 1).toUpperCase()+e.substring(1))
-                                        .collect(Collectors.toSet());
-    context.put("namingSchemes"     , namingSchemeNamesCapitalized);
+    context.put("namingSchemes"     , namingSchemeNames.stream().map(s -> s.substring(0, 1).toUpperCase()+s.substring(1)).collect(Collectors.toSet())); //capitalize
+    
+    //List<Integer> , range used by for loops
+    context.put("range_0_nDim"      , IntStream.range(0, dimensions)                          .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVar"      , IntStream.range(0, numberOfVariables)                   .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVarParam" , IntStream.range(0, numberOfVariables+numberOfParameters).boxed().collect(Collectors.toList()));
     
     //TODO JMG: linear kernels unsupported for now
     if(isLinear) 
