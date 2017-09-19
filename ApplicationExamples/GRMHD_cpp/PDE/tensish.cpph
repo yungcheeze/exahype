@@ -150,10 +150,15 @@ namespace tensish {
 		#define SYMFOR(i,j) DFOR(i) for(int j=0; j<=i; j++)
 		
 		/// Compute determinant of a symmetric matrix
+		/// TODO: Do with templates
 		template<class T> constexpr double det(const T &lo) {
+			#if DIMENSIONS == 3
 			return -lo(0,2)*lo(0,2)*lo(1,1) + 2*lo(0,1)*lo(0,2)*lo(1,2)
 			-lo(0,0)*lo(1,2)*lo(1,2) - lo(0,1)*lo(0,1)*lo(2,2)
 			+lo(0,0)*lo(1,1)*lo(2,2);
+			#elif DIMENSIONS == 2
+			return lo(0,0)*lo(1,1) - lo(0,1)*lo(1,0);
+			#endif
 		}
 		
 		/// The Kronecker delta with two elements
@@ -281,20 +286,31 @@ namespace tensish {
 	struct metric3 {
 		sym::stored3 up;
 		const sym::const_shadow3 lo;
+		double det;
 		
 		metric3(const double* const lo_)
 			: lo(lo_)
 			/* up: */ { complete_from_lower(); }
 		
 		void complete_from_lower() {
-			double d = sym::det(lo);
+			det = sym::det(lo);
 
-			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) )/d;
-			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) )/d;
-			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) )/d;
-			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) )/d;
-			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) )/d;
-			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) )/d;
+			// quick fix, should use templates and static_assert(N >= 0 && N <= 10, "N out of bounds!");
+			// instead.
+			#if DIMENIONS == 3 
+			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) )/det;
+			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) )/det;
+			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) )/det;
+			up(0,2) = (-lo(0,2)*lo(1,1) + lo(0,1)*lo(1,2) )/det;
+			up(1,2) = ( lo(0,1)*lo(0,2) - lo(0,0)*lo(1,2) )/det;
+			up(2,2) = (-lo(0,1)*lo(0,1) + lo(0,0)*lo(1,1) )/det;
+			#elif DIMENSIONS == 2
+			up(0,0) =  lo(1,1)/det;
+			up(0,1) = -lo(1,0)/det;
+			up(1,1) =  lo(0,0)/det;
+			#else
+			static_assert(N == 3 || N == 2, "Only 2D and 3D implemented so far");
+			#endif
 
 			//vc = sqrt(fabs(d));
 		}
