@@ -35,12 +35,7 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      */
     static tarch::logging::Log _log;
   public:
-    {{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs  {%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler
-  {%- endif %}
-  {%- if hasConstants %}
-    , exahype::Parser::ParserView& constants
-  {%- endif %}     );
+    {{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{% if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}{% if hasConstants %}, exahype::Parser::ParserView constants{% endif %});
 
     /**
      * Initialise the solver.
@@ -134,7 +129,7 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      *                 as C array (already allocated).
      * \param[inout] F the fluxes at that point as C array (already allocated).
      */
-    virtual void flux(const double* const Q,double** F);
+    void flux(const double* const Q,double** F) final override;
 {%- endif %}
     
 {%- if (useSource || useNCP) %}
@@ -147,26 +142,26 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      * In most ExaHyPE kernels, this function is the only one called and
      * there is an adapter calling the old functions if neccessary.
      **/
-    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
+    void fusedSource(const double* const Q, const double* const gradQ, double* S) final override;
 {%- endif %}
 
 {%- if useSource %}
-   /**
-   * Compute the Algebraic Sourceterms.
-   * 
-   * You may want to overwrite this with your PDE Source (algebraic RHS contributions).
-   * However, in all schemes we have so far, the source-type contributions are
-   * collected with non-conservative contributions into a fusedSource, see the
-   * fusedSource method. From the kernels given with ExaHyPE, only the fusedSource
-   * is called and there is a default implementation for the fusedSource calling
-   * again seperately the nonConservativeProduct function and the algebraicSource
-   * function.
-   *
-   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-   *                 as C array (already allocated).
-   * \param[inout] S the source point as C array (already allocated).
-   */
-  virtual void algebraicSource(const double* const Q,double* S) = 0;
+     /**
+     * Compute the Algebraic Sourceterms.
+     * 
+     * You may want to overwrite this with your PDE Source (algebraic RHS contributions).
+     * However, in all schemes we have so far, the source-type contributions are
+     * collected with non-conservative contributions into a fusedSource, see the
+     * fusedSource method. From the kernels given with ExaHyPE, only the fusedSource
+     * is called and there is a default implementation for the fusedSource calling
+     * again seperately the nonConservativeProduct function and the algebraicSource
+     * function.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] S the source point as C array (already allocated).
+     */
+    void algebraicSource(const double* const Q,double* S) final override;
 {%- endif %}
 
 {%- if useNCP %}
@@ -192,7 +187,16 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      * \param[inout]  The vector BgradQ (extends nVar), already allocated. 
      *
      **/
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) final override;
+{%- endif %}
+
+{%- if usePointSource %}
+    /**
+     * Compute a pointSource contribution.
+     * 
+     * @TODO: Document me, please.
+    **/
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) final override;
 {%- endif %}
 };
 

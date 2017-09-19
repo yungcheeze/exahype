@@ -61,6 +61,7 @@ public class GenericADERDG implements Solver {
     context.put("useFlux"           , useFlux);
     context.put("useSource"         , useSource);
     context.put("useNCP"            , useNCP);
+    context.put("usePointSource"    , usePointSource);
     context.put("noTimeAveraging"   , noTimeAveraging);
     
     //boolean as String

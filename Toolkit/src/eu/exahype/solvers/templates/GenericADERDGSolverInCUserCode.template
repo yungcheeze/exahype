@@ -83,13 +83,13 @@ void {{project}}::{{solver}}::flux(const double* const Q,double** F) {
 void {{project}}::{{solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
   // @todo Please implement/augment if required
 {%- if useSource %}
-  solver.algebraicSource(Q, S);
+  algebraicSource(Q, S);
 {%- else %}
 	std::fill_n(S, NumberOfVariables, 0.0);
 {%- endif %}
 {%- if useSource %}
   double ncp[NumberOfVariables];
-  solver.nonConservativeProduct(Q, gradQ, ncp);
+  nonConservativeProduct(Q, gradQ, ncp);
 	for(int l=0; l<NumberOfVariables; l++) {
 		S[l] -= ncp[l];
 	}
@@ -106,6 +106,12 @@ void {{project}}::{{solver}}::algebraicSource(const double* const Q,double* S) {
 
 {%- if useNCP %}
 void  {{project}}::{{solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}
+
+{%- if usePointSource %}
+void  {{project}}::{{solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // @todo Please implement/augment if required
 }
 {%- endif %}

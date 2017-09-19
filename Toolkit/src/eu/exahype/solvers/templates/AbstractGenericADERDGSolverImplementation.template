@@ -30,15 +30,8 @@
 
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs 
-{%- if enableProfiler %}
-, std::unique_ptr<exahype::profilers::Profiler> profiler
-{%- endif %}
-{%- if hasConstants %}
-, exahype::Parser::ParserView constants
-{%- endif %}
-):
-  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping {%- if enableProfiler %}, std::move(profiler){%- endif %}) {
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs {%- if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}{% if hasConstants %}, exahype::Parser::ParserView constants{% endif %}  ):
+  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{% if enableProfiler %}, std::move(profiler){% endif %}) {
   init(cmdlineargs {%- if hasConstants %}, constants{% endif %});
 }
 
@@ -243,7 +236,7 @@ void {{project}}::{{abstractSolver}}::pointSource(const double t,const double dt
 {%- if enableProfiler %}
   _profiler->start("pointSource");
 {%- endif %}
-  kernels::aderdg::generic::c::pointSource<{{solver}}>(*static_cast<{{solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
+  kernels::aderdg::generic::c::pointSource<{{solver}}, {{usePointSource}}>(*static_cast<{{solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
 {%- if enableProfiler %}
   _profiler->stop("pointSource");
 {%- endif %}

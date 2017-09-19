@@ -52,17 +52,6 @@ public:
   virtual int constexpr_getNumberOfParameters() const = 0;
   virtual double constexpr_getCFLNumber()       const = 0;
   ///@}
-
-  //TODO JMG remove
- /**
-  * @defgroup Guards
-  */
-  ///@{  
-  /**
-   * Guard to enable dirac point source terms in the User PDE.
-   **/
-  virtual bool usePointSource()            const = 0;
-  ///@}
   
  /**
   * @defgroup User PDE

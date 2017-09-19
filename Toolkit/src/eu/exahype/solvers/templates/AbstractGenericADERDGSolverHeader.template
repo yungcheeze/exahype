@@ -66,10 +66,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      * return false.
      */
     void flux(const double* const Q,double** F) override;
-    /**
-     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
-     */
-    bool usePointSource()            const override {return false;}  
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 

@@ -43,6 +43,7 @@ public class OptimisedADERDG implements Solver {
     final boolean useFlux            = options.contains(FLUX_OPTION_ID);
     final boolean useSource          = options.contains(SOURCE_OPTION_ID);
     final boolean useNCP             = options.contains(NCP_OPTION_ID);
+    final boolean usePointSource     = options.contains(POINTSOURCE_OPTION_ID);
     final boolean noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
     
     //generate the optimised kernel, can throw IOException
@@ -74,6 +75,7 @@ public class OptimisedADERDG implements Solver {
     context.put("useFlux"           , useFlux);
     context.put("useSource"         , useSource);
     context.put("useNCP"            , useNCP);
+    context.put("usePointSource"    , usePointSource);
     context.put("noTimeAveraging"   , noTimeAveraging);
     
     //boolean as String
