@@ -2,8 +2,12 @@
 #include <algorithm> // fill_n
 
 #include "peano/utils/Dimensions.h" // Defines DIMENSIONS
-namespace GRMHD { constexpr int nVar = GRMHDSolver_FV::NumberOfVariables; }
+//namespace GRMHD { constexpr int nVar = GRMHDSolver_FV::NumberOfVariables; } // ensure this is 19 or so
 #include "PDE/PDE.h"
+
+#include "InitialData.h"
+
+constexpr int nDim = DIMENSIONS;
 
 using namespace GRMHD;
 
@@ -19,6 +23,12 @@ bool GRMHD::GRMHDSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS
 void GRMHD::GRMHDSolver_FV::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
 	// TODO: CALL ID CODE HERE.
 	// Set the 9 SRMHD variables (D,S_j,tau,B^j) and the 11 ADM material parameters (N^i,g_ij,detg)
+	
+	// currently, the C++ AlfenWave spills out primitive data
+	double V[nVar];
+	AlfenWave id(x,t,V);
+	GRMHD::Prim2Cons(Q, V).copyFullStateVector();
+	NVARS(m) printf("Qid[%d]=%e\n", m, Q[m]);
 }
 
 exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
@@ -30,12 +40,16 @@ void GRMHD::GRMHDSolver_FV::eigenvalues(const double* const Q, const int dIndex,
 	// Provide eigenvalues for the 9 SRMHD variables (D,S_j,tau,B^j),
 	// we split off the 11 ADM material parameters (N^i,g_ij,detg)
 	PDE::eigenvalues(Q, dIndex, lambda);
+	
+	NVARS(m) printf("EV[%d]=%f\n", m, lambda[m]);
 }
 
 void GRMHD::GRMHDSolver_FV::flux(const double* const Q, double** F) {
 	// Provide fluxes for the 9 SRMHD variables (D,S_j,tau,B^j),
 	// we split off the 11 ADM material parameters (N^i,g_ij,detg)
-	PDE(Q).flux(F);
+	//PDE(Q).flux(F);
+	
+	GRMHD::Fluxes(F, Q).zeroMaterialFluxes();
 }
 
 
@@ -45,13 +59,16 @@ void GRMHD::GRMHDSolver_FV::boundaryValues(
     const double t,const double dt,
     const int faceIndex,
     const int d,
-    const double* const stateInside,
-    double* stateOutside) {
+    const double* const stateIn,
+    double* stateOut) {
 
-	// TODO: SET BV for all 9 variables + 11 parameters.
+	// SET BV for all 9 variables + 11 parameters.
+	// EXACT FV AlfenWave BC
+	adjustSolution(x, 0/*not sure, not used anyway*/, t, dt, stateOut);
 }
 
 void GRMHD::GRMHDSolver_FV::fusedSource(const double* const Q, const double* const gradQ, double* S) {
 	PDE(Q).RightHandSide(gradQ, S);
+	PDE::Source(S).zero_adm();
 }
 

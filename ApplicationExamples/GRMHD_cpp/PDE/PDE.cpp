@@ -12,6 +12,8 @@
  *   It is now equal to the schemes of BHAC and ECHO, i.e. it seems to be valid
  *   for the cowling approximation but not neccessarily for a dynamical
  *   spacetime.
+ * 
+ * Important TODO: Stripping of the determinant of the metric is missing.
  *****************************************************************************/
 
 #define S(x) printf(#x " = %e\n", x);
@@ -46,19 +48,19 @@ void GRMHD::Fluxes::zeroMaterialFluxes() {
 	}
 }
 
-void GRMHD::PDE::RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data) {
+GRMHD::PDE& GRMHD::PDE::RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data) {
 	GRMHDSystem::Shadow source(Source_data);
 	const Gradients grad(gradQ_Data+0,gradQ_Data+nVar,gradQ_Data+2*nVar);
-	RightHandSide(grad,source);
+	return RightHandSide(grad,source);
 }
 			
-void GRMHD::PDE::RightHandSide(const double* const Qx, const double* const Qy, const double* const Qz, double* fusedSource_Data) {
+GRMHD::PDE& GRMHD::PDE::RightHandSide(const double* const Qx, const double* const Qy, const double* const Qz, double* fusedSource_Data) {
 	GRMHDSystem::Shadow source(fusedSource_Data);
 	const Gradients grad(Qx,Qy,Qz);
-	RightHandSide(grad,source);
+	return RightHandSide(grad,source);
 }
 	
-void GRMHD::PDE::RightHandSide(const Gradients& grad, Source& source) {
+GRMHD::PDE& GRMHD::PDE::RightHandSide(const Gradients& grad, Source& source) {
 	// This is the fusedSource = -NCP + AlgebraicSource
 	
 	// Sij is the 3-Energy-Momentum tensor. We need S^{ij} and S^i_j in the NCP.	
@@ -107,6 +109,8 @@ void GRMHD::PDE::RightHandSide(const Gradients& grad, Source& source) {
 	CONTRACT(k) source.phi += Bmag.up(k) * grad.lo(k).alpha;
 	CONTRACT(k) source.phi -= phi * grad.lo(k).beta.up(k);
 	CONTRACT3(k,l,m) source.phi += alpha/2 * gam.up(l,m) * beta.up(k) * grad.lo(k).gam.lo(l,m);
+	
+	return *this; // chainable
 }
 
 /*

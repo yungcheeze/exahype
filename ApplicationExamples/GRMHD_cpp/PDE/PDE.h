@@ -16,13 +16,13 @@
 	// in order to autonomously test/copmile this C++ file:
 	#define DIMENSIONS 3
 	namespace GRMHD { constexpr int nVar = 19; }
-	int main() { return 0; }
+	//int main() { return 0; }
 #else
 	// If you include to ExaHyPE instead:
 	#include "peano/utils/Dimensions.h" // Defines DIMENSIONS
-	//#include "AbstractGRMHDSolver_FV.h" // Defines: nVar
-	//namespace GRMHD { constexpr int nVar = GRMHD::AbstractGRMHDSolver_FV::NumberOfVariables; }
-	namespace GRMHD { constexpr int nVar = 19; }
+	#include "AbstractGRMHDSolver_FV.h" // Defines: nVar
+	namespace GRMHD { constexpr int nVar = GRMHD::AbstractGRMHDSolver_FV::NumberOfVariables; } // ensure this is 19 or so
+	//namespace GRMHD { constexpr int nVar = 19; }
 #endif
 
 /* This header file needs the definition of a constexpr int GRMHD::nVar
@@ -88,7 +88,7 @@ namespace GRMHD {
 				constexpr int Dens = 0;
 				constexpr int Si_lo = 1;
 				constexpr int tau = 4;
-			};
+			}
 			
 			template<typename state_vector, typename vector_lo, typename scalar>
 			struct StateVector {
@@ -339,7 +339,6 @@ namespace GRMHD {
 	// retrieve the lower/upper components of gradients, we don't even allocate storage or
 	// provide conversion strategies.
 
-
 	// Gradients in each direction: partial_i * something
 	struct Gradients {
 		const GRMHDSystem::Gradient dir[DIMENSIONS];
@@ -437,9 +436,9 @@ namespace GRMHD {
 		
 		/// This is the fusedSource, but we just call it RightHandSide because it is on the RHS
 		/// of the PDE.
-		void RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data);
-		void RightHandSide(/* const double* const Q, */const double* const gradQx, const double* const gradQy, const double* const gradQz, double* Source_data);
-		void RightHandSide(const Gradients& grad, Source& source);
+		PDE& RightHandSide(/* const double* const Q, */const double* const gradQ_Data, double* Source_data);
+		PDE& RightHandSide(/* const double* const Q, */const double* const gradQx, const double* const gradQy, const double* const gradQz, double* Source_data);
+		PDE& RightHandSide(const Gradients& grad, Source& source);
 		
 		// You can recover these functions by just reworking what's in the fusedSource.
 		//void nonConservativeProduct(/* const double* const Q, */ const double* const gradQ_Data, double* BgradQ_Data);
@@ -463,8 +462,15 @@ namespace GRMHD {
 	// Compute all fluxes at once
 	struct Fluxes : public FluxBase {
 		Flux F[DIMENSIONS];
-		Fluxes(double** _F, const double* const Q) : FluxBase(Q), F{ _F[0], _F[1], _F[2] } { DFOR(i) compute(F[i], i); }
-		Fluxes(double* Fx, double* Fy, double* Fz, const double* const Q) : FluxBase(Q), F{Fx,Fy,Fz} { DFOR(i) compute(F[i], i); }
+		#if DIMENSIONS == 3
+		Fluxes(double** F, const double* const Q) : FluxBase(Q), F{F[0],F[1],F[2]} {computeAll();}
+		Fluxes(double* Fx, double* Fy, double* Fz, const double* const Q) : FluxBase(Q), F{Fx,Fy,Fz} {computeAll();}
+		#elif DIMENSIONS == 2
+		Fluxes(double** F, const double* const Q) : FluxBase(Q), F{F[0],F[1]} {computeAll();}
+		Fluxes(double* Fx, double* Fy, const double* const Q) : FluxBase(Q), F{Fx,Fy} {computeAll();}
+		Fluxes(double* Fx, double* Fy, double* Fz, const double* const Q) : Fluxes(Fx,Fy,Q) {} // for convenience
+		#endif
+		void computeAll() { DFOR(i) compute(F[i], i); }
 		void zeroMaterialFluxes();
 	};
 
