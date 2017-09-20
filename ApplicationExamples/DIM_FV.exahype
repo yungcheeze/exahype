@@ -48,7 +48,7 @@ exahype-project DIM
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -56,7 +56,7 @@ exahype-project DIM
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver Finite-Volumes DIMSolver
     variables const                = sigma:6,vel:3,lambda:1,mu:1,rho:1,alpha:1,xi:1

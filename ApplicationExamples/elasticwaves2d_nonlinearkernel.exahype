@@ -47,10 +47,10 @@ exahype-project  Elastic
   end distributed-memory
  */
  
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
-  end optimisation
+  end global-optimisation
   
   solver ADER-DG MyElasticSolver
     variables const         = 8
@@ -59,7 +59,9 @@ exahype-project  Elastic
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.5
     time-stepping     = global
-    kernel const            = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = ncp
+	optimisation const = generic
     language const          = C
 
     plot vtk::Cartesian::vertices::ascii

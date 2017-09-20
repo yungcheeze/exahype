@@ -45,7 +45,7 @@ exahype-project GRMHD
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -53,7 +53,7 @@ exahype-project GRMHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver Limiting-ADER-DG GRMHDSolver
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
@@ -61,7 +61,9 @@ exahype-project GRMHD
     maximum-mesh-size              = 0.3333339
     maximum-mesh-depth             = 0
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux,ncp
+	optimisation const = generic
     language const                 = C
 
     limiter-kernel const           = generic::musclhancock 

@@ -28,7 +28,9 @@ exahype-project  MHDSolver
     order const              = 3
     maximum-mesh-size  = 0.2
     time-stepping      = global
-    kernel const             = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const           = Fortran
 
     /* do not trust vtk::Legendre::vertices as it contains bugs */

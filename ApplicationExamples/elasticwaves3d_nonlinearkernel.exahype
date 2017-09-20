@@ -39,13 +39,13 @@ exahype-project  Elastic
     timeout                  = 1200
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = off
     disable-amr-if-grid-has-been-stationary-in-previous-iteration    = off
-  end optimisation
+  end global-optimisation
   
   solver ADER-DG MyElasticSolver
     variables const         = 12
@@ -53,7 +53,9 @@ exahype-project  Elastic
     order const             = 3
     maximum-mesh-size = 2.0
     time-stepping     = global
-    kernel const            = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = ncp
+	optimisation const = generic
     language const          = C
 
     plot vtk::Cartesian::vertices::ascii

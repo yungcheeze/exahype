@@ -51,14 +51,14 @@ exahype-project  Euler
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = off
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
-  end optimisation
+  end global-optimisation
 	
   solver ADER-DG MyEulerSolver
     variables const         = 5
@@ -66,7 +66,9 @@ exahype-project  Euler
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.12
     time-stepping     = global
-    kernel const            = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const          = C
 
     plot vtk::Cartesian::cells::ascii

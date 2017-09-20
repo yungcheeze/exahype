@@ -45,7 +45,7 @@ exahype-project Trivial
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -53,7 +53,7 @@ exahype-project Trivial
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = on
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG AdvectionSolver
     variables const                = single:1
@@ -61,7 +61,9 @@ exahype-project Trivial
     maximum-mesh-size              = 0.11119
     maximum-mesh-depth             = 0
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const                 = C
 
     plot vtk::Legendre::cells::binary DummyWriter

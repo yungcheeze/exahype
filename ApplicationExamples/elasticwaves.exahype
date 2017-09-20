@@ -33,7 +33,7 @@ exahype-project  ElasticWave
   end computational-domain
 
  
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99    
     timestep-batch-factor           = 0.8
@@ -41,7 +41,7 @@ exahype-project  ElasticWave
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
   
   solver ADER-DG MyElasticWaveSolver
     variables const         = 9

@@ -37,7 +37,9 @@ exahype-project  SWE
     order const       = 3
     maximum-mesh-size = 0.15
     time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux,ncp
+	optimisation const = generic
     language const    = C
     plot vtu::Cartesian::cells::ascii ConservedWriter
       variables const = 5
