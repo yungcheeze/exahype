@@ -102,13 +102,13 @@ public class Kernel {
       sb.append(", ");
     }
     sb.deleteCharAt(sb.length()-2);
-    sb.append(", terms: [");
+    sb.append("], terms: [");
     for(String s : terms) {
       sb.append(s);
       sb.append(", ");
     }
     sb.deleteCharAt(sb.length()-2);
-    sb.append(", opt: [");
+    sb.append("], opt: [");
     for(String s : optimization) {
       sb.append(s);
       sb.append(", ");
