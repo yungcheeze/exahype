@@ -1114,70 +1114,14 @@ public:
       const double dt) = 0;
 
   /**
-   * Adjust solution value specification.
-   */
-  enum class AdjustSolutionValue {
-    No,
-    PointWisely,
-    PatchWisely
-  };
-
-  /**
-   * This hook can be used to trigger solution adjustments within the
-   * region corresponding to \p cellCentre and \p dx
-   * and the time interval corresponding to t and dt.
-   *
-   * \param t  The new time stamp after the solution update.
-   * \param dt The time step size that was used to update the solution.
-   *           This time step size was computed based on the old solution.
-   *           If we impose initial conditions, i.e, t=0, this value
-   *           equals std::numeric_limits<double>::max().
-   *
-   * \note Use this function and ::adjustSolution to set initial conditions.
-   *
-   * \param[in]    centre    The centre of the cell.
-   * \param[in]    dx        The extent of the cell.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \return true if the solution has to be adjusted.
-   */
-  virtual AdjustSolutionValue useAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) const = 0;
-
-
-  /**
-   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
-   *
-   * \note Use this function and ::useAdjustSolution to set initial conditions.
-   *
-   * \param[in]    x         the physical coordinate on the face.
-   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
-   *                         as C array (already allocated).
-   */
-  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
-  virtual void adjustPatchSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt,
-      double* luh) = 0;
-
-  /**
-   * Sven:
-   * I really have the feeling this is a leftover which should not be there.
+   * PointSource kernel
    **/
   virtual void pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
     const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempPointForceSources);
+    double* tempPointForceSources) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement

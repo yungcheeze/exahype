@@ -1905,10 +1905,10 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  if(usePointSource()) { //disable kernel if not needed
-    pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
-    // luh, t, dt, cell cell center, cell size, data allocation for forceVect
-  }
+
+  pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
+  // luh, t, dt, cell cell center, cell size, data allocation for forceVect
+
 //TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
 #ifdef OPT_KERNELS
   double* dx = &cellDescription.getSize()[0];

@@ -8,297 +8,264 @@
 // ==============================================
 // Please do not change the implementations below
 // =============================---==============
-#include "Abstract{{Solver}}.h"
+#include "{{abstractSolver}}.h"
 
 #include "kernels/aderdg/generic/Kernels.h"
 
-#include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
+#include "{{solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
 #include <stdio.h>
 
 // Code generation information.
-{{defineLinear}}
-{{defineFortran}}
+{%- if isLinear %} 
+#define isLinear
+{%- else %}
+/* #define isLinear */
+{%- endif %}
+{%- if isFortran %} 
+#define isFortran
+{%- else %}
+/* #define isFortran */
+{%- endif %}
+
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
-  init(cmdlineargs{{SolverInitCallExtension}});
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs {%- if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}{% if hasConstants %}, exahype::Parser::ParserView constants{% endif %}  ):
+  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{% if enableProfiler %}, std::move(profiler){% endif %}) {
+  init(cmdlineargs {%- if hasConstants %}, constants{% endif %});
 }
 
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
-  exahype::solvers::ADERDGSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,Order+1,
-                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{project}}::{{abstractSolver}}::{{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping {%- if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler {%- endif %} ):
+  exahype::solvers::ADERDGSolver("{{solver}}",NumberOfVariables,NumberOfParameters,Order+1,
+                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping{%- if enableProfiler %}, std::move(profiler){% endif %}) {
 }
 
-void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
+void {{project}}::{{abstractSolver}}::constantsToString(std::ostream& os) {
 	// This string is used in the --version output to identify compile time constants
-	os << "{{Project}}::Abstract{{Solver}}("
+	os << "{{project}}::{{abstractSolver}}("
 	   << "nVar=" << NumberOfVariables << ", "
 	   << "nParam=" << NumberOfParameters << ", "
 	   << "Order=" << Order
 	   << ")";
 }
 
-void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
+void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 	// verbosily fail even without assertions turned on
 	puts(msg);
 	abort();
 }
 
-void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
-{{BeforeSpaceTimePredictor}}
-#ifdef isFortran
-  kernels::aderdg::generic::fortran::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
-#else
-#ifdef isLinear
-
-#define STPL(usePointSource, useSource, useFlux, useNCP)				\
-        kernels::aderdg::generic::c::spaceTimePredictorLinear<usePointSource, useSource, useFlux, useNCP, {{Solver}}>( \
-           *static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd, \
-           tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
-
- if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,true,true);
- if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,true,false);
- if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,false,true);
- if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,false,false);
- if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,true,true);
- if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,true,false);
- if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,false,true);
- if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,false,false);
- if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,true,true);
- if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,true,false);
- if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,false,true);
- if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,false,false);
- if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,true,true);
- if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,true,false);
- if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,false,true);
- if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,false,false);
-
-#else
-
-  // For some reason, we compile here the SpaceTimepRedictorNonLinear (STPNL) for all possible
-  // combinations, even if the guards have no other possibility than staying constant for the whole
-  // run (which means they could be constexpr). I have no clue why we need this overhead here. In
-  // my eyes it's waste of time. Maybe somebody can explain it to me.  -- Sven, 2017-04-07.
-
-#define STPNL(useSource, useFlux, useNCP) \
-    kernels::aderdg::generic::c::spaceTimePredictorNonlinear<useSource, useFlux, useNCP, {{Solver}}>(\
-        *static_cast<{{Solver}}*>(this), lQhbnd, lFhbnd,\
-        tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,\
-        luh,dx,dt);
-  
-  if(useAlgebraicSource()) {
-    if(useConservativeFlux()) {
-      if(useNonConservativeProduct()) {
-        STPNL(true,true,true);
-      } else {
-        STPNL(true,true,false);
-      }
-    } else {
-      if(useNonConservativeProduct()) {
-        STPNL(true,false,true);
-      } else {
-        STPNL(true,false,false);
-      }
-    }
-  } else {
-    if(useConservativeFlux()) {
-      if(useNonConservativeProduct()) {
-        STPNL(false,true,true);
-      } else {
-        STPNL(false,true,false);
-      }
-    } else {
-      if(useNonConservativeProduct()) {
-        STPNL(false,false,true);
-      } else {
-        STPNL(false,false,false);
-      }
-    }
-  } 
-#endif // isLinear
-#endif // isFortran
-{{AfterSpaceTimePredictor}}
+void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
+{%- if enableProfiler %}
+  _profiler->start("spaceTimePredictor");
+{%- endif %}
+{%- if isFortran %}
+  kernels::aderdg::generic::fortran::spaceTimePredictor{{linearOrNonlinear}}<{{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, tempStateSizedVectors, luh, dx, dt, pointForceSources);
+{%- else %}
+{%- if  isLinear %}
+if(usePointSource())
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<{{usePointSource}}, {{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, tempStateSizedVectors,luh, dx, dt, pointForceSources);
+{%- else %}
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns, tempFluxUnknowns, tempStateSizedVectors, luh, dx, dt);
+{%- endif %}
+{%- endif %}
+{%- if enableProfiler %}
+  _profiler->stop("spaceTimePredictor");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
-{{BeforeSolutionUpdate}}
-  kernels::aderdg::generic::{{Language}}::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,lduh,dt);
-{{AfterSolutionUpdate}}
+void {{project}}::{{abstractSolver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
+{%- if enableProfiler %}
+  _profiler->start("solutionUpdate");
+{%- endif %}
+  kernels::aderdg::generic::{{language}}::solutionUpdate<{{solver}}>(*static_cast<{{solver}}*>(this),luh,lduh,dt);
+{%- if enableProfiler %}
+  _profiler->stop("solutionUpdate");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-{{BeforeVolumeIntegral}}
-#ifdef isFortran
-  kernels::aderdg::generic::fortran::volumeIntegral{{NonlinearOrLinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
-#endif
-#ifndef isFortran
-#ifdef isLinear
-#define VI(useSource, useFlux) \
-	  kernels::aderdg::generic::c::volumeIntegralLinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
-
-#else
-
-#define VI(useSource, useFlux) \
-	    kernels::aderdg::generic::c::volumeIntegralNonlinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
-#endif // isLinear
-  
-  if(useAlgebraicSource() || useNonConservativeProduct()) {
-    if(useConservativeFlux()) {
-      VI(true, true);
-    } 	else {
-      VI(true, false);
-    } 
-  } else {
-    if(useConservativeFlux()) {
-      VI(false, true);
-    } else {			 
-      VI(false, false);
-    }
-  }
-
-#endif // !isFortran
-{{AfterVolumeIntegral}}
+void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+{%- if enableProfiler %}
+  _profiler->start("volumeIntegral");
+{%- endif %}
+{%- if isFortran %}
+  kernels::aderdg::generic::fortran::volumeIntegral{{linearOrNonlinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+{%- else %}
+  kernels::aderdg::generic::c::volumeIntegral{{linearOrNonlinear}}<{{useSource}}, {{useFlux}}, NumberOfVariables, Order+1>(lduh,lFhi,dx);
+{%- endif %}
+{%- if enableProfiler %}
+  _profiler->stop("volumeIntegral");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-{{BeforeSurfaceIntegral}}
-  kernels::aderdg::generic::{{Language}}::surfaceIntegral{{NonlinearOrLinear}}<NumberOfVariables,Order+1>(lduh,lFhbnd,dx);
-{{AfterSurfaceIntegral}}
+void {{project}}::{{abstractSolver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+{%- if enableProfiler %}
+  _profiler->start("surfaceIntegral");
+{%- endif %}
+  kernels::aderdg::generic::{{language}}::surfaceIntegral{{linearOrNonlinear}}<NumberOfVariables, Order+1>(lduh,lFhbnd,dx);
+{%- if enableProfiler %}
+  _profiler->stop("surfaceIntegral");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
+void {{project}}::{{abstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
-{{BeforeRiemannSolver}}
-#ifdef isFortran
-  kernels::aderdg::generic::fortran::riemannSolver{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-#endif
-#ifndef isFortran
-#ifdef isLinear
-  if(useNonConservativeProduct()) {
-   kernels::aderdg::generic::c::riemannSolverLinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-  } else {
-   kernels::aderdg::generic::c::riemannSolverLinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-  }
-#else
-  if(useNonConservativeProduct()) {
-    kernels::aderdg::generic::c::riemannSolverNonlinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-  } else {
-    kernels::aderdg::generic::c::riemannSolverNonlinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-  }
-#endif // isLinear
-#endif // !isFortran
-{{AfterRiemannSolver}}
+{%- if enableProfiler %}
+  _profiler->start("riemannSolver");
+{%- endif %}
+{%- if isFortran %}
+  kernels::aderdg::generic::fortran::riemannSolver{{linearOrNonlinear}}<{{solver}}>(*static_cast<{{solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+{%- else %}
+  kernels::aderdg::generic::c::riemannSolver{{linearOrNonlinear}}<{{useNCP}},{{solver}}>(*static_cast<{{solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+{%- endif %}
+{%- if enableProfiler %}
+  _profiler->stop("riemannSolver");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-{{BeforeBoundaryConditions}}
-  kernels::aderdg::generic::c::boundaryConditions<{{Solver}}>(*static_cast<{{Solver}}*>(this),fluxOut,stateOut,fluxIn,stateIn,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
-{{AfterBoundaryConditions}}
+void {{project}}::{{abstractSolver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
+{%- if enableProfiler %}
+  _profiler->start("boundaryConditions");
+{%- endif %}
+  kernels::aderdg::generic::c::boundaryConditions<{{solver}}>(*static_cast<{{solver}}*>(this),fluxOut,stateOut,fluxIn,stateIn,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
+{%- if enableProfiler %}
+  _profiler->stop("boundaryConditions");
+{%- endif %}
 }
 
 
 
-double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-{{BeforeStableTimeStepSize}}
-  double d = kernels::aderdg::generic::{{Language}}::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx);
-{{AfterStableTimeStepSize}}
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+{%- if enableProfiler %}
+  _profiler->start("stableTimeStepSize");
+{%- endif %}
+  double d = kernels::aderdg::generic::{{language}}::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,tempEigenvalues,dx);
+{%- if enableProfiler %}
+  _profiler->stop("stableTimeStepSize");
+{%- endif %}
   return d;
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
-{{BeforeSolutionAdjustment}}
+void {{project}}::{{abstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+{%- if enableProfiler %}
+  _profiler->start("solutionAdjustment");
+{%- endif %}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
       abortWithMsg("Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
-      kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
+      kernels::aderdg::generic::{{language}}::solutionAdjustment<{{solver}}>(*static_cast<{{solver}}*>(this),luh,center,dx,t,dt);
       break;
     case AdjustSolutionValue::PatchWisely:
       adjustPatchSolution(
         center, dx, t, dt, luh);
       break;
   }
-{{AfterSolutionAdjustment}}
+{%- if enableProfiler %}
+  _profiler->stop("solutionAdjustment");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
-{{BeforeFaceUnknownsProlongation}}
+void {{project}}::{{abstractSolver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
+{%- if enableProfiler %}
+  _profiler->start("faceUnknownsProlongation");
+{%- endif %}
   kernels::aderdg::generic::c::faceUnknownsProlongation<NumberOfVariables,NumberOfParameters,Order+1>(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex);
-{{AfterFaceUnknownsProlongation}}
+{%- if enableProfiler %}
+  _profiler->start("false");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
-{{BeforeFaceUnknownsRestriction}}
+void {{project}}::{{abstractSolver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
+{%- if enableProfiler %}
+  _profiler->start("faceUnknownsRestriction");
+{%- endif %}
   kernels::aderdg::generic::c::faceUnknownsRestriction<NumberOfVariables,NumberOfParameters,Order+1>(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex);
-{{AfterFaceUnknownsRestriction}}
+{%- if enableProfiler %}
+  _profiler->stop("faceUnknownsRestriction");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
-{{BeforeVolumeUnknownsProlongation}}
+void {{project}}::{{abstractSolver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
+{%- if enableProfiler %}
+  _profiler->start("volumeUnknownsProlongation");
+{%- endif %}
   kernels::aderdg::generic::c::volumeUnknownsProlongation<NumberOfVariables,NumberOfParameters,Order+1>(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex);
-{{AfterVolumeUnknownsProlongation}}
+{%- if enableProfiler %}
+  _profiler->stop("volumeUnknownsProlongation");
+{%- endif %}
 }
 
 
 
-void {{Project}}::Abstract{{Solver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
-{{BeforeVolumeUnknownsRestriction}}
+void {{project}}::{{abstractSolver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
+{%- if enableProfiler %}
+  _profiler->start("volumeUnknownsRestriction");
+{%- endif %}
   kernels::aderdg::generic::c::volumeUnknownsRestriction<NumberOfVariables,NumberOfParameters,Order+1>(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex);
-{{AfterVolumeUnknownsRestriction}}
+{%- if enableProfiler %}
+  _profiler->stop("volumeUnknownsRestriction");
+{%- endif %}
 }
 
 
 
 
-void {{Project}}::Abstract{{Solver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
-{{BeforePointSource}}
-  kernels::aderdg::generic::c::pointSource<{{Solver}}>(*static_cast<{{Solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
-{{AfterPointSource}}
+void {{project}}::{{abstractSolver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
+{%- if usePointSource %}
+{%- if enableProfiler %}
+  _profiler->start("pointSource");
+{%- endif %}
+  kernels::aderdg::generic::c::pointSource<{{solver}}>(*static_cast<{{solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
+{%- if enableProfiler %}
+  _profiler->stop("pointSource");
+{%- endif %}
+{%- else %}
+  //Point sources aren't defined, this method should be empty
+{%- endif %}
 }
 
-void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
+void {{project}}::{{abstractSolver}}::flux(const double* const Q,double** F) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
+void {{project}}::{{abstractSolver}}::algebraicSource(const double* const Q,double* S) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
-void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+void {{project}}::{{abstractSolver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void {{project}}::{{abstractSolver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{Project}}::Abstract{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
-void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
+void {{project}}::{{abstractSolver}}::adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
@@ -313,26 +280,12 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
  **/
 #include "kernels/fusedMethods.cpph"
 
-void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-   #define FUSEDSOURCE(useSource, useNCP) \
-      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
-  if(useAlgebraicSource()) {
-    if(useNonConservativeProduct()) {
-      FUSEDSOURCE(true, true);
-    } else {
-      FUSEDSOURCE(true, false);
-    }
-  } else {
-    if(useNonConservativeProduct()) {
-      FUSEDSOURCE(false, true);
-    } else {
-      FUSEDSOURCE(false, false);
-    }
-  }
+void {{project}}::{{abstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+  kernels::fusedSource<{{useSource}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), Q, gradQ, S);
 }
 
-void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  kernels::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
+void {{project}}::{{abstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  kernels::coefficientMatrix<{{solver}}>(*static_cast<{{solver}}*>(this), Q, d, Bn);
 }
 
 

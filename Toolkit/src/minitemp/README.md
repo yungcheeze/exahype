@@ -46,6 +46,11 @@ The following logic is implemented:
   - foo is any boolean expression (javascript syntax)
   - else is optional
   
+* Loop ```{% for foo in bar %}  {% endfor %}```
+  - bar is any Collection of object
+  - the content between the delimiters will be rendered for each different value of foo
+  - if foo was already defined, it's value is overridden within the loop and restored afterward
+  
 
 ### Misc
 
@@ -54,12 +59,4 @@ The following logic is implemented:
 With ```{%-``` as start delimiter of a logic token, strip all whitespaces before the token + all whitespaces and one newline if present after the token. This allow more readable templates without unecessary whitespaces and newlines in the result.
 
 Example: ``` foo \n {%- x %}   \n bar``` is evaluated as ``` foo \n{% x %} bar```. 
-
-### Future features
-
-The foolowing features are still not implemented:
-
-Logic:
-
-* Foreach loop ```{% for i in list %}```
 

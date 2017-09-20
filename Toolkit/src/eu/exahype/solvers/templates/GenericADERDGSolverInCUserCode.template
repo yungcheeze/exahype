@@ -1,58 +1,117 @@
-#include "{{Solver}}.h"
+#include "{{solver}}.h"
 
-#include "{{Solver}}_Variables.h"
-
-
-tarch::logging::Log {{Project}}::{{Solver}}::_log( "{{Project}}::{{Solver}}" );
+#include "{{solver}}_Variables.h"
 
 
-void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
+tarch::logging::Log {{project}}::{{solver}}::_log( "{{project}}::{{solver}}" );
+
+
+void {{project}}::{{solver}}::init(std::vector<std::string>& cmdlineargs{%- if hasConstants %} , exahype::Parser::ParserView& constants {%- endif %}) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue {{project}}::{{solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
+  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void {{Project}}::{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+void {{project}}::{{solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
   
   // @todo Please implement/augment if required
-{{AdjustedSolutionValues}}
+  {%- for i in range_0_nVarParam %}
+  Q[{{i}}] = 0.0;
+  {%- endfor %}
 }
 
-void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+void {{project}}::{{solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
   
   // @todo Please implement/augment if required
-{{Eigenvalues}}
+  {%- for i in range_0_nVar %}
+  lambda[{{i}}] = 1.0;
+  {%- endfor %}
 }
 
-
-void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
-  
-  // @todo Please implement/augment if required
-{{Flux}}
-}
-
-
-void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
+void {{project}}::{{solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} + #parameters
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
 
   // @todo Please implement/augment if required
-{{BoundaryValues}}
+  {%- for i in range_0_nVar %}
+  stateOut[{{i}}] = 0.0;
+  {%- endfor %}
+
+  {%- for i in range_0_nVar %}
+  fluxOut[{{i}}] = 0.0;
+  {%- endfor %}
 }
 
-
-exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
+exahype::solvers::Solver::RefinementControl {{project}}::{{solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
   // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
+
+//***********************************************************
+//*********************** PDE *******************************
+//***********************************************************
+
+//to add new PDEs specify them in the specification file, delete this file and its header and rerun the toolkit
+
+{%- if useFlux %}
+void {{project}}::{{solver}}::flux(const double* const Q,double** F) {
+  // Dimensions                        = {{dimensions}}
+  // Number of variables + parameters  = {{numberOfVariables}} + {{numberOfParameters}}
+  
+  // @todo Please implement/augment if required
+  {%- for d in range_0_nDim %}
+  {%- for i in range_0_nVar %}
+  F[{{d}}][{{i}}] = 0.0;
+  {%- endfor %}
+  
+  {%- endfor %}
+}
+{%- endif %}
+
+{%- if (useSource || useNCP) %}
+// You can either leave this generated glue code and just implement {% if (useSource && useNCP) %}algebraicSource and nonConservativeProduct{% else %}{% if useSource %}algebraicSource{% else %}nonConservativeProduct{% endif %}{% endif %}
+// Or you can directly implement it{% if useSource %} and leave algebraicSource empty{% endif %}.{% if useNCP %} You still need to implement nonConservativeProduct.{% endif %}
+void {{project}}::{{solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+  // @todo Please implement/augment if required
+{%- if useSource %}
+  algebraicSource(Q, S);
+{%- else %}
+	std::fill_n(S, NumberOfVariables, 0.0);
+{%- endif %}
+{%- if useSource %}
+  double ncp[NumberOfVariables];
+  nonConservativeProduct(Q, gradQ, ncp);
+	for(int l=0; l<NumberOfVariables; l++) {
+		S[l] -= ncp[l];
+	}
+{%- endif %}	
+}
+{%- endif %}
+
+{%- if useSource %}
+//You can either implement this method or modify fusedSource
+void {{project}}::{{solver}}::algebraicSource(const double* const Q,double* S) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}
+
+{%- if useNCP %}
+void  {{project}}::{{solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}
+
+{%- if usePointSource %}
+void  {{project}}::{{solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}

@@ -9,12 +9,12 @@ public class TextLeaf extends SyntaxTree {
   
   private String text;
   
-  public TextLeaf(Token t) {
-    text = t.getContentClean();
+  public TextLeaf(Token token) {
+    text = token.getContentClean();
   }
 
   @Override
-  public String render(Context c) throws IllegalArgumentException {
+  public String render(Context context) throws IllegalArgumentException {
     return text;
   }
   

@@ -13,9 +13,9 @@ public class IfNode extends SyntaxTree {
   private RootNode elseBlock;    //subtree for the else block
   private RootNode currentBlock; //pointer to the subtree being filled
   
-  public IfNode(Token t, SyntaxTree p) {
-    condition = t;
-    this.parent = p;
+  public IfNode(Token token, SyntaxTree parent) {
+    condition = token;
+    this.parent = parent;
     ifBlock = new RootNode();
     elseBlock = new RootNode();
     currentBlock = ifBlock;
@@ -23,8 +23,8 @@ public class IfNode extends SyntaxTree {
   
   /** Add a node to the current subtree */
   @Override
-  public void addNode(SyntaxTree t) {
-    this.currentBlock.addNode(t);
+  public void addNode(SyntaxTree node) {
+    currentBlock.addNode(node);
   }
   
   /** Trigger to start filling the else subtree, triggered when encountering the relevant else */
@@ -32,15 +32,14 @@ public class IfNode extends SyntaxTree {
     currentBlock = elseBlock;
   }
   
-  //TODO extend to boolean expression
   /** Render the subtree corresponding to the correct branch (eventually empty) */
   @Override
-  public String render(Context c) throws IllegalArgumentException {
-    boolean value = c.evaluateBoolean(condition.getContentClean());
+  public String render(Context context) throws IllegalArgumentException {
+    boolean value = context.evaluateBoolean(condition.getContentClean());
     if(value) {
-      return ifBlock.render(c);
+      return ifBlock.render(context);
     } else {
-      return elseBlock.render(c);
+      return elseBlock.render(context);
     }
   }
   

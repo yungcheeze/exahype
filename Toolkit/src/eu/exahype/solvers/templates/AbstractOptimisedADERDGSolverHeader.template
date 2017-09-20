@@ -49,8 +49,9 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     class VariableShortcuts;
     class VariableMultiplicities;
     class VariableNames;
-    //TODO JMG support template set
-    {{namingSchemes}}
+    {%- for className in namingSchemes %}
+    class {{className}};
+    {%- endfor %}
     
     {{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping  {%- if enableProfiler %}
     , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});
@@ -61,32 +62,11 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     AdjustSolutionValue useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const override {return AdjustSolutionValue::No;}
 
     /**
-     * Option implementation in accordance with the specification file. See superclass for documentation
-     */
-    bool useConservativeFlux()       const override {return {{useFlux_s}};}
-
-    /**
      * This operation should be overwritten in your application-specific 
      * solver. Alternatively, make your own subclass useConservativeFlux()
      * return false.
      */
     void flux(const double* const Q,double** F) override;
-
-    /**
-     * Option implementation in accordance with the specification file. See superclass for documentation
-     */
-    bool useAlgebraicSource()        const override {return {{useSource_s}};}
-
-    /**
-     * Default implementation, functionality not implemented. See superclass for documentation
-     */
-    bool usePointSource()            const override {return false;}
-
-    /**
-     * Option implementation in accordance with the specification file. See superclass for documentation
-     */
-    bool useNonConservativeProduct() const override {return {{useNCP_s}};}
-    
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 

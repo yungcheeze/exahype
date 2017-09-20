@@ -37,7 +37,6 @@ void kernels::aderdg::generic::c::pointSource(
     const int basisSize,
     double* pointForceSources //memory space for forceVector
 ) { 
-
   //TODO KD
 
   //double x0[3];

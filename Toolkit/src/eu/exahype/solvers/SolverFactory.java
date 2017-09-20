@@ -4,6 +4,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
 
+import eu.exahype.kernel.Kernel;
+
 public class SolverFactory {
   private String _projectName;
   private int _dimensions;
@@ -26,13 +28,11 @@ public class SolverFactory {
     _microarchitecture = microarchitecture;
   }
   
-  public Solver createADERDGSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
-    List<String> options = Arrays.asList(kernel.split("::"));
-
+  public Solver createADERDGSolver(String solvername, Kernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
     try { //some solver initialisation can throw IllegalArgumentException if the options are wrong or IOException
-      if (kernel.startsWith( eu.exahype.solvers.GenericADERDG.Identifier )) {
+      if (kernel.isKernelType( eu.exahype.solvers.GenericADERDG.Identifier )) {
         return new eu.exahype.solvers.GenericADERDG(_projectName, solvername, _dimensions,
-            numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isFortran, options );
+            numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isFortran, kernel );
       }
       // TODO JMG Clean
       // else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
@@ -40,20 +40,20 @@ public class SolverFactory {
             // numberOfVariables, numberOfParameters, order, _microarchitecture,
             // _enableProfiler, hasConstants);
       // }
-      else if (!isFortran && kernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
+      else if (!isFortran && kernel.isKernelType( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
         return new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
             numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
-            _enableProfiler, _enableDeepProfiler, hasConstants, options);
+            _enableProfiler, _enableDeepProfiler, hasConstants, kernel);
         
       }
       // TODO JMG Clean when confirmed legacy
       // else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
         // return new eu.exahype.solvers.KernelEuler2d(_projectName, solvername);
       // }
-      else if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
+      else if (isFortran && kernel.isKernelType( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
         return new eu.exahype.solvers.UserDefinedADER_DGinFortran(_projectName, solvername);
       }
-      else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
+      else if (!isFortran && kernel.isKernelType( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
         return new eu.exahype.solvers.UserDefinedADER_DGinC(_projectName, solvername, numberOfVariables,
             numberOfParameters, order, hasConstants, _enableProfiler);
       }
