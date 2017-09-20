@@ -27,8 +27,10 @@ void GRMHD::Cons2Prim::prepare() {
 }
 
 constexpr bool debug_c2p = false;
-#define S(x) printf(#x " = %e\n", x);
-#define SI(x) S(x(0));S(x(1));S(x(2));
+#define SL(x,l) printf(l " = %e\n", x);
+#define S(x) SL(x, #x)
+// https://stackoverflow.com/a/5459929 for expanding before insertion
+#define SI(x) {DFOR(i) S(x(i)); }
 
 // At this stage, we have all primitives recovered and can postcompute some quantities. This is as a
 // service or can be used for 
@@ -64,7 +66,10 @@ void GRMHD::Cons2Prim::perform() {
 	if(debug_c2p) { printf("Outcome: "); S(VelVel); S(RhoEnthWW);}
 	if (failed) {
 		// We should raise an error instead, the c2p failed.
-		printf("C C2P FAILED\n");
+		printf("C++ C2P FAILED.\n");
+		printf("Input conserved State Vector Q: \n");
+		NVARS(d) printf("Q[%d] = %e\n", d, Q[d]);
+		SI(Si.lo); SI(Si.up); S(BmagBmag); S(SconScon);
 		std::abort();
 		rho = rho_floor;
 		press = p_floor;

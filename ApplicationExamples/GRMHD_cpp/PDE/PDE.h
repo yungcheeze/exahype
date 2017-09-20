@@ -116,7 +116,7 @@ namespace GRMHD {
 			**/
 			typedef StateVector<
 				const double* const,
-				const ConstLo<vec::const_shadow<3>>,
+				const ConstLo<vec::const_shadow_D>,
 				const double> ConstShadow;
 				
 			/**
@@ -135,7 +135,7 @@ namespace GRMHD {
 			**/
 			typedef StateVector<
 				double* const,
-				Lo<vec::shadow<3>>,
+				Lo<vec::shadow_D>,
 				double> Shadow;
 				
 			/**
@@ -146,7 +146,7 @@ namespace GRMHD {
 			**/
 			typedef StateVector<
 				const double* const,
-				UpLo<vec::stored<3>, vec::const_shadow<3>>::ConstLo,
+				UpLo<vec::stored_D, vec::const_shadow_D>::ConstLo,
 				const double> ConstShadowExtendable;
 				
 			/**
@@ -159,7 +159,7 @@ namespace GRMHD {
 			**/
 			typedef StateVector<
 				double* const,
-				UpLo<vec::stored<3>, vec::shadow<3>>::InitLo,
+				UpLo<vec::stored_D, vec::shadow_D>::InitLo,
 				double> ShadowExtendable;
 
 			// to be sorted:
@@ -199,9 +199,9 @@ namespace GRMHD {
 					{}
 			};
 		
-			typedef StateVector<double*, Up<vec::shadow<3>>, double> Shadow;
-			typedef StateVector<const double* const, UpLo<vec::const_shadow<3>,vec::stored<3>>::ConstUp, const double> ConstShadowExtendable;
-			typedef StateVector<double*, UpLo<vec::shadow<3>, vec::stored<3>>::InitUp, double> ShadowExtendable;
+			typedef StateVector<double*, Up<vec::shadow_D>, double> Shadow;
+			typedef StateVector<const double* const, UpLo<vec::const_shadow_D,vec::stored_D>::ConstUp, const double> ConstShadowExtendable;
+			typedef StateVector<double*, UpLo<vec::shadow_D, vec::stored_D>::InitUp, double> ShadowExtendable;
 			struct Stored : public Shadow { double V[size]; Stored() : Shadow(V) {} };
 		} // ns Primitives
 	} // ns Hydro
@@ -237,10 +237,10 @@ namespace GRMHD {
 			}
 		};
 		
-		typedef StateVector<const double* const, const ConstUp<vec::const_shadow<3>>, const double> ConstShadow;
-		typedef StateVector<double* const, Up<vec::shadow<3>>, double> Shadow;
-		typedef StateVector<const double* const, UpLo<vec::const_shadow<3>, vec::stored<3>>::ConstUp, const double> ConstShadowExtendable;
-		typedef StateVector<double* const, UpLo<vec::shadow<3>, vec::stored<3>>::InitUp, double> ShadowExtendable;
+		typedef StateVector<const double* const, const ConstUp<vec::const_shadow_D>, const double> ConstShadow;
+		typedef StateVector<double* const, Up<vec::shadow_D>, double> Shadow;
+		typedef StateVector<const double* const, UpLo<vec::const_shadow_D, vec::stored_D>::ConstUp, const double> ConstShadowExtendable;
+		typedef StateVector<double* const, UpLo<vec::shadow_D, vec::stored_D>::InitUp, double> ShadowExtendable;
 	} // ns Magneto
 
 	namespace ADMBase {
@@ -291,8 +291,8 @@ namespace GRMHD {
 		// are not recovered.
 		typedef StateVector<
 			const double* const,
-			const ConstUp<vec::const_shadow<3>>, // shift
-			const ConstLo<sym::const_shadow<3>>, // metric
+			const ConstUp<vec::const_shadow_D>, // shift
+			const ConstLo<sym::const_shadow_D>, // metric
 			const double
 			> ConstShadow;
 			
@@ -300,8 +300,8 @@ namespace GRMHD {
 		// You can only set the lower components of the metric.
 		typedef StateVector<
 			double* const,
-			Up<vec::shadow<3>>,
-			Lo<sym::shadow<3>>,
+			Up<vec::shadow_D>,
+			Lo<sym::shadow_D>,
 			double
 			> Shadow;
 		
@@ -309,8 +309,8 @@ namespace GRMHD {
 		// This is read only (especially inside metric3).
 		typedef StateVector<
 			const double* const,
-			// ConstUp_Lo<vec::const_shadow, vec::stored<3>>, // if you ever need beta_lo
-			ConstUp<vec::const_shadow<3>>, // if you never need beta_lo
+			// ConstUp_Lo<vec::const_shadow, vec::stored_D>, // if you ever need beta_lo
+			ConstUp<vec::const_shadow_D>, // if you never need beta_lo
 			metric3, // could store only parts of the metric here, too.
 			const double
 			> Full;
@@ -477,8 +477,8 @@ namespace GRMHD {
 	
 	// Compute a single flux in some direction
 	struct FluxBase : public PDE {
-		Mixed<sym::stored<3>> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
-		Up<vec::stored<3>> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
+		Mixed<sym::stored_D> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
+		Up<vec::stored_D> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
 		typedef GRMHDSystem::Shadow Flux;
 		FluxBase(const double* const Q) : PDE(Q) { prepare(); }
 		void prepare();
@@ -505,8 +505,8 @@ namespace GRMHD {
 	struct Fluxes : public PDE {
 		typedef GRMHDSystem::Shadow Flux;
 		Flux F[DIMENSIONS];
-		Mixed<sym::stored<3>> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
-		Up<vec::stored<3>> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
+		Mixed<sym::stored_D> Sij; ///< Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
+		Up<vec::stored_D> zeta;   ///< Zeta is the transport velocity (curly V in BHAC paper)
 		
 		// other constructors:
 		Fluxes(double** _F, const double* const Q) : PDE(Q), F{ _F[0], _F[1], _F[2] } { prepare(); DFOR(i) compute(i); }

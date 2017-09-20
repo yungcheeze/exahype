@@ -26,6 +26,10 @@ struct VacuumInitialData : public InitialState {
 	}
 	
 	VacuumInitialData(double* Q) : InitialState(Q) {
+		// zero first all variables. This is useful for a 2D workaround as 3D variables
+		// are stored but not initialized (only 2D storage is actually used)
+		// NVARS(i) Q[i] = 0;
+		
 		// For test, do not set anything
 		//return;
 		

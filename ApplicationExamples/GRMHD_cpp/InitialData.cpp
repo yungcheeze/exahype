@@ -46,6 +46,8 @@ AlfenWave::AlfenWave(const double* const x, const double t, double* Q) : VacuumI
 	vel.up(0) = 0.0;
 	vel.up(1) = - vax * Bmag.up(1) / B0;
 	vel.up(2) = - vax * Bmag.up(2) / B0;
+	
+	//if(DIMENSIONS == 2) { Bmag.up(2) = vel.up(2) = 0; }
 
 	//Prim2Cons(Q,V);
 	Dens = rho;

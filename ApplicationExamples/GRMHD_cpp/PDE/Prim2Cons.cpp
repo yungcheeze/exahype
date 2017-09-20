@@ -6,7 +6,7 @@ using namespace GRMHD;
 
 constexpr bool debug_p2c = false;
 #define S(x) printf(#x " = %e\n", x);
-#define SI(x) S(x(0));S(x(1));S(x(2));
+#define SI(x) {DFOR(i) S(x(i)); }
 
 void GRMHD::Prim2Cons::perform() {
 	// The hydro + magneto exact known prim2cons

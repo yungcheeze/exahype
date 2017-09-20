@@ -41,20 +41,39 @@ void zeroHelpers(double* Q) {
 	var.check() = 0;
 }
 
+void zero2Din3D(double* Q) {
+	// 3D components which should not be in 2D
+	GRMHD::AbstractGRMHDSolver_ADERDG::VariableShortcuts pos;
+	
+	// 3rd component of vectors
+	Q[pos.vel+2] = 0;
+	Q[pos.B  +2] = 0;
+	Q[pos.shift+2] = 0;
+	// 3d-components of tensor
+	for(int i=0; i<3; i++) Q[pos.gij+tensish::sym::index(2,i)] = 0;
+	 // 3rd component of debugging coordinate vector
+	Q[pos.pos+2] = 0;
+}
+
 void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
 	// Number of variables    = 23 + #parameters
+	NVARS(i) Q[i] = NAN; // to find problems
 	
 	// currently, the C++ AlfenWave spills out primitive data
+	/*
 	double V[nVar];
 	AlfenWave id(x,t,V);
 	GRMHD::Prim2Cons(Q, V).copyFullStateVector();
+	*/
+	AlfenWaveCons(x,t,Q);
 	
 	// also store the positions for debugging
 	GRMHD::AbstractGRMHDSolver_ADERDG::Variables var(Q);
 	DFOR(i) var.pos(i) = x[i];
 	var.check() = magicCheck;
+	zero2Din3D(Q);
 	
-
+	NVARS(i) { if(!std::isfinite(Q[i])) { printf("Qid[%d] = %e\n", i, Q[i]); std::abort(); } }
 }
 
 void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -65,7 +84,7 @@ void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,do
 
 void GRMHD::GRMHDSolver_ADERDG::flux(const double* const Q,double** F) {
 	GRMHD::Fluxes(F, Q).zeroMaterialFluxes();
-	DFOR(d) zeroHelpers(F[d]);
+	DFOR(d) { zero2Din3D(F[d]); zeroHelpers(F[d]); }
 }
 
 
@@ -149,6 +168,7 @@ void GRMHD::GRMHDSolver_ADERDG::fusedSource(const double* const Q, const double*
 	pde.RightHandSide(gradQ, S);
 	S.zero_adm();
 	zeroHelpers(S_);
+	zero2Din3D(S_);
 }
 
 
@@ -158,4 +178,5 @@ void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,con
 	PDE(Q).nonConservativeProduct(g, ncp);
 	ncp.zero_adm();
 	zeroHelpers(BgradQ);
+	zero2Din3D(BgradQ);
 }

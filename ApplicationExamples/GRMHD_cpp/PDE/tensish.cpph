@@ -79,6 +79,7 @@ namespace tensish {
 	namespace vec {
 		/// Storing an array and allowing () accss.
 		template<int N> struct stored {
+			int debug_size = N;
 			double data[N];
 			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
 			const double& operator()(int j) const { tensish_bound(j<N);  return data[j]; }
@@ -87,6 +88,7 @@ namespace tensish {
 
 		/// Shadows a linear storage
 		template<int N> struct shadow {
+			int debug_size = N;
 			double *const data;
 			constexpr shadow(double* const foreign) : data(foreign) {}
 			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
@@ -96,15 +98,16 @@ namespace tensish {
 		
 		/// same as shadow but does not allow changing the storage location
 		template<int N> struct const_shadow {
+			int debug_size = N;
 			const double *const data;
 			constexpr const_shadow(const double* const foreign) : data(foreign) {}
 			const double& operator()(int j) const { tensish_bound(j<N); return data[j]; }
 		};
 		
 		// abbreviations for typical uses in 3 dimensions.
-		typedef stored<3> stored3;
-		typedef shadow<3> shadow3;
-		typedef const_shadow<3> const_shadow3;
+		typedef stored<DIMENSIONS> stored_D;
+		typedef shadow<DIMENSIONS> shadow_D;
+		typedef const_shadow<DIMENSIONS> const_shadow_D;
 	} // ns vec
 
 	/**
@@ -189,9 +192,9 @@ namespace tensish {
 		};
 		
 		// abbreviations for typical uses in 3 dimensions.
-		typedef stored<3> stored3;
-		typedef shadow<3> shadow3;
-		typedef const_shadow<3> const_shadow3;
+		typedef stored<DIMENSIONS> stored_D;
+		typedef shadow<DIMENSIONS> shadow_D;
+		typedef const_shadow<DIMENSIONS> const_shadow_D;
 	} // ns sym
 
 	/*****************************************************************************/
@@ -284,8 +287,8 @@ namespace tensish {
 	* Therefore we assume the lower metric to be stored so the upper can be completed.
 	**/
 	struct metric3 {
-		sym::stored3 up;
-		const sym::const_shadow3 lo;
+		sym::stored_D up;
+		const sym::const_shadow_D lo;
 		double det;
 		
 		metric3(const double* const lo_)

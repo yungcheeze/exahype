@@ -37,7 +37,7 @@ void GRMHD::ConservedWriter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  for (int i=0; i<19; i++){  // whatever
+  for (int i=0; i<19; i++){ 
     outputQuantities[i] = Q[i];
   }
 
