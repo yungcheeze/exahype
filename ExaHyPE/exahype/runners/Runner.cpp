@@ -776,7 +776,7 @@ void exahype::runners::Runner::updateStatistics() {
                            exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) ? 1 : 0;
   _localRecomputations  +=  (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) ? 1 : 0;
   _globalRecomputations +=  (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) ? 1 : 0;
-  _predictorReruns     +=  (exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated()) ? 1 : 0;
+  _predictorReruns      +=  (exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated()) ? 1 : 0;
 }
 
 void exahype::runners::Runner::printStatistics() {

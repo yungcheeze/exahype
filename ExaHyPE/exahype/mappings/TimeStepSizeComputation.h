@@ -136,15 +136,6 @@ class exahype::mappings::TimeStepSizeComputation {
 
  public:
   /**
-   * This flag is used by mapping InitialCondition to veto the
-   * fused time step size reinitialisation after the computation
-   * of the first time step size.
-   *
-   * TODO(Dominic): Is that okay? Or is it a hack?
-   */
-  static bool VetoFusedTimeSteppingTimeStepSizeReinitialisation;
-
-  /**
    * Run through whole tree. Run concurrently on fine grid.
    */
   peano::MappingSpecification enterCellSpecification(int level) const;

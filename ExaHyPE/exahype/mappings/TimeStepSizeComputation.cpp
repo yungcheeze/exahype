@@ -25,8 +25,6 @@
 #include <limits>
 #include <iomanip>
 
-bool exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
-
 peano::CommunicationSpecification
 exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
@@ -256,22 +254,24 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
 
       if (advanceInTime) {
-        if (exahype::State::fuseADERDGPhases()
-        #ifdef Parallel
-        && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
-        #endif
-        && !VetoFusedTimeSteppingTimeStepSizeReinitialisation) {
+        if (
+          exahype::State::fuseADERDGPhases()
+          #ifdef Parallel
+          && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+          #endif
+        ) {
           reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
         }
         solver->startNewTimeStep();
       }
       else if (recomputeTimeStepSizes) {
         // Here, we use the same function again. The time step size is never instable though.
-        if (exahype::State::fuseADERDGPhases()
-        #ifdef Parallel
-        && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
-        #endif
-        && !VetoFusedTimeSteppingTimeStepSizeReinitialisation) {
+        if (
+          exahype::State::fuseADERDGPhases()
+          #ifdef Parallel
+          && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+          #endif
+        ) {
           weighMinNextPredictorTimeStepSize(state,solver);
         }
         solver->updateTimeStepSizes();
@@ -296,8 +296,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
   }
-
-  VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
   exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
   logTraceOutWith1Argument("endIteration(State)", state);
