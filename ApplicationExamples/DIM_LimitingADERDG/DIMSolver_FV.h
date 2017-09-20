@@ -46,9 +46,6 @@ class DIM::DIMSolver_FV : public DIM::AbstractDIMSolver_FV {
      * @see FiniteVolumesSolver
      */    
     bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-    virtual bool useNonConservativeProduct() const {return true;}
-    virtual bool useSource()                 const {return true;}
-    virtual bool useConservativeFlux()       const { return false; }
 
     
     /**

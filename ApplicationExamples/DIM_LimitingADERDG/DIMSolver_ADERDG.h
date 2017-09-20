@@ -135,8 +135,6 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
 
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
-    bool useNonConservativeProduct() const override {return true;}
-    bool useConservativeFlux()       const override {return true;} // Does not work properly
 };
 
 #endif // __DIMSolver_ADERDG_CLASS_HEADER__

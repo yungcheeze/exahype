@@ -131,7 +131,6 @@ exahype::solvers::Solver::RefinementControl SWE::MySWESolver::refinementCriterio
 }
 
 
-bool SWE::MySWESolver::useNonConservativeProduct() const {
   return true;
 }
 

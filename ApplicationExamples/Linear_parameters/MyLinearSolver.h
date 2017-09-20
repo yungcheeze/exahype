@@ -111,11 +111,8 @@ class Linear::MyLinearSolver: public Linear::AbstractMyLinearSolver {
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
 
         virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    virtual bool useNonConservativeProduct() const {return true;}
 
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
-    virtual bool useCoefficientMatrix() const {return true;}
-    virtual bool usePointSource()            const {return false;}
     
     virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
 

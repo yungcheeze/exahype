@@ -96,8 +96,6 @@ public:
    * @see FiniteVolumesSolver
    */
   bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-  virtual bool useNonConservativeProduct() const {return false;}
-  virtual bool useSource()                 const {return false;}
 
   /**
    * Calls ::sodShockTube if constant 'reference' is set to 'sod'.

@@ -71,6 +71,5 @@ const double* const stateIn,double* stateOut) {
 //  }
 }
 
-bool MHD::MHDSolver_FV::useAlgebraicSource() const {
   return true;
 }

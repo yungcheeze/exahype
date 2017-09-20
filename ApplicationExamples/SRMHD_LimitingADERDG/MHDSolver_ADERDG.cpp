@@ -138,7 +138,5 @@ bool MHD::MHDSolver_ADERDG::isPhysicallyAdmissible(
   return true;
 }
 
-bool MHD::MHDSolver_ADERDG::useAlgebraicSource() const {return true;}
-bool MHD::MHDSolver_ADERDG::useConservativeFlux() const {return true;}
 
 

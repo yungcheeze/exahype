@@ -90,9 +90,6 @@ class DIM::DIMSolver : public DIM::AbstractDIMSolver {
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
 
 
-    virtual bool useSource()                 const { return true; }
-    virtual bool useNonConservativeProduct() const { return true; }
-    virtual bool useConservativeFlux()       const { return false; }
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override; 

@@ -127,13 +127,10 @@ class ElasticWave::MyElasticWaveSolver: public ElasticWave::AbstractMyElasticWav
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
 
-    virtual bool useNonConservativeProduct() const {return true;}
     virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
 
-    virtual bool useCoefficientMatrix() const {return true;}
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
 
-    virtual bool usePointSource()            const {return true;}
     virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
 
 

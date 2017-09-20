@@ -115,8 +115,6 @@ class SRMHD::MHDSolver: public SRMHD::AbstractMHDSolver {
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
     void algebraicSource(const double* const Q, double* S) override;
-    bool useAlgebraicSource() const override;
-    bool useNonConservativeProduct() const override;
 };
 
 #endif // __MHDSolver_CLASS_HEADER__

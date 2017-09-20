@@ -272,13 +272,9 @@ void ElasticWave::MyElasticWaveSolver::coefficientMatrix(const double* const Q,c
 
 //TODO KD
 // tell the user what it is
-bool ElasticWave::MyElasticWaveSolver::useAlgebraicSource() const {return true;}
 
-bool ElasticWave::MyElasticWaveSolver::useNonConservativeProduct() const {return true;}
 
-bool ElasticWave::MyElasticWaveSolver::useCoefficientMatrix() const {return true;}
 
-bool ElasticWave::MyElasticWaveSolver::usePointSource() const { 
   return true;
 }
 

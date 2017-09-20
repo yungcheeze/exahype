@@ -127,8 +127,6 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
     
-    bool useAlgebraicSource()        const override {return true;}
-    bool useNonConservativeProduct() const override {return true;}
 
     void mapDiscreteMaximumPrincipleObservables(
         double* observables,const int numberOfObservables,

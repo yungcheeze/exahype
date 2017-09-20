@@ -128,8 +128,6 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
     
 
 
-    bool useAlgebraicSource()        const override { return true; }
-    bool useNonConservativeProduct() const override { return true; }
 
     void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
     // the NCP is needed for the Riemann Solver...

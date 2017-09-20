@@ -130,6 +130,4 @@ void SRMHD::MHDSolver::coefficientMatrix(const double* const Q, const int normal
 */
 
 
-bool SRMHD::MHDSolver::useAlgebraicSource() const {return true;}
 
-bool SRMHD::MHDSolver::useNonConservativeProduct() const {return true;}

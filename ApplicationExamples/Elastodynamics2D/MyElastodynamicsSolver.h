@@ -128,11 +128,8 @@ class Elastodynamics::MyElastodynamicsSolver: public Elastodynamics::AbstractMyE
 
 
     virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    virtual bool useNonConservativeProduct() const {return true;}
 
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
-    virtual bool useCoefficientMatrix() const {return true;}
-    virtual bool usePointSource()            const {return false;}
     virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
 
     void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
