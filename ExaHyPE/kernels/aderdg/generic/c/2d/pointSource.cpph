@@ -27,7 +27,7 @@
 
 #if DIMENSIONS == 2
 
-template <typename SolverType, bool usePointSource>
+template <typename SolverType>
 void kernels::aderdg::generic::c::pointSource(
     SolverType& solver,
     const double t,
@@ -39,8 +39,6 @@ void kernels::aderdg::generic::c::pointSource(
     const int basisSize,
     double* pointForceSources //memory space for forceVector
 ) {
-if(usePointSource) { //empty if not used
-
   //TODO KD
   double x0[DIMENSIONS];
   double x[DIMENSIONS];
@@ -126,7 +124,6 @@ if(usePointSource) { //empty if not used
       }// y loop
     }// x loop
   }// time loop
-} //if(usePointSource)
 }
 
 

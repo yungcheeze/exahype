@@ -25,7 +25,7 @@
 
 #if DIMENSIONS == 3
 
-template <typename SolverType, bool usePointSource>
+template <typename SolverType>
 void kernels::aderdg::generic::c::pointSource(
     SolverType& solver,
     const double t,
@@ -37,7 +37,6 @@ void kernels::aderdg::generic::c::pointSource(
     const int basisSize,
     double* pointForceSources //memory space for forceVector
 ) { 
-if(usePointSource) { //empty if not used
   //TODO KD
 
   //double x0[3];
@@ -142,7 +141,6 @@ if(usePointSource) { //empty if not used
   //do your stuff to get ready to get the value for one quadrature pointer
   //solver.pointSource(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,ndof3,0)], &x0);
   //apply the result for this quadrature point
-} //if(usePointSource)
 }
 
 #endif  // DIMENSIONS == 3
