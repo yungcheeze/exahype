@@ -450,7 +450,7 @@ double exahype::Parser::getSimulationEndTime() const {
 }
 
 bool exahype::Parser::getFuseAlgorithmicSteps() const {
-  std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
+  std::string token = getTokenAfter("global-optimisation", "fuse-algorithmic-steps");
   logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps"
                                             << token);
 
@@ -461,7 +461,7 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
   } else if (token.compare("on") != 0 && token.compare("off") != 0) {
     logError("getFuseAlgorithmicSteps()",
              "fuse-algorithmic-steps is required in the "
-             "optimisation segment and has to be either on or off: "
+             "global-optimisation segment and has to be either on or off: "
                  << token);
     _interpretationErrorOccured = true;
   }
@@ -470,13 +470,13 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 
 bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
   std::string token = getTokenAfter(
-      "optimisation",
+      "global-optimisation",
       "disable-amr-if-grid-has-been-stationary-in-previous-iteration");
   if (token.compare("on") != 0 && token.compare("off") != 0) {
     logError("getExchangeBoundaryDataInBatchedTimeSteps()",
              "disable-amr-if-grid-has-been-stationary-in-previous-iteration is "
              "required in the "
-             "optimisation segment and has to be either on or off: "
+             "global-optimisation segment and has to be either on or off: "
                  << token);
     _interpretationErrorOccured = true;
   }
@@ -485,7 +485,7 @@ bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
   std::string token =
-      getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
+      getTokenAfter("global-optimisation", "fuse-algorithmic-steps-factor");
 
   char* pEnd;
   double result = std::strtod(token.c_str(), &pEnd);
@@ -505,7 +505,7 @@ double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
 }
 
 double exahype::Parser::getTimestepBatchFactor() const {
-  std::string token = getTokenAfter("optimisation", "timestep-batch-factor");
+  std::string token = getTokenAfter("global-optimisation", "timestep-batch-factor");
   char* pEnd;
   double result = std::strtod(token.c_str(), &pEnd);
   logDebug("getFuseAlgorithmicStepsFactor()", "found timestep-batch-factor "
@@ -513,7 +513,7 @@ double exahype::Parser::getTimestepBatchFactor() const {
 
   if (result < 0.0 || result > 1.0 || pEnd == token.c_str()) {
     logError("getFuseAlgorithmicStepsFactor()",
-             "'timestep-batch-factor': Value is required in optimisation "
+             "'timestep-batch-factor': Value is required in global-optimisation "
              "section and must be greater than zero and smaller than one: "
                  << result);
     result = 0.0;
@@ -525,7 +525,7 @@ double exahype::Parser::getTimestepBatchFactor() const {
 
 
 bool exahype::Parser::hasOptimisationSegment() const {
-  std::string token = getTokenAfter("optimisation");
+  std::string token = getTokenAfter("global-optimisation");
   return token.compare(_noTokenFound)!=0;
 }
 
@@ -533,13 +533,13 @@ bool exahype::Parser::hasOptimisationSegment() const {
 bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
   if (hasOptimisationSegment()) {
     std::string token =
-      getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
+      getTokenAfter("global-optimisation", "skip-reduction-in-batched-time-steps");
     logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
     if (token.compare("on") != 0 && token.compare("off") != 0) {
       logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
-             "optimisation segment and has to be either on or off: "
+             "global-optimisation segment and has to be either on or off: "
                  << token);
       _interpretationErrorOccured = true;
     }
@@ -551,7 +551,7 @@ bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
 
 
 double exahype::Parser::getDoubleCompressionFactor() const {
-  std::string token = getTokenAfter("optimisation", "double-compression");
+  std::string token = getTokenAfter("global-optimisation", "double-compression");
 
   if (token.compare(_noTokenFound) == 0) {
     return 0.0;  // default value
@@ -564,7 +564,7 @@ double exahype::Parser::getDoubleCompressionFactor() const {
 
     if (result < 0.0 || pEnd == token.c_str()) {
       logError("getDoubleCompressionFactor()",
-             "'double-compression': Value is required in optimisation "
+             "'double-compression': Value is required in global-optimisation "
              "section and must be greater than or equal to zero: " << result);
       result = 0.0;
       _interpretationErrorOccured = true;
@@ -577,7 +577,7 @@ double exahype::Parser::getDoubleCompressionFactor() const {
 
 bool   exahype::Parser::getSpawnDoubleCompressionAsBackgroundTask() const {
   std::string token =
-      getTokenAfter("optimisation", "spawn-double-compression-as-background-thread");
+      getTokenAfter("global-optimisation", "spawn-double-compression-as-background-thread");
 
   if (token.compare(_noTokenFound) == 0) {
     return false;  // default value
@@ -588,7 +588,7 @@ bool   exahype::Parser::getSpawnDoubleCompressionAsBackgroundTask() const {
     if (token.compare("on") != 0 && token.compare("off") != 0) {
       logError("getSpawnDoubleCompressionAsBackgroundTask()",
              "spawn-double-compression-as-background-thread is required in the "
-             "optimisation segment and has to be either on or off: "
+             "global-optimisation segment and has to be either on or off: "
                  << token);
       _interpretationErrorOccured = true;
     }
