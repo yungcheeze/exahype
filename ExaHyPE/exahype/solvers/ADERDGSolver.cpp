@@ -1551,20 +1551,16 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
           coarseGridCellDescription.getSolverNumber(),
                      fineGridCellDescription.toString());
 
-      bool eraseOfFineGridCellRequested =
-          eraseCellDescriptionIfNecessary(
+      return eraseCellDescriptionIfNecessary(
               fineGridCell.getCellDescriptionsIndex(),
               fineGridCellElement,
               fineGridPositionOfCell,
               coarseGridCellDescription);
-
-      return eraseOfFineGridCellRequested;
     }
 
     return false;
   }
 
-//  return fineGridVerticesEnumerator.getLevel()>getCoarsestMeshLevel();
   return false;
 }
 

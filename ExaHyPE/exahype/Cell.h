@@ -263,6 +263,12 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   void shutdownMetaData();
 
   /**
+   * \return true if no cell descriptions
+   * are allocated for this cell.
+   */
+  bool isEmpty() const;
+
+  /**
    * todo docu
    *
    * setupMetaData() is called if cell hasn't been properly initialised before.

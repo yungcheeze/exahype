@@ -569,93 +569,104 @@ void exahype::runners::Runner::initSolvers(
   }
 }
 
-bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
-  bool gridUpdate = false;
+void exahype::runners::Runner::plotMeshSetupInfo(
+    exahype::repositories::Repository& repository,
+    const int meshSetupIterations) const {
+  #if defined(TrackGridStatistics) && defined(Asserts)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #elif defined(Asserts)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #elif defined(TrackGridStatistics)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #else
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #endif
 
-  int gridSetupIterations = 0;
+  #ifdef Asserts
+  logInfo("createGrid()",
+           "grid setup iteration #" << meshSetupIterations <<
+           ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
+                                            exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
+   );
+  #endif
+
+  #if !defined(Parallel)
+  logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  #else
+  if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
+    logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  }
+  #endif
+
+  #ifdef Asserts
+  if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
+    DataHeap::getInstance().plotStatistics();
+    peano::heap::PlainCharHeap::getInstance().plotStatistics();
+  }
+  #endif
+}
+
+bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
+  bool meshUpdate = false;
+
+  int meshSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  while ( repository.getState().continueToConstructGrid()
-          || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+  while (
+      repository.getState().continueToConstructGrid() ||
+      exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
   ) {
     repository.iterate();
-    gridSetupIterations++;
+    meshSetupIterations++;
 
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
 
-    #if defined(TrackGridStatistics) && defined(Asserts)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", max-level=" << repository.getState().getMaxLevel() <<
-        ", state=" << repository.getState().toString() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #elif defined(Asserts)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", state=" << repository.getState().toString() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #elif defined(TrackGridStatistics)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", max-level=" << repository.getState().getMaxLevel() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #else
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #endif
+    plotMeshSetupInfo(repository,meshSetupIterations);
 
-    #ifdef Asserts
-    logInfo("createGrid()",
-             "grid setup iteration #" << gridSetupIterations <<
-             ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
-                                              exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
-     );
-    #endif
-
-    #if !defined(Parallel)
-    logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
-    #else
-    if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
-      logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
-    }
-    #endif
-
-    #ifdef Asserts
-    if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
-      DataHeap::getInstance().plotStatistics();
-      peano::heap::PlainCharHeap::getInstance().plotStatistics();
-    }
-    #endif
-
-    gridUpdate = true;
+    meshUpdate = true;
   }
 
-  // a few extra iterations for the limiter status spreading
+  // a few extra iterations for the cell status flag spreading
   logInfo("createGrid()", "more status spreading.");
   int extraIterations =
-      exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell();
+      std::max (
+          3, // two extra iteration to spread the helper and augmentation status, one to allocate memory
+          exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell());
   while (
       extraIterations > 0
       || repository.getState().continueToConstructGrid()
-      || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+      || exahype::solvers::Solver::oneSolverHasNotAttainedStableState() // Further mesh refinement is possible
   ) {
-    gridUpdate |=
+    meshUpdate |=
         repository.getState().continueToConstructGrid()
         || exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
 
     repository.iterate();
     extraIterations--;
-    gridSetupIterations++;
+    meshSetupIterations++;
 
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
+
+    plotMeshSetupInfo(repository,meshSetupIterations);
   }
 
-  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logInfo("createGrid(Repository)", "finished grid setup after " << meshSetupIterations << " iterations" );
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -670,7 +681,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
   #endif
 
-  return gridUpdate;
+  return meshUpdate;
 }
 
 

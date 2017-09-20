@@ -135,6 +135,13 @@ class exahype::runners::Runner {
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) const;
 
+  /**
+   * Plot some information about the current mesh setup iteration.
+   */
+  void plotMeshSetupInfo(
+      exahype::repositories::Repository& repository,
+      const int meshSetupIterations) const;
+
   void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;
 
   /**
