@@ -4,7 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 public class UserDefinedADER_DGinC implements Solver {
-  public static final String Identifier = "user::defined";
+  public static final String Identifier = "user_defined";
 
   private String _projectName;
   private String _solverName;

@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import minitemp.Context;
 import minitemp.TemplateEngine;
 
+import eu.exahype.kernel.Kernel;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
@@ -23,19 +24,16 @@ public class GenericADERDG implements Solver {
   private TemplateEngine templateEngine;
 
   public GenericADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, List<String> options) throws IllegalArgumentException {
+      int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, Kernel kernel) {
 
     _solverName         = solverName;
     
-    if(!options.contains(LINEAR_OPTION_ID) ^ options.contains(NONLINEAR_OPTION_ID)) {//should be only one
-      throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the options ("+options+")");
-    }
-    final boolean isLinear           = options.contains(LINEAR_OPTION_ID);
-    final boolean useFlux            = options.contains(FLUX_OPTION_ID);
-    final boolean useSource          = options.contains(SOURCE_OPTION_ID);
-    final boolean useNCP             = options.contains(NCP_OPTION_ID);
-    final boolean usePointSource     = options.contains(POINTSOURCE_OPTION_ID);
-    final boolean noTimeAveraging    = options.contains(NO_TIME_AVG_OPTION_ID); 
+    final boolean isLinear           = kernel.isLinear();
+    final boolean useFlux            = kernel.useFlux();
+    final boolean useSource          = kernel.useSource();
+    final boolean useNCP             = kernel.useNCP();
+    final boolean usePointSource     = kernel.usePointSource();
+    final boolean noTimeAveraging    = kernel.noTimeAveraging(); 
     
     templateEngine = new TemplateEngine();
     context = new Context();

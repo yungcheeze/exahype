@@ -1,6 +1,7 @@
 package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
+import eu.exahype.kernel.Kernel;
 import eu.exahype.node.*;
 
 public class SetupBuildEnvironment extends DepthFirstAdapter {
@@ -164,15 +165,15 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {
-    handleAderdgSolver(node.getLanguage().getText().trim(), node.getKernel().getText().trim(), node.getName().getText().trim()); 
+    handleAderdgSolver(node.getLanguage().getText().trim(), node, node.getName().getText().trim()); 
   }
   
   @Override
   public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
-    handleAderdgSolver(node.getLanguage().getText().trim(), node.getKernel().getText().trim(), node.getName().getText().trim());
+    handleAderdgSolver(node.getLanguage().getText().trim(), node, node.getName().getText().trim());
   }
 
-  private void handleAderdgSolver(String language, String kernel, String name) {
+  private void handleAderdgSolver(String language, PSolver node, String name) {
     if (language.equals("C")) {
       //do nothing, default behavior
     } else if (language.equals("Fortran")) {
@@ -183,13 +184,15 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       valid = false;
     }
     
-    _useOptimisedKernels = _useOptimisedKernels 
-                            || (language.equals("C") 
-                                && (kernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
-    
+    Kernel kernel = Kernel.noExceptionContructor(node);
+     _useOptimisedKernels = _useOptimisedKernels 
+                          || (language.equals("C") 
+                              && (kernel.isKernelType( eu.exahype.solvers.OptimisedADERDG.Identifier )));
+  
     if (_useOptimisedKernels)  {  
-      _opt_noTimeAveraging = kernel.contains( eu.exahype.solvers.Solver.NO_TIME_AVG_OPTION_ID );
+      _opt_noTimeAveraging = kernel.noTimeAveraging();
     }
+    
   }
   
   @Override
