@@ -78,7 +78,7 @@ Tokens
   token_kernel                      = 'kernel';
   token_kernel_type                 = 'type';
   token_kernel_terms                = 'terms';
-  token_kernel_opt                  = 'version';
+  token_kernel_opt                  = 'optimisation';
   token_kernel_solver               = 'kernel';
   token_kernel_limiter              = 'limiter-kernel';
   token_language                    = 'language';
@@ -108,7 +108,7 @@ Tokens
   token_master_worker_communication = 'master-worker-communication';
   token_neighbour_communication     = 'neighbour-communication';
 
-  token_optimisation                = 'optimisation';
+  token_optimisation                = 'global-optimisation';
   token_fuse_algorithm_steps        = 'fuse-algorithmic-steps';
   token_fuse_algorithm_steps_factor = 'fuse-algorithmic-steps-factor';
   token_batch_timesteps             = 'timestep-batch-factor';
