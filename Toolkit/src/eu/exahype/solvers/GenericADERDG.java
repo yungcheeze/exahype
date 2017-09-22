@@ -17,8 +17,6 @@ import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class GenericADERDG implements Solver {
-  public static final String Identifier = "generic";
-  
   private String _solverName;
   private Context context;
   private TemplateEngine templateEngine;

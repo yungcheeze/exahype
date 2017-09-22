@@ -63,16 +63,30 @@ public class ADERDGKernel {
       throw new IllegalArgumentException("nonlinear or linear not specified or both specified in the kernel type");
     }
   }
-  
-  //use by the solverFactory
-  public boolean isKernelType(String id) {
-    return optimization.contains(id);
+
+  public enum KernelType {
+    GenericNonlinearADERDGWithLegendrePoints,
+    GenericNonlinearADERDGWithLobattoPoints,
+    GenericLinearADERDGWithLegendrePoints,
+    GenericLinearADERDGWithLobattoPoints,
+    OptimisedNonlinearADERDGWithLegendrePoints,
+    OptimisedNonlinearADERDGWithLobattoPoints,
+    OptimisedLinearADERDGWithLegendrePoints,
+    OptimisedLinearADERDGWithLobattoPoints
   }
-  
+
   public boolean isLinear() throws IllegalArgumentException {
     return type.contains(LINEAR_OPTION_ID);
   }
   
+  public KernelType getKernelType() {
+    return KernelType.GenericNonlinearADERDGWithLegendrePoints;
+  }
+
+  public boolean usesOptimisedKernels() {
+    return false;
+  }
+
   public boolean useFlux() {
     return terms.contains(FLUX_OPTION_ID);
   }

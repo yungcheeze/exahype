@@ -187,7 +187,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     ADERDGKernel kernel = ADERDGKernel.noExceptionContructor(node);
      _useOptimisedKernels = _useOptimisedKernels 
                           || (language.equals("C") 
-                              && (kernel.isKernelType( eu.exahype.solvers.OptimisedADERDG.Identifier )));
+                              && (kernel.usesOptimisedKernels()));
     // @todo JM: Please add as soon as we have optimised FV solvers.
   
     if (_useOptimisedKernels)  {  

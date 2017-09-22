@@ -60,18 +60,24 @@ public class FiniteVolumesKernel {
   private void validate() throws IllegalArgumentException {
   }
   
-  //use by the solverFactory
-  public boolean isGenericMUSCL(String id) {
-    return optimization.contains(id);
+  public enum KernelType {
+    GenericMUSCLHancock,
+    GenericGodunov,
+    UserDefined
   }
   
-  public boolean isGodunov() throws IllegalArgumentException {
-    return type.contains(GODUNOV_OPTION_ID);
+  public KernelType getKernelType() {
+    return KernelType.GenericMUSCLHancock;
+  }
+
+  public boolean usesOptimisedKernels() {
+	return false;
   }
   
   public boolean useFlux() {
     return terms.contains(FLUX_OPTION_ID);
   }
+  
   
   public boolean useSource() {
     return terms.contains(SOURCE_OPTION_ID);

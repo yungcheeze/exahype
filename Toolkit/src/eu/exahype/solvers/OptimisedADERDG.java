@@ -20,9 +20,6 @@ import eu.exahype.io.SourceTemplate;
 
 
 public class OptimisedADERDG implements Solver {
-  
-  public static final String Identifier = "optimised"; //expect the spec file to have the form "optimised::options"
-
   //Internal states
   //--------------- 
   private String _solverName;
