@@ -415,13 +415,15 @@ Productions
         token_maximum_mesh_size [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         maximum_mesh_depth?
         token_time_stepping     [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel            [kernel_const]:token_const               [kernel_equals]:token_equals      [kernel]:typename
-        token_language          [language_const]:token_const             [language_equals]:token_equals    [language]:identifier
+        token_kernel_type       [kernel_type_const]:token_const          [kernel_type_equals]:token_equals              [kernel_type]:ids
+		token_kernel_terms      [kernel_terms_const]:token_const         [kernel_terms_equals]:token_equals             [kernel_terms]:ids
+		token_kernel_opt        [kernel_opt_const]:token_const           [kernel_opt_equals]:token_equals               [kernel_opt]:ids
+        token_language          [language_const]:token_const             [language_equals]:token_equals                 [language]:identifier
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,naming_schemes.naming_schemes,patch_size,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
+      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,naming_schemes.naming_schemes,patch_size,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel_type,kernel_terms,kernel_opt,language,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
     
   naming_schemes = 
     naming_scheme_list
@@ -632,7 +634,7 @@ Abstract Syntax Tree
   
   solver =
       {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [constants]:constants? plot_solution*
-    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [constants]:constants? plot_solution*
+    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [constants]:constants? plot_solution*
     | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [kernel_limiter]:typename [language_limiter]:identifier [dmp_observables]:int_number [dmp_relaxation_parameter]:float_number [dmp_difference_scaling]:float_number [steps_till_cured]:int_number? [helper_layers]:int_number? [constants]:constants? plot_solution*
     ;
 
