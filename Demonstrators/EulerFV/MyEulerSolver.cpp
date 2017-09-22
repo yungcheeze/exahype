@@ -2,6 +2,8 @@
 
 #include "MyEulerSolver_Variables.h"
 
+#include "Logo.h"
+
 
 tarch::logging::Log EulerFV::MyEulerSolver::_log( "EulerFV::MyEulerSolver" );
 
@@ -11,70 +13,80 @@ void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 }
 
 void EulerFV::MyEulerSolver::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
-  // Dimensions             = 2
-  // Number of variables    = 5 + #parameters
+  if ( tarch::la::equals( t,0.0 ) ) {
+  Variables vars(Q);
   
-  // @todo Please implement/augment if required
-  // State variables:
-  Q[0] = 0.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  Q[4] = 0.0;
+  tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
+  myX *= static_cast<double>(Image.width);
+  tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
+
+  double Energy = 0.1;
+
+  if (
+    myIntX(0) > 0 && myIntX(0) < static_cast<int>(Image.width)
+    &&
+    myIntX(1) > 0 && myIntX(1) < static_cast<int>(Image.height)
+  ) {
+    Energy += 1.0-Image.pixel_data[myIntX(1)*Image.width+myIntX(0)];
+  }
+
+  vars.rho() = 1.0;
+  vars.E()   = Energy;
+  vars.j(0,0,0);
+  }
 }
 
+
 exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-  // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 
-void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int dIndex, double* lambda) {
-  // Dimensions             = 2
-  // Number of variables    = 5 + #parameters
-  
-  // @todo Please implement/augment if required
-  lambda[0] = 1.0;
-  lambda[1] = 1.0;
-  lambda[2] = 1.0;
-  lambda[3] = 1.0;
-  lambda[4] = 1.0;
+void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+  ReadOnlyVariables vars(Q);
+  Variables eigs(lambda);
+
+  const double GAMMA = 1.4;
+  const double irho = 1./vars.rho();
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+
+  double u_n = Q[normalNonZeroIndex + 1] * irho;
+  double c  = std::sqrt(GAMMA * p * irho);
+
+  eigs.rho()=u_n - c;
+  eigs.E()  =u_n + c;
+  eigs.j(u_n,u_n,u_n);
 }
+
 
 void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
-  // Dimensions             = 2
-  // Number of variables    = 5 + #parameters
-  
-  // @todo Please implement/augment if required
-  F[0][0] = 0.0;
-  F[0][1] = 0.0;
-  F[0][2] = 0.0;
-  F[0][3] = 0.0;
-  F[0][4] = 0.0;
+  ReadOnlyVariables vars(Q);
+  Fluxes fluxes(F);
 
-  F[1][0] = 0.0;
-  F[1][1] = 0.0;
-  F[1][2] = 0.0;
-  F[1][3] = 0.0;
-  F[1][4] = 0.0;
+  tarch::la::Matrix<3,3,double> I;
+  I = 1, 0, 0,
+      0, 1, 0,
+      0, 0, 1;
+
+  const double GAMMA = 1.4;
+  const double irho = 1./vars.rho();
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+
+  fluxes.rho ( vars.j()                                 );
+  fluxes.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
+  fluxes.E   ( irho * (vars.E() + p) * vars.j()         );
 }
-
 
 
 void EulerFV::MyEulerSolver::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,
-    const int d,
+    const int normalNonZero,
     const double* const stateInside,
     double* stateOutside) {
-  // Dimensions             = 2
-  // Number of variables    = 5 + #parameters
+  ReadOnlyVariables varsInside(stateInside);
+  Variables         varsOutside(stateOutside);
 
-  // @todo Please implement/augment if required
-  stateOutside[0] = 0.0;
-  stateOutside[1] = 0.0;
-  stateOutside[2] = 0.0;
-  stateOutside[3] = 0.0;
-  stateOutside[4] = 0.0;
+  varsOutside = varsInside;
 }
