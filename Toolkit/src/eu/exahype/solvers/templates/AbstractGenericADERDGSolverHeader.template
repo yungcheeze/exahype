@@ -55,12 +55,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});
 
     /**
-     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
-     */
-    AdjustSolutionValue useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const override {return AdjustSolutionValue::No;}
-
-
-    /**
      * This operation should be overwritten in your application-specific 
      * solver. Alternatively, make your own subclass useConservativeFlux()
      * return false.
@@ -89,14 +83,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
-        
-    /**
-     * Default implementation. Has to be be overwritten by user's solver if you 
-     * make the corresponding use operation activate the feature.
-     *
-     * See superclass for function's semantics.
-     */
     void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override;
        
     /**
@@ -114,16 +100,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
       const double t,
       const double dt,
       double* luh) override;
-
-    /**
-     * The fused source combines the algebraic Source and the NCP as source contribution. By default,
-     * if not implemented, it falls back to the different functions algebraicSource() and
-     * nonConservativeProduct(). Users can implement it to provide a faster implementation.
-     *
-     * That means, the kernels never call the algebraicSource() and 
-     * nonConservativeProduct() directly but delegate source handling through this function.
-     */
-    void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
 
     /**
      * Default implementation. Please overwrite.

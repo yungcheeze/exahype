@@ -992,13 +992,6 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfterSetI
   SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
   if (
       solverPatch.getType()==SolverPatch::Type::Cell
-      &&
-      _solver->useAdjustSolution(
-          solverPatch.getOffset()+0.5*solverPatch.getSize(),
-          solverPatch.getSize(),
-          solverPatch.getCorrectorTimeStamp(),
-          solverPatch.getCorrectorTimeStepSize())
-      !=exahype::solvers::ADERDGSolver::AdjustSolutionValue::No
   ) {
     determineSolverMinAndMax(solverPatch);
     if (!evaluatePhysicalAdmissibilityCriterion(solverPatch)) {

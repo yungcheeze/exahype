@@ -6,6 +6,11 @@ import java.util.Set;
 
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
+//template engine
+import minitemp.Context;
+import minitemp.TemplateEngine;
+import eu.exahype.kernel.FiniteVolumesKernel;
+
 
 class GenericFiniteVolumesInC implements Solver {
   private String _type;
@@ -17,12 +22,17 @@ class GenericFiniteVolumesInC implements Solver {
   private int _patchSize;
   private int _ghostLayerWidth;
   private Set<String> _namingSchemeNames;
+  
+  private Context context;
+  private TemplateEngine templateEngine;
 
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
-  public GenericFiniteVolumesInC(String type, String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
-      int ghostLayerWidth, boolean enableProfiler, boolean hasConstants) {
+  public GenericFiniteVolumesInC(
+      String type, String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
+      int ghostLayerWidth, boolean enableProfiler, boolean hasConstants,
+      FiniteVolumesKernel kernel) {
     _type               = type;
     _projectName        = projectName;
     _solverName         = solverName;
@@ -34,6 +44,22 @@ class GenericFiniteVolumesInC implements Solver {
     _ghostLayerWidth    = ghostLayerWidth;
     _enableProfiler     = enableProfiler;
     _hasConstants       = hasConstants;
+    
+    final boolean useFlux            = kernel.useFlux();
+    final boolean useSource          = kernel.useSource();
+    final boolean useNCP             = kernel.useNCP();
+    final boolean usePointSource     = kernel.usePointSource();
+    
+    templateEngine = new TemplateEngine();
+    context = new Context();
+
+    //boolean
+    context.put("enableProfiler"    , enableProfiler);
+    context.put("hasConstants"      , hasConstants);
+    context.put("useFlux"           , useFlux);
+    context.put("useSource"         , useSource);
+    context.put("useNCP"            , useNCP);
+    context.put("usePointSource"    , usePointSource);
   }
     
   @Override
@@ -43,7 +69,7 @@ class GenericFiniteVolumesInC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
+/*    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
 
     content.put("Project", _projectName);
@@ -68,7 +94,12 @@ class GenericFiniteVolumesInC implements Solver {
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 
-    writer.write(content.toString());
+    writer.write(content.toString(),context);
+    */
+    final String template = IOUtils.convertRessourceContentToString(
+    		"eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
+    writer.write(templateEngine.render(template, context));
+
   }
   
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {

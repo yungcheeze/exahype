@@ -132,19 +132,6 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
     void flux(const double* const Q,double** F) final override;
 {%- endif %}
     
-{%- if (useSource || useNCP) %}
-    /**
-     * Compute the fused Source.
-     * 
-     * The fused source is the sum $S(Q) - B(Q)\nabla Q$ stemming
-     * from the algebraicSource and the nonConservativeProduct functions.
-     * 
-     * In most ExaHyPE kernels, this function is the only one called and
-     * there is an adapter calling the old functions if neccessary.
-     **/
-    void fusedSource(const double* const Q, const double* const gradQ, double* S) final override;
-{%- endif %}
-
 {%- if useSource %}
      /**
      * Compute the Algebraic Sourceterms.

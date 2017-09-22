@@ -47,40 +47,11 @@ void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
 }
 
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
-	
-#define SU(useSource,useNCP,useFlux)\
+  const bool useSource = true;
+  const bool useNCP    = true;
+  const bool useFlux   = true;
   maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<useSource,useNCP,useFlux, {{Solver}}>(\
        *static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
-
-  if(useAlgebraicSource()) {
-    if(useNonConservativeProduct()) {
-      if(useConservativeFlux()) {
-         SU(true,true,true);
-      } else {
-         SU(true,true,false);
-      }
-    } else {
-      if(useConservativeFlux()) {
-         SU(true,false,true);
-      } else {
-         SU(true,false,false);
-      }
-    }
-  } else {
-    if(useNonConservativeProduct()) {
-      if(useConservativeFlux()) {
-         SU(false,true,true);
-      } else {
-         SU(false,true,false);
-      }
-    } else {
-      if(useConservativeFlux()) {
-         SU(false,false,true);
-      } else {
-         SU(false,false,false);
-      }
-    }
-  }
 }
 
 
@@ -113,31 +84,19 @@ void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,con
 
 double {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
   // Default FV Riemann Solver
-  #define RUSANOV(useNCP, useFlux) \
-      return kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
-          *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
-
-  // TODO: As always, this guard <-> templating interface is not useful.
-  if(useNonConservativeProduct()) {
-    if(useConservativeFlux()) {
-      RUSANOV(true, true);
-    } else {
-      RUSANOV(true, false);
-    }
-  } else {
-    if(useConservativeFlux()) {
-      RUSANOV(false, true);
-    } else {
-      RUSANOV(false, false);
-    }
-  }
+  const bool useNCP  = true;
+  const bool useFlux = true;
+  return kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
+      *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
 }
 
 
-
+{%- if usePointSource %}
 void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
+{%- else %}
+{%- endif %}
 
 void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
@@ -156,26 +115,3 @@ void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const do
  * or overwrite with their own implementations.
  **/
 #include "kernels/fusedMethods.cpph"
-
-
-void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-   #define FUSEDSOURCE(useSource, useNCP) \
-      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
-  if(useAlgebraicSource()) {
-    if(useNonConservativeProduct()) {
-      FUSEDSOURCE(true, true);
-    } else {
-      FUSEDSOURCE(true, false);
-    }
-  } else {
-    if(useNonConservativeProduct()) {
-      FUSEDSOURCE(false, true);
-    } else {
-      FUSEDSOURCE(false, false);
-    }
-  }
-}
-
-void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  kernels::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
-}

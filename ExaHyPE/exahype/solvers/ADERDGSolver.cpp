@@ -2165,22 +2165,12 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       cellDescription.getRefinementEvent()==CellDescription::None) {
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    if (
-      useAdjustSolution(
-        cellDescription.getOffset()+0.5*cellDescription.getSize(),
-        cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
-        cellDescription.getCorrectorTimeStepSize()
-      )
-      !=AdjustSolutionValue::No
-    ) {
-        adjustSolution(
-            luh,
-            cellDescription.getOffset()+0.5*cellDescription.getSize(),
-            cellDescription.getSize(),
-            cellDescription.getCorrectorTimeStamp(),
-            cellDescription.getCorrectorTimeStepSize());
-    }
+    adjustSolution(
+      luh,
+      cellDescription.getOffset()+0.5*cellDescription.getSize(),
+      cellDescription.getSize(),
+      cellDescription.getCorrectorTimeStamp(),
+      cellDescription.getCorrectorTimeStepSize());
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"setInitialConditions(...)",i);
@@ -2242,22 +2232,12 @@ void exahype::solvers::ADERDGSolver::updateSolution(
 
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
 
-    if (
-      useAdjustSolution(
-        cellDescription.getOffset()+0.5*cellDescription.getSize(),
-        cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
-        cellDescription.getCorrectorTimeStamp()
-      )
-      !=AdjustSolutionValue::No
-    ) {
-      adjustSolution(
+    adjustSolution(
           newSolution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
           cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
           cellDescription.getCorrectorTimeStepSize());
-    }
 
     for (int i=0; i<getDataPerCell(); i++) {
       assertion4(std::isfinite(newSolution[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);

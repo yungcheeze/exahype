@@ -77,25 +77,6 @@ void {{project}}::{{solver}}::flux(const double* const Q,double** F) {
 }
 {%- endif %}
 
-{%- if (useSource || useNCP) %}
-// You can either leave this generated glue code and just implement {% if (useSource && useNCP) %}algebraicSource and nonConservativeProduct{% else %}{% if useSource %}algebraicSource{% else %}nonConservativeProduct{% endif %}{% endif %}
-// Or you can directly implement it{% if useSource %} and leave algebraicSource empty{% endif %}.{% if useNCP %} You still need to implement nonConservativeProduct.{% endif %}
-void {{project}}::{{solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  // @todo Please implement/augment if required
-{%- if useSource %}
-  algebraicSource(Q, S);
-{%- else %}
-	std::fill_n(S, NumberOfVariables, 0.0);
-{%- endif %}
-{%- if useSource %}
-  double ncp[NumberOfVariables];
-  nonConservativeProduct(Q, gradQ, ncp);
-	for(int l=0; l<NumberOfVariables; l++) {
-		S[l] -= ncp[l];
-	}
-{%- endif %}	
-}
-{%- endif %}
 
 {%- if useSource %}
 //You can either implement this method or modify fusedSource

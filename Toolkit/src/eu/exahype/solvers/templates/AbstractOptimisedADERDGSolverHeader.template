@@ -90,14 +90,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
-        
-    /**
-     * Default implementation. Has to be be overwritten by user's solver if you 
-     * make the corresponding use operation activate the feature.
-     *
-     * See superclass for function's semantics.
-     */
     void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override;
        
     /**
@@ -107,24 +99,13 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      * See superclass for function's semantics.
      */
     void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
-    
-    
+        
     void adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt,
       double* luh) override;
-
-    /**
-     * The fused source combines the algebraic Source and the NCP as source contribution. By default,
-     * if not implemented, it falls back to the different functions algebraicSource() and
-     * nonConservativeProduct(). Users can implement it to provide a faster implementation.
-     *
-     * That means, the kernels never call the algebraicSource() and 
-     * nonConservativeProduct() directly but delegate source handling through this function.
-     */
-    void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
 
     /**
      * Default implementation. Please overwrite.

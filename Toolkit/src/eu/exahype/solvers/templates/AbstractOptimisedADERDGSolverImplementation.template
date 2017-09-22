@@ -277,12 +277,3 @@ void {{project}}::{{abstractSolver}}::adjustPatchSolution(
   double* luh) {
   abortWithMsg("If this operation is entered (adjustPatchSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
-
-
-void {{project}}::{{abstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  abortWithMsg("If this operation is entered (fusedSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
-void {{project}}::{{abstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  // needed ?
-}

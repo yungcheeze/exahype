@@ -337,25 +337,6 @@ public:
       const double t,
       const double dt) = 0;
 
-
-  /**
-   * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-   * within the time interval [t,t+dt].
-   *
-   * \note Use this function and ::adjustSolution to set initial conditions.
-   *
-   * \param[in]    center    The center of the cell.
-   * \param[in]    dx        The extent of the cell.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \return true if the solution has to be adjusted.
-   */
-  virtual bool useAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) const = 0;
-
   /**
    * Pointwise solution adjustment.
    * 

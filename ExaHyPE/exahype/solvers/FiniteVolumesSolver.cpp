@@ -566,18 +566,12 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
       ) {
     double* solution = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    if (useAdjustSolution(
-        cellDescription.getOffset()+0.5*cellDescription.getSize(),
-        cellDescription.getSize(),
-        cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
-        cellDescription.getTimeStepSize())) {
-      adjustSolution(
+    adjustSolution(
           solution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
           cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
           cellDescription.getTimeStepSize());
-    }
 
     for (int i=0; i<getDataPerPatch()+getGhostDataPerPatch(); i++) {
       assertion3(std::isfinite(solution[i]),cellDescription.toString(),"setInitialConditions(...)",i);
@@ -631,18 +625,12 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
                cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
 
-  if (useAdjustSolution(
-      cellDescription.getOffset()+0.5*cellDescription.getSize(),
-      cellDescription.getSize(),
-      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
-      cellDescription.getTimeStepSize())) {
-    adjustSolution(
+  adjustSolution(
         newSolution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize());
-  }
 
 //  std::cout << "[post] solution:" << std::endl;
 //  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove

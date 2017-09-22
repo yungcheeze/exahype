@@ -105,7 +105,7 @@ public class SolverFactory {
             //return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInFortran(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
           }
           else {
-            return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
+            return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants, kernel);
           }
           break;
         case GenericGodunov: 
@@ -114,7 +114,7 @@ public class SolverFactory {
               //return new eu.exahype.solvers.GenericFiniteVolumesGodunovInFortran(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
             }
             else {
-              return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
+              return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants, kernel);
             }
             break;
         case UserDefined: 

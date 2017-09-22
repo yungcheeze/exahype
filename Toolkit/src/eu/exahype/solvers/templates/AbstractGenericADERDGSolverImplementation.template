@@ -279,13 +279,3 @@ void {{project}}::{{abstractSolver}}::adjustPatchSolution(
  * or overwrite with their own implementations.
  **/
 #include "kernels/fusedMethods.cpph"
-
-void {{project}}::{{abstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  kernels::fusedSource<{{useSource}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), Q, gradQ, S);
-}
-
-void {{project}}::{{abstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  kernels::coefficientMatrix<{{solver}}>(*static_cast<{{solver}}*>(this), Q, d, Bn);
-}
-
-
