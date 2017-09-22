@@ -82,6 +82,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     _enableDeepProfiler = (node.getDeepProfiling() != null) && node.getDeepProfiling().getText().equals("on");
   };
 
+  // @todo This function should be a member of Solver.java.
   private boolean validate(Variables variables, int order, String kernel, String language,
       String solverName,eu.exahype.solvers.Solver solver) {
     if (_definedSolvers.contains(solverName)) {
@@ -95,15 +96,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return false;
     }
     
-//    if (variables.getNumberOfParameters() != 0) {
-//      System.err.println("ERROR: At the moment, parameters are not supported. " + 
-//          " Please add the parameters as additional quantities to your PDE formulation.");
-//      return false;
-//    }
-    if (order < 1 || order > 9) {
+    // @todo Does not work with Finite Volumes
+/*    if (order < 1 || order > 9) {
       System.err.println("ERROR: Only polynomial degrees of 1..9 are supported.");
       return false;
     }
+*/
+    
     if (solver == null) {
       System.err.println("ERROR: creation solver " + solverName + " ... failed as kernel " + kernel
           + " for language " + language + " is not supported");
@@ -111,6 +110,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
     return true;
   }
+
   
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {

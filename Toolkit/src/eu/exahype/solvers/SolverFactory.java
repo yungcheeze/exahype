@@ -67,19 +67,19 @@ public class SolverFactory {
   }
   
   public Solver createFiniteVolumesSolver(String solvername, FiniteVolumesKernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
-    if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
+/*    if (isFortran && kernel.isKernelType( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
+    if (!isFortran && kernel.isKernelType( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
+    if (!isFortran && kernel.isKernelType( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
       return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
     }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC.Identifier )) {
-        return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
-    }
+    if (!isFortran && kernel.isKernelType( eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC.Identifier )) {
+*/        return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
+//    }
 
-    return null;
+    //return null;
   }
 }

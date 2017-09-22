@@ -61,7 +61,7 @@ public class FiniteVolumesKernel {
   }
   
   //use by the solverFactory
-  public boolean isKernelType(String id) {
+  public boolean isGenericMUSCL(String id) {
     return optimization.contains(id);
   }
   
