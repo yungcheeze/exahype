@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.kernel.ADERDGKernel;
+import eu.exahype.kernel.FiniteVolumesKernel;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProfiling;
@@ -234,8 +235,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants());
       writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
-// @todo
-//      writeVersionString("Kernel["+_kernelNumber+"].kernel", node.getKernel().getText());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelADERDG", FiniteVolumesKernel.noExceptionContructor(node).toString());
       writeVersionString("Kernel["+_kernelNumber+"].patchSize", patchSize);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
@@ -276,7 +276,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
       writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
       writeVersionString("Kernel["+_kernelNumber+"].kernelADERDG", ADERDGKernel.noExceptionContructor(node).toString());
-      writeVersionString("Kernel["+_kernelNumber+"].kernelLimiter", node.getKernelLimiter().getText());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelLimiter", FiniteVolumesKernel.noExceptionContructor(node).toString());
       
       // ADER-DG
       _methodBodyWriter.write("  {\n");

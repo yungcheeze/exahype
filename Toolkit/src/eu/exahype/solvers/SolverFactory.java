@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Arrays;
 
 import eu.exahype.kernel.ADERDGKernel;
+import eu.exahype.kernel.FiniteVolumesKernel;
 
 public class SolverFactory {
   private String _projectName;
@@ -65,7 +66,7 @@ public class SolverFactory {
     }
   }
   
-  public Solver createFiniteVolumesSolver(String solvername, String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
+  public Solver createFiniteVolumesSolver(String solvername, FiniteVolumesKernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.kernel.ADERDGKernel;
+import eu.exahype.kernel.FiniteVolumesKernel;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.AFiniteVolumesSolver;
@@ -152,7 +153,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   @Override
   public void inAFiniteVolumesSolver(AFiniteVolumesSolver node) {
-/*    String solverName    = node.getName().getText();
+    String solverName    = node.getName().getText();
     String  language     = node.getLanguage().getText();
     int     patchSize    = Integer.parseInt(node.getPatchSize().getText());
     boolean hasConstants = node.getConstants()!=null;
@@ -160,12 +161,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
-    Kernel kernel = new Kernel(node);
+    FiniteVolumesKernel kernel = new FiniteVolumesKernel(node);
     eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
         solverName, kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), patchSize, hasConstants);
 
-    valid = validate(variables,1patchSize is always supported,kernel,language,solverName,solver);
-    
+    valid = validate(variables,patchSize,kernel.toString(),language,solverName,solver);
+
     if (valid) {
       _definedSolvers.add(solverName);
 
@@ -185,7 +186,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         exc.printStackTrace();
         valid = false;
       }
-    }*/
+    }
   }
   
   @Override
@@ -198,7 +199,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     boolean isFortran    = language.equals("Fortran");
     
     int     patchSize       = 2*order+1;
-    String  limiterKernel   = node.getKernelLimiter().getText();
     String  limiterLanguage = node.getLanguageLimiter().getText();
     
     String solverNameADERDG = solverName+"_ADERDG";
@@ -207,7 +207,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variablesSolver  = new Variables(solverNameADERDG, node);
     Variables variablesLimiter = new Variables(solverNameFV, node);
     try {
-      ADERDGKernel kernel = new ADERDGKernel(node);
+      ADERDGKernel         kernel        = new ADERDGKernel(node);
+      FiniteVolumesKernel  limiterKernel = new FiniteVolumesKernel(node);
       
       SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
       Solver solver  = solverFactory.createADERDGSolver(
@@ -216,7 +217,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           solverNameFV, limiterKernel,isFortran,variablesLimiter.getNumberOfVariables(),variablesLimiter.getNumberOfParameters(),variablesLimiter.getNamingSchemeNames(),patchSize,hasConstants);
 
       valid  = validate(variablesSolver,order,kernel.toString(),language,solverName,solver);
-      valid &= validate(variablesLimiter,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
+      valid &= validate(variablesLimiter,patchSize,limiterKernel.toString(),limiterLanguage,solverName,limiter);
       
       if (valid) {        
         _definedSolvers.add(solverName);

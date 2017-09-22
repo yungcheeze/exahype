@@ -188,6 +188,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
      _useOptimisedKernels = _useOptimisedKernels 
                           || (language.equals("C") 
                               && (kernel.isKernelType( eu.exahype.solvers.OptimisedADERDG.Identifier )));
+    // @todo JM: Please add as soon as we have optimised FV solvers.
   
     if (_useOptimisedKernels)  {  
       _opt_noTimeAveraging = kernel.noTimeAveraging();

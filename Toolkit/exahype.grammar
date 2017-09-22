@@ -80,7 +80,8 @@ Tokens
   token_kernel_terms                = 'terms';
   token_kernel_opt                  = 'optimisation';
   token_kernel_solver               = 'kernel';
-  token_kernel_limiter              = 'limiter-kernel';
+  token_kernel_limiter_type         = 'limiter-type';
+  token_kernel_limiter_opt          = 'limiter-optimisation';
   token_language                    = 'language';
   token_language_limiter            = 'limiter-language';
   token_dmp_observables             = 'dmp-observables';
@@ -393,7 +394,8 @@ Productions
 		token_kernel_terms               [kernel_terms_const]:token_const      [kernel_terms_equals]:token_equals             [kernel_terms]:ids
 		token_kernel_opt                 [kernel_opt_const]:token_const        [kernel_opt_equals]:token_equals               [kernel_opt]:ids
         token_language                   [language_const]:token_const          [language_equals]:token_equals                 [language]:identifier
-        token_kernel_limiter             [kernel_limiter_const]:token_const    [kernel_limiter_equals]:token_equals           [kernel_limiter]:typename
+        token_kernel_limiter_type        [kernel_limiter_type_const]:token_const       [kernel_limiter_type_equals]:token_equals              [kernel_limiter_type]:ids
+		token_kernel_limiter_opt         [kernel_limiter_opt_const]:token_const        [kernel_limiter_opt_equals]:token_equals               [kernel_limiter_opt]:ids
         token_language_limiter           [language_limiter_const]:token_const  [language_limiter_equals]:token_equals         [language_limiter]:identifier
         token_dmp_observables                                                  [dmp_observables_equals]:token_equals          [dmp_observables]:int_number
         token_dmp_relaxation_parameter                                         [dmp_relaxation_parameter_equals]:token_equals [dmp_relaxation_parameter]:float_number
@@ -404,7 +406,7 @@ Productions
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,naming_schemes.naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel_type,kernel_terms,kernel_opt,language,kernel_limiter,language_limiter,dmp_observables,dmp_relaxation_parameter,dmp_difference_scaling,steps_till_cured.int_number,helper_layers.int_number,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,naming_schemes.naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel_type,kernel_terms,kernel_opt,language,kernel_limiter_type,kernel_limiter_opt,language_limiter,dmp_observables,dmp_relaxation_parameter,dmp_difference_scaling,steps_till_cured.int_number,helper_layers.int_number,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {finite_volumes}
       [begin_token]:token_solver token_finite_volumes [name]:identifier
@@ -635,7 +637,7 @@ Abstract Syntax Tree
   solver =
       {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [constants]:constants? plot_solution*
     | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [constants]:constants? plot_solution*
-    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [kernel_limiter]:typename [language_limiter]:identifier [dmp_observables]:int_number [dmp_relaxation_parameter]:float_number [dmp_difference_scaling]:float_number [steps_till_cured]:int_number? [helper_layers]:int_number? [constants]:constants? plot_solution*
+    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel_type]:ids [kernel_terms]:ids [kernel_opt]:ids [language]:identifier [kernel_limiter_type]:ids [kernel_limiter_opt]:ids [language_limiter]:identifier [dmp_observables]:int_number [dmp_relaxation_parameter]:float_number [dmp_difference_scaling]:float_number [steps_till_cured]:int_number? [helper_layers]:int_number? [constants]:constants? plot_solution*
     ;
 
   plot_solution =

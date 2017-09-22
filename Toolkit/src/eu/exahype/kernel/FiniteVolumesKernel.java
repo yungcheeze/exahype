@@ -7,7 +7,7 @@ import eu.exahype.node.PIds;
 import eu.exahype.node.AIds;
 import eu.exahype.node.AIdentifierId;
 
-import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.PSolver;
 
@@ -28,18 +28,19 @@ public class FiniteVolumesKernel {
   private Set<String> optimization;
   
   public FiniteVolumesKernel(PSolver solver) throws IllegalArgumentException {
-    if(solver instanceof AAderdgSolver) {
-      type = parseIds(((AAderdgSolver) solver).getKernelType());
-      terms = parseIds(((AAderdgSolver) solver).getKernelTerms());
-      optimization = parseIds(((AAderdgSolver) solver).getKernelOpt());
+    if(solver instanceof AFiniteVolumesSolver) {
+      type = parseIds(((AFiniteVolumesSolver) solver).getKernelType());
+      terms = parseIds(((AFiniteVolumesSolver) solver).getKernelTerms());
+      optimization = parseIds(((AFiniteVolumesSolver) solver).getKernelOpt());
     } else if(solver instanceof ALimitingAderdgSolver) {
-      type = parseIds(((ALimitingAderdgSolver) solver).getKernelType());
+      type = parseIds(((ALimitingAderdgSolver) solver).getKernelLimiterType()); 
+      // Does not differ between ADER-DG solver and FV limiter 
       terms = parseIds(((ALimitingAderdgSolver) solver).getKernelTerms());
-      optimization = parseIds(((ALimitingAderdgSolver) solver).getKernelOpt());
+      optimization = parseIds(((ALimitingAderdgSolver) solver).getKernelLimiterOpt());
     } else {
       throw new IllegalArgumentException("No kernel definition found");
     }
-    
+	  
     validate();
   }
   
