@@ -69,7 +69,7 @@ class GenericFiniteVolumesInC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer)
       throws java.io.IOException {
-/*    SourceTemplate content = SourceTemplate.fromRessourceContent(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
 
     content.put("Project", _projectName);
@@ -95,11 +95,6 @@ class GenericFiniteVolumesInC implements Solver {
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 
     writer.write(content.toString(),context);
-    */
-    final String template = IOUtils.convertRessourceContentToString(
-    		"eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
-    writer.write(templateEngine.render(template, context));
-
   }
   
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
