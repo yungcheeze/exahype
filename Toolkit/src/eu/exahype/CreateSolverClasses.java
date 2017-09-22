@@ -5,7 +5,7 @@ import java.io.BufferedWriter;
 import java.util.Set;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.kernel.Kernel;
+import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.AFiniteVolumesSolver;
@@ -121,7 +121,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     boolean isFortran    = language.equals("Fortran");
 
     try {
-      Kernel kernel = new Kernel(node);
+      ADERDGKernel kernel = new ADERDGKernel(node);
     
       SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
       eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
@@ -152,8 +152,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   @Override
   public void inAFiniteVolumesSolver(AFiniteVolumesSolver node) {
-    String solverName    = node.getName().getText();
-    String  kernel       = node.getKernel().getText();
+/*    String solverName    = node.getName().getText();
     String  language     = node.getLanguage().getText();
     int     patchSize    = Integer.parseInt(node.getPatchSize().getText());
     boolean hasConstants = node.getConstants()!=null;
@@ -161,10 +160,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
+    Kernel kernel = new Kernel(node);
     eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
         solverName, kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), patchSize, hasConstants);
 
-    valid = validate(variables,1/*patchSize is always supported*/,kernel,language,solverName,solver);
+    valid = validate(variables,1patchSize is always supported,kernel,language,solverName,solver);
     
     if (valid) {
       _definedSolvers.add(solverName);
@@ -185,7 +185,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         exc.printStackTrace();
         valid = false;
       }
-    }
+    }*/
   }
   
   @Override
@@ -207,7 +207,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variablesSolver  = new Variables(solverNameADERDG, node);
     Variables variablesLimiter = new Variables(solverNameFV, node);
     try {
-      Kernel kernel = new Kernel(node);
+      ADERDGKernel kernel = new ADERDGKernel(node);
       
       SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
       Solver solver  = solverFactory.createADERDGSolver(

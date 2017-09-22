@@ -11,7 +11,7 @@ import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.PSolver;
 
-public class Kernel {
+public class ADERDGKernel {
   
    
   /**
@@ -29,7 +29,7 @@ public class Kernel {
   private Set<String> terms;
   private Set<String> optimization;
   
-  public Kernel(PSolver solver) throws IllegalArgumentException {
+  public ADERDGKernel(PSolver solver) throws IllegalArgumentException {
     if(solver instanceof AAderdgSolver) {
       type = parseIds(((AAderdgSolver) solver).getKernelType());
       terms = parseIds(((AAderdgSolver) solver).getKernelTerms());
@@ -46,9 +46,9 @@ public class Kernel {
   }
   
   //return null on error, use only after the program should already have failed with invalid kernel
-  public static Kernel noExceptionContructor(PSolver solver) {
+  public static ADERDGKernel noExceptionContructor(PSolver solver) {
     try {
-      return new Kernel(solver);
+      return new ADERDGKernel(solver);
     } catch(IllegalArgumentException e) {
       return null;
     }

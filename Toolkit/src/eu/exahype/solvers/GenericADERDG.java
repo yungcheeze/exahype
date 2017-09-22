@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import minitemp.Context;
 import minitemp.TemplateEngine;
 
-import eu.exahype.kernel.Kernel;
+import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
@@ -24,7 +24,7 @@ public class GenericADERDG implements Solver {
   private TemplateEngine templateEngine;
 
   public GenericADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, Kernel kernel) {
+      int order, boolean enableProfiler, boolean hasConstants, boolean isFortran, ADERDGKernel kernel) {
 
     _solverName         = solverName;
     

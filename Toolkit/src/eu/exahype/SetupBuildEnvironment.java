@@ -1,7 +1,7 @@
 package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.kernel.Kernel;
+import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.node.*;
 
 public class SetupBuildEnvironment extends DepthFirstAdapter {
@@ -184,7 +184,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       valid = false;
     }
     
-    Kernel kernel = Kernel.noExceptionContructor(node);
+    ADERDGKernel kernel = ADERDGKernel.noExceptionContructor(node);
      _useOptimisedKernels = _useOptimisedKernels 
                           || (language.equals("C") 
                               && (kernel.isKernelType( eu.exahype.solvers.OptimisedADERDG.Identifier )));

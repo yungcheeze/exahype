@@ -13,7 +13,7 @@ import minitemp.Context;
 import minitemp.TemplateEngine;
 
 import eu.exahype.CodeGeneratorHelper;
-import eu.exahype.kernel.Kernel;
+import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
@@ -32,7 +32,7 @@ public class OptimisedADERDG implements Solver {
   private boolean _isValid; //if false the solverFactory will return null
 
   public OptimisedADERDG(String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, Kernel kernel) 
+      int order,String microarchitecture, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants, ADERDGKernel kernel) 
       throws IOException, IllegalArgumentException {    
     
     _solverName         = solverName;

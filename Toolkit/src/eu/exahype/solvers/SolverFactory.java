@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
 
-import eu.exahype.kernel.Kernel;
+import eu.exahype.kernel.ADERDGKernel;
 
 public class SolverFactory {
   private String _projectName;
@@ -28,7 +28,7 @@ public class SolverFactory {
     _microarchitecture = microarchitecture;
   }
   
-  public Solver createADERDGSolver(String solvername, Kernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
+  public Solver createADERDGSolver(String solvername, ADERDGKernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
     try { //some solver initialisation can throw IllegalArgumentException if the options are wrong or IOException
       if (kernel.isKernelType( eu.exahype.solvers.GenericADERDG.Identifier )) {
         return new eu.exahype.solvers.GenericADERDG(_projectName, solvername, _dimensions,

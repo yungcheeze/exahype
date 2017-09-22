@@ -33,10 +33,13 @@ exahype-project EulerFV
  
   solver Finite-Volumes MyEulerSolver
     variables const    = rho:1,j:3,E:1
-    patch-size const  = 10
-    maximum-mesh-size = 2e-2     
-    time-stepping     = global
-    kernel const      = generic::godunov
+    patch-size const   = 10
+    maximum-mesh-size  = 2e-2     
+    time-stepping      = global
+    type const         = godunov
+    terms const        = flux
+	optimisation const = generic
+    
     language const    = C
     plot vtu::Cartesian::cells::ascii EulerWriter
       variables const = 5
