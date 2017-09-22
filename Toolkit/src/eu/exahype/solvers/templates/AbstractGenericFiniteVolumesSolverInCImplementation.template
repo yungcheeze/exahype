@@ -91,27 +91,9 @@ double {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, co
 }
 
 
-{%- if usePointSource %}
-void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-{%- else %}
-{%- endif %}
-
-void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
-      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
-void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
-      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
-void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
 /**
  * Fallback implementations of joined functions. Users can either safely ignore this
  * or overwrite with their own implementations.
  **/
+ // @todo Can we remove this one?
 #include "kernels/fusedMethods.cpph"

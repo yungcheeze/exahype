@@ -55,3 +55,29 @@ void {{Project}}::{{Solver}}::boundaryValues(
   // @todo Please implement/augment if required
 {{BoundaryValues}}
 }
+
+
+
+{%- if useNCP %}
+void {{Project}}::{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+  // @todo Please implement/augment if required
+} 
+{%- endif %}
+
+{%- if useSource %}
+void {{Project}}::{{Solver}}::algebraicSource(const double* const Q,double* S) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}
+    
+{%- if useFlux %}
+void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}
+    
+{%- if usePointSource %}
+void {{Project}}::{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+  // @todo Please implement/augment if required
+}
+{%- endif %}

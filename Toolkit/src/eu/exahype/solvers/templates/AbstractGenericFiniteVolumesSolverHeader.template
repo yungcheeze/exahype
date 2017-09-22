@@ -69,23 +69,23 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     
     {%- if useNCP %}
     {%- else %}
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) final {}
     {%- endif %}
     
 
     {%- if useSource %}
     {%- else %}
-    void algebraicSource(const double* const Q,double* S) override;
+    void algebraicSource(const double* const Q,double* S)  final {}
     {%- endif %}
     
     {%- if useFlux %}
     {%- else %}
-    void flux(const double* const Q,double** F) override;
+    void flux(const double* const Q,double** F)  final {}
     {%- endif %}
     
     {%- if usePointSource %}
     {%- else %}
-    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override;
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0)  final {}
     {%- endif %}
     
 };
