@@ -94,7 +94,7 @@ class GenericFiniteVolumesInC implements Solver {
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 
-    writer.write(content.toString(),context);
+    writer.write(content.toString());
   }
   
   public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
