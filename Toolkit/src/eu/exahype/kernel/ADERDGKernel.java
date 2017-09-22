@@ -11,19 +11,32 @@ import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.PSolver;
 
+/**
+ * Circumscribes an ADERDG Kernel
+ * 
+ * For a description how to add new variants consult SolverFactory.
+ */
 public class ADERDGKernel {
   
    
   /**
    * Configuration parameter: id of the options
    */
-  public static final String LINEAR_OPTION_ID      = "linear";
-  public static final String NONLINEAR_OPTION_ID   = "nonlinear";
+  public static final String GENERIC_OPTION_ID      = "generic";
+  public static final String OPTIMISED_OPTION_ID    = "optimised";
+
+  public static final String LINEAR_OPTION_ID       = "linear";
+  public static final String NONLINEAR_OPTION_ID    = "nonlinear";
+  public static final String USER_DEFINED_OPTION_ID = "user-defined";
+  public static final String LEGENDRE_OPTION_ID     = "gauss-legendre";
+  public static final String LOBATTO_OPTION_ID      = "gauss-lobatto";
+    
   public static final String FLUX_OPTION_ID        = "flux";
   public static final String SOURCE_OPTION_ID      = "source";
   public static final String NCP_OPTION_ID         = "ncp";
-  public static final String NO_TIME_AVG_OPTION_ID = "notimeavg";
   public static final String POINTSOURCE_OPTION_ID = "pointsources";
+
+  public static final String NO_TIME_AVG_OPTION_ID = "notimeavg";
   
   private Set<String> type;
   private Set<String> terms;
@@ -72,15 +85,33 @@ public class ADERDGKernel {
     OptimisedNonlinearADERDGWithLegendrePoints,
     OptimisedNonlinearADERDGWithLobattoPoints,
     OptimisedLinearADERDGWithLegendrePoints,
-    OptimisedLinearADERDGWithLobattoPoints
+    OptimisedLinearADERDGWithLobattoPoints,
+    UserDefined,
+    Unknown
   }
 
   public boolean isLinear() throws IllegalArgumentException {
     return type.contains(LINEAR_OPTION_ID);
   }
-  
+
   public KernelType getKernelType() {
-    return KernelType.GenericNonlinearADERDGWithLegendrePoints;
+  	if ( 
+  	  type.contains(NONLINEAR_OPTION_ID) && 
+  	  optimization.contains(GENERIC_OPTION_ID) && 
+  	  type.contains(LEGENDRE_OPTION_ID)
+  	  ||
+  	  type.contains(NONLINEAR_OPTION_ID) && 
+  	  optimization.contains(GENERIC_OPTION_ID)
+  	  ||
+  	  type.contains(NONLINEAR_OPTION_ID) &&
+  	  type.contains(LEGENDRE_OPTION_ID)
+      ||  	  
+  	  type.contains(NONLINEAR_OPTION_ID)
+  	) {
+      return KernelType.GenericNonlinearADERDGWithLegendrePoints;
+	}
+  
+    return  KernelType.Unknown;
   }
 
   public boolean usesOptimisedKernels() {

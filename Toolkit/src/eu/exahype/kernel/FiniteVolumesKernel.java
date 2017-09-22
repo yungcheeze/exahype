@@ -11,21 +11,28 @@ import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.PSolver;
 
+/**
+ * Circumscribes a Finite Volume Kernel
+ * 
+ * For a description how to add new variants consult SolverFactory.
+ */
 public class FiniteVolumesKernel {
   
    
   /**
    * Configuration parameter: id of the options
    */
-  public static final String GODUNOV_OPTION_ID     = "godunov";
-  public static final String MUSCL_OPTION_ID       = "muscl-hancock";
-  public static final String USER_DEFINED_OPTION_ID       = "user-defined";
-  public static final String FLUX_OPTION_ID        = "flux";
-  public static final String SOURCE_OPTION_ID      = "source";
-  public static final String NCP_OPTION_ID         = "ncp";
-  public static final String GENERIC_OPTION_ID     = "generic";
-  public static final String OPTIMISED_OPTION_ID   = "optimised";
-  public static final String POINTSOURCE_OPTION_ID = "pointsources";
+  public static final String GENERIC_OPTION_ID      = "generic";
+  public static final String OPTIMISED_OPTION_ID    = "optimised";
+  
+  public static final String GODUNOV_OPTION_ID      = "godunov";
+  public static final String MUSCL_OPTION_ID        = "muscl-hancock";
+  public static final String USER_DEFINED_OPTION_ID = "user-defined";
+  
+  public static final String FLUX_OPTION_ID         = "flux";
+  public static final String SOURCE_OPTION_ID       = "source";
+  public static final String NCP_OPTION_ID          = "ncp";
+  public static final String POINTSOURCE_OPTION_ID  = "pointsources";
   
   private Set<String> type;
   private Set<String> terms;

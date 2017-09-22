@@ -7,6 +7,22 @@ import java.util.Arrays;
 import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.kernel.FiniteVolumesKernel;
 
+/**
+ * Creates a solver
+ * 
+ * The idea is that you pass in a kernel object (either FiniteVolumesKernel or 
+ * ADERDGKernel) which returns an enum describing the solver type. This 
+ * information together with additional properties then is used to instantiate
+ * the correct solver class.
+ * 
+ * <h2> Add support for a new solver type </h2>
+ *
+ * Switch to either the FiniteVolumesKernel or ADERDGKernel. Add your new solver 
+ * type to the enum called KernelType. Next, add a new branch to the routine
+ * getKernelType() which returns your brand new solver. Finally, extend the 
+ * switch statements in this class to instantiate this new solver.
+ *
+ */
 public class SolverFactory {
   private String _projectName;
   private int _dimensions;
@@ -29,6 +45,11 @@ public class SolverFactory {
     _microarchitecture = microarchitecture;
   }
   
+  /**
+   * Generates the writer for an ADER-DG solver
+   * 
+   * Consult class documentation for further details.
+   */
   public Solver createADERDGSolver(String solvername, ADERDGKernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
     try { //some solver initialisation can throw IllegalArgumentException if the options are wrong or IOException
       switch (kernel.getKernelType()) {
@@ -62,6 +83,7 @@ public class SolverFactory {
             numberOfParameters, order, hasConstants, _enableProfiler);
       }
 */      
+      System.err.println("ERROR: solver configuration is not supported: "+kernel.toString() );
       return null;
     } catch(Exception e) {
       System.err.println("ERROR: can't create the solver. Error: "+e );
@@ -69,6 +91,11 @@ public class SolverFactory {
     }
   }
   
+  /**
+   * Generates the writer for an Finite Volumes solver
+   * 
+   * Consult class documentation for further details.
+   */
   public Solver createFiniteVolumesSolver(String solvername, FiniteVolumesKernel kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
     try { //some solver initialisation can throw IllegalArgumentException if the options are wrong or IOException
       switch (kernel.getKernelType()) {
@@ -98,6 +125,7 @@ public class SolverFactory {
               return new eu.exahype.solvers.UserDefinedFiniteVolumesinC(_projectName, solvername,_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
             }
         }
+      System.err.println("ERROR: solver configuration is not supported: "+kernel.toString() );
       return null;
     } catch(Exception e) {
       System.err.println("ERROR: can't create the solver. Error: "+e );
