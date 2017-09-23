@@ -40,17 +40,17 @@ public class ADERDGKernel {
   
   private Set<String> type;
   private Set<String> terms;
-  private Set<String> optimization;
+  private Set<String> optimisation;
   
   public ADERDGKernel(PSolver solver) throws IllegalArgumentException {
     if(solver instanceof AAderdgSolver) {
       type = parseIds(((AAderdgSolver) solver).getKernelType());
       terms = parseIds(((AAderdgSolver) solver).getKernelTerms());
-      optimization = parseIds(((AAderdgSolver) solver).getKernelOpt());
+      optimisation = parseIds(((AAderdgSolver) solver).getKernelOpt());
     } else if(solver instanceof ALimitingAderdgSolver) {
       type = parseIds(((ALimitingAderdgSolver) solver).getKernelType());
       terms = parseIds(((ALimitingAderdgSolver) solver).getKernelTerms());
-      optimization = parseIds(((ALimitingAderdgSolver) solver).getKernelOpt());
+      optimisation = parseIds(((ALimitingAderdgSolver) solver).getKernelOpt());
     } else {
       throw new IllegalArgumentException("No kernel definition found");
     }
@@ -97,11 +97,11 @@ public class ADERDGKernel {
   public KernelType getKernelType() {
   	if ( 
   	  type.contains(NONLINEAR_OPTION_ID) && 
-  	  optimization.contains(GENERIC_OPTION_ID) && 
+  	  optimisation.contains(GENERIC_OPTION_ID) && 
   	  type.contains(LEGENDRE_OPTION_ID)
   	  ||
   	  type.contains(NONLINEAR_OPTION_ID) && 
-  	  optimization.contains(GENERIC_OPTION_ID)
+  	  optimisation.contains(GENERIC_OPTION_ID)
   	  ||
   	  type.contains(NONLINEAR_OPTION_ID) &&
   	  type.contains(LEGENDRE_OPTION_ID)
@@ -110,12 +110,21 @@ public class ADERDGKernel {
   	) {
       return KernelType.GenericNonlinearADERDGWithLegendrePoints;
 	}
+  	
+  	if ( 
+      type.contains(NONLINEAR_OPTION_ID) && 
+      optimisation.contains(OPTIMISED_OPTION_ID) && 
+      type.contains(LEGENDRE_OPTION_ID)
+    ) {
+  	  return KernelType.OptimisedNonlinearADERDGWithLegendrePoints;
+  	}
   
     return  KernelType.Unknown;
   }
 
   public boolean usesOptimisedKernels() {
-    return false;
+    // assert: !optimisation.contains(GENERIC_OPTION_ID)
+    return optimisation.contains(OPTIMISED_OPTION_ID);
   }
 
   public boolean useFlux() {
@@ -135,7 +144,7 @@ public class ADERDGKernel {
   }
   
   public boolean noTimeAveraging() {
-    return optimization.contains(NO_TIME_AVG_OPTION_ID);
+    return optimisation.contains(NO_TIME_AVG_OPTION_ID);
   }
   
   //(type: [...], terms: [...], opt: [...])
@@ -154,7 +163,7 @@ public class ADERDGKernel {
     }
     sb.deleteCharAt(sb.length()-2);
     sb.append("], opt: [");
-    for(String s : optimization) {
+    for(String s : optimisation) {
       sb.append(s);
       sb.append(", ");
     }

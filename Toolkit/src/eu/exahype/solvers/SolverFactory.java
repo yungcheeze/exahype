@@ -56,6 +56,10 @@ public class SolverFactory {
         case GenericNonlinearADERDGWithLegendrePoints: 
           return new eu.exahype.solvers.GenericADERDG(_projectName, solvername, _dimensions,
             numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isFortran, kernel );
+        case OptimisedNonlinearADERDGWithLegendrePoints:
+          return new eu.exahype.solvers.OptimisedADERDG(_projectName, solvername, _dimensions,
+            numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture,
+            _enableProfiler, _enableDeepProfiler, hasConstants, kernel);
       }
     	
 /*      
