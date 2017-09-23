@@ -352,24 +352,6 @@ public:
    **/
   virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
 
-  
-  /**
-   * @defgroup AMR Solver routines for adaptive mesh refinement
-   */
-  ///@{
-  /**
-   * The refinement criterion that must be defined by the user.
-   *
-   */
-  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in
-  // the invoking code, i.e., level-> level-1
-  // since this is was the user expects.
-  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-      const double time,
-      const int level) = 0;
-
   /**
    * Returns the min time step size of the
    * previous iteration.
