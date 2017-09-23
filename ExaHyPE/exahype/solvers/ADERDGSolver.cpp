@@ -60,7 +60,6 @@ namespace {
                              "riemannSolver_PDEmatrixb",
                              "riemannSolver_overhead"
   };
-  typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
 
 
@@ -500,6 +499,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
   for (const char* tag : deepProfilingTags) {
     _profiler->registerTag(tag); //TODO JMG only if using deepProfiling
   }
+
 
   CompressedDataHeap::getInstance().setName("compressed-data");
 }
@@ -4310,81 +4310,6 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
     }
   }
 }
-
-
-void exahype::solvers::ADERDGSolver::tearApart(
-    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
-  char exponent;
-  long int mantissa;
-  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
-
-  assertion( DataHeap::getInstance().isValidIndex(normalHeapIndex) );
-  assertion( CompressedDataHeap::getInstance().isValidIndex(compressedHeapIndex) );
-  assertion2( static_cast<int>(DataHeap::getInstance().getData(normalHeapIndex).size())==numberOfEntries, DataHeap::getInstance().getData(normalHeapIndex).size(), numberOfEntries );
-  assertion( CompressedDataHeap::getInstance().getData(compressedHeapIndex).empty() );
-
-  CompressedDataHeap::getInstance().getData( compressedHeapIndex ).resize(numberOfEntries * (bytesForMantissa+1));
-
-  int compressedDataHeapIndex = 0;
-  for (int i=0; i<numberOfEntries; i++) {
-    peano::heap::decompose(
-      DataHeap::getInstance().getData( normalHeapIndex )[i],
-      exponent, mantissa, bytesForMantissa
-    );
-    CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u = exponent;
-    compressedDataHeapIndex++;
-    for (int j=0; j<bytesForMantissa; j++) {
-      CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u = pMantissa[j];
-      compressedDataHeapIndex++;
-    }
-  }
-}
-
-
-void exahype::solvers::ADERDGSolver::glueTogether(
-    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
-  char exponent  = 0;
-  long int mantissa;
-  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
-
-  assertion( DataHeap::getInstance().isValidIndex(normalHeapIndex) );
-  assertion( CompressedDataHeap::getInstance().isValidIndex(compressedHeapIndex) );
-  assertion5(
-    static_cast<int>(CompressedDataHeap::getInstance().getData(compressedHeapIndex).size())==numberOfEntries * (bytesForMantissa+1),
-    CompressedDataHeap::getInstance().getData(compressedHeapIndex).size(), numberOfEntries * (bytesForMantissa+1),
-    numberOfEntries, compressedHeapIndex, bytesForMantissa
-  );
-
-  #ifdef ValidateCompressedVsUncompressedData
-  assertion( static_cast<int>(DataHeap::getInstance().getData(normalHeapIndex).size())==numberOfEntries );
-  #else
-  DataHeap::getInstance().getData(normalHeapIndex).resize(numberOfEntries);
-  #endif
-
-  int compressedDataHeapIndex = numberOfEntries * (bytesForMantissa+1)-1;
-  for (int i=numberOfEntries-1; i>=0; i--) {
-    mantissa = 0;
-    for (int j=bytesForMantissa-1; j>=0; j--) {
-      pMantissa[j] = CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u; // TODO(Dominic):This line fails
-      compressedDataHeapIndex--;
-    }
-    exponent = CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u;
-    compressedDataHeapIndex--;
-    double reconstructedValue = peano::heap::compose(
-      exponent, mantissa, bytesForMantissa
-    );
-    #ifdef ValidateCompressedVsUncompressedData
-    assertion7(
-      tarch::la::equals( DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, CompressionAccuracy ),
-      DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, DataHeap::getInstance().getData(normalHeapIndex)[i] - reconstructedValue,
-      CompressionAccuracy, bytesForMantissa, numberOfEntries, normalHeapIndex
-    );
-    #else
-    DataHeap::getInstance().getData(normalHeapIndex)[i] = reconstructedValue;
-    #endif
-  }
-}
-
 
 
 void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(

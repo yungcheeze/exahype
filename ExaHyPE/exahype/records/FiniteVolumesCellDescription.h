@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   16/08/2017 14:31
+    * @date   23/09/2017 14:36
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -55,8 +55,14 @@ namespace exahype {
             double _timeStamp;
             double _previousTimeStepSize;
             int _solution;
+            int _solutionAverages;
+            int _solutionCompressed;
             int _previousSolution;
+            int _previousSolutionAverages;
+            int _previousSolutionCompressed;
             int _extrapolatedSolution;
+            int _extrapolatedSolutionAverages;
+            int _extrapolatedSolutionCompressed;
             int _level;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -95,7 +101,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -198,6 +204,46 @@ namespace exahype {
             
             
             
+            inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solutionAverages;
+            }
+            
+            
+            
+            inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solutionAverages = solutionAverages;
+            }
+            
+            
+            
+            inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solutionCompressed;
+            }
+            
+            
+            
+            inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solutionCompressed = solutionCompressed;
+            }
+            
+            
+            
             inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -218,6 +264,46 @@ namespace exahype {
             
             
             
+            inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _previousSolutionAverages;
+            }
+            
+            
+            
+            inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _previousSolutionAverages = previousSolutionAverages;
+            }
+            
+            
+            
+            inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _previousSolutionCompressed;
+            }
+            
+            
+            
+            inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _previousSolutionCompressed = previousSolutionCompressed;
+            }
+            
+            
+            
             inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -234,6 +320,46 @@ namespace exahype {
  #endif 
  {
                _extrapolatedSolution = extrapolatedSolution;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
             }
             
             
@@ -646,7 +772,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -754,6 +880,46 @@ namespace exahype {
             
             
             
+            inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._solutionAverages;
+            }
+            
+            
+            
+            inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._solutionAverages = solutionAverages;
+            }
+            
+            
+            
+            inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._solutionCompressed;
+            }
+            
+            
+            
+            inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._solutionCompressed = solutionCompressed;
+            }
+            
+            
+            
             inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -774,6 +940,46 @@ namespace exahype {
             
             
             
+            inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._previousSolutionAverages;
+            }
+            
+            
+            
+            inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._previousSolutionAverages = previousSolutionAverages;
+            }
+            
+            
+            
+            inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._previousSolutionCompressed;
+            }
+            
+            
+            
+            inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
+            }
+            
+            
+            
             inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -790,6 +996,46 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._extrapolatedSolution = extrapolatedSolution;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
             }
             
             
@@ -1430,7 +1676,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   16/08/2017 14:31
+    * @date   23/09/2017 14:36
     */
    class exahype::records::FiniteVolumesCellDescriptionPacked { 
       
@@ -1446,8 +1692,14 @@ namespace exahype {
             double _timeStamp;
             double _previousTimeStepSize;
             int _solution;
+            int _solutionAverages;
+            int _solutionCompressed;
             int _previousSolution;
+            int _previousSolutionAverages;
+            int _previousSolutionCompressed;
             int _extrapolatedSolution;
+            int _extrapolatedSolutionAverages;
+            int _extrapolatedSolutionCompressed;
             int _level;
             tarch::la::Vector<DIMENSIONS,double> _offset;
             tarch::la::Vector<DIMENSIONS,double> _size;
@@ -1466,7 +1718,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -1569,6 +1821,46 @@ namespace exahype {
             
             
             
+            inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solutionAverages;
+            }
+            
+            
+            
+            inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solutionAverages = solutionAverages;
+            }
+            
+            
+            
+            inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solutionCompressed;
+            }
+            
+            
+            
+            inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solutionCompressed = solutionCompressed;
+            }
+            
+            
+            
             inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1589,6 +1881,46 @@ namespace exahype {
             
             
             
+            inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _previousSolutionAverages;
+            }
+            
+            
+            
+            inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _previousSolutionAverages = previousSolutionAverages;
+            }
+            
+            
+            
+            inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _previousSolutionCompressed;
+            }
+            
+            
+            
+            inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _previousSolutionCompressed = previousSolutionCompressed;
+            }
+            
+            
+            
             inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1605,6 +1937,46 @@ namespace exahype {
  #endif 
  {
                _extrapolatedSolution = extrapolatedSolution;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
             }
             
             
@@ -2017,7 +2389,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -2125,6 +2497,46 @@ namespace exahype {
             
             
             
+            inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._solutionAverages;
+            }
+            
+            
+            
+            inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._solutionAverages = solutionAverages;
+            }
+            
+            
+            
+            inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._solutionCompressed;
+            }
+            
+            
+            
+            inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._solutionCompressed = solutionCompressed;
+            }
+            
+            
+            
             inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2145,6 +2557,46 @@ namespace exahype {
             
             
             
+            inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._previousSolutionAverages;
+            }
+            
+            
+            
+            inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._previousSolutionAverages = previousSolutionAverages;
+            }
+            
+            
+            
+            inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._previousSolutionCompressed;
+            }
+            
+            
+            
+            inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
+            }
+            
+            
+            
             inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2161,6 +2613,46 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._extrapolatedSolution = extrapolatedSolution;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+            }
+            
+            
+            
+            inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
             }
             
             
@@ -2797,7 +3289,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   16/08/2017 14:31
+       * @date   23/09/2017 14:36
        */
       class exahype::records::FiniteVolumesCellDescription { 
          
@@ -2819,8 +3311,14 @@ namespace exahype {
                double _timeStamp;
                double _previousTimeStepSize;
                int _solution;
+               int _solutionAverages;
+               int _solutionCompressed;
                int _previousSolution;
+               int _previousSolutionAverages;
+               int _previousSolutionCompressed;
                int _extrapolatedSolution;
+               int _extrapolatedSolutionAverages;
+               int _extrapolatedSolutionCompressed;
                int _level;
                #ifdef UseManualAlignment
                tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -2853,7 +3351,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -2956,6 +3454,46 @@ namespace exahype {
                
                
                
+               inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _solutionAverages;
+               }
+               
+               
+               
+               inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _solutionAverages = solutionAverages;
+               }
+               
+               
+               
+               inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _solutionCompressed;
+               }
+               
+               
+               
+               inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _solutionCompressed = solutionCompressed;
+               }
+               
+               
+               
                inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2976,6 +3514,46 @@ namespace exahype {
                
                
                
+               inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _previousSolutionAverages;
+               }
+               
+               
+               
+               inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _previousSolutionAverages = previousSolutionAverages;
+               }
+               
+               
+               
+               inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _previousSolutionCompressed;
+               }
+               
+               
+               
+               inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _previousSolutionCompressed = previousSolutionCompressed;
+               }
+               
+               
+               
                inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2992,6 +3570,46 @@ namespace exahype {
  #endif 
  {
                   _extrapolatedSolution = extrapolatedSolution;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
                }
                
                
@@ -3326,7 +3944,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -3434,6 +4052,46 @@ namespace exahype {
                
                
                
+               inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._solutionAverages;
+               }
+               
+               
+               
+               inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._solutionAverages = solutionAverages;
+               }
+               
+               
+               
+               inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._solutionCompressed;
+               }
+               
+               
+               
+               inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._solutionCompressed = solutionCompressed;
+               }
+               
+               
+               
                inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3454,6 +4112,46 @@ namespace exahype {
                
                
                
+               inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._previousSolutionAverages;
+               }
+               
+               
+               
+               inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._previousSolutionAverages = previousSolutionAverages;
+               }
+               
+               
+               
+               inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._previousSolutionCompressed;
+               }
+               
+               
+               
+               inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
+               }
+               
+               
+               
                inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3470,6 +4168,46 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._extrapolatedSolution = extrapolatedSolution;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
                }
                
                
@@ -4006,7 +4744,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   16/08/2017 14:31
+       * @date   23/09/2017 14:36
        */
       class exahype::records::FiniteVolumesCellDescriptionPacked { 
          
@@ -4022,8 +4760,14 @@ namespace exahype {
                double _timeStamp;
                double _previousTimeStepSize;
                int _solution;
+               int _solutionAverages;
+               int _solutionCompressed;
                int _previousSolution;
+               int _previousSolutionAverages;
+               int _previousSolutionCompressed;
                int _extrapolatedSolution;
+               int _extrapolatedSolutionAverages;
+               int _extrapolatedSolutionCompressed;
                int _level;
                tarch::la::Vector<DIMENSIONS,double> _offset;
                tarch::la::Vector<DIMENSIONS,double> _size;
@@ -4040,7 +4784,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -4143,6 +4887,46 @@ namespace exahype {
                
                
                
+               inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _solutionAverages;
+               }
+               
+               
+               
+               inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _solutionAverages = solutionAverages;
+               }
+               
+               
+               
+               inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _solutionCompressed;
+               }
+               
+               
+               
+               inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _solutionCompressed = solutionCompressed;
+               }
+               
+               
+               
                inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4163,6 +4947,46 @@ namespace exahype {
                
                
                
+               inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _previousSolutionAverages;
+               }
+               
+               
+               
+               inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _previousSolutionAverages = previousSolutionAverages;
+               }
+               
+               
+               
+               inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _previousSolutionCompressed;
+               }
+               
+               
+               
+               inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _previousSolutionCompressed = previousSolutionCompressed;
+               }
+               
+               
+               
                inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4179,6 +5003,46 @@ namespace exahype {
  #endif 
  {
                   _extrapolatedSolution = extrapolatedSolution;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
                }
                
                
@@ -4513,7 +5377,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& extrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -4621,6 +5485,46 @@ namespace exahype {
                
                
                
+               inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._solutionAverages;
+               }
+               
+               
+               
+               inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._solutionAverages = solutionAverages;
+               }
+               
+               
+               
+               inline int getSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._solutionCompressed;
+               }
+               
+               
+               
+               inline void setSolutionCompressed(const int& solutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._solutionCompressed = solutionCompressed;
+               }
+               
+               
+               
                inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4641,6 +5545,46 @@ namespace exahype {
                
                
                
+               inline int getPreviousSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._previousSolutionAverages;
+               }
+               
+               
+               
+               inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._previousSolutionAverages = previousSolutionAverages;
+               }
+               
+               
+               
+               inline int getPreviousSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._previousSolutionCompressed;
+               }
+               
+               
+               
+               inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
+               }
+               
+               
+               
                inline int getExtrapolatedSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4657,6 +5601,46 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._extrapolatedSolution = extrapolatedSolution;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionAverages(const int& extrapolatedSolutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._extrapolatedSolutionAverages = extrapolatedSolutionAverages;
+               }
+               
+               
+               
+               inline int getExtrapolatedSolutionCompressed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline void setExtrapolatedSolutionCompressed(const int& extrapolatedSolutionCompressed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
                }
                
                

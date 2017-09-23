@@ -96,6 +96,7 @@ namespace exahype {
   >     DataHeap;
   #endif
 
+  typedef peano::heap::PlainCharHeap CompressedDataHeap;
 
 #ifdef Parallel
   /**
@@ -387,6 +388,9 @@ class exahype::solvers::Solver {
    */
   static tarch::logging::Log _log;
 
+ protected:
+  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
+  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
  public:
   /**
    * Set to 0 if no floating point compression is used. Is usually done in the

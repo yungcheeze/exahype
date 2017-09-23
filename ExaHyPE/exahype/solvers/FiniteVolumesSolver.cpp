@@ -81,6 +81,8 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
   }
+
+  CompressedDataHeap::getInstance().setName("compressed-data");
 }
 
 int exahype::solvers::FiniteVolumesSolver::getDataPerPatch() const {
@@ -366,8 +368,14 @@ void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
 
   // Default data field indices
   newCellDescription.setSolution(-1);
+  newCellDescription.setSolutionAverages(-1);
+  newCellDescription.setSolutionCompressed(-1);
   newCellDescription.setPreviousSolution(-1);
+  newCellDescription.setPreviousSolutionAverages(-1);
+  newCellDescription.setPreviousSolutionCompressed(-1);
   newCellDescription.setExtrapolatedSolution(-1);
+  newCellDescription.setExtrapolatedSolutionAverages(-1);
+  newCellDescription.setExtrapolatedSolutionCompressed(-1);
 
   Heap::getInstance().getData(cellDescriptionsIndex).push_back(newCellDescription);
 }
@@ -383,14 +391,48 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedSolution()));
 
-        DataHeap::getInstance().deleteData(cellDescription.getSolution());
-        DataHeap::getInstance().deleteData(cellDescription.getPreviousSolution());
-        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolution());
+        if (cellDescription.getSolution()>=0) {
+          DataHeap::getInstance().deleteData(cellDescription.getSolution());
+        }
+        else {
+          assertion(CompressionAccuracy>0.0);
+          assertion(cellDescription.getUpdate()==-1);
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getSolutionCompressed());
+        }
+        DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
+
+        if (cellDescription.getPreviousSolution()>=0) {
+          DataHeap::getInstance().deleteData(cellDescription.getPreviousSolution());
+        }
+        else {
+          assertion(CompressionAccuracy>0.0);
+          assertion(cellDescription.getUpdate()==-1);
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionCompressed());
+        }
+        DataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionAverages());
+
+        if (cellDescription.getExtrapolatedSolution()>=0) {
+          DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolution());
+        }
+        else {
+          assertion(CompressionAccuracy>0.0);
+          assertion(cellDescription.getUpdate()==-1);
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolutionCompressed());
+        }
+        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolutionAverages());
 
         cellDescription.setSolution(-1);
         cellDescription.setPreviousSolution(-1);
         cellDescription.setExtrapolatedSolution(-1);
-        } break;
+
+        cellDescription.setSolutionCompressed(-1);
+        cellDescription.setPreviousSolutionCompressed(-1);
+        cellDescription.setExtrapolatedSolutionCompressed(-1);
+
+        cellDescription.setSolutionAverages(-1);
+        cellDescription.setPreviousSolutionAverages(-1);
+        cellDescription.setExtrapolatedSolutionAverages(-1);
+      } break;
       case CellDescription::Cell:
         // do nothing
         break;
@@ -414,6 +456,13 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 
         cellDescription.setSolution(        DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
         cellDescription.setPreviousSolution(DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+
+        cellDescription.setSolutionCompressed(-1);
+        cellDescription.setPreviousSolutionCompressed(-1);
+
+        cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+
         // Zero out the solution and previous solution arrays. For our MUSCL-Hancock implementation which
         // does not take the corner neighbours into account e.g., it is important that the values in
         // the corner cells of the first ghost layer are set to zero.
@@ -424,6 +473,13 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         const int patchBoundarySize = getDataPerPatchBoundary();
         cellDescription.setExtrapolatedSolution(DataHeap::getInstance().createData(patchBoundarySize, patchBoundarySize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
         std::fill_n( DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data(), patchBoundarySize, 0.0 );
+
+        cellDescription.setExtrapolatedSolutionCompressed(-1);
+        cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(3);
+        }
       }
       break;
     case CellDescription::Erased:
