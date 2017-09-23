@@ -160,19 +160,7 @@ void {{project}}::{{abstractSolver}}::adjustSolution(double *luh,const tarch::la
 {%- if enableProfiler %}
   _profiler->start("solutionAdjustment");
 {%- endif %}
-  switch (useAdjustSolution(center, dx, t, dt)) {
-    case AdjustSolutionValue::No:
-      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
-      break;
-    case AdjustSolutionValue::PointWisely:
-      {{optNamespace}}::adjustPointSolution(*static_cast<{{solver}}*>(this), luh, center, dx, t, dt );
-      break;
-    case AdjustSolutionValue::PatchWisely:
-      printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
-      exit(1);
-     //TODO JMG not implemented
-      break;
-  }
+  {{optNamespace}}::adjustPointSolution(*static_cast<{{solver}}*>(this), luh, center, dx, t, dt );
 {%- if enableProfiler %}
   _profiler->stop("solutionAdjustment");
 {%- endif %}
@@ -268,12 +256,3 @@ void {{project}}::{{abstractSolver}}::pointSource(const double* const x,const do
 
 void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   abortWithMsg("If this operation is entered (adjustPointSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
-
-void {{project}}::{{abstractSolver}}::adjustPatchSolution(
-  const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-  const tarch::la::Vector<DIMENSIONS, double>& dx,
-  const double t,
-  const double dt,
-  double* luh) {
-  abortWithMsg("If this operation is entered (adjustPatchSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}

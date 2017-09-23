@@ -89,16 +89,11 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      * make the corresponding use operation activate the feature.
      *
      * See superclass for function's semantics.
+     *
+     * Please overwrite function adjustSolution(...) if you want to
+     * adjust the solution degrees of freedom in a cellwise manner.
      */
     void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
-    
-    
-    void adjustPatchSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt,
-      double* luh) override;
 
     /**
      * Default implementation. Please overwrite.

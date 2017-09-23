@@ -57,11 +57,6 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});
 
     /**
-     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
-     */
-    AdjustSolutionValue useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const override {return AdjustSolutionValue::No;}
-
-    /**
      * This operation should be overwritten in your application-specific 
      * solver. Alternatively, make your own subclass useConservativeFlux()
      * return false.
@@ -97,15 +92,11 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      * make the corresponding use operation activate the feature.
      *
      * See superclass for function's semantics.
+     *
+     * Please overwrite function adjustSolution(...) if you want to
+     * adjust the solution degrees of freedom in a cellwise manner.
      */
     void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
-        
-    void adjustPatchSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt,
-      double* luh) override;
 
     /**
      * Default implementation. Please overwrite.
