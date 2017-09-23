@@ -389,6 +389,16 @@ class exahype::solvers::Solver {
 
  public:
   /**
+   * Set to 0 if no floating point compression is used. Is usually done in the
+   * runner once at startup and from hereon is a read-only variable. The
+   * subsequent field SpawnCompressionAsBackgroundThread has no semantics if
+   * the present value is set to 0.
+   */
+  static double CompressionAccuracy;
+
+  static bool SpawnCompressionAsBackgroundThread;
+
+  /**
    * The type of a solver.
    */
   enum class Type { ADERDG, FiniteVolumes, LimitingADERDG };

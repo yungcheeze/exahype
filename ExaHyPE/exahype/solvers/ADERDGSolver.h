@@ -44,13 +44,6 @@ namespace exahype {
 class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver, public exahype::solvers::UserADERDGSolverInterface {
 public:
   /**
-   * Set to 0 if no floating point compression is used.
-   */
-  static double CompressionAccuracy;
-
-  static bool SpawnCompressionAsBackgroundThread;
-
-  /**
    * The maximum helper status.
    * This value is assigned to cell descriptions
    * of type Cell.

@@ -89,9 +89,6 @@ double exahype::solvers::ADERDGSolver::PipedCompressedBytes = 0;
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
-double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
-bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
-
 // helper status
 int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
 int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;

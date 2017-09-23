@@ -76,6 +76,12 @@ exahype::solvers::LimiterDomainChange exahype::solvers::convertToLimiterDomainCh
 }
 
 
+
+
+double exahype::solvers::Solver::CompressionAccuracy = 0.0;
+bool exahype::solvers::Solver::SpawnCompressionAsBackgroundThread = false;
+
+
 tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
 int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
 

@@ -238,6 +238,10 @@ class exahype::Parser {
   double getTimestepBatchFactor() const;
   bool getSkipReductionInBatchedTimeSteps() const;
 
+  /**
+   * Is used in the runner to set the solver's compression accuracy. For
+   * details, please consult Runner::initDataCompression().
+   */
   double getDoubleCompressionFactor() const;
   bool   getSpawnDoubleCompressionAsBackgroundTask() const;
 
