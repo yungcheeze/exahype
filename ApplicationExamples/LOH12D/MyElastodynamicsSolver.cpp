@@ -16,40 +16,38 @@ void Elastodynamics::MyElastodynamicsSolver::init(std::vector<std::string>& cmdl
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Elastodynamics::MyElastodynamicsSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
-}
-
-void Elastodynamics::MyElastodynamicsSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Elastodynamics::MyElastodynamicsSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 8 + #parameters
   
   // @todo Please implement/augment if required
   // State variables:
-   static tarch::logging::Log _log("MyElastodynamicsSolver::adjustPointSolution");
-   Variables vars(Q);
-
-  vars.v(0,0);
-  vars.sigma(0,0,0);
-
-  vars.rho() = 2.6;     // gm/cm^3
-  vars.cs() = 2.0;      // km/s
-  vars.cp() = 4.0;      // km/s
+  static tarch::logging::Log _log("MyElastodynamicsSolver::adjustPointSolution");
   
-  if (x[0] > 1.0) {
-  vars.rho() = 2.7;     // gm/cm^3
-  vars.cs() = 3.464;    // km/s
-  vars.cp() = 6.0;      // km/s
+  if tarch::la::equals(t,0.0) {
+    Variables vars(Q);
+
+    vars.v(0,0);
+    vars.sigma(0,0,0);
+
+    vars.rho() = 2.6;     // gm/cm^3
+    vars.cs() = 2.0;      // km/s
+    vars.cp() = 4.0;      // km/s
+
+    if (x[0] > 1.0) {
+    vars.rho() = 2.7;     // gm/cm^3
+    vars.cs() = 3.464;    // km/s
+    vars.cp() = 6.0;      // km/s
+    }
+    double x0 = 2.0;
+    double y0 = 15.0;
+
+    Q[0] = std::exp(-((x[0]-x0)*(x[0]-x0)+(x[1]-y0)*(x[1]-y0))/1.0);
+    Q[1] = std::exp(-((x[0]-x0)*(x[0]-x0)+(x[1]-y0)*(x[1]-y0))/1.0);
+    Q[2] = 0;
+    Q[3] = 0;
+    Q[4] = 0;
   }
-  double x0 = 2.0;
-  double y0 = 15.0;
-  
-  Q[0] = std::exp(-((x[0]-x0)*(x[0]-x0)+(x[1]-y0)*(x[1]-y0))/1.0);
-  Q[1] = std::exp(-((x[0]-x0)*(x[0]-x0)+(x[1]-y0)*(x[1]-y0))/1.0);
-  Q[2] = 0;
-  Q[3] = 0;
-  Q[4] = 0;
 }
 
 void Elastodynamics::MyElastodynamicsSolver::eigenvalues(const double* const Q,const int d,double* lambda) {

@@ -19,16 +19,10 @@ void SWE::MySWESolver::init(std::vector<std::string>& cmdlineargs) {
   }
 }
 
-
-SWE::MySWESolver::AdjustSolutionValue SWE::MySWESolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  return tarch::la::equals(t,0.0) ? SWE::MySWESolver::AdjustSolutionValue::PointWisely : SWE::MySWESolver::AdjustSolutionValue::No;
-}
-
-
-void SWE::MySWESolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  assertion(tarch::la::equals(t, 0.0));
-
-  initialData(x,Q);
+void SWE::MySWESolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
+  if (tarch::la::equals(t,0.0)) {
+    initialData(x,Q);
+  }
 }
 
 

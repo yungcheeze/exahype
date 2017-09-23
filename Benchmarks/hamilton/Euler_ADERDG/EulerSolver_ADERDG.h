@@ -125,7 +125,7 @@ public:
    * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
    *                         as C array (already allocated).
    */
-  void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
+  void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) override;
 
   /**
    * Compute the flux tensor.

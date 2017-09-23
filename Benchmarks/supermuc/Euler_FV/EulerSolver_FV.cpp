@@ -318,11 +318,6 @@ void Euler::EulerSolver_FV::adjustSolution(
   }
 }
 
-
-exahype::solvers::Solver::RefinementControl Euler::EulerSolver_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-  return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
 void Euler::EulerSolver_FV::boundaryValues(
     const double* const x,
     const double t,const double dt,

@@ -42,24 +42,11 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      */
     void init(std::vector<std::string>& cmdlineargs);
     
-    /**
-     * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-     * within the time interval [t,t+dt].
-     *
-     * \note Use this function and ::adjustSolution to set initial conditions.
-     *
-     * \param[in]    centre    The centre of the cell.
-     * \param[in]    dx        The extent of the cell.
-     * \param[in]    t         the start of the time interval.
-     * \param[in]    dt        the width of the time interval.
-     * \return true if the solution has to be adjusted.
-     */
-    AdjustSolutionValue useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
+   
     
     /**
      * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
      *
-     * \note Use this function and ::useAdjustSolution to set initial conditions.
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
@@ -68,7 +55,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
      *                         as C array (already allocated).
      */
-    void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
+    void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) override;
     
     /**
      * Compute the flux tensor.
@@ -133,6 +120,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
     // the NCP is needed for the Riemann Solver...
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
 
+    void initialData(const double* const x,const double t,const double dt,double* Q);
 };
 
 #endif // __GRMHDSolver_ADERDG_CLASS_HEADER__

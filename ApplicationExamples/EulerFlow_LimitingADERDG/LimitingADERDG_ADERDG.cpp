@@ -66,11 +66,13 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::LimitingADERDG_ADERDG
   return tarch::la::equals(t, 0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void Euler::LimitingADERDG_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q)  {
+void Euler::LimitingADERDG_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q)  {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
-  Euler::initialData(x,Q);
+  if (tarch::la::equals(t,0.0)) {
+    Euler::initialData(x,Q);
+  }
 }
 
 exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(

@@ -18,13 +18,7 @@ void Linear::MyLinearSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Linear::MyLinearSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
-  static tarch::logging::Log _log("MyLinearSolver::AdjustSolutionValue");
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
-}
-
-void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 3 + #parameters
   
@@ -32,91 +26,93 @@ void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const dou
   // State variables:
   static tarch::logging::Log _log("MyLinearSolver::adjustPointSolution");
 
-  Variables vars(Q);
+  if (tarch::la::equals(t,0.0)) {
+    Variables vars(Q);
 
-  vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
-  //  vars.p()=0;
-  vars.v(0,0);
+    vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
+    //  vars.p()=0;
+    vars.v(0,0);
 
-  int num_pos_x = 4;
-  int num_pos_y = 4;
-
-
-  double left_bnd_x[4] = {0,0,0,0};
-  double left_bnd_y[4] ={0,1.0/3.0,2.0/3.0,1};
-  double right_bnd_x[4]  ={1,1,1,1};
-  double right_bnd_y[4] ={0,1.0/3.0,2.0/3.0,1};
-
-  double top_bnd_y[4] ={1,1+1.0/3.0*0.2,1+2.0/3.0*0.2,1.2};
-  double top_bnd_x[4] ={0,1.0/3.0,2.0/3.0,1};
-
-  double bottom_bnd_y[4] ={0,0,0,0};
-  double bottom_bnd_x[4] ={0,1.0/3.0,2.0/3.0,1};
-
-  double curvilinear_x[16];
-  double curvilinear_y[16];
+    int num_pos_x = 4;
+    int num_pos_y = 4;
 
 
-  transFiniteInterpolation( num_pos_x,  num_pos_y,  left_bnd_x,  left_bnd_y,  right_bnd_x,  right_bnd_y,  bottom_bnd_x,  bottom_bnd_y,  top_bnd_x,  top_bnd_y,  curvilinear_x ,  curvilinear_y );
+    double left_bnd_x[4] = {0,0,0,0};
+    double left_bnd_y[4] ={0,1.0/3.0,2.0/3.0,1};
+    double right_bnd_x[4]  ={1,1,1,1};
+    double right_bnd_y[4] ={0,1.0/3.0,2.0/3.0,1};
 
-  kernels::idx2 id_xy(num_pos_x,num_pos_y);
+    double top_bnd_y[4] ={1,1+1.0/3.0*0.2,1+2.0/3.0*0.2,1.2};
+    double top_bnd_x[4] ={0,1.0/3.0,2.0/3.0,1};
 
-  for(int j = 0 ; j < num_pos_y ; j ++){
-    //    printf("%f \n",top_bnd_y[j]);
-    for(int i = 0 ; i< num_pos_x ; i ++){
+    double bottom_bnd_y[4] ={0,0,0,0};
+    double bottom_bnd_x[4] ={0,1.0/3.0,2.0/3.0,1};
 
-      // printf("%d \n",i);
-      // printf("%d \n",j);
+    double curvilinear_x[16];
+    double curvilinear_y[16];
 
-      // printf("%f\n",curvilinear_x[id_xy(j,i)]);
-      //       printf("%f\n",curvilinear_y[id_xy(i,j)]);
+
+    transFiniteInterpolation( num_pos_x,  num_pos_y,  left_bnd_x,  left_bnd_y,  right_bnd_x,  right_bnd_y,  bottom_bnd_x,  bottom_bnd_y,  top_bnd_x,  top_bnd_y,  curvilinear_x ,  curvilinear_y );
+
+    kernels::idx2 id_xy(num_pos_x,num_pos_y);
+
+    for(int j = 0 ; j < num_pos_y ; j ++){
+      //    printf("%f \n",top_bnd_y[j]);
+      for(int i = 0 ; i< num_pos_x ; i ++){
+
+        // printf("%d \n",i);
+        // printf("%d \n",j);
+
+        // printf("%f\n",curvilinear_x[id_xy(j,i)]);
+        //       printf("%f\n",curvilinear_y[id_xy(i,j)]);
+      }
     } 
-  } 
 
-  for(int j = 0 ; j < num_pos_y ; j ++){
-    for(int i = 0 ; i< num_pos_x ; i ++){
+    for(int j = 0 ; j < num_pos_y ; j ++){
+      for(int i = 0 ; i< num_pos_x ; i ++){
 
-      // printf("%d \n",i);
-      // printf("%d \n",j);
+        // printf("%d \n",i);
+        // printf("%d \n",j);
 
-      // printf("%f\n",curvilinear_x[id_xy(j,i)]);
+        // printf("%f\n",curvilinear_x[id_xy(j,i)]);
+      }
     } 
-  } 
 
 
- double unif_mesh[4] ={0,1.0/3.0,2.0/3.0,1};
+   double unif_mesh[4] ={0,1.0/3.0,2.0/3.0,1};
 
- double coeff=0;
- interpolate(0.11,0.12,unif_mesh,unif_mesh,curvilinear_x,num_pos_y,coeff);
+   double coeff=0;
+   interpolate(0.11,0.12,unif_mesh,unif_mesh,curvilinear_x,num_pos_y,coeff);
 
- double coeff2=0;
- interpolate(0.11,0.12,unif_mesh,unif_mesh,curvilinear_y,num_pos_y,coeff2);
- double gl_vals[16];
- getValuesAtQuadNodes(unif_mesh,unif_mesh,curvilinear_y,num_pos_y,gl_vals);
+   double coeff2=0;
+   interpolate(0.11,0.12,unif_mesh,unif_mesh,curvilinear_y,num_pos_y,coeff2);
+   double gl_vals[16];
+   getValuesAtQuadNodes(unif_mesh,unif_mesh,curvilinear_y,num_pos_y,gl_vals);
 
- 
 
- for(int j = 0 ; j < num_pos_y ; j ++){
-    for(int i = 0 ; i< num_pos_x ; i ++){
 
-      // printf("%d %d:  %f\n",i,j,gl_vals[id_xy(i,j)]);
+   for(int j = 0 ; j < num_pos_y ; j ++){
+      for(int i = 0 ; i< num_pos_x ; i ++){
 
+        // printf("%d %d:  %f\n",i,j,gl_vals[id_xy(i,j)]);
+
+      }
     } 
-  } 
- 
- double der_x;
- computeDerivatives_x(2,3,gl_vals,num_pos_x,der_x);
 
- double der_y;
- computeDerivatives_y(2,3,gl_vals,num_pos_x,der_y);
+   double der_x;
+   computeDerivatives_x(2,3,gl_vals,num_pos_x,der_x);
+
+   double der_y;
+   computeDerivatives_y(2,3,gl_vals,num_pos_x,der_y);
 
 
- // printf("%f\n",der_x);
- // printf("%f\n",der_y);
+   // printf("%f\n",der_x);
+   // printf("%f\n",der_y);
 
-   
 
- std::exit(-1);
+
+   std::exit(-1);
+  }
 }
 
 void Linear::MyLinearSolver::eigenvalues(const double* const Q,const int d,double* lambda) {
