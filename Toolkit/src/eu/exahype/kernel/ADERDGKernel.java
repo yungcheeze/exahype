@@ -95,7 +95,19 @@ public class ADERDGKernel {
   }
 
   public KernelType getKernelType() {
-  	if ( 
+    if ( 
+      type.contains(NONLINEAR_OPTION_ID) && 
+      optimisation.contains(OPTIMISED_OPTION_ID) && 
+      type.contains(LEGENDRE_OPTION_ID)
+      ||
+      type.contains(NONLINEAR_OPTION_ID) && 
+      optimisation.contains(OPTIMISED_OPTION_ID)
+   ) {
+     return KernelType.OptimisedNonlinearADERDGWithLegendrePoints;
+   }
+      
+   // default kernel - must be last   
+   if ( 
   	  type.contains(NONLINEAR_OPTION_ID) && 
   	  optimisation.contains(GENERIC_OPTION_ID) && 
   	  type.contains(LEGENDRE_OPTION_ID)
@@ -110,14 +122,6 @@ public class ADERDGKernel {
   	) {
       return KernelType.GenericNonlinearADERDGWithLegendrePoints;
 	}
-  	
-  	if ( 
-      type.contains(NONLINEAR_OPTION_ID) && 
-      optimisation.contains(OPTIMISED_OPTION_ID) && 
-      type.contains(LEGENDRE_OPTION_ID)
-    ) {
-  	  return KernelType.OptimisedNonlinearADERDGWithLegendrePoints;
-  	}
   
     return  KernelType.Unknown;
   }
