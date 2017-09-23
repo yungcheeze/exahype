@@ -48,18 +48,24 @@ class exahype::records::FiniteVolumesCellDescription {
    * description.
    */
   parallelise persistent int solution;
+  parallelise persistent int solutionAverages;
+  parallelise persistent int solutionCompressed;
   
   /**
    *  Index referring to the old solution DoF associated with this cell
    *  description.
    */
   parallelise persistent int previousSolution;
+  parallelise persistent int previousSolutionAverages;
+  parallelise persistent int previousSolutionCompressed;
   
   /**
    * Index pointing to the solution DoF extrapolated to the bounding faces of
    * the cell.
    */
   parallelise persistent int extrapolatedSolution;
+  parallelise persistent int extrapolatedSolutionAverages;
+  parallelise persistent int extrapolatedSolutionCompressed;
   
   /**
    * Space-tree level of the cell this FiniteVolumesCellDescription is associated
