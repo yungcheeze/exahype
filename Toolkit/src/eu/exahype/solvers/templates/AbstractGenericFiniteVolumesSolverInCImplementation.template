@@ -5,14 +5,13 @@
 // ========================
 //   www.exahype.eu
 // ========================
-#include "Abstract{{Solver}}.h"
+#include "{{abstractSolver}}.h"
 
 #include "kernels/finitevolumes/commons/c/commons.h"
-#include "kernels/finitevolumes/{{FiniteVolumesType}}/c/{{FiniteVolumesType}}.h"
+#include "kernels/finitevolumes/{{finiteVolumesType}}/c/{{finiteVolumesType}}.h"
 #include "kernels/finitevolumes/riemannsolvers/c/riemannsolvers.h"
 
-#include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
-
+#include "{{solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
 #include <stdio.h>
 #include <cstdlib> // abort()
@@ -20,19 +19,19 @@
 
 #include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
 
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
-  init(cmdlineargs{{SolverInitCallExtension}});
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{% if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}{% if hasConstants %}, exahype::Parser::ParserView constants{% endif %}):
+  {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{% if enableProfiler %}, std::move(profiler){% endif %}) {
+  init(cmdlineargs{% if hasConstants %}, constants{% endif %});
 }
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
-  exahype::solvers::FiniteVolumesSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,PatchSize,
-                                        GhostLayerWidth,maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{project}}::{{abstractSolver}}::{{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{% if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}):
+  exahype::solvers::FiniteVolumesSolver("{{solver}}",NumberOfVariables,NumberOfParameters,PatchSize,
+                                        GhostLayerWidth,maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{% if enableProfiler %}, std::move(profiler){% endif %}) {
 }
 
-void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
+void {{project}}::{{abstractSolver}}::constantsToString(std::ostream& os) {
 	// This string is used in the --version output to identify compile time constants
-	os << "{{Project}}::Abstract{{Solver}}("
+	os << "{{project}}::{{abstractSolver}}("
 	   << "nVar=" << NumberOfVariables << ", "
 	   << "nParam=" << NumberOfParameters << ", "
 	   << "PatchSize=" << PatchSize << ", "
@@ -40,54 +39,47 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
-void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
+void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 	// verbosily fail even without assertions turned on
 	puts(msg);
 	abort();
 }
 
-void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
-  const bool useSource = true;
-  const bool useNCP    = true;
-  const bool useFlux   = true;
-  maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<useSource,useNCP,useFlux, {{Solver}}>(\
-       *static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
+void {{project}}::{{abstractSolver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
+  maxAdmissibleDt = kernels::finitevolumes::{{finiteVolumesType}}::c::solutionUpdate<{{useSource}}, {{useNCP}}, {{useFlux}}, {{solver}}>(*static_cast<{{solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
 }
 
 
-double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double maxAdmissibleDt = kernels::finitevolumes::commons::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx);
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double maxAdmissibleDt = kernels::finitevolumes::commons::c::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,tempEigenvalues,dx);
   return maxAdmissibleDt;
 }
 
-void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  kernels::finitevolumes::commons::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
+void {{project}}::{{abstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+  kernels::finitevolumes::commons::c::solutionAdjustment<{{solver}}>(*static_cast<{{solver}}*>(this),luh,center,dx,t,dt);
 }
 
-void {{Project}}::Abstract{{Solver}}::boundaryConditions(double* luhbndOutside,const double* const luhbndInside,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-  kernels::finitevolumes::commons::c::boundaryConditions<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbndOutside,luhbndInside,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
-}
-
-
-void {{Project}}::Abstract{{Solver}}::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
-  kernels::finitevolumes::commons::c::ghostLayerFilling<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhNeighbour,neighbourPosition);
-}
-
-void {{Project}}::Abstract{{Solver}}::ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhbnd,boundaryPosition);
-}
-
-void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::commons::c::boundaryLayerExtraction<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbnd,luh,boundaryPosition);
+void {{project}}::{{abstractSolver}}::boundaryConditions(double* luhbndOutside,const double* const luhbndInside,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
+  kernels::finitevolumes::commons::c::boundaryConditions<{{solver}}>(*static_cast<{{solver}}*>(this),luhbndOutside,luhbndInside,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
 }
 
 
-double {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
+void {{project}}::{{abstractSolver}}::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
+  kernels::finitevolumes::commons::c::ghostLayerFilling<{{solver}}>(*static_cast<{{solver}}*>(this),luh,luhNeighbour,neighbourPosition);
+}
+
+void {{project}}::{{abstractSolver}}::ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary<{{solver}}>(*static_cast<{{solver}}*>(this),luh,luhbnd,boundaryPosition);
+}
+
+void {{project}}::{{abstractSolver}}::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  kernels::finitevolumes::commons::c::boundaryLayerExtraction<{{solver}}>(*static_cast<{{solver}}*>(this),luhbnd,luh,boundaryPosition);
+}
+
+
+double {{project}}::{{abstractSolver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
   // Default FV Riemann Solver
-  const bool useNCP  = true;
-  const bool useFlux = true;
-  return kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
-      *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
+  return kernels::finitevolumes::riemannsolvers::c::rusanov<{{useNCP}}, {{useFlux}}, {{solver}}>(*static_cast<{{solver}}*>(this), fL,fR,qL,qR,normalNonZero);
 }
 
 

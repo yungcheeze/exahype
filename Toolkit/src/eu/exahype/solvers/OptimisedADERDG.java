@@ -2,7 +2,6 @@ package eu.exahype.solvers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.lang.IllegalArgumentException;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +14,6 @@ import minitemp.TemplateEngine;
 import eu.exahype.CodeGeneratorHelper;
 import eu.exahype.kernel.ADERDGKernel;
 import eu.exahype.io.IOUtils;
-import eu.exahype.io.SourceTemplate;
-
 
 
 public class OptimisedADERDG implements Solver {

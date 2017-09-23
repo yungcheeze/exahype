@@ -11,12 +11,6 @@
 #include <ostream>
 
 #include "{{abstractSolver}}.h"
-
-
-/**
- * We use Peano's logging
- */
-#include "tarch/logging/Log.h"
 {%- if enableProfiler %}
 #include "exahype/profilers/Profiler.h"
 {%- endif %}
@@ -24,11 +18,17 @@
 #include "exahype/Parser.h"
 {%- endif %}
 
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
+
 namespace {{project}}{
   class {{solver}};
 }
 
-class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
+class {{project}}::{{solver}} : public {{project}}::{{abstractSolver}} {
   private:
     /**
      * Log device
@@ -42,7 +42,7 @@ class {{project}}::{{solver}}: public {{project}}::{{abstractSolver}} {
      *
      * \param[in] cmdlineargs the command line arguments.
      */
-    void init(std::vector<std::string>& cmdlineargs  {%- if hasConstants %}, exahype::Parser::ParserView& constants{% endif %});
+    void init(std::vector<std::string>& cmdlineargs{% if hasConstants %}, exahype::Parser::ParserView& constants{% endif %});
     
     /**
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell

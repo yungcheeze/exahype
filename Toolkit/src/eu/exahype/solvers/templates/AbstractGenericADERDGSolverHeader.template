@@ -12,14 +12,14 @@
 #include <algorithm>
 
 #include "exahype/solvers/ADERDGSolver.h"
+{%- if enableProfiler %}
+#include "exahype/profilers/Profiler.h"
+{%- endif %}
 
 /**
  * We include Peano's assertion collection here.
  */
 #include "tarch/Assertions.h"
-{%- if enableProfiler %}
-#include "exahype/profilers/Profiler.h"
-{%- endif %}
 
 namespace {{project}}{
   class {{solver}};
@@ -51,8 +51,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
     class {{className}};
     {%- endfor %}
     
-    {{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping  {%- if enableProfiler %}
-    , std::unique_ptr<exahype::profilers::Profiler> profiler  {%- endif %});
+    {{abstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping{% if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %});
 
     /**
      * This operation should be overwritten in your application-specific 

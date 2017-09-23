@@ -6,7 +6,7 @@
 tarch::logging::Log {{project}}::{{solver}}::_log( "{{project}}::{{solver}}" );
 
 
-void {{project}}::{{solver}}::init(std::vector<std::string>& cmdlineargs{%- if hasConstants %} , exahype::Parser::ParserView& constants {%- endif %}) {
+void {{project}}::{{solver}}::init(std::vector<std::string>& cmdlineargs{% if hasConstants %} , exahype::Parser::ParserView& constants {% endif %}) {
   // @todo Please implement/augment if required
 }
 
@@ -82,12 +82,18 @@ void {{project}}::{{solver}}::flux(const double* const Q,double** F) {
 //You can either implement this method or modify fusedSource
 void {{project}}::{{solver}}::algebraicSource(const double* const Q,double* S) {
   // @todo Please implement/augment if required
+  {%- for i in range_0_nVar %}
+  S[{{i}}] = 0.0;
+  {%- endfor %}
 }
 {%- endif %}
 
 {%- if useNCP %}
 void  {{project}}::{{solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // @todo Please implement/augment if required
+  {%- for i in range_0_nVar %}
+  BgradQ[{{i}}] = 0.0;
+  {%- endfor %}
 }
 {%- endif %}
 
