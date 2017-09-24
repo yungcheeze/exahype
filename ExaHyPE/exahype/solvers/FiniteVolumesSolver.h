@@ -138,9 +138,29 @@ private:
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
 
+  void compress(CellDescription& cellDescription);
+  void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
+  void determineUnknownAverages(CellDescription& cellDescription) const;
+  void pullUnknownsFromByteStream(CellDescription& cellDescription) const;
+  void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
+  void uncompress(CellDescription& cellDescription) const;
+
+  class CompressionTask {
+    private:
+      FiniteVolumesSolver&                             _solver;
+      exahype::records::FiniteVolumesCellDescription&  _cellDescription;
+    public:
+      CompressionTask(
+        FiniteVolumesSolver&                             _solver,
+        exahype::records::FiniteVolumesCellDescription&  _cellDescription
+      );
+
+      void operator()();
+  };
+
 public:
   /**
-    * Returns the ADERDGCellDescription.
+    * Returns the Finite Volumes description.
     */
    static Heap::HeapEntries& getCellDescriptions(
        const int cellDescriptionsIndex) {
@@ -365,6 +385,7 @@ public:
   /**
    * The number of unknowns per patch.
    * This number does not include ghost layer values.
+   * It does take into account the unknowns and the material parameters.
    */
   int getDataPerPatch() const;
 
