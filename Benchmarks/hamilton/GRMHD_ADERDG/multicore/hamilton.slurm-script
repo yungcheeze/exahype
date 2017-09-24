@@ -61,6 +61,8 @@ if (( coresPerTask==1 )); then
   likwid-perfctr -f -C 0 -g MEM      ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g FLOPS_DP ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g L2CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L3CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L3       ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   likwid-perfctr -f -C 0 -g BRANCH   ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
   # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> $out
 else
@@ -69,6 +71,8 @@ else
  likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+ likwid-perfctr -f -C 0-$maxCore -g L3CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+ likwid-perfctr -f -C 0-$maxCore -g L3       ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> ${out}.likwid
  #  not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-GRMHD_ADERDG-p3-$sharedMem-$compiler $spec >> $out
 fi
