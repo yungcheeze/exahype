@@ -47,13 +47,11 @@ void exahype::mappings::LocalRecomputation::prepareLocalTimeStepVariables(){
 void exahype::mappings::LocalRecomputation::initialiseTemporaryVariables() {
   exahype::solvers::initialiseTemporaryVariables(_predictionTemporaryVariables);
   exahype::solvers::initialiseTemporaryVariables(_mergingTemporaryVariables);
-  exahype::solvers::initialiseTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 void exahype::mappings::LocalRecomputation::deleteTemporaryVariables() {
   exahype::solvers::deleteTemporaryVariables(_predictionTemporaryVariables);
   exahype::solvers::deleteTemporaryVariables(_mergingTemporaryVariables);
-  exahype::solvers::deleteTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 peano::CommunicationSpecification
@@ -159,6 +157,47 @@ void exahype::mappings::LocalRecomputation::endIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
+               ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
+      assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
+      assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+
+      solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
+      solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+      if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+        assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
+                   solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
+                   exahype::records::State::toString(_localState.getAlgorithmSection()));
+        assertion4(solver->getNextMaxCellSize()>0,
+                   solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],solver->toString(),
+                   exahype::records::State::toString(_localState.getAlgorithmSection()));
+      }
+
+      solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+
+      if (
+          exahype::State::fuseADERDGPhases()
+          #ifdef Parallel
+              && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+          #endif
+      ) {
+        exahype::mappings::TimeStepSizeComputation::
+        reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
+      }
+      solver->startNewTimeStep();
+      if (!exahype::State::fuseADERDGPhases()) {
+        exahype::mappings::TimeStepSizeComputation::
+        reconstructStandardTimeSteppingData(solver);
+      }
+
+      logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
+    }
+  }
+
   deleteTemporaryVariables();
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
@@ -192,19 +231,12 @@ void exahype::mappings::LocalRecomputation::enterCell(
           switch(limitingADERDG->getLimiterDomainChange()) {
           case exahype::solvers::LimiterDomainChange::Irregular: {
             limitingADERDG->recomputeSolutionLocally(
-                fineGridCell.getCellDescriptionsIndex(),
-                element,
-                _solutionUpdateTemporaryVariables,
-                fineGridVertices,
-                fineGridVerticesEnumerator);
+                fineGridCell.getCellDescriptionsIndex(), element);
 
             if (exahype::State::fuseADERDGPhases()) {
               limitingADERDG->recomputePredictorLocally(
-                  fineGridCell.getCellDescriptionsIndex(),
-                  element,
-                  _predictionTemporaryVariables,
-                  fineGridVertices,
-                  fineGridVerticesEnumerator);
+                  fineGridCell.getCellDescriptionsIndex(), element,
+                  _predictionTemporaryVariables);
             }
 
             double admissibleTimeStepSize =

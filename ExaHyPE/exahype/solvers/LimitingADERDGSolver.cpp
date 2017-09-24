@@ -1398,10 +1398,7 @@ void exahype::solvers::LimitingADERDGSolver::projectFVSolutionOnDGSpace(
 }
 
 void exahype::solvers::LimitingADERDGSolver::recomputeSolutionLocally(
-        const int cellDescriptionsIndex, const int solverElement,
-        exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
-        exahype::Vertex* const fineGridVertices,
-        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+        const int cellDescriptionsIndex, const int solverElement) {
   SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
 
   if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&
@@ -1445,9 +1442,7 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolutionLocally(
 void exahype::solvers::LimitingADERDGSolver::recomputePredictorLocally(
     const int cellDescriptionsIndex,
     const int element,
-    exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables) {
   SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&

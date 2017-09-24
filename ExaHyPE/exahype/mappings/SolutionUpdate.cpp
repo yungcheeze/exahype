@@ -249,16 +249,58 @@ void exahype::mappings::SolutionUpdate::endIteration(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
+      // mesh refinement events
       solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
       solver->updateNextAttainedStableState(!solver->getNextMeshUpdateRequest());
-      logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
+      solver->setNextMeshUpdateRequest();
+      solver->setNextAttainedStableState();
 
       if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
+        limitingADERDGSolver->setNextLimiterDomainChange();
+        assertion(
+            limitingADERDGSolver->getLimiterDomainChange()
+            !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+            solver->getMeshUpdateRequest());
       }
+
+      // cell sizes
+      solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
+      solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+      if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+        assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
+                   solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
+                   exahype::records::State::toString(_localState.getAlgorithmSection()));
+        assertion4(solver->getNextMaxCellSize()>0,
+                   solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],solver->toString(),
+                   exahype::records::State::toString(_localState.getAlgorithmSection()));
+      }
+
+      // time
+      assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
+      assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+      solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+      if (
+          exahype::State::fuseADERDGPhases()
+          #ifdef Parallel
+          && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+          #endif
+      ) {
+        exahype::mappings::TimeStepSizeComputation::
+        reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
+      }
+      solver->startNewTimeStep();
+
+      if (!exahype::State::fuseADERDGPhases()) {
+        exahype::mappings::TimeStepSizeComputation::
+        reconstructStandardTimeSteppingData(solver);
+      }
+
+      logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
   }
+
   deleteSolverFlags(_solverFlags);
 
   logTraceOutWith1Argument("endIteration(State)", solverState);

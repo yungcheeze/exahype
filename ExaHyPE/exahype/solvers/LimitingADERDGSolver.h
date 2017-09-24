@@ -1016,10 +1016,7 @@ public:
    */
   void recomputeSolutionLocally(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+      const int element);
 
   /**
    * !!! Only for fused time stepping !!!
@@ -1046,9 +1043,7 @@ public:
   void recomputePredictorLocally(
       const int cellDescriptionsIndex,
         const int element,
-        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
-        exahype::Vertex* const fineGridVertices,
-        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables);
 
   void preProcess(
       const int cellDescriptionsIndex,
