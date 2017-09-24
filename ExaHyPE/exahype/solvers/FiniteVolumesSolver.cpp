@@ -398,7 +398,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         }
         else {
           assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getUpdate()==-1);
+          assertion(cellDescription.getSolution()==-1);
           CompressedDataHeap::getInstance().deleteData(cellDescription.getSolutionCompressed());
         }
         DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
@@ -408,7 +408,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         }
         else {
           assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getUpdate()==-1);
+          assertion(cellDescription.getPreviousSolution()==-1);
           CompressedDataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionCompressed());
         }
         DataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionAverages());
@@ -418,7 +418,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         }
         else {
           assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getUpdate()==-1);
+          assertion(cellDescription.getExtrapolatedSolution()==-1);
           CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolutionCompressed());
         }
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedSolutionAverages());
@@ -1742,9 +1742,7 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
 
   assertion( cellDescription.getPreviousSolutionCompressed()==-1 );
   assertion( cellDescription.getSolutionCompressed()==-1 );
-  assertion( cellDescription.getUpdateCompressed()==-1 );
-  assertion( cellDescription.getExtrapolatedPredictorCompressed()==-1 );
-  assertion( cellDescription.getFluctuationCompressed()==-1 );
+  assertion( cellDescription.getExtrapolatedSolutionCompressed()==-1 );
 
   int compressionOfPreviousSolution;
   int compressionOfSolution;
@@ -1752,9 +1750,7 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
 
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolution() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedSolution() ));
 
   peano::datatraversal::TaskSet compressionFactorIdentification(
     [&]() -> void  { compressionOfPreviousSolution = peano::heap::findMostAgressiveCompression(
@@ -1781,7 +1777,7 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
 
   assertion(compressionOfPreviousSolution<=7);
   assertion(compressionOfSolution<=7);
-  assertion(compressionOfExtrapolatedPredictor<=7);
+  assertion(compressionOfExtrapolatedSolution<=7);
 
   peano::datatraversal::TaskSet runParallelTasks(
     [&]() -> void {
@@ -1795,24 +1791,10 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getDataPerPatch() + getGhostDataPerPatch();
         tearApart(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), compressionOfPreviousSolution);
 
-        #if defined(Asserts)
-        lock.lock();
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
-        PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getPreviousSolutionCompressed() ).size();
-        lock.free();
-        #endif
-
         #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getPreviousSolution(), true );
         cellDescription.setPreviousSolution( -1 );
-        #endif
-      }
-      else {
-        #if defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
-        PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
         #endif
       }
     },
@@ -1828,24 +1810,10 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
 
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
 
-        #if defined(Asserts)
-        lock.lock();
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
-        PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getSolutionCompressed() ).size();
-        lock.free();
-        #endif
-
         #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getSolution(), true );
         cellDescription.setSolution( -1 );
-        #endif
-      }
-      else {
-        #if defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
-        PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
         #endif
       }
     },
@@ -1860,24 +1828,10 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getDataPerPatchBoundary();
         tearApart(numberOfEntries, cellDescription.getExtrapolatedSolution(), cellDescription.getExtrapolatedSolutionCompressed(), compressionOfExtrapolatedSolution);
 
-        #if defined(Asserts)
-        lock.lock();
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() ).size() * 8.0;
-        PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionCompressed() ).size();
-        lock.free();
-        #endif
-
         #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getExtrapolatedSolution(), true );
         cellDescription.setExtrapolatedSolution( -1 );
-        #endif
-      }
-      else {
-        #if defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() ).size() * 8.0;
-        PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() ).size() * 8.0;
         #endif
       }
     },
