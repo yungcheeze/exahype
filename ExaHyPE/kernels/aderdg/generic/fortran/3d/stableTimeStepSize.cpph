@@ -20,7 +20,7 @@ void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
 
 template <typename SolverType>
 double kernels::aderdg::generic::fortran::stableTimeStepSize(SolverType& solver, const double* const luh,
-    double* tempEigenvalues, const tarch::la::Vector<DIMENSIONS, double>& dx) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx) {
   const int numberOfVariables  = solver.getNumberOfVariables();
   const int numberOfParameters = solver.getNumberOfParameters();
   const int basisSize = solver.getNodesPerCoordinateAxis();
@@ -30,14 +30,13 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(SolverType& solver,
   const double PNPM[10] = {1.0,   0.33,  0.17, 0.1,  0.069,
                              0.045, 0.038, 0.03, 0.02, 0.015};
 
-  double lambda[numberOfVariables];
-
   double nv[3];
   nv[0] = 0.;
   nv[1] = 0.;
   nv[2] = 0.;
 
   double dt = std::numeric_limits<double>::max();
+  double lambda[numberOfVariables] = {0.0};
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {

@@ -36,7 +36,7 @@ void {{project}}::{{abstractSolver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
-void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
+void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
 {%- if enableProfiler %}
   _profiler->start("spaceTimePredictor");
 {%- endif %}
@@ -51,10 +51,10 @@ void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
 
 {%- if noTimeAveraging %}
   //No Time Averaging scheme
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1] {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ
   {{optNamespace}}::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
 {% else %}
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1] {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ
   {{optNamespace}}::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
   {{optNamespace}}::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
 {% endif %}
@@ -143,7 +143,7 @@ void {{project}}::{{abstractSolver}}::boundaryConditions(double* fluxOut,double*
 
 
 
-double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {%- if enableProfiler %}
   _profiler->start("stableTimeStepSize");
 {%- endif %}

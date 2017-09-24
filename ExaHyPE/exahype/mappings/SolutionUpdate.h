@@ -75,12 +75,6 @@ private:
    exahype::State _localState;
 
   /**
-   * A bunch of temporary variables for performing a solution
-   * update.
-   */
-  exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
-
-  /**
    * Per solver a flag, indicating if has requested
    * a mesh update request or a limiter domain change.
    */

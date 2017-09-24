@@ -24,9 +24,6 @@ namespace c {
 template <bool useNCP, typename SolverType>
 void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
                          const double* const QL, const double* const QR,
-                         double*  tempFaceUnknowns,
-                         double** tempStateSizedVectors,
-                         double** tempStateSizedSquareMatrices,
                          const double dt,
                          const int normalNonZero) {
   /*

@@ -335,7 +335,6 @@ public:
 
   virtual void solutionUpdate(
       double* luhNew,const double* luh,
-      double** tempStateSizedArrays,double** tempUnknowns,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double dt, double& maxAdmissibleDt) = 0;
 
@@ -598,17 +597,15 @@ public:
 
   void setInitialConditions(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
+
+  void updateSolution(
+      CellDescription& cellDescription,
+      const int element);
 
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * TODO(Dominic): Update docu.

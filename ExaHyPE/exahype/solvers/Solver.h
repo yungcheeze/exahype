@@ -1201,8 +1201,7 @@ class exahype::solvers::Solver {
    */
   virtual double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) = 0;
+      const int element) = 0;
 
   /**
    * Computes a new time step size and overwrites
@@ -1219,8 +1218,7 @@ class exahype::solvers::Solver {
    */
     virtual double updateTimeStepSizes(
           const int cellDescriptionsIndex,
-          const int element,
-          double*   tempEigenvalues) = 0;
+          const int element) = 0;
 
   /**
    * Zeroes all the time step sizes.
@@ -1250,9 +1248,7 @@ class exahype::solvers::Solver {
    */
   virtual void setInitialConditions(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+      const int element) = 0;
 
   /**
    * Update the solution of a cell description.
@@ -1264,11 +1260,7 @@ class exahype::solvers::Solver {
    */
   virtual void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+      const int element) = 0;
 
   /**
      * In this method, the solver can perform post-processing

@@ -43,18 +43,18 @@ void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 	abort();
 }
 
-void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
+void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {%- if enableProfiler %}
   _profiler->start("spaceTimePredictor");
 {%- endif %}
 {%- if isFortran %}
-  kernels::aderdg::generic::fortran::spaceTimePredictor{{linearOrNonlinear}}<{{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, tempStateSizedVectors, luh, dx, dt, pointForceSources);
+  kernels::aderdg::generic::fortran::spaceTimePredictor{{linearOrNonlinear}}<{{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, pointForceSources);
 {%- else %}
 {%- if  isLinear %}
 if(usePointSource())
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<{{usePointSource}}, {{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, tempStateSizedVectors,luh, dx, dt, pointForceSources);
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<{{usePointSource}}, {{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, pointForceSources);
 {%- else %}
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns, tempFluxUnknowns, tempStateSizedVectors, luh, dx, dt);
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt);
 {%- endif %}
 {%- endif %}
 {%- if enableProfiler %}
@@ -134,11 +134,11 @@ void {{project}}::{{abstractSolver}}::boundaryConditions(double* fluxOut,double*
 
 
 
-double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {%- if enableProfiler %}
   _profiler->start("stableTimeStepSize");
 {%- endif %}
-  double d = kernels::aderdg::generic::{{language}}::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,tempEigenvalues,dx);
+  double d = kernels::aderdg::generic::{{language}}::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,dx);
 {%- if enableProfiler %}
   _profiler->stop("stableTimeStepSize");
 {%- endif %}

@@ -92,12 +92,6 @@ class exahype::mappings::TimeStepSizeComputation {
   std::vector<double> _maxCellSizes;
 
   /**
-   * Per Solver, a bunch of temporary variables necessary for
-   * performing a time step update in a cell.
-   */
-  exahype::solvers::TimeStepSizeComputationTemporaryVariables _temporaryVariables;
-
-  /**
    * Prepare a appropriately sized vector _minTimeStepSizes
    * with elements initiliased to MAX_DOUBLE.
    */

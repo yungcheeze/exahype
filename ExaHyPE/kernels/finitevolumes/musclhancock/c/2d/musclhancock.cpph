@@ -51,7 +51,6 @@ template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
-    double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -62,7 +61,9 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   constexpr int patchEnd           = patchBegin+patchSize; // patchEnd cell is outside domain
   constexpr double cflFactor       = CFL; // This is not SolverType::CFL; see the docu.
 
-  const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
+  const double cellSize[2]           = {dx[0]/patchSize, dx[1]/patchSize};
+  const double invCellSize[2]        = {1./cellSize[0],1./cellSize[1]};
+  const double invCellSizeTimesDt[2] = {dt*invCellSize[0], dt*invCellSize[1]};
 
   // 1. Gather data from neighbouring cells; already done.
 
@@ -81,7 +82,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 0, l)] =
             minmod(luh[idx(j, k + 1, l)] - luh[idx(j, k, l)],
-                luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) / cellSize[0];
+                luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) * invCellSize[0];
       }
     }
   }
@@ -92,7 +93,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 1, l)] =
             minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],
-                luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) / cellSize[1];
+                luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) * invCellSize[1];
       }
     }
   }
@@ -152,20 +153,20 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
           // x fluxes
           solver.flux(wLx + idx_w(j, k, 0), F); // FLx
           for (int l = 0; l < numberOfVariables; l++) {
-            Qt[l] += F[0][l] / cellSize[0];
+            Qt[l] += F[0][l] * invCellSize[0];
           }
           solver.flux(wRx + idx_w(j, k, 0), F); // FRx
           for (int l = 0; l < numberOfVariables; l++) {
-            Qt[l] -= F[0][l] / cellSize[0];
+            Qt[l] -= F[0][l] * invCellSize[0];
           }
           // y fluxes
           solver.flux(wLy + idx_w(j, k, 0), F); // FLy
           for (int l = 0; l < numberOfVariables; l++) {
-            Qt[l] += F[1][l] / cellSize[1];
+            Qt[l] += F[1][l] * invCellSize[1];
           }
           solver.flux(wRy + idx_w(j, k, 0), F); // FRy
           for (int l = 0; l < numberOfVariables; l++) {
-            Qt[l] -= F[1][l] / cellSize[1];
+            Qt[l] -= F[1][l] * invCellSize[1];
           }
         }
 
@@ -199,8 +200,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x);
 
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * fL[l];  
-        luh_new[idx(j, k+1, l)] += dt / cellSize[0] * fR[l];
+        luh_new[idx(j, k, l)]   -= invCellSizeTimesDt[0] * fL[l];  
+        luh_new[idx(j, k+1, l)] += invCellSizeTimesDt[0] * fR[l];
       }
     }
   }
@@ -218,8 +219,8 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
 
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * fL[l];  
-        luh_new[idx(j+1, k, l)] += dt / cellSize[1] * fR[l];
+        luh_new[idx(j, k, l)]   -= invCellSizeTimesDt[1] * fL[l];  
+        luh_new[idx(j+1, k, l)] += invCellSizeTimesDt[1] * fR[l];
       }
     }
   }

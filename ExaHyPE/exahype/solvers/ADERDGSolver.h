@@ -617,6 +617,24 @@ private:
    */
   void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
 
+  /**
+   * Computes the surface integral contributions to the
+   * cell update and then adds the update degrees
+   * on the solution degrees of freedom.
+   *
+   * <h2>Solution adjustments</h2>
+   * After the update, the solution is at time
+   * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
+   * The value cellDescription.getCorrectorTimeStepSize()
+   * handed to the solution adjustment function is the one
+   * used to update the solution.
+   *
+   * \todo We will not store the update field anymore
+   * but a previous solution. We will thus only perform
+   * a solution adjustment and adding of source term contributions here.
+   */
+  void surfaceIntegralAndUpdateSolution(CellDescription& cellDescription);
+
   class CompressionTask {
     private:
       ADERDGSolver&                             _solver;
@@ -1003,11 +1021,8 @@ public:
    * @param[in]    direction  Index of the nonzero normal vector component,
    *               i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
-  virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR,
-                             double*   tempFaceUnknownsArray,
-                             double**  tempStateSizedVectors,
-                             double**  tempStateSizedSquareMatrices,
+  virtual void riemannSolver(double* FL, double* FR,
+                             const double* const QL,const double* const QR,
                              const double dt,
                              const int direction,
                              bool isBoundaryFace) = 0;
@@ -1081,7 +1096,6 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -1486,6 +1500,20 @@ public:
       const int element) override;
 
   /**
+   * Runs the triad of updateSolution,performPredictionAndVolumeIntegral
+   * plus startNewTimeStep.
+   */
+  double fusedTimeStep(
+      CellDescription& cellDescription,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double** tempUnknowns,
+      double*  tempFluxUnknowns,
+      double** tempStateSizedArrays,
+      double*  tempStateSizedVector,
+      double*  tempPointForceSources);
+
+  /**
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
    * computes the volume integral.
@@ -1517,13 +1545,14 @@ public:
    * time stamps forward.
    */
   double computeTimeStepSize(
-      CellDescription& cellDescription,
-      double*   tempEigenvalues);
+      CellDescription& cellDescription);
+
+  double startNewTimeStep(
+      CellDescription& cellDescription);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
@@ -1607,33 +1636,15 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
-  /**
-   * Computes the surface integral contributions to the
-   * cell update and then adds the update degrees
-   * on the solution degrees of freedom.
-   *
-   * <h2>Solution adjustments</h2>
-   * After the update, the solution is at time
-   * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
-   * The value cellDescription.getCorrectorTimeStepSize()
-   * handed to the solution adjustment function is the one
-   * used to update the solution.
-   *
-   * \todo We will not store the update field anymore
-   * but a previous solution. We will thus only perform
-   * a solution adjustment and adding of source term contributions here.
-   */
+ /** \copydoc MyClass::myfunction()
+  *
+  *  \see updateSolution(CellDescription,double**,double**)
+  */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * TODO(Dominic): Update docu.

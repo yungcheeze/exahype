@@ -14,7 +14,6 @@ template <typename SolverType>
 double kernels::aderdg::generic::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* lambda,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;

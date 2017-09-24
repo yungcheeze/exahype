@@ -613,9 +613,7 @@ void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep(
 
 void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     const int cellDescriptionsIndex,
-    const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    const int element) {
   // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
@@ -638,62 +636,62 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
 }
 
 void exahype::solvers::FiniteVolumesSolver::updateSolution(
-    const int cellDescriptionsIndex,
-    const int element,
-    double** tempStateSizedVectors,
-    double** tempUnknowns,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+    CellDescription& cellDescription,const int cellDescriptionsIndex) {
   assertion1(cellDescription.getNeighbourMergePerformed().all(),cellDescription.toString());
 
-  double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
-  double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  std::copy(newSolution,newSolution+getDataPerPatch()+getGhostDataPerPatch(),solution); // Copy (current solution) in old solution field.
+    double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
+    double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    std::copy(newSolution,newSolution+getDataPerPatch()+getGhostDataPerPatch(),solution); // Copy (current solution) in old solution field.
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
+    validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
+    //    std::cout << "[pre] solution:" << std::endl;
+    //    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+  //  if (cellDescriptionsIndex==468) {
   //    std::cout << "[pre] solution:" << std::endl;
   //    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
-//  if (cellDescriptionsIndex==468) {
-//    std::cout << "[pre] solution:" << std::endl;
-//    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
-//
-//    ADERDGSolver::CellDescription& aderPatch =
-//        ADERDGSolver::getCellDescription(cellDescriptionsIndex,cellDescription.getSolverNumber());
-//    logDebug("updateSolution(...)","aderPatch="<<aderPatch.toString());
-//  }
+  //
+  //    ADERDGSolver::CellDescription& aderPatch =
+  //        ADERDGSolver::getCellDescription(cellDescriptionsIndex,cellDescription.getSolverNumber());
+  //    logDebug("updateSolution(...)","aderPatch="<<aderPatch.toString());
+  //  }
 
-  // TODO(Dominic): Hotfix on master branch. This will not
-  // be necessary in the future.
-  double admissibleTimeStepSize=0;
-  if (cellDescription.getTimeStepSize()>0) {
-      solutionUpdate(
-          newSolution,solution,tempStateSizedVectors,tempUnknowns,
-          cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
-  }
+    // TODO(Dominic): Hotfix on master branch. This will not
+    // be necessary in the future.
+    double admissibleTimeStepSize=0;
+    if (cellDescription.getTimeStepSize()>0) {
+        solutionUpdate(
+            newSolution,solution,
+            cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+    }
 
-  // cellDescription.getTimeStepSize() = 0 is an initial condition
-  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
-  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
-  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max(), cellDescription.toString(), cellDescriptionsIndex );
+    // cellDescription.getTimeStepSize() = 0 is an initial condition
+    assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
+    assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
+    assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max(), cellDescription.toString(), cellDescriptionsIndex );
 
-  if ( !tarch::la::equals(cellDescription.getTimeStepSize(), 0.0) && tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
-    logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
-               cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
-  }
+    if ( !tarch::la::equals(cellDescription.getTimeStepSize(), 0.0) && tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
+      logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
+                 cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
+    }
 
-  adjustSolution(
-        newSolution,
-        cellDescription.getOffset()+0.5*cellDescription.getSize(),
-        cellDescription.getSize(),
-        cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
-        cellDescription.getTimeStepSize());
+    adjustSolution(
+          newSolution,
+          cellDescription.getOffset()+0.5*cellDescription.getSize(),
+          cellDescription.getSize(),
+          cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
+          cellDescription.getTimeStepSize());
 
-//  std::cout << "[post] solution:" << std::endl;
-//  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+  //  std::cout << "[post] solution:" << std::endl;
+  //  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+    validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
+}
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
+void exahype::solvers::FiniteVolumesSolver::updateSolution(
+    const int cellDescriptionsIndex,
+    const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  updateSolution(cellDescription,cellDescriptionsIndex);
 }
 
 void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(

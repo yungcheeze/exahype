@@ -846,9 +846,7 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * This method assumes the ADERDG solver's cell-local limiter status has
@@ -862,11 +860,7 @@ public:
    */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * Determine the new cell-local min max values.

@@ -96,7 +96,6 @@ exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
 exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeStepSizeComputation& masterThread)
   : _localState(masterThread._localState) {
   prepareLocalTimeStepVariables();
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
 // Merge over threads
@@ -120,7 +119,6 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
   _localState = solverState;
 
   prepareLocalTimeStepVariables();
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -297,7 +295,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     }
   }
 
-  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
   logTraceOutWith1Argument("endIteration(State)", state);
 }
 
@@ -354,8 +351,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
       if (advanceInTime && element!=exahype::solvers::Solver::NotFound) {
         double admissibleTimeStepSize =
             solver->startNewTimeStep(
-                fineGridCell.getCellDescriptionsIndex(),element,
-                _temporaryVariables._tempEigenValues[solverNumber]);
+                fineGridCell.getCellDescriptionsIndex(),element);
 
         if (!exahype::State::fuseADERDGPhases()) {
           reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
@@ -371,8 +367,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
       else if (recomputeTimeStepSizes && element!=exahype::solvers::Solver::NotFound) {
         double admissibleTimeStepSize =
             solver->updateTimeStepSizes(
-                fineGridCell.getCellDescriptionsIndex(),element,
-                _temporaryVariables._tempEigenValues[solverNumber]);
+                fineGridCell.getCellDescriptionsIndex(),element);
 
         if (!exahype::State::fuseADERDGPhases()) {
           reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);

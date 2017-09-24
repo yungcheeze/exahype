@@ -45,13 +45,13 @@ void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 	abort();
 }
 
-void {{project}}::{{abstractSolver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
-  maxAdmissibleDt = kernels::finitevolumes::{{finiteVolumesType}}::c::solutionUpdate<{{useSource}}, {{useNCP}}, {{useFlux}}, {{solver}}>(*static_cast<{{solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
+void {{project}}::{{abstractSolver}}::solutionUpdate(double* luhNew,const double* luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
+  maxAdmissibleDt = kernels::finitevolumes::{{finiteVolumesType}}::c::solutionUpdate<{{useSource}}, {{useNCP}}, {{useFlux}}, {{solver}}>(*static_cast<{{solver}}*>(this),luhNew,luh,dx,dt);
 }
 
 
-double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double maxAdmissibleDt = kernels::finitevolumes::commons::c::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,tempEigenvalues,dx);
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double maxAdmissibleDt = kernels::finitevolumes::commons::c::stableTimeStepSize<{{solver}}>(*static_cast<{{solver}}*>(this),luh,dx);
   return maxAdmissibleDt;
 }
 

@@ -90,7 +90,6 @@ exahype::mappings::SolutionUpdate::SolutionUpdate() {
 }
 
 exahype::mappings::SolutionUpdate::~SolutionUpdate() {
-  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
   exahype::solvers::deleteSolverFlags(_solverFlags);
 }
 
@@ -98,8 +97,6 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
   : _localState(masterThread._localState) {
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
-
   exahype::solvers::initialiseSolverFlags(_solverFlags);
   exahype::solvers::prepareSolverFlags(_solverFlags);
 }
@@ -141,11 +138,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         if (element!=exahype::solvers::Solver::NotFound) {
           solver->updateSolution(
               fineGridCell.getCellDescriptionsIndex(),
-              element,
-              _temporaryVariables._tempStateSizedVectors[i],
-              _temporaryVariables._tempUnknowns[i],
-              fineGridVertices,
-              fineGridVerticesEnumerator);
+              element);
 
           // The mapping might be also used in GlobalRecomputation branch
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
@@ -214,8 +207,6 @@ void exahype::mappings::SolutionUpdate::beginIteration(
     }
   }
 
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
-
   exahype::solvers::initialiseSolverFlags(_solverFlags);
   exahype::solvers::prepareSolverFlags(_solverFlags);
 
@@ -240,8 +231,6 @@ void exahype::mappings::SolutionUpdate::endIteration(
       }
     }
   }
-
-  deleteTemporaryVariables(_temporaryVariables);
   deleteSolverFlags(_solverFlags);
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
