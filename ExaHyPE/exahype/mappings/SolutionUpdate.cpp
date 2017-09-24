@@ -23,6 +23,21 @@
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
+tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
+    "exahype::mappings::SolutionUpdate");
+
+void exahype::mappings::SolutionUpdate::prepareLocalTimeStepVariables(){
+  const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  _minTimeStepSizes.resize(numberOfSolvers);
+  _minCellSizes.resize(numberOfSolvers);
+  _maxCellSizes.resize(numberOfSolvers);
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
+    _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
+    _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
+  }
+}
 
 peano::CommunicationSpecification
 exahype::mappings::SolutionUpdate::communicationSpecification() const {
@@ -82,9 +97,6 @@ exahype::mappings::SolutionUpdate::descendSpecification(int level) const {
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
-tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
-    "exahype::mappings::SolutionUpdate");
-
 exahype::mappings::SolutionUpdate::SolutionUpdate() {
   // do nothing
 }
@@ -139,6 +151,22 @@ void exahype::mappings::SolutionUpdate::enterCell(
           solver->updateSolution(
               fineGridCell.getCellDescriptionsIndex(),
               element);
+
+          double admissibleTimeStepSize =
+              solver->startNewTimeStep(
+                  fineGridCell.getCellDescriptionsIndex(),element);
+
+          if (!exahype::State::fuseADERDGPhases()) {
+            exahype::mappings::TimeStepSizeComputation::
+            reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+          }
+
+          _minTimeStepSizes[solverNumber] = std::min(
+              admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
+          _minCellSizes[solverNumber] = std::min(
+              fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
+          _maxCellSizes[solverNumber] = std::max(
+              fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
 
           // The mapping might be also used in GlobalRecomputation branch
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {

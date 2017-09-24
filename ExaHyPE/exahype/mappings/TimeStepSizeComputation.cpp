@@ -25,6 +25,22 @@
 #include <limits>
 #include <iomanip>
 
+tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
+    "exahype::mappings::TimeStepSizeComputation");
+
+void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables(){
+  const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  _minTimeStepSizes.resize(numberOfSolvers);
+  _minCellSizes.resize(numberOfSolvers);
+  _maxCellSizes.resize(numberOfSolvers);
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
+    _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
+    _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
+  }
+}
+
 peano::CommunicationSpecification
 exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
@@ -71,22 +87,6 @@ exahype::mappings::TimeStepSizeComputation::descendSpecification(int level) cons
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
-}
-
-tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
-    "exahype::mappings::TimeStepSizeComputation");
-
-void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables(){
-  const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  _minTimeStepSizes.resize(numberOfSolvers);
-  _minCellSizes.resize(numberOfSolvers);
-  _maxCellSizes.resize(numberOfSolvers);
-
-  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
-    _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
-    _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
-  }
 }
 
 exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {

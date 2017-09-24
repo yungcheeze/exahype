@@ -1875,7 +1875,7 @@ double exahype::solvers::ADERDGSolver::fusedTimeStep(
       tempUnknowns[0],tempFluxUnknowns,
       tempStateSizedVector,tempPointForceSources);
 
-  startNewTimeStep(cellDescription);
+  return startNewTimeStep(cellDescription);
 }
 
 void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
