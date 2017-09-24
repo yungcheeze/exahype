@@ -141,20 +141,12 @@ public:
    * \note Use this function and ::useAdjustSolution to set initial conditions.
    *
    * \param[in]    x         the physical coordinate on the face.
-   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
    * \param[in]    t         the start of the time interval.
    * \param[in]    dt        the width of the time interval.
    * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
    *                         as C array (already allocated).
    */
-  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
-
-  virtual void adjustPatchSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt,
-      double* luh) = 0;
+  virtual void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) = 0;
   ///@}
 
   /**

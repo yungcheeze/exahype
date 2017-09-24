@@ -254,5 +254,5 @@ void {{project}}::{{abstractSolver}}::pointSource(const double* const x,const do
   abortWithMsg("If this operation is entered (pointSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   abortWithMsg("If this operation is entered (adjustPointSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );}

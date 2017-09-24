@@ -36,7 +36,7 @@ class FiniteVolumesSolver;
 /**
  * Abstract base class for one-step Finite Volumes solvers.
  */
-class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver, public exahype::solvers::UserFiniteVolumesSolverInterface {
+class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
 public:
   typedef exahype::DataHeap DataHeap;
 

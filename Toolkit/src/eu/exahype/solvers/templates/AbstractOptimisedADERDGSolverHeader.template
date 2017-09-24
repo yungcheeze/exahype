@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/UserSolverInterface.h"
 {%- if enableProfiler %}
 #include "exahype/profilers/Profiler.h"
 {%- endif %}
@@ -28,7 +29,7 @@ namespace {{project}}{
   class {{abstractSolver}};
 }
 
-class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
+class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver, public exahype::solvers::UserADERDGSolverInterface {
   public:
     static constexpr int NumberOfVariables  = {{optNamespace}}::getNumberOfVariable();
     static constexpr int NumberOfParameters = {{optNamespace}}::getNumberOfParameter();
@@ -96,7 +97,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver {
      * Please overwrite function adjustSolution(...) if you want to
      * adjust the solution degrees of freedom in a cellwise manner.
      */
-    void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
+    void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) override;
 
     /**
      * Default implementation. Please overwrite.

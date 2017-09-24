@@ -41,7 +41,7 @@ namespace exahype {
 /**
  * Describes one solver.
  */
-class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver, public exahype::solvers::UserADERDGSolverInterface {
+class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
 public:
   /**
    * The maximum helper status.

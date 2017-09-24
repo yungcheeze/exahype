@@ -11,6 +11,7 @@
 #include <ostream>
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
+#include "exahype/solvers/UserSolverInterface.h"
 {%- if enableProfiler %}
 #include "exahype/profilers/Profiler.h"
 {%- endif %}
@@ -25,7 +26,7 @@ namespace {{project}}{
   class {{solver}};
 }
 
-class {{project}}::{{abstractSolver}} : public exahype::solvers::FiniteVolumesSolver {
+class {{project}}::{{abstractSolver}} : public exahype::solvers::FiniteVolumesSolver, public exahype::solvers::UserFiniteVolumesSolverInterface  {
   public:
     static constexpr int NumberOfVariables  = {{numberOfVariables}};
     static constexpr int NumberOfParameters = {{numberOfParameters}};
