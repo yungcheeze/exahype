@@ -2181,7 +2181,9 @@ public:
    * which is fine.
    *
    * However, we have to take care about the interplay of compression and
-   * uncompression. The
+   * uncompression.
+   *
+   * The routine is triggered indirectly through postProcess()/preProcess().
    */
   void compress(exahype::records::ADERDGCellDescription& cellDescription);
 };

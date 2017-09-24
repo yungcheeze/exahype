@@ -33,13 +33,17 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   23/09/2017 14:36
+    * @date   24/09/2017 08:55
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
       public:
          
          typedef exahype::records::FiniteVolumesCellDescriptionPacked Packed;
+         
+         enum CompressionState {
+            Uncompressed = 0, CurrentlyProcessed = 1, Compressed = 2
+         };
          
          enum RefinementEvent {
             None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequestedTriggered = 7, DeaugmentingChildrenRequested = 8, DeaugmentingChildren = 9, AugmentingRequested = 10, Augmenting = 11
@@ -63,6 +67,10 @@ namespace exahype {
             int _extrapolatedSolution;
             int _extrapolatedSolutionAverages;
             int _extrapolatedSolutionCompressed;
+            CompressionState _compressionState;
+            int _bytesPerDoFInPreviousSolution;
+            int _bytesPerDoFInSolution;
+            int _bytesPerDoFInExtrapolatedSolution;
             int _level;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -101,7 +109,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -360,6 +368,86 @@ namespace exahype {
  #endif 
  {
                _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _compressionState;
+            }
+            
+            
+            
+            inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _compressionState = compressionState;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInPreviousSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInSolution = bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInExtrapolatedSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInExtrapolatedSolution = bytesPerDoFInExtrapolatedSolution;
             }
             
             
@@ -772,7 +860,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -1036,6 +1124,86 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._compressionState;
+            }
+            
+            
+            
+            inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._compressionState = compressionState;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._bytesPerDoFInPreviousSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._bytesPerDoFInExtrapolatedSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._bytesPerDoFInExtrapolatedSolution = bytesPerDoFInExtrapolatedSolution;
             }
             
             
@@ -1586,6 +1754,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const CompressionState& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getCompressionStateMapping();
+            
+            /**
+             * Generated
+             */
             static std::string toString(const RefinementEvent& param);
             
             /**
@@ -1676,11 +1854,13 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   23/09/2017 14:36
+    * @date   24/09/2017 08:55
     */
    class exahype::records::FiniteVolumesCellDescriptionPacked { 
       
       public:
+         
+         typedef exahype::records::FiniteVolumesCellDescription::CompressionState CompressionState;
          
          typedef exahype::records::FiniteVolumesCellDescription::Type Type;
          
@@ -1710,6 +1890,16 @@ namespace exahype {
             Type _type;
             int _parentIndex;
             RefinementEvent _refinementEvent;
+            
+            /** mapping of records:
+            || Member 	|| startbit 	|| length
+             |  compressionState	| startbit 0	| #bits 2
+             |  bytesPerDoFInPreviousSolution	| startbit 2	| #bits 3
+             |  bytesPerDoFInSolution	| startbit 5	| #bits 3
+             |  bytesPerDoFInExtrapolatedSolution	| startbit 8	| #bits 3
+             */
+            int _packedRecords0;
+            
             /**
              * Generated
              */
@@ -1718,7 +1908,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -1977,6 +2167,125 @@ namespace exahype {
  #endif 
  {
                _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (0));
+   assertion(( tmp >= 0 &&  tmp <= 2));
+   return (CompressionState) tmp;
+            }
+            
+            
+            
+            inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((compressionState >= 0 && compressionState <= 2));
+   int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (0));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (2));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInPreviousSolution >= 1 && bytesPerDoFInPreviousSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (2));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (5));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (5));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInExtrapolatedSolution >= 1 && bytesPerDoFInExtrapolatedSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedSolution) - 1) << (8));
             }
             
             
@@ -2389,7 +2698,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -2653,6 +2962,125 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+            }
+            
+            
+            
+            inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (0));
+   assertion(( tmp >= 0 &&  tmp <= 2));
+   return (CompressionState) tmp;
+            }
+            
+            
+            
+            inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((compressionState >= 0 && compressionState <= 2));
+   int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (0));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (2));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInPreviousSolution >= 1 && bytesPerDoFInPreviousSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (2));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (5));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (5));
+            }
+            
+            
+            
+            inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion((bytesPerDoFInExtrapolatedSolution >= 1 && bytesPerDoFInExtrapolatedSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedSolution) - 1) << (8));
             }
             
             
@@ -3203,6 +3631,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const CompressionState& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getCompressionStateMapping();
+            
+            /**
+             * Generated
+             */
             static std::string toString(const Type& param);
             
             /**
@@ -3289,13 +3727,17 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   23/09/2017 14:36
+       * @date   24/09/2017 08:55
        */
       class exahype::records::FiniteVolumesCellDescription { 
          
          public:
             
             typedef exahype::records::FiniteVolumesCellDescriptionPacked Packed;
+            
+            enum CompressionState {
+               Uncompressed = 0, CurrentlyProcessed = 1, Compressed = 2
+            };
             
             enum RefinementEvent {
                None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequestedTriggered = 7, DeaugmentingChildrenRequested = 8, DeaugmentingChildren = 9, AugmentingRequested = 10, Augmenting = 11
@@ -3319,6 +3761,10 @@ namespace exahype {
                int _extrapolatedSolution;
                int _extrapolatedSolutionAverages;
                int _extrapolatedSolutionCompressed;
+               CompressionState _compressionState;
+               int _bytesPerDoFInPreviousSolution;
+               int _bytesPerDoFInSolution;
+               int _bytesPerDoFInExtrapolatedSolution;
                int _level;
                #ifdef UseManualAlignment
                tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -3351,7 +3797,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -3610,6 +4056,86 @@ namespace exahype {
  #endif 
  {
                   _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _compressionState;
+               }
+               
+               
+               
+               inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _compressionState = compressionState;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _bytesPerDoFInPreviousSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _bytesPerDoFInSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _bytesPerDoFInSolution = bytesPerDoFInSolution;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _bytesPerDoFInExtrapolatedSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _bytesPerDoFInExtrapolatedSolution = bytesPerDoFInExtrapolatedSolution;
                }
                
                
@@ -3944,7 +4470,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -4208,6 +4734,86 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._compressionState;
+               }
+               
+               
+               
+               inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._compressionState = compressionState;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._bytesPerDoFInPreviousSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._bytesPerDoFInSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
+               }
+               
+               
+               
+               inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._bytesPerDoFInExtrapolatedSolution;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._bytesPerDoFInExtrapolatedSolution = bytesPerDoFInExtrapolatedSolution;
                }
                
                
@@ -4654,6 +5260,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const CompressionState& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getCompressionStateMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const RefinementEvent& param);
                
                /**
@@ -4744,11 +5360,13 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   23/09/2017 14:36
+       * @date   24/09/2017 08:55
        */
       class exahype::records::FiniteVolumesCellDescriptionPacked { 
          
          public:
+            
+            typedef exahype::records::FiniteVolumesCellDescription::CompressionState CompressionState;
             
             typedef exahype::records::FiniteVolumesCellDescription::Type Type;
             
@@ -4776,6 +5394,16 @@ namespace exahype {
                Type _type;
                int _parentIndex;
                RefinementEvent _refinementEvent;
+               
+               /** mapping of records:
+               || Member 	|| startbit 	|| length
+                |  compressionState	| startbit 0	| #bits 2
+                |  bytesPerDoFInPreviousSolution	| startbit 2	| #bits 3
+                |  bytesPerDoFInSolution	| startbit 5	| #bits 3
+                |  bytesPerDoFInExtrapolatedSolution	| startbit 8	| #bits 3
+                */
+               int _packedRecords0;
+               
                /**
                 * Generated
                 */
@@ -4784,7 +5412,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -5043,6 +5671,125 @@ namespace exahype {
  #endif 
  {
                   _extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (0));
+   assertion(( tmp >= 0 &&  tmp <= 2));
+   return (CompressionState) tmp;
+               }
+               
+               
+               
+               inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((compressionState >= 0 && compressionState <= 2));
+   int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (0));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (2));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInPreviousSolution >= 1 && bytesPerDoFInPreviousSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (2));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (5));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (5));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInExtrapolatedSolution >= 1 && bytesPerDoFInExtrapolatedSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedSolution) - 1) << (8));
                }
                
                
@@ -5377,7 +6124,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& extrapolatedSolution, const int& extrapolatedSolutionAverages, const int& extrapolatedSolutionCompressed, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInExtrapolatedSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -5641,6 +6388,125 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._extrapolatedSolutionCompressed = extrapolatedSolutionCompressed;
+               }
+               
+               
+               
+               inline CompressionState getCompressionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (0));
+   assertion(( tmp >= 0 &&  tmp <= 2));
+   return (CompressionState) tmp;
+               }
+               
+               
+               
+               inline void setCompressionState(const CompressionState& compressionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((compressionState >= 0 && compressionState <= 2));
+   int mask =  (1 << (2)) - 1;
+   mask = static_cast<int>(mask << (0));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (0));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInPreviousSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (2));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInPreviousSolution >= 1 && bytesPerDoFInPreviousSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (2));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (2));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (5));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (5));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (5));
+               }
+               
+               
+               
+               inline int getBytesPerDoFInExtrapolatedSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+               }
+               
+               
+               
+               inline void setBytesPerDoFInExtrapolatedSolution(const int& bytesPerDoFInExtrapolatedSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion((bytesPerDoFInExtrapolatedSolution >= 1 && bytesPerDoFInExtrapolatedSolution <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (8));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedSolution) - 1) << (8));
                }
                
                
@@ -6083,6 +6949,16 @@ namespace exahype {
                   _persistentRecords._refinementEvent = refinementEvent;
                }
                
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const CompressionState& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getCompressionStateMapping();
                
                /**
                 * Generated

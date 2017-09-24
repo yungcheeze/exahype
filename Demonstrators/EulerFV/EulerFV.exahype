@@ -28,7 +28,7 @@ exahype-project EulerFV
     dimension const         = 2
     width                   = 1.0, 1.0
     offset                  = 0.0, 0.0
-    end-time                = 0.4
+    end-time                = 0.1
   end computational-domain
  
   /*

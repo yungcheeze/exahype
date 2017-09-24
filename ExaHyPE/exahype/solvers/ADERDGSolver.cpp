@@ -4681,9 +4681,3 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
   );
 }
 
-void exahype::solvers::ADERDGSolver::pointSource(
-    const double t,
-    const double dt, 
-    const tarch::la::Vector<DIMENSIONS,double>& center,
-    const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempPointForceSources) {}
