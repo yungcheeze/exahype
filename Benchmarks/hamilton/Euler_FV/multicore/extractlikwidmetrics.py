@@ -169,9 +169,13 @@ def extract_likwid_metrics(root_dir,prefix):
     
     metrics    = [
                   ["  MFLOP/s",                   "Sum"],   # Two whitespaces are required to not find the AVX MFLOP/s by accident
+                  ["AVX MFLOP/s",                 "Sum"],
                   ["Memory bandwidth [MBytes/s]", "Sum"],
                   ["Memory data volume [GBytes]", "Sum"],
-                  ["L2 bandwidth [MBytes/s]",     "Sum"],
+                  ["L3 bandwidth [MBytes/s]",     "Sum"], 
+                  ["L3 data volume [GBytes]",     "Sum"],
+                  ["L3 request rate",             "Avg"],
+                  ["L3 miss rate",                "Avg"],
                   ["L2 request rate",             "Avg"],
                   ["L2 miss rate",                "Avg"],
                   ["Branch misprediction rate",   "Avg"]
