@@ -479,8 +479,11 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         cellDescription.setExtrapolatedSolutionCompressed(-1);
         cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
+        // @todo We should remove these guys?
         if (CompressionAccuracy>0.0) {
+          std::cout << std::endl << std::endl << "@@@@ (a) @@@@"  << std::endl  << std::endl;
           CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(3);
+          std::cout << std::endl << std::endl << "@@@@ (b) @@@@"  << std::endl  << std::endl;
         }
       }
       break;
@@ -1784,8 +1787,13 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
       cellDescription.setBytesPerDoFInPreviousSolution(compressionOfPreviousSolution);
       if (compressionOfPreviousSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
-        assertion( cellDescription.getPreviousSolutionCompressed()>=0 );
+        std::cout << std::endl << "||| got one (c)" << std::endl;
+        //cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0) );
+        assertion1(
+          cellDescription.getPreviousSolutionCompressed()>=0,
+          cellDescription.toString()
+        );
         lock.free();
 
         const int numberOfEntries = getDataPerPatch() + getGhostDataPerPatch();
@@ -1801,8 +1809,10 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
+        std::cout << std::endl << "||| got one (b)" << std::endl;
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries));
+        //cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries));
+        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0));
         assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
         lock.free();
 
@@ -1820,8 +1830,10 @@ void exahype::solvers::FiniteVolumesSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInExtrapolatedSolution(compressionOfExtrapolatedSolution);
       if (compressionOfExtrapolatedSolution<7) {
+        std::cout << std::endl << "||| got one (a)" << std::endl;
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setExtrapolatedSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
+        //cellDescription.setExtrapolatedSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setExtrapolatedSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0) );
         assertion( cellDescription.getExtrapolatedSolutionCompressed()>=0 );
         lock.free();
 
