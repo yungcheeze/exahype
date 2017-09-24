@@ -37,11 +37,6 @@ void EulerFV::MyEulerSolver::adjustSolution(const double* const x,const double w
 }
 
 
-exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-  return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
-
 void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
