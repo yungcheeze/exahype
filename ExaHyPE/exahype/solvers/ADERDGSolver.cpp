@@ -437,11 +437,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
 void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
     const int cellDescriptionsIndex) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
-
-  Heap::HeapEntries::iterator p =
-      Heap::getInstance().getData(cellDescriptionsIndex).begin();
-  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+  for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    auto *solver = exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
     ADERDGSolver* aderdgSolver = nullptr;
     if (solver->getType()==Solver::Type::ADERDG) {
@@ -453,11 +450,11 @@ void exahype::solvers::ADERDGSolver::eraseCellDescriptions(
     }
     assertion(aderdgSolver!=nullptr);
 
-    p->setType(CellDescription::Type::Erased);
-    aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-
-    p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    p.setType(CellDescription::Type::Erased);
+    aderdgSolver->ensureNoUnnecessaryMemoryIsAllocated(p);
   }
+
+  Heap::getInstance().getData(cellDescriptionsIndex).clear();
 }
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
@@ -4253,57 +4250,108 @@ void exahype::solvers::ADERDGSolver::uncompress(CellDescription& cellDescription
 
 void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   CellDescription& cellDescription) const {
-  for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
-    double solutionAverage         = 0.0;
-    double previousSolutionAverage = 0.0;
-    double updateAverage           = 0.0;
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getSolution()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()), cellDescription.toString() );
 
-    int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
-    for (int i=0; i<numberOfDoFsPerVariable; i++) {
-      solutionAverage         += DataHeap::getInstance().getData( cellDescription.getSolution()         )[i + variableNumber * numberOfDoFsPerVariable];
-      previousSolutionAverage += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[i + variableNumber * numberOfDoFsPerVariable];
-      updateAverage           += DataHeap::getInstance().getData( cellDescription.getUpdate()           )[i + variableNumber * numberOfDoFsPerVariable];
-    }
-    DataHeap::getInstance().getData( cellDescription.getSolutionAverages()         )[variableNumber] = solutionAverage         / numberOfDoFsPerVariable;
-    DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber] = previousSolutionAverage / numberOfDoFsPerVariable;
-    DataHeap::getInstance().getData( cellDescription.getUpdateAverages()           )[variableNumber] = updateAverage           / numberOfDoFsPerVariable;
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getSolutionAverages()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolutionAverages()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getUpdateAverages()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictorAverages()), cellDescription.toString() );
+  assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getFluctuationAverages()), cellDescription.toString() );
 
-    for (int face=0; face<2*DIMENSIONS; face++) {
-      double extrapolatedPredictorAverage = 0.0;
-      double boundaryFluxAverage          = 0.0;
-      int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS-1);
-      for (int i=0; i<numberOfDoFsPerVariable; i++) {
-        extrapolatedPredictorAverage += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ];
-        boundaryFluxAverage          += DataHeap::getInstance().getData( cellDescription.getFluctuation()           )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ];
+  const int dataPerNode            = getNumberOfParameters()+getNumberOfVariables();
+  const int dataPerCellPerVariable = getDataPerCell()/ dataPerNode;
+  const int dataPerFacePerVariable = getDataPerFace() / dataPerNode;
+
+  auto& solutionAverages              = DataHeap::getInstance().getData( cellDescription.getSolutionAverages() );
+  auto& previousSolutionAverage       = DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() );
+  auto& updateAverages                = DataHeap::getInstance().getData( cellDescription.getUpdateAverages() );
+  auto& extrapolatedPredictorAverages = DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() );
+  auto& fluctuationAverages           = DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() );
+
+    // patch data
+    for (int i=0; i<dataPerCellPerVariable; i++) {
+      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+        solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerNode];
+        previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerNode];
       }
-      // @todo Dominic: Extrapolieren wir die ganzen Materialparameter jetzt nicht?
-      DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[variableNumber+getNumberOfVariables() * face] = extrapolatedPredictorAverage / numberOfDoFsPerVariable;
-      DataHeap::getInstance().getData( cellDescription.getFluctuationAverages()           )[variableNumber+getNumberOfVariables() * face] = boundaryFluxAverage   / numberOfDoFsPerVariable;
+      for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+        updateAverages[variableNumber]          += DataHeap::getInstance().getData( cellDescription.getUpdate() )[variableNumber + i * dataPerNode];
+      }
     }
-  }
+    for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+      solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) dataPerCellPerVariable;
+      previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) dataPerCellPerVariable;
+    }
+    for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+      updateAverages[variableNumber]        = updateAverages[variableNumber]        / (double) dataPerCellPerVariable;
+    }
+
+    // face data
+    for (int face=0; face<2*DIMENSIONS; face++) {
+      for (int i=0; i<dataPerFacePerVariable; i++) {
+        for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+          extrapolatedPredictorAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
+                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
+        }
+        for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+          fluctuationAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getFluctuation() )
+                            [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
+        }
+      }
+      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+        extrapolatedPredictorAverages[variableNumber + dataPerNode * face] =
+            extrapolatedPredictorAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
+      }
+      for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+        fluctuationAverages[variableNumber + dataPerNode * face] =
+            fluctuationAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
+      }
+    }
 }
 
 
 void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
     CellDescription& cellDescription, double sign) const {
-  for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
-    int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
-    for (int i=0; i<numberOfDoFsPerVariable; i++) {
-      DataHeap::getInstance().getData( cellDescription.getSolution()         )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
-      DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
-      DataHeap::getInstance().getData( cellDescription.getUpdate()           )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages()   )[variableNumber];
-    }
+  const int dataPerNode            = getNumberOfParameters()+getNumberOfVariables();
+  const int dataPerCellPerVariable = getDataPerCell()/ dataPerNode;
+  const int dataPerFacePerVariable = getDataPerFace() / dataPerNode;
 
-    for (int face=0; face<2*DIMENSIONS; face++) {
-      int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS-1);
-      for (int i=0; i<numberOfDoFsPerVariable; i++) {
-        DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ] += sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[variableNumber+getNumberOfVariables() * face];
-        DataHeap::getInstance().getData( cellDescription.getFluctuation()           )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ] += sign * DataHeap::getInstance().getData( cellDescription.getFluctuationAverages()           )[variableNumber+getNumberOfVariables() * face];
+  // patch data
+  for (int i=0; i<dataPerCellPerVariable; i++) {
+    for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+      DataHeap::getInstance().getData( cellDescription.getSolution() )
+                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
+      DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
+                [variableNumber * i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+    }
+    for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+      DataHeap::getInstance().getData( cellDescription.getUpdate() )
+                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages() )[variableNumber];
+    }
+  }
+
+  // face data
+  for (int face=0; face<2*DIMENSIONS; face++) {
+    for (int i=0; i<dataPerFacePerVariable; i++) {
+      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables+parameters
+        DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
+                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable] +=
+                    sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )
+                      [variableNumber+getNumberOfVariables() * face];
+      }
+      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables
+        DataHeap::getInstance().getData( cellDescription.getFluctuation() )
+                          [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable] +=
+                              sign * DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() )
+                              [variableNumber+getNumberOfVariables() * face];
       }
     }
   }
 }
-
 
 void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     CellDescription& cellDescription) const {

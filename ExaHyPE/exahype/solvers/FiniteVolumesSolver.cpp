@@ -2048,7 +2048,7 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
 
   // patch data
   for (int i=0; i<dataPerPatchPerVariable; i++) {
-    for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
+    for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
       DataHeap::getInstance().getData( cellDescription.getSolution() )
           [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
 
@@ -2060,7 +2060,7 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
   // face data
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
-      for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
+      for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
         DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
           [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable] +=
               sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )
