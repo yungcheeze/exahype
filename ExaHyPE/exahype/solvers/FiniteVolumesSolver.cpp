@@ -41,12 +41,10 @@ tarch::logging::Log exahype::solvers::FiniteVolumesSolver::_log( "exahype::solve
 void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(const int cellDescriptionsIndex) {
   assertion(Heap::getInstance().isValidIndex(cellDescriptionsIndex));
 
-  Heap::HeapEntries::iterator p =
-      Heap::getInstance().getData(cellDescriptionsIndex).begin();
-  while (p != Heap::getInstance().getData(cellDescriptionsIndex).end()) {
-    assertion(p->getType()==CellDescription::Type::Cell);
+  for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    assertion(p.getType()==CellDescription::Type::Cell);
 
-    auto *solver = exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    auto *solver = exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
     FiniteVolumesSolver* fvSolver = nullptr;
     if (solver->getType()==Solver::Type::FiniteVolumes) {
@@ -57,11 +55,11 @@ void exahype::solvers::FiniteVolumesSolver::eraseCellDescriptions(const int cell
           static_cast<LimitingADERDGSolver*>(solver)->getLimiter().get();
     }
     assertion(fvSolver!=nullptr);
-    p->setType(CellDescription::Type::Erased);
-    fvSolver->ensureNoUnnecessaryMemoryIsAllocated(*p);
-
-    p = Heap::getInstance().getData(cellDescriptionsIndex).erase(p);
+    p.setType(CellDescription::Type::Erased);
+    fvSolver->ensureNoUnnecessaryMemoryIsAllocated(p);
   }
+
+  Heap::getInstance().getData(cellDescriptionsIndex).clear();
 }
 
 exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
@@ -2006,33 +2004,37 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
   assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolutionAverages()), cellDescription.toString() );
   assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedSolutionAverages()), cellDescription.toString() );
 
-  const int dataPerPatchPerVariable = (getDataPerPatch()+getGhostDataPerPatch())/ ((_numberOfVariables+_numberOfParameters));
-  const int dataPerFacePerVariable  = (getDataPerPatchFace()) / ((_numberOfVariables+_numberOfParameters));
   const int dataPerSubcell          = getNumberOfParameters()+getNumberOfVariables();
+  const int dataPerPatchPerVariable = (getDataPerPatch()+getGhostDataPerPatch())/ dataPerSubcell;
+  const int dataPerFacePerVariable  = (getDataPerPatchFace()) / dataPerSubcell;
 
-  for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
-    double solutionAverage         = 0.0;
-    double previousSolutionAverage = 0.0;
+  auto& solutionAverages             = DataHeap::getInstance().getData( cellDescription.getSolutionAverages() );
+  auto& previousSolutionAverage      = DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() );
+  auto& extrapolatedSolutionAverages = DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() );
 
-    for (int i=0; i<dataPerPatchPerVariable; i++) {
-      solutionAverage         += DataHeap::getInstance().getData( cellDescription.getSolution() )
-        [variableNumber + i * dataPerSubcell];
-      previousSolutionAverage += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
-        [variableNumber + i * dataPerSubcell];
+  // patch data
+  for (int i=0; i<dataPerPatchPerVariable; i++) {
+    for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerSubcell];
+      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerSubcell];
     }
-    DataHeap::getInstance().getData( cellDescription.getSolutionAverages()         )[variableNumber] = solutionAverage         / dataPerPatchPerVariable;
-    DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber] = previousSolutionAverage / dataPerPatchPerVariable;
+  }
+  for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+    solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) dataPerPatchPerVariable;
+    previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) dataPerPatchPerVariable;
+  }
 
-    for (int face=0; face<2*DIMENSIONS; face++) {
-      double extrapolatedSolutionAverage = 0.0;
-      for (int i=0; i<dataPerFacePerVariable; i++) {
-        extrapolatedSolutionAverage += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
-            [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable];
+  // face data
+  for (int face=0; face<2*DIMENSIONS; face++) {
+    for (int i=0; i<dataPerFacePerVariable; i++) {
+      for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+        extrapolatedSolutionAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
+              [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable];
       }
-      assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedSolutionAverages()), cellDescription.toString() );
-
-      DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )
-            [variableNumber + dataPerSubcell * face] = extrapolatedSolutionAverage / dataPerFacePerVariable;
+      for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+        extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] =
+            extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerPatchPerVariable;
+      }
     }
   }
 }
@@ -2044,20 +2046,25 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
   const int dataPerFacePerVariable  = (getDataPerPatchFace()) / ((_numberOfVariables+_numberOfParameters));
   const int dataPerSubcell          = getNumberOfParameters()+getNumberOfVariables();
 
-  for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
-    for (int i=0; i<dataPerPatchPerVariable; i++) {
+  // patch data
+  for (int i=0; i<dataPerPatchPerVariable; i++) {
+    for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
       DataHeap::getInstance().getData( cellDescription.getSolution() )
           [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
 
       DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
           [variableNumber * i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
     }
+  }
 
-    for (int face=0; face<2*DIMENSIONS; face++) {
-      for (int i=0; i<dataPerFacePerVariable; i++) {
+  // face data
+  for (int face=0; face<2*DIMENSIONS; face++) {
+    for (int i=0; i<dataPerFacePerVariable; i++) {
+      for (int variableNumber=0; variableNumber<getNumberOfVariables()+getNumberOfParameters(); variableNumber++) {
         DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
-            [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable] +=
-                sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )[variableNumber+getNumberOfVariables() * face];
+          [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable] +=
+              sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )
+                [variableNumber+getNumberOfVariables() * face];
       }
     }
   }
