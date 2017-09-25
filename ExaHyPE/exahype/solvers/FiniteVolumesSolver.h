@@ -140,9 +140,20 @@ private:
 
   void compress(CellDescription& cellDescription);
   /**
-   * @see ADERDGSolver::computeHierarchicalTransform()
+   * \copydoc ADERDGSolver::computeHierarchicalTransform()
+   *
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
    */
   void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
+  /**
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
+   */
   void determineUnknownAverages(CellDescription& cellDescription) const;
   void pullUnknownsFromByteStream(CellDescription& cellDescription) const;
   void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
