@@ -76,66 +76,32 @@ java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.spec
 
 I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Release.
 
-0. Ensure that your ExaHyPE Release folder is up to date 
-   - Usually, git pull should do 
-   - If in doubt, try
-     git fetch origin
-     git reset --hard origin/master
-     
-1. Update the guidebook
+A.1. Update the guidebook
     - Change into the directory holding your guidebook and build with `make release`.
       The release target builds the PDF without annotations.
     - Copy the PDF over: `cp guidebook.pdf ~/git/ExaHyPE-Release`
 
-2. Build the toolkit
+A.2. Build the toolkit
     - Change into Toolkit
       `./build.sh && cp dist/* ~/git/ExaHyPE-Release`
 
-3. Create the two repository images
-   - Change into your exahype engine's repository:
+B.1. Move it over to the release branch 
 
-     ```
-     tar -czhvf ExaHyPE.tar.gz --exclude=.svn --exclude=*.o Peano ExaHyPE LICENSE.txt 
-     tar -czvf ExaHyPE-without-Peano.tar.gz --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch Peano ExaHyPE LICENSE.txt 
-     mv *.tar.gz ~/git/ExaHyPE-Release
-     ```
+B.2. Clean-up release branch
+  `find . -name "*.o" -delete`
+  `find . -name "*.class" -delete`
+  tar -czhvf ExaHyPE.tar.gz --exclude=.svn --exclude=*.o Peano ExaHyPE LICENSE.txt
+  tar -czvf ExaHyPE-without-Peano.tar.gz --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch Peano ExaHyPE LICENSE.txt
 
-4. Copy over the source files
-    - Change into your exahype engine's repository:
-    - Create directories (only once):
-    - `mkdir ~/git/ExaHyPE-Release/ExaHyPE`
-    - `mkdir ~/git/ExaHyPE-Release/Peano`
-    - `mkdir ~/git/ExaHyPE-Release/Toolkit`
-    - Actual copy command:
+B.3. Push
 
-      ```
-cp -R LICENSE.txt ~/git/ExaHyPE-Release
-cp -R ExaHyPE ~/git/ExaHyPE-Release
-cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
-cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
-cp -R Peano/sharedmemoryoracles ~/git/ExaHyPE-Release/Peano
-cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
-cp -R Toolkit/src/Manifest.txt ~/git/ExaHyPE-Release/Toolkit/src
-cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
-```
+C. Make release snapshot from release branch
 
-5. Cleanup
-    - Change into the release directory
-    - `find . -name "*.o" -delete`
-    - `find . -name "*.class" -delete`
+  git clone -b release --single-branch https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
 
-6. Clarify/ensure that a new snapshot of Peano is uploaded to Peano's page
-
-7. Push 
-
-8. Log into http://github.com
-    - Change into the repository view and click on the tab releases
-    - Create a new release
-    - Add the tars to the release (at least the two ExaHyPE tars plus the toolkit. And then probably the demonstrators, too.
+  git push --mirror https://github.com/exahype/exahype.git
 
 
-x. Demonstrators
-  The demonstrators are not part of the above description. If you want to 
-  release new demonstrators, too, you have to change into the respective 
-  directory and create the demonstrator snapshot manually.
-  
+
+
+
