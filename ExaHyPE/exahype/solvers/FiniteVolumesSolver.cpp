@@ -2033,7 +2033,7 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
       }
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
         extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] =
-            extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerPatchPerVariable;
+            extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerFacePerVariable;
       }
     }
   }
