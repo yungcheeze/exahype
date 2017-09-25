@@ -482,7 +482,9 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         std::fill_n( DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data(), patchBoundarySize, 0.0 );
 
         cellDescription.setExtrapolatedSolutionCompressed(-1);
-        cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
+        cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData(
+          (getNumberOfVariables()+getNumberOfParameters()) * 2 * DIMENSIONS,
+          (getNumberOfVariables()+getNumberOfParameters()) * 2 * DIMENSIONS ) );
       }
       break;
     case CellDescription::Erased:
