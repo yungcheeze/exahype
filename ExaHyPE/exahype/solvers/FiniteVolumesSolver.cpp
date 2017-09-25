@@ -1844,38 +1844,38 @@ void exahype::solvers::FiniteVolumesSolver::pullUnknownsFromByteStream(
   assertion(CompressionAccuracy>0.0);
 
   #if !defined(ValidateCompressedVsUncompressedData)
-  const int unknownsPerCell     = getDataPerPatch() + getGhostDataPerPatch();
-  const int unknownsPerBoundary = getDataPerPatchBoundary();
+  const int dataPerCell     = getDataPerPatch() + getGhostDataPerPatch();
+  const int dataPerBoundary = getDataPerPatchBoundary();
 
   {
     tarch::multicore::Lock lock(_heapSemaphore);
     cellDescription.setPreviousSolution( DataHeap::getInstance().createData(
-        unknownsPerCell,         unknownsPerCell,
+        dataPerCell,         dataPerCell,
       DataHeap::Allocation::UseOnlyRecycledEntries) );
     cellDescription.setSolution( DataHeap::getInstance().createData(
-        unknownsPerCell,         unknownsPerCell,
+        dataPerCell,         dataPerCell,
       DataHeap::Allocation::UseOnlyRecycledEntries) );
     cellDescription.setExtrapolatedSolution( DataHeap::getInstance().createData(
-        unknownsPerBoundary, unknownsPerBoundary,
+        dataPerBoundary, dataPerBoundary,
         DataHeap::Allocation::UseOnlyRecycledEntries) );
     lock.free();
 
     if (cellDescription.getPreviousSolution()==-1) {
       waitUntilAllBackgroundTasksHaveTerminated();
       lock.lock();
-      cellDescription.setPreviousSolution( DataHeap::getInstance().createData( unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      cellDescription.setPreviousSolution( DataHeap::getInstance().createData( dataPerCell, dataPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
       lock.free();
     }
     if (cellDescription.getSolution()==-1) {
       waitUntilAllBackgroundTasksHaveTerminated();
       lock.lock();
-      cellDescription.setSolution( DataHeap::getInstance().createData( unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      cellDescription.setSolution( DataHeap::getInstance().createData( dataPerCell, dataPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
       lock.free();
     }
     if (cellDescription.getExtrapolatedSolution()==-1) {
       waitUntilAllBackgroundTasksHaveTerminated();
       lock.lock();
-      cellDescription.setExtrapolatedSolution( DataHeap::getInstance().createData(unknownsPerBoundary, unknownsPerBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      cellDescription.setExtrapolatedSolution( DataHeap::getInstance().createData(dataPerBoundary, dataPerBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
       lock.free();
     }
   }
