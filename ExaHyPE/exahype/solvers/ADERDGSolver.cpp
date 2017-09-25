@@ -336,9 +336,9 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
     // Allocate volume DoF for limiter
     const int dofPerCell        = getUnknownsPerCell();
     const int dataPointsPerCell = getDataPerCell(); // Only the solution and previousSolution store material parameters
-    cellDescription.setPreviousSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-    cellDescription.setSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-    cellDescription.setUpdate(DataHeap::getInstance().createData(dofPerCell, dofPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setPreviousSolution( DataHeap::getInstance().createData( dataPointsPerCell, dataPointsPerCell ) );
+    cellDescription.setSolution( DataHeap::getInstance().createData( dataPointsPerCell, dataPointsPerCell ) );
+    cellDescription.setUpdate( DataHeap::getInstance().createData( dofPerCell, dofPerCell ) );
 
     assertionEquals(DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).size(),static_cast<unsigned int>(dataPointsPerCell));
     assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).capacity(),static_cast<unsigned int>(dofPerCell));
@@ -349,9 +349,9 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
     cellDescription.setSolutionCompressed(-1);
     cellDescription.setPreviousSolutionCompressed(-1);
 
-    cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-    cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-    cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
+    cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
+    cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
 
     assertionEquals3(
         DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
@@ -394,8 +394,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
     const int dataPerBnd = getBndTotalSize();
     const int dofPerBnd  = getBndFluxTotalSize();
 
-    cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(dataPerBnd, dataPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-    cellDescription.setFluctuation(          DataHeap::getInstance().createData(dofPerBnd, dofPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(dataPerBnd, dataPerBnd ));
+    cellDescription.setFluctuation(          DataHeap::getInstance().createData(dofPerBnd,  dofPerBnd ));
 
     assertionEquals3(
         DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(dataPerBnd),
@@ -414,18 +414,19 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
     cellDescription.setFluctuationCompressed(-1);
 
     //TODO JMG / Dominic adapt for padding with optimized kernels
-    int faceAverageCardinality = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
-    cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-    cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    const int dataPerFace     = (getNumberOfParameters()+getNumberOfVariables()) * DIMENSIONS_TIMES_TWO;
+    const int unknownsPerFace = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
+    cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( dataPerFace,     dataPerFace  ) );
+    cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( unknownsPerFace, unknownsPerFace ) );
 
     // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
     // and array of max values of the neighbour at this face).
     const int numberOfObservables = getDMPObservables();
     if (numberOfObservables>0) {
       cellDescription.setSolutionMin(DataHeap::getInstance().createData(
-          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO ));
       cellDescription.setSolutionMax(DataHeap::getInstance().createData(
-          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO ));
 
       for (int i=0; i<numberOfObservables * DIMENSIONS_TIMES_TWO; i++) {
         DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::max();

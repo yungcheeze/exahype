@@ -527,6 +527,9 @@ public:
    * Checks if all the necessary memory is allocated for the cell description.
    * If this is not the case, it allocates the necessary
    * memory for the cell description.
+   *
+   * \note Heap data creation assumes default policy
+   * DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired.
    */
   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
 

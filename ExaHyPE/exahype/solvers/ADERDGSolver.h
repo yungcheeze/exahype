@@ -936,6 +936,9 @@ public:
    * memory for the cell description.
    *
    * \note This operation is thread safe as we serialise it.
+   *
+   * \note Heap data creation assumes default policy
+   * DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired.
    */
   void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
 

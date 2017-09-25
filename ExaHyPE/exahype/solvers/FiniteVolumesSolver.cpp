@@ -459,16 +459,16 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
-        cellDescription.setSolution(        DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
-        cellDescription.setPreviousSolution(DataHeap::getInstance().createData(patchSize, patchSize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setSolution(        DataHeap::getInstance().createData( patchSize, patchSize ));
+        cellDescription.setPreviousSolution(DataHeap::getInstance().createData( patchSize, patchSize ));
 
         cellDescription.setSolutionCompressed(-1);
         cellDescription.setPreviousSolutionCompressed(-1);
 
         cellDescription.setSolutionAverages(
-            DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+            DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
         cellDescription.setPreviousSolutionAverages(
-            DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+            DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
 
         // Zero out the solution and previous solution arrays. For our MUSCL-Hancock implementation which
         // does not take the corner neighbours into account e.g., it is important that the values in
@@ -478,11 +478,11 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 
         // Allocate boundary data
         const int patchBoundarySize = getDataPerPatchBoundary();
-        cellDescription.setExtrapolatedSolution(DataHeap::getInstance().createData(patchBoundarySize, patchBoundarySize, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setExtrapolatedSolution(DataHeap::getInstance().createData( patchBoundarySize, patchBoundarySize ));
         std::fill_n( DataHeap::getInstance().getData(cellDescription.getExtrapolatedSolution()).data(), patchBoundarySize, 0.0 );
 
         cellDescription.setExtrapolatedSolutionCompressed(-1);
-        cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setExtrapolatedSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters() ) );
       }
       break;
     case CellDescription::Erased:
