@@ -15,8 +15,8 @@
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
-#include <string>
 #include <iomanip>
+#include <string>
 #include <limits>
 #include <algorithm>
 
@@ -379,8 +379,11 @@ void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
   newCellDescription.setExtrapolatedSolutionAverages(-1);
   newCellDescription.setExtrapolatedSolutionCompressed(-1);
 
+  newCellDescription.setCompressionState(CellDescription::CompressionState::Uncompressed);
+
   Heap::getInstance().getData(cellDescriptionsIndex).push_back(newCellDescription);
 }
+
 
 void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
@@ -2069,6 +2072,8 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedSolution() ), cellDescription.toString() );
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedSolutionAverages() ), cellDescription.toString() );
         DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )[idx_faceData(face,i,variableNumber)] +=
               sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )[idx_faceDataAvg(face,variableNumber)];
       }
@@ -2088,7 +2093,6 @@ void exahype::solvers::FiniteVolumesSolver::preProcess(
     !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
     #endif
   ) {
-    std::cout << std::endl << "uncompress this cell: " << cellDescription.toString() << std::endl;
     uncompress(cellDescription);
   }
 }
@@ -2104,8 +2108,11 @@ void exahype::solvers::FiniteVolumesSolver::postProcess(
       &&
       !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
       #endif
+      &&
+      CompressionAccuracy>0.0
+      &&
+      cellDescription.getCompressionState() == CellDescription::Uncompressed
     ) {
-    std::cout << std::endl << "compress this cell: " << cellDescription.toString() << std::endl;
     compress(cellDescription);
   }
 }
