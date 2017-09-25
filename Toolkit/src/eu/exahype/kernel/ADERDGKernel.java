@@ -27,9 +27,9 @@ public class ADERDGKernel {
 
   public static final String LINEAR_OPTION_ID       = "linear";
   public static final String NONLINEAR_OPTION_ID    = "nonlinear";
-  public static final String USER_DEFINED_OPTION_ID = "user-defined";
-  public static final String LEGENDRE_OPTION_ID     = "gauss-legendre";
-  public static final String LOBATTO_OPTION_ID      = "gauss-lobatto";
+  public static final String USER_DEFINED_OPTION_ID = "user";
+  public static final String LEGENDRE_OPTION_ID     = "gausslegendre";
+  public static final String LOBATTO_OPTION_ID      = "gausslobatto";
     
   public static final String FLUX_OPTION_ID        = "flux";
   public static final String SOURCE_OPTION_ID      = "source";
