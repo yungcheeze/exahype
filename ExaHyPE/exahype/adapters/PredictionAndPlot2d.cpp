@@ -8,7 +8,6 @@ peano::CommunicationSpecification   exahype::adapters::PredictionAndPlot2d::comm
     &  _map2Prediction.communicationSpecification()
     &  _map2Plot.communicationSpecification()
     &  _map2Sending.communicationSpecification()
-    &  _map2PostProcessing.communicationSpecification()
 
   ;
 }
@@ -21,7 +20,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::touchVerte
     &  _map2Prediction.touchVertexLastTimeSpecification(level)
     &  _map2Plot.touchVertexLastTimeSpecification(level)
     &  _map2Sending.touchVertexLastTimeSpecification(level)
-    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
 
   ;
 }
@@ -34,7 +32,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::touchVerte
     &  _map2Prediction.touchVertexFirstTimeSpecification(level)
     &  _map2Plot.touchVertexFirstTimeSpecification(level)
     &  _map2Sending.touchVertexFirstTimeSpecification(level)
-    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
@@ -47,7 +44,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::enterCellS
     &  _map2Prediction.enterCellSpecification(level)
     &  _map2Plot.enterCellSpecification(level)
     &  _map2Sending.enterCellSpecification(level)
-    &  _map2PostProcessing.enterCellSpecification(level)
 
   ;
 }
@@ -60,7 +56,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::leaveCellS
     &  _map2Prediction.leaveCellSpecification(level)
     &  _map2Plot.leaveCellSpecification(level)
     &  _map2Sending.leaveCellSpecification(level)
-    &  _map2PostProcessing.leaveCellSpecification(level)
 
   ;
 }
@@ -73,7 +68,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::ascendSpec
     &  _map2Prediction.ascendSpecification(level)
     &  _map2Plot.ascendSpecification(level)
     &  _map2Sending.ascendSpecification(level)
-    &  _map2PostProcessing.ascendSpecification(level)
 
   ;
 }
@@ -86,7 +80,6 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlot2d::descendSpe
     &  _map2Prediction.descendSpecification(level)
     &  _map2Plot.descendSpecification(level)
     &  _map2Sending.descendSpecification(level)
-    &  _map2PostProcessing.descendSpecification(level)
 
   ;
 }
@@ -106,8 +99,7 @@ exahype::adapters::PredictionAndPlot2d::PredictionAndPlot2d(const PredictionAndP
   _map2Merging(masterThread._map2Merging) , 
   _map2Prediction(masterThread._map2Prediction) , 
   _map2Plot(masterThread._map2Plot) , 
-  _map2Sending(masterThread._map2Sending) , 
-  _map2PostProcessing(masterThread._map2PostProcessing) 
+  _map2Sending(masterThread._map2Sending) 
 
 {
 }
@@ -119,7 +111,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithWorkerThread(const Predict
   _map2Prediction.mergeWithWorkerThread(workerThread._map2Prediction);
   _map2Plot.mergeWithWorkerThread(workerThread._map2Plot);
   _map2Sending.mergeWithWorkerThread(workerThread._map2Sending);
-  _map2PostProcessing.mergeWithWorkerThread(workerThread._map2PostProcessing);
 
 }
 #endif
@@ -139,7 +130,6 @@ void exahype::adapters::PredictionAndPlot2d::createHangingVertex(
   _map2Prediction.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
 }
@@ -159,7 +149,6 @@ void exahype::adapters::PredictionAndPlot2d::destroyHangingVertex(
   _map2Prediction.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -178,7 +167,6 @@ void exahype::adapters::PredictionAndPlot2d::createInnerVertex(
   _map2Prediction.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -197,7 +185,6 @@ void exahype::adapters::PredictionAndPlot2d::createBoundaryVertex(
   _map2Prediction.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -216,7 +203,6 @@ void exahype::adapters::PredictionAndPlot2d::destroyVertex(
   _map2Prediction.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -235,7 +221,6 @@ void exahype::adapters::PredictionAndPlot2d::createCell(
   _map2Prediction.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2PostProcessing.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -254,7 +239,6 @@ void exahype::adapters::PredictionAndPlot2d::destroyCell(
   _map2Prediction.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2PostProcessing.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -273,7 +257,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithNeighbour(
    _map2Prediction.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Plot.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Sending.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-   _map2PostProcessing.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
 
@@ -290,7 +273,6 @@ void exahype::adapters::PredictionAndPlot2d::prepareSendToNeighbour(
    _map2Prediction.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Plot.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Sending.prepareSendToNeighbour( vertex, toRank, x, h, level );
-   _map2PostProcessing.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
 
@@ -307,7 +289,6 @@ void exahype::adapters::PredictionAndPlot2d::prepareCopyToRemoteNode(
    _map2Prediction.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Sending.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
-   _map2PostProcessing.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
 
@@ -324,7 +305,6 @@ void exahype::adapters::PredictionAndPlot2d::prepareCopyToRemoteNode(
    _map2Prediction.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Sending.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
-   _map2PostProcessing.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
 
@@ -342,7 +322,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithRemoteDataDueToForkOrJoin(
    _map2Prediction.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Sending.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-   _map2PostProcessing.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
 
@@ -360,7 +339,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithRemoteDataDueToForkOrJoin(
    _map2Prediction.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Sending.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
-   _map2PostProcessing.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
 
@@ -381,7 +359,6 @@ bool exahype::adapters::PredictionAndPlot2d::prepareSendToWorker(
    result |= _map2Prediction.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Plot.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Sending.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
-   result |= _map2PostProcessing.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
 }
@@ -401,7 +378,6 @@ void exahype::adapters::PredictionAndPlot2d::prepareSendToMaster(
    _map2Prediction.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Plot.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Sending.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-   _map2PostProcessing.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -426,7 +402,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithMaster(
    _map2Prediction.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Plot.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Sending.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
-   _map2PostProcessing.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
 
@@ -448,7 +423,6 @@ void exahype::adapters::PredictionAndPlot2d::receiveDataFromMaster(
    _map2Prediction.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Plot.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Sending.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
-   _map2PostProcessing.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -465,7 +439,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithWorker(
    _map2Prediction.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Plot.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Sending.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
-   _map2PostProcessing.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
 
@@ -482,7 +455,6 @@ void exahype::adapters::PredictionAndPlot2d::mergeWithWorker(
    _map2Prediction.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Plot.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Sending.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
-   _map2PostProcessing.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
 #endif
@@ -502,7 +474,6 @@ void exahype::adapters::PredictionAndPlot2d::touchVertexFirstTime(
   _map2Prediction.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -521,7 +492,6 @@ void exahype::adapters::PredictionAndPlot2d::touchVertexLastTime(
   _map2Prediction.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2PostProcessing.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -540,7 +510,6 @@ void exahype::adapters::PredictionAndPlot2d::enterCell(
   _map2Prediction.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2PostProcessing.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -559,7 +528,6 @@ void exahype::adapters::PredictionAndPlot2d::leaveCell(
   _map2Prediction.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2PostProcessing.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -572,7 +540,6 @@ void exahype::adapters::PredictionAndPlot2d::beginIteration(
   _map2Prediction.beginIteration( solverState );
   _map2Plot.beginIteration( solverState );
   _map2Sending.beginIteration( solverState );
-  _map2PostProcessing.beginIteration( solverState );
 
 }
 
@@ -585,7 +552,6 @@ void exahype::adapters::PredictionAndPlot2d::endIteration(
   _map2Prediction.endIteration( solverState );
   _map2Plot.endIteration( solverState );
   _map2Sending.endIteration( solverState );
-  _map2PostProcessing.endIteration( solverState );
 
 }
 
@@ -605,7 +571,6 @@ void exahype::adapters::PredictionAndPlot2d::descend(
   _map2Prediction.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Sending.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2PostProcessing.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
 
@@ -623,6 +588,5 @@ void exahype::adapters::PredictionAndPlot2d::ascend(
   _map2Prediction.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Sending.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2PostProcessing.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

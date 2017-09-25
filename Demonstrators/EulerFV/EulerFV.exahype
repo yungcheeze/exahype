@@ -43,21 +43,10 @@ exahype-project EulerFV
   end distributed-memory
   */
   
-  global-optimisation
-    fuse-algorithmic-steps          = on
-    fuse-algorithmic-steps-factor   = 0.99
-    /* 0.0 und 0.8 sind schon mal zwei Faktoren */
-    timestep-batch-factor           = 0.0
-    skip-reduction-in-batched-time-steps = on
-    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
-    double-compression = 1e-8
-    spawn-double-compression-as-background-thread = off
-  end global-optimisation
-
   solver Finite-Volumes MyEulerSolver
     variables const    = rho:1,j:3,E:1
     patch-size const   = 10
-    maximum-mesh-size  = 2e-2     
+    maximum-mesh-size  = 2e-2    
     time-stepping      = global
     type const         = godunov
     terms const        = flux

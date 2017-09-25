@@ -139,7 +139,21 @@ private:
       const int solverNumber);
 
   void compress(CellDescription& cellDescription);
+  /**
+   * \copydoc ADERDGSolver::computeHierarchicalTransform()
+   *
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
+   */
   void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
+  /**
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
+   */
   void determineUnknownAverages(CellDescription& cellDescription) const;
   void pullUnknownsFromByteStream(CellDescription& cellDescription) const;
   void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
@@ -512,6 +526,9 @@ public:
    * Checks if all the necessary memory is allocated for the cell description.
    * If this is not the case, it allocates the necessary
    * memory for the cell description.
+   *
+   * \note Heap data creation assumes default policy
+   * DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired.
    */
   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
 

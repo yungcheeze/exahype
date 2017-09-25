@@ -146,7 +146,19 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
         double* Qt = slopet + idx(j, k, 0);
         double* gradQ = slope + idx_slope(j, k, 0, 0);
         if(useSource || useNCP) {
-          solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
+          // Old code (for reference): solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
+          if(useSource) {
+            solver.algebraicSource(luh + idx(j, k, 0), Qt);
+          } else {
+            std::fill_n(Qt, numberOfVariables, 0.0);
+          }
+          if(useNCP) {
+            double ncp[numberOfVariables];
+            solver.nonConservativeProduct(luh + idx(j, k, 0), gradQ, ncp);
+            for(int l=0; l<numberOfVariables; l++) {
+              Qt[l] -= ncp[l];
+            }
+          }
         }
 
         if(useFlux) {
@@ -239,7 +251,19 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
         }
 
         double* gradQ = slope + idx_slope(j, k, 0, 0); // const in time
-        solver.fusedSource(ws, gradQ, src);
+        // Old code (for reference): solver.fusedSource(ws, gradQ, src);
+        if(useSource) {
+          solver.algebraicSource(ws, src);
+        } else {
+          std::fill_n(ws, numberOfVariables, 0.0);
+        }
+        if(useNCP) {
+          double ncp[numberOfVariables];
+          solver.nonConservativeProduct(ws, gradQ, ncp);
+          for(int l=0; l<numberOfVariables; l++) {
+            src[l] -= ncp[l];
+          }
+        }
 
         for(int l = 0; l < numberOfVariables; l++) {
           luh_new[idx(j, k, l)] += dt * src[l];

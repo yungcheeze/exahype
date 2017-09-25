@@ -26,8 +26,8 @@ public class FiniteVolumesKernel {
   public static final String OPTIMISED_OPTION_ID    = "optimised";
   
   public static final String GODUNOV_OPTION_ID      = "godunov";
-  public static final String MUSCL_OPTION_ID        = "muscl-hancock";
-  public static final String USER_DEFINED_OPTION_ID = "user-defined";
+  public static final String MUSCL_OPTION_ID        = "musclhancock";
+  public static final String USER_DEFINED_OPTION_ID = "user";
   
   public static final String FLUX_OPTION_ID         = "flux";
   public static final String SOURCE_OPTION_ID       = "source";

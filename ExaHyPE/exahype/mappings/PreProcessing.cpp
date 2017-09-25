@@ -26,8 +26,8 @@ exahype::mappings::PreProcessing::communicationSpecification() const {
 peano::MappingSpecification
 exahype::mappings::PreProcessing::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+    exahype::solvers::Solver::CompressionAccuracy>0.0 ? peano::MappingSpecification::WholeTree : peano::MappingSpecification::Nop,
+    peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 /**
