@@ -581,15 +581,18 @@ private:
    * Run over the persistent fields of the ADER-DG cell and determine the
    * average per unknown.' The result is stored within
    *
+   * \note The fluctuations and update arrays do not store any material parameters.
    */
-  void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription) const;
+  void determineUnknownAverages(CellDescription& cellDescription) const;
 
   /**
    * Runs over all entries and adds sign times the average value. So if you
    * hand in a -1, you compute the hierarchical transform. If you hand in a +1,
    * you compute the inverse hierarchical transform.
+   *
+   * \note The fluctuations and update arrays do not store any material parameters.
    */
-  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign) const;
+  void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
 
   /**
    * This routine runs over the unknowns, asks the Heap's compression routines
@@ -599,7 +602,7 @@ private:
    * assertions, we leave it there and thus allow pullUnknownsFromByteStream()
    * to do quite some validation.
    */
-  void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
+  void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
 
   /**
    *
