@@ -570,6 +570,14 @@ private:
 
 #endif
   /**
+   * Determine average of each unknown
+   *
+   * We run over all sample points (or subcells in a Finite Volume context) and
+   * determine the averages of each dof of the PDE. We assume that the arrays
+   * first hold all the sample point values of the first PDE unknown. Therefore,
+   * our outer loop runs over the PDE unknown and the inner ones run over the
+   * sample points.
+   *
    * Run over the persistent fields of the ADER-DG cell and determine the
    * average per unknown.' The result is stored within
    *

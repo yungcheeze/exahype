@@ -348,10 +348,6 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
     cellDescription.setSolutionCompressed(-1);
     cellDescription.setPreviousSolutionCompressed(-1);
 
-    if (CompressionAccuracy>0.0) {
-      CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
-    }
-
     cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
     cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
     cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
@@ -415,10 +411,6 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
 
     cellDescription.setExtrapolatedPredictorCompressed(-1);
     cellDescription.setFluctuationCompressed(-1);
-
-    if (CompressionAccuracy>0.0) {
-      CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
-    }
 
     //TODO JMG / Dominic adapt for padding with optimized kernels
     int faceAverageCardinality = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
@@ -4284,6 +4276,7 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
         extrapolatedPredictorAverage += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ];
         boundaryFluxAverage          += DataHeap::getInstance().getData( cellDescription.getFluctuation()           )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ];
       }
+      // @todo Dominic: Extrapolieren wir die ganzen Materialparameter jetzt nicht?
       DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[variableNumber+getNumberOfVariables() * face] = extrapolatedPredictorAverage / numberOfDoFsPerVariable;
       DataHeap::getInstance().getData( cellDescription.getFluctuationAverages()           )[variableNumber+getNumberOfVariables() * face] = boundaryFluxAverage   / numberOfDoFsPerVariable;
     }

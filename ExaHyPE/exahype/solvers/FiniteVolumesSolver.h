@@ -139,6 +139,9 @@ private:
       const int solverNumber);
 
   void compress(CellDescription& cellDescription);
+  /**
+   * @see ADERDGSolver::computeHierarchicalTransform()
+   */
   void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
   void determineUnknownAverages(CellDescription& cellDescription) const;
   void pullUnknownsFromByteStream(CellDescription& cellDescription) const;
