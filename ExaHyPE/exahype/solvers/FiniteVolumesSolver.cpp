@@ -2053,7 +2053,7 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
           [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
 
       DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
-          [variableNumber * i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+          [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
     }
   }
 
