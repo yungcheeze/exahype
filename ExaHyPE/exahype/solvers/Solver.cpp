@@ -36,6 +36,30 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 exahype::DataHeap::HeapEntries exahype::EmptyDataHeapMessage(0);
 #endif
 
+
+#ifdef TrackGridStatistics
+/**
+ * If you enable assertions, we have the option not to remove any entries from
+ * any heap but to continue to store all unknown on the standard heap when we
+ * compress. This allows us to validate that the data that is compressed in one
+ * iteration and uncompressed in the next one does not differ too significantly
+ * from the original data. There are however two drawbacks to this approach:
+ *
+ * - It is costly.
+ * - It changes the code semantics - we actually work with other and more heap
+ *   entries and thus cannot claim that a code with these assertions equals a
+ *   code without any assertions.
+ *
+ * I thus decided to trigger the comparison of compressed vs. uncompressed data
+ * through a special flag.
+ */
+//#define ValidateCompressedVsUncompressedData
+
+double exahype::solvers::Solver::PipedUncompressedBytes = 0;
+double exahype::solvers::Solver::PipedCompressedBytes = 0;
+#endif
+
+
 const int exahype::solvers::Solver::NotFound = -1;
 
 tarch::logging::Log exahype::solvers::Solver::_log( "exahype::solvers::Solver");

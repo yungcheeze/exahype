@@ -392,6 +392,17 @@ class exahype::solvers::Solver {
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
  public:
+
+  /**
+   * TrackGridStatistics is a flag from Peano that I "misuse" here as these
+   * data also are grid statistics.
+   */
+  #ifdef TrackGridStatistics
+  static double PipedUncompressedBytes;
+  static double PipedCompressedBytes;
+  #endif
+
+
   /**
    * Set to 0 if no floating point compression is used. Is usually done in the
    * runner once at startup and from hereon is a read-only variable. The

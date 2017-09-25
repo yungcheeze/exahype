@@ -69,11 +69,6 @@ public:
    */
   static int MinimumAugmentationStatusForAugmentation;
 
-  #ifdef Asserts
-  static double PipedUncompressedBytes;
-  static double PipedCompressedBytes;
-  #endif
-
   /**
    * Rank-local heap that stores ADERDGCellDescription instances.
    *

@@ -63,29 +63,6 @@ namespace {
   };
 }
 
-
-#ifdef Asserts
-/**
- * If you enable assertions, we have the option not to remove any entries from
- * any heap but to continue to store all unknown on the standard heap when we
- * compress. This allows us to validate that the data that is compressed in one
- * iteration and uncompressed in the next one does not differ too significantly
- * from the original data. There are however two drawbacks to this approach:
- *
- * - It is costly.
- * - It changes the code semantics - we actually work with other and more heap
- *   entries and thus cannot claim that a code with these assertions equals a
- *   code without any assertions.
- *
- * I thus decided to trigger the comparison of compressed vs. uncompressed data
- * through a special flag.
- */
-//#define ValidateCompressedVsUncompressedData
-
-double exahype::solvers::ADERDGSolver::PipedUncompressedBytes = 0;
-double exahype::solvers::ADERDGSolver::PipedCompressedBytes = 0;
-#endif
-
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
@@ -4438,7 +4415,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getDataPerCell();
         tearApart(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), compressionOfPreviousSolution);
 
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         lock.lock();
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
         PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getPreviousSolutionCompressed() ).size();
@@ -4452,7 +4429,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         #endif
       }
       else {
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         tarch::multicore::Lock lock(_heapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
@@ -4471,7 +4448,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
 
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
 
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         lock.lock();
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
         PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getSolutionCompressed() ).size();
@@ -4485,7 +4462,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         #endif
       }
       else {
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         tarch::multicore::Lock lock(_heapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
@@ -4503,7 +4480,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getUnknownsPerCell();
         tearApart(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), compressionOfUpdate);
 
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         lock.lock();
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getUpdate() ).size() * 8.0;
         PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getUpdateCompressed() ).size();
@@ -4517,7 +4494,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         #endif
       }
       else {
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         tarch::multicore::Lock lock(_heapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getUpdate() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getUpdate() ).size() * 8.0;
@@ -4535,7 +4512,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getDataPerCellBoundary();
         tearApart(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), compressionOfExtrapolatedPredictor);
 
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         lock.lock();
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).size() * 8.0;
         PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorCompressed() ).size();
@@ -4549,7 +4526,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         #endif
       }
       else {
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         tarch::multicore::Lock lock(_heapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).size() * 8.0;
@@ -4567,7 +4544,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         const int numberOfEntries = getUnknownsPerCellBoundary();
         tearApart(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), compressionOfFluctuation);
 
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         lock.lock();
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getFluctuation() ).size() * 8.0;
         PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getFluctuationCompressed() ).size();
@@ -4581,7 +4558,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         #endif
       }
       else {
-        #if defined(Asserts)
+        #if defined(TrackGridStatistics)
         tarch::multicore::Lock lock(_heapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getFluctuation() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getFluctuation() ).size() * 8.0;
