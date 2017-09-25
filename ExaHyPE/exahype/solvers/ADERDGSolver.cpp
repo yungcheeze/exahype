@@ -4272,45 +4272,45 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   auto& extrapolatedPredictorAverages = DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() );
   auto& fluctuationAverages           = DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() );
 
-    // patch data
-    for (int i=0; i<dataPerCellPerVariable; i++) {
+  // patch data
+  for (int i=0; i<dataPerCellPerVariable; i++) {
+    for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerNode];
+      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerNode];
+    }
+    for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+      updateAverages[variableNumber]          += DataHeap::getInstance().getData( cellDescription.getUpdate() )[variableNumber + i * dataPerNode];
+    }
+  }
+  for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
+    solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) dataPerCellPerVariable;
+    previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) dataPerCellPerVariable;
+  }
+  for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
+    updateAverages[variableNumber]          = updateAverages[variableNumber]          / (double) dataPerCellPerVariable;
+  }
+
+  // face data
+  for (int face=0; face<2*DIMENSIONS; face++) {
+    for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-        solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerNode];
-        previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerNode];
+        extrapolatedPredictorAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
+                    [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
       }
       for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-        updateAverages[variableNumber]          += DataHeap::getInstance().getData( cellDescription.getUpdate() )[variableNumber + i * dataPerNode];
+        fluctuationAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getFluctuation() )
+                                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
       }
     }
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-      solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) dataPerCellPerVariable;
-      previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) dataPerCellPerVariable;
+      extrapolatedPredictorAverages[variableNumber + dataPerNode * face] =
+          extrapolatedPredictorAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-      updateAverages[variableNumber]        = updateAverages[variableNumber]        / (double) dataPerCellPerVariable;
+      fluctuationAverages[variableNumber + dataPerNode * face] =
+          fluctuationAverages[variableNumber + dataPerNode * face]          / (double) dataPerFacePerVariable;
     }
-
-    // face data
-    for (int face=0; face<2*DIMENSIONS; face++) {
-      for (int i=0; i<dataPerFacePerVariable; i++) {
-        for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-          extrapolatedPredictorAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
-                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
-        }
-        for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-          fluctuationAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getFluctuation() )
-                            [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
-        }
-      }
-      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-        extrapolatedPredictorAverages[variableNumber + dataPerNode * face] =
-            extrapolatedPredictorAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
-      }
-      for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-        fluctuationAverages[variableNumber + dataPerNode * face] =
-            fluctuationAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
-      }
-    }
+  }
 }
 
 
@@ -4326,7 +4326,7 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
       DataHeap::getInstance().getData( cellDescription.getSolution() )
                 [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
       DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
-                [variableNumber * i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
       DataHeap::getInstance().getData( cellDescription.getUpdate() )
