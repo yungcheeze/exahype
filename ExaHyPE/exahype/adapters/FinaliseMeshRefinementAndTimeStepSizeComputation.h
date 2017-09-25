@@ -22,7 +22,6 @@
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/Sending.h"
- #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -46,13 +45,11 @@ class exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation {
     typedef mappings::PreProcessing Mapping1;
     typedef mappings::TimeStepSizeComputation Mapping2;
     typedef mappings::Sending Mapping3;
-    typedef mappings::PostProcessing Mapping4;
 
      Mapping0  _map2FinaliseMeshRefinement;
      Mapping1  _map2PreProcessing;
      Mapping2  _map2TimeStepSizeComputation;
      Mapping3  _map2Sending;
-     Mapping4  _map2PostProcessing;
 
 
   public:
