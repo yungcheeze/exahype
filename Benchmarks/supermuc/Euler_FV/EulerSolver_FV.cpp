@@ -304,10 +304,6 @@ void Euler::EulerSolver_FV::referenceSolution(const double* const x,double t, do
   }
 }
 
-bool Euler::EulerSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  return tarch::la::equals(t, 0.0);
-}
-
 void Euler::EulerSolver_FV::adjustSolution(
     const double* const x,
     const double w,

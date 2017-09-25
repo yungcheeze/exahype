@@ -29,13 +29,15 @@ void Euler::ErrorWriter::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-  constexpr int numberOfVariables = AbstractEulerSolver_FV::NumberOfVariables;
-  constexpr int basisSize         = AbstractEulerSolver_FV::PatchSize;
-  constexpr int ghostLayerWidth   = AbstractEulerSolver_FV::GhostLayerWidth;
+  constexpr int numberOfVariables  = AbstractEulerSolver_FV::NumberOfVariables;
+  constexpr int numberOfParameters = AbstractEulerSolver_FV::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int basisSize          = AbstractEulerSolver_FV::PatchSize;
+  constexpr int ghostLayerWidth    = AbstractEulerSolver_FV::GhostLayerWidth;
 
   double x[DIMENSIONS];
 
-  kernels::idx4 idx(basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,numberOfVariables);
+  kernels::idx4 idx(basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,basisSize+2*ghostLayerWidth,numberOfData);
   dfor(i,basisSize) {
      double w_dV = 1.0;
      for (int d=0; d<DIMENSIONS; d++) {
