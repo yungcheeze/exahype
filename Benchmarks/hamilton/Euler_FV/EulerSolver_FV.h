@@ -93,11 +93,6 @@ public:
   void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
 
   /**
-   * @see FiniteVolumesSolver
-   */
-  bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-
-  /**
    * Calls ::sodShockTube if constant 'reference' is set to 'sod'.
    * calls ::entropyWave if constant 'reference is set to 'entropywave'.
    * ErrorWriter, ErrorPlotter write errors of numerical solution for both choices.
