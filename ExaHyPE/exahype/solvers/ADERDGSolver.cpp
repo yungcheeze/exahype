@@ -36,6 +36,7 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "kernels/KernelUtils.h"
 
 namespace {
   constexpr const char* tags[]{"solutionUpdate",
@@ -4273,13 +4274,15 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   auto& fluctuationAverages           = DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() );
 
   // patch data
+  kernels::idx2 idx_cellData    (dataPerCellPerVariable,dataPerNode);
+  kernels::idx2 idx_cellUnknowns(dataPerCellPerVariable,getNumberOfVariables());
   for (int i=0; i<dataPerCellPerVariable; i++) {
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerNode];
-      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerNode];
+      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [idx_cellData(i,variableNumber)];
+      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[idx_cellData(i,variableNumber)];
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-      updateAverages[variableNumber]          += DataHeap::getInstance().getData( cellDescription.getUpdate() )[variableNumber + i * dataPerNode];
+      updateAverages[variableNumber]          += DataHeap::getInstance().getData( cellDescription.getUpdate() )[idx_cellUnknowns(i,variableNumber)];
     }
   }
   for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
@@ -4291,24 +4294,28 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   }
 
   // face data
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
+  kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
+  kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-        extrapolatedPredictorAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
-                    [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
+        extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] +=
+            DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[idx_faceData(face,i,variableNumber)];
       }
       for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-        fluctuationAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getFluctuation() )
-                                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable];
+        fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)] +=
+            DataHeap::getInstance().getData( cellDescription.getFluctuation() )[idx_faceUnknowns(face,i,variableNumber)];
       }
     }
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-      extrapolatedPredictorAverages[variableNumber + dataPerNode * face] =
-          extrapolatedPredictorAverages[variableNumber + dataPerNode * face] / (double) dataPerFacePerVariable;
+      extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] =
+          extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] / (double) dataPerFacePerVariable;
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-      fluctuationAverages[variableNumber + dataPerNode * face] =
-          fluctuationAverages[variableNumber + dataPerNode * face]          / (double) dataPerFacePerVariable;
+      fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)] =
+          fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)]       / (double) dataPerFacePerVariable;
     }
   }
 }
@@ -4321,33 +4328,35 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
   const int dataPerFacePerVariable = getDataPerFace() / dataPerNode;
 
   // patch data
+  kernels::idx2 idx_cellData    (dataPerCellPerVariable,dataPerNode);
+  kernels::idx2 idx_cellUnknowns(dataPerCellPerVariable,getNumberOfVariables());
   for (int i=0; i<dataPerCellPerVariable; i++) {
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
       DataHeap::getInstance().getData( cellDescription.getSolution() )
-                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
+                [idx_cellData(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
       DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
-                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+                [idx_cellData(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
       DataHeap::getInstance().getData( cellDescription.getUpdate() )
-                [variableNumber + i * dataPerNode] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages() )[variableNumber];
+                [idx_cellUnknowns(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages() )[variableNumber];
     }
   }
 
   // face data
-  for (int face=0; face<2*DIMENSIONS; face++) {
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
+  kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
+  kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
+  for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables+parameters
-        DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )
-                [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable] +=
-                    sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )
-                      [variableNumber+getNumberOfVariables() * face];
+        DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )                           [idx_faceData(face,i,variableNumber)] +=
+                    sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[idx_faceDataAvg(face,variableNumber)];
       }
-      for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables
-        DataHeap::getInstance().getData( cellDescription.getFluctuation() )
-                          [variableNumber + i * dataPerNode + face * dataPerNode * dataPerFacePerVariable] +=
-                              sign * DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() )
-                              [variableNumber+getNumberOfVariables() * face];
+      for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {  // variables
+        DataHeap::getInstance().getData( cellDescription.getFluctuation() )                                     [idx_faceUnknowns(face,i,variableNumber)] +=
+                              sign * DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() )[idx_faceUnknownsAvg(face,variableNumber)];
       }
     }
   }

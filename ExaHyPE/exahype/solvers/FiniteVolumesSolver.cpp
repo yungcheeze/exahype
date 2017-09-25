@@ -29,6 +29,8 @@
 #include "exahype/Vertex.h"
 #include "exahype/VertexOperations.h"
 
+#include "kernels/KernelUtils.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 #include "peano/heap/CompressedFloatingPointNumbers.h"
 
@@ -2013,10 +2015,11 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
   auto& extrapolatedSolutionAverages = DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() );
 
   // patch data
+  kernels::idx2 idx_patchData    (dataPerPatchPerVariable,dataPerSubcell);
   for (int i=0; i<dataPerPatchPerVariable; i++) {
     for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
-      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [variableNumber + i * dataPerSubcell];
-      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[variableNumber + i * dataPerSubcell];
+      solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [idx_patchData(i,variableNumber)];
+      previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[idx_patchData(i,variableNumber)];
     }
   }
   for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
@@ -2025,16 +2028,18 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
   }
 
   // face data
+  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
+  kernels::idx2 idx_faceDataAvg(DIMENSIONS_TIMES_TWO,dataPerSubcell);
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
-        extrapolatedSolutionAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
-              [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable];
+        extrapolatedSolutionAverages[idx_faceDataAvg(face,variableNumber)] +=
+            DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )[idx_faceData(face,i,variableNumber)];
       }
     }
     for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
-      extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] =
-          extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerFacePerVariable;
+      extrapolatedSolutionAverages[idx_faceDataAvg(face,variableNumber)] =
+          extrapolatedSolutionAverages[idx_faceDataAvg(face,variableNumber)] / (double) dataPerFacePerVariable;
     }
   }
 }
@@ -2047,24 +2052,25 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
   const int dataPerSubcell          = getNumberOfParameters()+getNumberOfVariables();
 
   // patch data
+  kernels::idx2 idx_patchData    (dataPerPatchPerVariable,dataPerSubcell);
   for (int i=0; i<dataPerPatchPerVariable; i++) {
     for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
       DataHeap::getInstance().getData( cellDescription.getSolution() )
-          [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
+          [idx_patchData(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
 
       DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )
-          [variableNumber + i * dataPerSubcell] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+          [idx_patchData(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
     }
   }
 
   // face data
+  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
+  kernels::idx2 idx_faceDataAvg(DIMENSIONS_TIMES_TWO,dataPerSubcell);
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
-        DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
-          [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable] +=
-              sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )
-                [variableNumber+getNumberOfVariables() * face];
+        DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )[idx_faceData(face,i,variableNumber)] +=
+              sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolutionAverages() )[idx_faceDataAvg(face,variableNumber)];
       }
     }
   }
