@@ -4263,9 +4263,9 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictorAverages()), cellDescription.toString() );
   assertion1( DataHeap::getInstance().isValidIndex(cellDescription.getFluctuationAverages()), cellDescription.toString() );
 
-  const int dataPerNode            = getNumberOfParameters()+getNumberOfVariables();
-  const int dataPerCellPerVariable = getDataPerCell()/ dataPerNode;
-  const int dataPerFacePerVariable = getDataPerFace() / dataPerNode;
+  const int dataPerNode  = getNumberOfParameters()+getNumberOfVariables();
+  const int nodesPerCell = getDataPerCell()/ dataPerNode;
+  const int nodesPerFace = getDataPerFace() / dataPerNode;
 
   auto& solutionAverages              = DataHeap::getInstance().getData( cellDescription.getSolutionAverages() );
   auto& previousSolutionAverage       = DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() );
@@ -4274,9 +4274,9 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   auto& fluctuationAverages           = DataHeap::getInstance().getData( cellDescription.getFluctuationAverages() );
 
   // patch data
-  kernels::idx2 idx_cellData    (dataPerCellPerVariable,dataPerNode);
-  kernels::idx2 idx_cellUnknowns(dataPerCellPerVariable,getNumberOfVariables());
-  for (int i=0; i<dataPerCellPerVariable; i++) {
+  kernels::idx2 idx_cellData    (nodesPerCell,dataPerNode);
+  kernels::idx2 idx_cellUnknowns(nodesPerCell,getNumberOfVariables());
+  for (int i=0; i<nodesPerCell; i++) {
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
       solutionAverages[variableNumber]        += DataHeap::getInstance().getData( cellDescription.getSolution() )        [idx_cellData(i,variableNumber)];
       previousSolutionAverage[variableNumber] += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[idx_cellData(i,variableNumber)];
@@ -4286,20 +4286,20 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
     }
   }
   for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
-    solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) dataPerCellPerVariable;
-    previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) dataPerCellPerVariable;
+    solutionAverages[variableNumber]        = solutionAverages[variableNumber]        / (double) nodesPerCell;
+    previousSolutionAverage[variableNumber] = previousSolutionAverage[variableNumber] / (double) nodesPerCell;
   }
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
-    updateAverages[variableNumber]          = updateAverages[variableNumber]          / (double) dataPerCellPerVariable;
+    updateAverages[variableNumber]          = updateAverages[variableNumber]          / (double) nodesPerCell;
   }
 
   // face data
   kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
   kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
-  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
-  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,nodesPerFace,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,nodesPerFace,getNumberOfVariables());
   for (int face=0; face<2*DIMENSIONS; face++) {
-    for (int i=0; i<dataPerFacePerVariable; i++) {
+    for (int i=0; i<nodesPerFace; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
         extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] +=
             DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[idx_faceData(face,i,variableNumber)];
@@ -4311,11 +4311,11 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
     }
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
       extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] =
-          extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] / (double) dataPerFacePerVariable;
+          extrapolatedPredictorAverages[idx_faceDataAvg(face,variableNumber)] / (double) nodesPerFace;
     }
     for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) { // variables
       fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)] =
-          fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)]       / (double) dataPerFacePerVariable;
+          fluctuationAverages[idx_faceUnknownsAvg(face,variableNumber)]       / (double) nodesPerFace;
     }
   }
 }
@@ -4323,14 +4323,14 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
 
 void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
     CellDescription& cellDescription, double sign) const {
-  const int dataPerNode            = getNumberOfParameters()+getNumberOfVariables();
-  const int dataPerCellPerVariable = getDataPerCell()/ dataPerNode;
-  const int dataPerFacePerVariable = getDataPerFace() / dataPerNode;
+  const int dataPerNode  = getNumberOfParameters()+getNumberOfVariables();
+  const int nodesPerCell = getDataPerCell()/ dataPerNode;
+  const int nodesPerFace = getDataPerFace() / dataPerNode;
 
   // patch data
-  kernels::idx2 idx_cellData    (dataPerCellPerVariable,dataPerNode);
-  kernels::idx2 idx_cellUnknowns(dataPerCellPerVariable,getNumberOfVariables());
-  for (int i=0; i<dataPerCellPerVariable; i++) {
+  kernels::idx2 idx_cellData    (nodesPerCell,dataPerNode);
+  kernels::idx2 idx_cellUnknowns(nodesPerCell,getNumberOfVariables());
+  for (int i=0; i<nodesPerCell; i++) {
     for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
       DataHeap::getInstance().getData( cellDescription.getSolution() )
                 [idx_cellData(i,variableNumber)] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
@@ -4346,10 +4346,10 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
   // face data
   kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
   kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
-  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
-  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,nodesPerFace,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,nodesPerFace,getNumberOfVariables());
   for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
-    for (int i=0; i<dataPerFacePerVariable; i++) {
+    for (int i=0; i<nodesPerFace; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables+parameters
         DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )                           [idx_faceData(face,i,variableNumber)] +=
                     sign * DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[idx_faceDataAvg(face,variableNumber)];
@@ -4434,7 +4434,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         assertion( cellDescription.getPreviousSolutionCompressed()>=0 );
         lock.free();
 
-        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        const int numberOfEntries = getDataPerCell();
         tearApart(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), compressionOfPreviousSolution);
 
         #if defined(Asserts)
@@ -4466,7 +4466,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
         lock.free();
 
-        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        const int numberOfEntries = getDataPerCell();
 
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
 
@@ -4499,7 +4499,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         assertion( cellDescription.getUpdateCompressed()>=0 );
         lock.free();
 
-        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        const int numberOfEntries = getUnknownsPerCell();
         tearApart(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), compressionOfUpdate);
 
         #if defined(Asserts)
@@ -4531,7 +4531,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         assertion( cellDescription.getExtrapolatedPredictorCompressed()>=0 );
         lock.free();
 
-        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        const int numberOfEntries = getDataPerCellBoundary();
         tearApart(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), compressionOfExtrapolatedPredictor);
 
         #if defined(Asserts)
@@ -4563,7 +4563,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
         assertion( cellDescription.getFluctuationCompressed()>=0 );
         lock.free();
 
-        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        const int numberOfEntries = getUnknownsPerCellBoundary();
         tearApart(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), compressionOfFluctuation);
 
         #if defined(Asserts)
