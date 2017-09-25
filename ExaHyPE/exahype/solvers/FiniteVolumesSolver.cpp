@@ -2031,8 +2031,8 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
   }
 
   // face data
-  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
   kernels::idx2 idx_faceDataAvg(DIMENSIONS_TIMES_TWO,dataPerSubcell);
+  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
@@ -2067,8 +2067,8 @@ void exahype::solvers::FiniteVolumesSolver::computeHierarchicalTransform(
   }
 
   // face data
-  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
   kernels::idx2 idx_faceDataAvg(DIMENSIONS_TIMES_TWO,dataPerSubcell);
+  kernels::idx3 idx_faceData   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerSubcell);
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {

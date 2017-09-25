@@ -4294,10 +4294,10 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   }
 
   // face data
-  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
-  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
   kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
   kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
   for (int face=0; face<2*DIMENSIONS; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) { // variables+parameters
@@ -4344,10 +4344,10 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(
   }
 
   // face data
-  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
-  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
   kernels::idx2 idx_faceDataAvg    (DIMENSIONS_TIMES_TWO,dataPerNode);
   kernels::idx2 idx_faceUnknownsAvg(DIMENSIONS_TIMES_TWO,getNumberOfVariables());
+  kernels::idx3 idx_faceData       (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,dataPerNode);
+  kernels::idx3 idx_faceUnknowns   (DIMENSIONS_TIMES_TWO,dataPerFacePerVariable,getNumberOfVariables());
   for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
     for (int i=0; i<dataPerFacePerVariable; i++) {
       for (int variableNumber=0; variableNumber<dataPerNode; variableNumber++) {  // variables+parameters
