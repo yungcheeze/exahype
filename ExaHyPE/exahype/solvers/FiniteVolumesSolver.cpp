@@ -2031,10 +2031,10 @@ void exahype::solvers::FiniteVolumesSolver::determineUnknownAverages(
         extrapolatedSolutionAverages[variableNumber] += DataHeap::getInstance().getData( cellDescription.getExtrapolatedSolution() )
               [variableNumber + i * dataPerSubcell + face * dataPerSubcell * dataPerFacePerVariable];
       }
-      for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
-        extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] =
-            extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerFacePerVariable;
-      }
+    }
+    for (int variableNumber=0; variableNumber<dataPerSubcell; variableNumber++) {
+      extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] =
+          extrapolatedSolutionAverages[variableNumber + dataPerSubcell * face] / (double) dataPerFacePerVariable;
     }
   }
 }
