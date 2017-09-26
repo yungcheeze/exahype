@@ -441,6 +441,15 @@ class exahype::solvers::Solver {
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   /**
+   *
+   */
+  typedef struct CellUpdateResult {
+    double _timeStepSize                     = std::numeric_limits<double>::max();
+    LimiterDomainChange _limiterDomainChange = LimiterDomainChange::Regular;
+    bool _refinementRequested                = false;
+  } CellUpdateResult;
+
+  /**
    * This struct is used in the AMR context
    * to lookup a parent cell description and
    * for computing the subcell position of the child
@@ -1175,8 +1184,7 @@ class exahype::solvers::Solver {
    * time stepping and update the mesh
    * before continuing. Erasing is here not considered.
    *
-   * \return RefinementType::APrioriRefinement (or
-   * RefinementType::APosterrioriRefinement) if a mesh update is necessary.
+   * \return True if mesh refinement is requested.
    *
    * \note Has no const modifier since kernels are not const functions yet.
    */
@@ -1294,7 +1302,7 @@ class exahype::solvers::Solver {
    * performs an FV update. Performs some additional
    * tasks.
    */
-  virtual double fusedTimeStep(
+  virtual CellUpdateResult fusedTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double** tempSpaceTimeUnknowns,

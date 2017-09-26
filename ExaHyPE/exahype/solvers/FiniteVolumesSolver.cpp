@@ -644,7 +644,7 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
   }
 }
 
-double exahype::solvers::FiniteVolumesSolver::fusedTimeStep(
+exahype::solvers::Solver::CellUpdateResult exahype::solvers::FiniteVolumesSolver::fusedTimeStep(
     const int cellDescriptionsIndex,
     const int element,
     double** tempSpaceTimeUnknowns,
@@ -654,7 +654,9 @@ double exahype::solvers::FiniteVolumesSolver::fusedTimeStep(
     double*  tempPointForceSources) {
   updateSolution(cellDescriptionsIndex,element);
 
-  return startNewTimeStep(cellDescriptionsIndex,element);
+  CellUpdateResult result;
+  result._timeStepSize = startNewTimeStep(cellDescriptionsIndex,element);
+  return result;
 }
 
 void exahype::solvers::FiniteVolumesSolver::updateSolution(

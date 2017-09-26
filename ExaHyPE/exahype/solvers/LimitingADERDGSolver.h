@@ -842,7 +842,7 @@ public:
       const int element) final override;
 
 
-  double fusedTimeStep(
+  CellUpdateResult fusedTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double** tempSpaceTimeUnknowns,

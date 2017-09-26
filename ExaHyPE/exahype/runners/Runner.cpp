@@ -294,20 +294,14 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
 
 void exahype::runners::Runner::initDataCompression() {
-  exahype::solvers::ADERDGSolver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
+  exahype::solvers::Solver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
 
-  if (exahype::solvers::ADERDGSolver::CompressionAccuracy==0.0) {
+  if (exahype::solvers::Solver::CompressionAccuracy==0.0) {
     logInfo( "initDataCompression()", "switched off any data compression");
   }
   else {
-    if (!_parser.getFuseAlgorithmicSteps()) {
-      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping"); // TODO(Dominic): Still applicable?
-      exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
-    }
-    else {
-      exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
-      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::ADERDGSolver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
-    }
+    exahype::solvers::Solver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+    logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::Solver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
   }
 }
 

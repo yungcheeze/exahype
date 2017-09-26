@@ -803,7 +803,7 @@ exahype::solvers::LimitingADERDGSolver::LimiterPatch& exahype::solvers::Limiting
   return limiterPatch;
 }
 
-double exahype::solvers::LimitingADERDGSolver::fusedTimeStep(
+exahype::solvers::Solver::CellUpdateResult exahype::solvers::LimitingADERDGSolver::fusedTimeStep(
     const int cellDescriptionsIndex,
     const int element,
     double** tempSpaceTimeUnknowns,
@@ -818,6 +818,12 @@ double exahype::solvers::LimitingADERDGSolver::fusedTimeStep(
 
   updateSolution(cellDescriptionsIndex,element);
 
+  CellUpdateResult result;
+  result._limiterDomainChange =
+      updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(cellDescriptionsIndex,element);
+  result._refinementRequested=
+      evaluateRefinementCriterionAfterSolutionUpdate(cellDescriptionsIndex,element);
+
   if (cellDescription.getLimiterStatus()<_solver->getMinimumLimiterStatusForTroubledCell()) {
     _solver->performPredictionAndVolumeIntegral(
         cellDescription,
@@ -825,7 +831,8 @@ double exahype::solvers::LimitingADERDGSolver::fusedTimeStep(
         tempUnknowns,tempFluxUnknowns,tempPointForceSources);
   }
 
-  return startNewTimeStep(cellDescriptionsIndex,element);
+  result._timeStepSize=startNewTimeStep(cellDescriptionsIndex,element);
+  return result;
 }
 
 

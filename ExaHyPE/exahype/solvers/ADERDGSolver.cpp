@@ -1850,7 +1850,7 @@ bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpd
   return false;
 }
 
-double exahype::solvers::ADERDGSolver::fusedTimeStep(
+exahype::solvers::Solver::CellUpdateResult exahype::solvers::ADERDGSolver::fusedTimeStep(
     const int cellDescriptionsIndex,
     const int element,
     double** tempSpaceTimeUnknowns,
@@ -1872,7 +1872,10 @@ double exahype::solvers::ADERDGSolver::fusedTimeStep(
       tempUnknowns,tempFluxUnknowns,
       tempPointForceSources);
 
-  return startNewTimeStep(cellDescription);
+  CellUpdateResult result;
+  result._timeStepSize       = startNewTimeStep(cellDescription);
+  result._refinementRequested= evaluateRefinementCriterionAfterSolutionUpdate(cellDescriptionsIndex,element);
+  return result;
 }
 
 void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
