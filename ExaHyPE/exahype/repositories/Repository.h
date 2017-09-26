@@ -75,16 +75,13 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAndFusedTimeStep() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
     virtual void switchToReinitialisation() = 0;    
-    virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
+    virtual void switchToLocalRecomputation() = 0;    
     virtual void switchToGlobalRollback() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
-    virtual void switchToSolutionUpdateAndTimeStepSizeComputation() = 0;    
-    virtual void switchToTimeStepSizeComputation() = 0;    
+    virtual void switchToSolutionUpdate() = 0;    
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
-    virtual void switchToMergeTimeStepData() = 0;    
-    virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
     virtual void switchToFinaliseMeshRefinementAndReinitialisation() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
@@ -93,16 +90,13 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPlotAndFusedTimeStep() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
-    virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterLocalRecomputation() const = 0;
     virtual bool isActiveAdapterGlobalRollback() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
-    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const = 0;
-    virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterSolutionUpdate() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
-    virtual bool isActiveAdapterMergeTimeStepData() const = 0;
-    virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndReinitialisation() const = 0;
 
 

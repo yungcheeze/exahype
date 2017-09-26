@@ -19,16 +19,13 @@
  #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/Reinitialisation.h" 
- #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/LocalRecomputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
- #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/TimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/MergeTimeStepData.h" 
- #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
  #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h" 
 
 

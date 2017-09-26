@@ -348,8 +348,6 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   tempSpaceTimeFluxUnknowns[0] = (double*)std::malloc((2+1)*nVar*basisSize3);  // lFi+source; (dim+1) * nVar * nDOFx * nDOFy * nDOFt;
   tempSpaceTimeFluxUnknowns[1] = (double*)std::malloc((2+1)*nVar*basisSize3);  // gradQ; dim * nVar * nDOFx * nDOFy * nDOFt
 
-  double* tempStateSizedVector = nullptr;
-
   // Outputs:
   double *tempUnknowns     = new double[nData*basisSize3];     // lQhi; nVar * nDOFx * nDOFz
   double *tempFluxUnknowns = new double[(DIMENSIONS+1)*nVar*basisSize2]; // lFh+source,nVar * nDOFx * nDOFy * (dim+1)

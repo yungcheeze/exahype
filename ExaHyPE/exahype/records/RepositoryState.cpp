@@ -43,16 +43,13 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterPlotAndFusedTimeStep: return "UseAdapterPlotAndFusedTimeStep";
       case UseAdapterLimiterStatusSpreading: return "UseAdapterLimiterStatusSpreading";
       case UseAdapterReinitialisation: return "UseAdapterReinitialisation";
-      case UseAdapterLocalRecomputationAndTimeStepSizeComputation: return "UseAdapterLocalRecomputationAndTimeStepSizeComputation";
+      case UseAdapterLocalRecomputation: return "UseAdapterLocalRecomputation";
       case UseAdapterGlobalRollback: return "UseAdapterGlobalRollback";
       case UseAdapterNeighbourDataMerging: return "UseAdapterNeighbourDataMerging";
-      case UseAdapterSolutionUpdateAndTimeStepSizeComputation: return "UseAdapterSolutionUpdateAndTimeStepSizeComputation";
-      case UseAdapterTimeStepSizeComputation: return "UseAdapterTimeStepSizeComputation";
+      case UseAdapterSolutionUpdate: return "UseAdapterSolutionUpdate";
       case UseAdapterPrediction: return "UseAdapterPrediction";
       case UseAdapterPredictionAndPlot: return "UseAdapterPredictionAndPlot";
       case UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation: return "UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation";
-      case UseAdapterMergeTimeStepData: return "UseAdapterMergeTimeStepData";
-      case UseAdapterMergeTimeStepDataDropFaceData: return "UseAdapterMergeTimeStepDataDropFaceData";
       case UseAdapterFinaliseMeshRefinementAndReinitialisation: return "UseAdapterFinaliseMeshRefinementAndReinitialisation";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
@@ -60,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterGridErasing=5,UseAdapterFusedTimeStep=6,UseAdapterPlotAndFusedTimeStep=7,UseAdapterLimiterStatusSpreading=8,UseAdapterReinitialisation=9,UseAdapterLocalRecomputationAndTimeStepSizeComputation=10,UseAdapterGlobalRollback=11,UseAdapterNeighbourDataMerging=12,UseAdapterSolutionUpdateAndTimeStepSizeComputation=13,UseAdapterTimeStepSizeComputation=14,UseAdapterPrediction=15,UseAdapterPredictionAndPlot=16,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=17,UseAdapterMergeTimeStepData=18,UseAdapterMergeTimeStepDataDropFaceData=19,UseAdapterFinaliseMeshRefinementAndReinitialisation=20,NumberOfAdapters=21)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterGridErasing=5,UseAdapterFusedTimeStep=6,UseAdapterPlotAndFusedTimeStep=7,UseAdapterLimiterStatusSpreading=8,UseAdapterReinitialisation=9,UseAdapterLocalRecomputation=10,UseAdapterGlobalRollback=11,UseAdapterNeighbourDataMerging=12,UseAdapterSolutionUpdate=13,UseAdapterPrediction=14,UseAdapterPredictionAndPlot=15,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=16,UseAdapterFinaliseMeshRefinementAndReinitialisation=17,NumberOfAdapters=18)";
 }
 
 

@@ -576,7 +576,7 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
 double exahype::solvers::FiniteVolumesSolver::updateTimeStepSizesFused(
           const int cellDescriptionsIndex,
           const int element) {
-  updateTimeStepSizes(cellDescriptionsIndex,element);
+  return updateTimeStepSizes(cellDescriptionsIndex,element);
 }
 
 double exahype::solvers::FiniteVolumesSolver::updateTimeStepSizes(

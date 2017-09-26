@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_MergeTimeStepDataDropFaceData_H_
-#define EXAHYPE_ADAPTERS_MergeTimeStepDataDropFaceData_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionUpdate_H_
+#define EXAHYPE_ADAPTERS_SolutionUpdate_H_
 
 
 #include "tarch/logging/Log.h"
@@ -19,14 +19,14 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
- #include "exahype/mappings/Merging.h"
- #include "exahype/mappings/PostProcessing.h"
+ #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class MergeTimeStepDataDropFaceData;
+        class SolutionUpdate;
       } 
 }
 
@@ -38,15 +38,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::MergeTimeStepDataDropFaceData {
+class exahype::adapters::SolutionUpdate {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::PostProcessing Mapping2;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::Sending Mapping2;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2Merging;
-     Mapping2  _map2PostProcessing;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2Sending;
 
 
   public:
@@ -58,16 +58,16 @@ class exahype::adapters::MergeTimeStepDataDropFaceData {
     peano::MappingSpecification         descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    MergeTimeStepDataDropFaceData();
+    SolutionUpdate();
 
     #if defined(SharedMemoryParallelisation)
-    MergeTimeStepDataDropFaceData(const MergeTimeStepDataDropFaceData& masterThread);
+    SolutionUpdate(const SolutionUpdate& masterThread);
     #endif
 
-    virtual ~MergeTimeStepDataDropFaceData();
+    virtual ~SolutionUpdate();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const MergeTimeStepDataDropFaceData& workerThread);
+    void mergeWithWorkerThread(const SolutionUpdate& workerThread);
     #endif
 
     void createInnerVertex(

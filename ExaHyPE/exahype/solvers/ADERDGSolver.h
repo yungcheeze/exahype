@@ -1567,6 +1567,8 @@ public:
    * It ensures that the corrector time size
    * is set to the admissible time step size that
    * was computed using the latest corrector solution.
+   *
+   * TODO(Dominic): Get rid of this eventually
    */
   void reconstructStandardTimeSteppingData(
       const int cellDescriptionsIndex,
