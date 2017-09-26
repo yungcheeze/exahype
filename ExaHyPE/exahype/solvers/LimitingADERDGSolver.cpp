@@ -549,7 +549,8 @@ int exahype::solvers::LimitingADERDGSolver::computeMinimumLimiterStatusForRefine
 
   assertion(levelDelta>=0);
   const int status = _solver->getMinimumLimiterStatusForActiveFVPatch()-1 + (levelDelta-1);
-  return (_solver->getMinimumLimiterStatusForTroubledCell()-status>=2) ? status : 2;
+  return (_solver->getMinimumLimiterStatusForTroubledCell()-status>=2) ?
+      status : _solver->getMinimumLimiterStatusForTroubledCell()-2;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusRefinementCriterion(
