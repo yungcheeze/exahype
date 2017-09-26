@@ -72,7 +72,28 @@ private:
    * where the algorithm section is set. The new
    * state is then broadcasted by Peano to all other ranks.)
    */
-   exahype::State _localState;
+  exahype::State _localState;
+
+  /**
+   * A minimum time step size for each solver.
+   */
+  std::vector<double> _minTimeStepSizes;
+
+  /**
+   * A minimum cell size for each solver.
+   */
+  std::vector<double> _minCellSizes;
+
+  /**
+   * A maximum cell size for each solver.
+   */
+  std::vector<double> _maxCellSizes;
+
+  /**
+   * Prepare a appropriately sized vector _minTimeStepSizes
+   * with elements initiliased to MAX_DOUBLE.
+   */
+  void prepareLocalTimeStepVariables();
 
   /**
    * Per solver a flag, indicating if has requested

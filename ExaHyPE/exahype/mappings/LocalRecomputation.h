@@ -87,12 +87,35 @@ class exahype::mappings::LocalRecomputation {
   #endif
 
   /**
-   * Local copy of the state.
-   *
-   * Is set in beginIteration() and yields the maximal time step size we may
-   * do. We use the local state to determine the global minimum time stamp.
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
    */
   exahype::State _localState;
+
+  /**
+   * A minimum time step size for each solver.
+   */
+  std::vector<double> _minTimeStepSizes;
+
+  /**
+   * A minimum cell size for each solver.
+   */
+  std::vector<double> _minCellSizes;
+
+  /**
+   * A maximum cell size for each solver.
+   */
+  std::vector<double> _maxCellSizes;
+
+  /**
+   * Prepare a appropriately sized vector _minTimeStepSizes
+   * with elements initiliased to MAX_DOUBLE.
+   */
+  void prepareLocalTimeStepVariables();
 
   exahype::solvers::PredictionTemporaryVariables     _predictionTemporaryVariables;
 

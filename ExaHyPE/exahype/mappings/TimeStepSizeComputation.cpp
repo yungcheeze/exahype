@@ -124,7 +124,7 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
 }
 
 void exahype::mappings::TimeStepSizeComputation::reconstructStandardTimeSteppingData(
-    exahype::solvers::Solver* solver) const {
+    exahype::solvers::Solver* solver) {
   switch(solver->getType()) {
     case exahype::solvers::Solver::Type::ADERDG:
       static_cast<exahype::solvers::ADERDGSolver*>(solver)->reconstructStandardTimeSteppingData();
@@ -138,8 +138,7 @@ void exahype::mappings::TimeStepSizeComputation::reconstructStandardTimeStepping
 }
 
 void exahype::mappings::TimeStepSizeComputation::weighMinNextPredictorTimeStepSize(
-    exahype::State& state,
-    exahype::solvers::Solver* solver) const {
+    exahype::solvers::Solver* solver) {
   exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
   switch(solver->getType()) {
@@ -155,8 +154,6 @@ void exahype::mappings::TimeStepSizeComputation::weighMinNextPredictorTimeStepSi
 
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
-    logDebug("weighMinNextPredictorTimeStepSize(...)","stableTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
-    logDebug("weighMinNextPredictorTimeStepSize(...)","usedTimeStepSize="  <<std::setprecision(12)<<aderdgSolver->getMinPredictorTimeStepSize());
 
     const double timeStepSizeWeight = exahype::State::getTimeStepSizeWeightForPredictionRerun();
     aderdgSolver->updateMinNextPredictorTimeStepSize(
@@ -168,8 +165,7 @@ void exahype::mappings::TimeStepSizeComputation::weighMinNextPredictorTimeStepSi
 
 
 void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(
-    exahype::State& state,
-    exahype::solvers::Solver* solver) const {
+    exahype::solvers::Solver* solver) {
   exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
   switch(solver->getType()) {
@@ -186,8 +182,6 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
     double usedTimeStepSize         = aderdgSolver->getMinPredictorTimeStepSize();
-    logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","stableTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
-    logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","usedTimeStepSize="  <<std::setprecision(12)<<aderdgSolver->getMinPredictorTimeStepSize());
 
     if (tarch::la::equals(usedTimeStepSize,0.0)) {
       usedTimeStepSize = stableTimeStepSize; // TODO(Dominic): Still necessary?
@@ -202,13 +196,9 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
           timeStepSizeWeight * stableTimeStepSize);
       aderdgSolver->setMinPredictorTimeStepSize(
           timeStepSizeWeight * stableTimeStepSize); // This will be propagated to the corrector
-
-      logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[instable] updatedTimeStepSize="<<aderdgSolver->getMinNextPredictorTimeStepSize());
     } else {
       aderdgSolver->updateMinNextPredictorTimeStepSize(
           0.5 * (usedTimeStepSize + timeStepSizeWeight * stableTimeStepSize));
-
-      logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[stable] updatedTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
     }
   }
 }
@@ -258,7 +248,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
           && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
           #endif
         ) {
-          reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
+          reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(_localState,solver);
         }
         solver->startNewTimeStep();
       }
@@ -270,7 +260,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
           && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
           #endif
         ) {
-          weighMinNextPredictorTimeStepSize(state,solver);
+          weighMinNextPredictorTimeStepSize(_localState,solver);
         }
         solver->updateTimeStepSizes();
       }
@@ -301,7 +291,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 void exahype::mappings::TimeStepSizeComputation::reconstructStandardTimeSteppingData(
     exahype::solvers::Solver* solver,
     const int cellDescriptionsIndex,
-    const int element) const {
+    const int element) {
   switch(solver->getType()) {
     case exahype::solvers::Solver::Type::ADERDG:
       static_cast<exahype::solvers::ADERDGSolver*>(solver)->

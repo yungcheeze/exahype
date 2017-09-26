@@ -98,36 +98,34 @@ class exahype::mappings::TimeStepSizeComputation {
   void prepareLocalTimeStepVariables();
 
  public:
-    /**
-     * Weights the min next predictor time step size
-     * by the user's safety factor for the fused time stepping
-     * algorithm.
-     */
-    void weighMinNextPredictorTimeStepSize(
-        exahype::State& state,
-        exahype::solvers::Solver* solver) const;
+  /**
+   * Weights the min next predictor time step size
+   * by the user's safety factor for the fused time stepping
+   * algorithm.
+   */
+  static void weighMinNextPredictorTimeStepSize(exahype::solvers::Solver* solver);
 
-    /**
-     * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
-     * with stable time step sizes if we detect a-posteriori that the CFL condition was
-     * harmed by the estimated predictor time step size used in the last iteration.
-     */
-    void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::State& state,exahype::solvers::Solver* solver) const;
+  /**
+   * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
+   * with stable time step sizes if we detect a-posteriori that the CFL condition was
+   * harmed by the estimated predictor time step size used in the last iteration.
+   */
+  static void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::solvers::Solver* solver);
 
-    /**
-     * If the original time stepping algorithm is used for the ADER-DG scheme,
-     * we need to enforce that the corrector time step size is identical to the
-     * predictor time step size.
-     * We further need to
-     */
-    void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver) const;
+  /**
+   * If the original time stepping algorithm is used for the ADER-DG scheme,
+   * we need to enforce that the corrector time step size is identical to the
+   * predictor time step size.
+   * We further need to
+   */
+  static void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver);
 
 
-    /**
-     * Similar to ::overwriteCorrectorTimeStepDataWithPredictorValues(exahype::solvers::Solver*) but for
-     * a cell description.
-     */
-    void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element) const;
+  /**
+   * Similar to ::overwriteCorrectorTimeStepDataWithPredictorValues(exahype::solvers::Solver*) but for
+   * a cell description.
+   */
+  static void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element);
 
   /**
    * Run through whole tree. Run concurrently on fine grid.

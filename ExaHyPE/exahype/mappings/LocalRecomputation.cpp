@@ -154,8 +154,8 @@ void exahype::mappings::LocalRecomputation::beginIteration(
 }
 
 void exahype::mappings::LocalRecomputation::endIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("endIteration(State)", solverState);
+    exahype::State& state) {
+  logTraceInWith1Argument("endIteration(State)", state);
 
   for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -186,7 +186,7 @@ void exahype::mappings::LocalRecomputation::endIteration(
           #endif
       ) {
         exahype::mappings::TimeStepSizeComputation::
-        reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
+        reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(solver);
       }
       solver->startNewTimeStep();
       if (!exahype::State::fuseADERDGPhases()) {
@@ -205,7 +205,7 @@ void exahype::mappings::LocalRecomputation::endIteration(
   logInfo("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceMerges);
   #endif
 
-  logTraceOutWith1Argument("endIteration(State)", solverState);
+  logTraceOutWith1Argument("endIteration(State)", state);
 }
 
 void exahype::mappings::LocalRecomputation::enterCell(
@@ -222,9 +222,9 @@ void exahype::mappings::LocalRecomputation::enterCell(
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined14);
-    pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto* solver = exahype::solvers::RegisteredSolvers[i];
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
