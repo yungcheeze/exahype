@@ -9,9 +9,9 @@ How to install:
 - Generate all gluecode
 -- Change into the ExaHyPE root directory
 -- Type in
-   java -jar Toolkit/dist/ExaHyPE.jar Demonstrators/EulerFV/EulerFV.exahype
+   java -jar Toolkit/dist/ExaHyPE.jar Demonstrators/EulerADERDG/EulerADERDG.exahype
 
-- Change into Demonstrators/EulerFV
+- Change into Demonstrators/EulerADERDG
 -- If you prefer the GNU compiler, change the default compiler
    export COMPILER=gnu
 -- Type in 
