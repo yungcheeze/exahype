@@ -141,10 +141,6 @@ adapter:
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTimel; pre-processing done directly
   merge-with-user-defined-mapping: SolutionUpdate
-  // needs predictor time step size
-  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: LoadBalancing
   merge-with-user-defined-mapping: Sending
  
 adapter: 
@@ -155,9 +151,6 @@ adapter:
   merge-with-user-defined-mapping: Plot
   // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: SolutionUpdate
-  // needs predictor time step size
-  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
-  merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
 
 // Additional adapters for limiter status spreading and recomputation
@@ -178,7 +171,6 @@ adapter:
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: LocalRecomputation
-  merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused); post-processing done directly
   
 adapter:

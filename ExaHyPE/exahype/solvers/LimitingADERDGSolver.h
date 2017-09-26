@@ -793,13 +793,11 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element,
-        double*   tempEigenvalues) override;
+        const int element) override;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
@@ -846,7 +844,17 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) final override;
+
+
+  double fusedTimeStep(
+      const int cellDescriptionsIndex,
+      const int element,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   /**
    * This method assumes the ADERDG solver's cell-local limiter status has
@@ -860,7 +868,7 @@ public:
    */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) final override;
 
   /**
    * Determine the new cell-local min max values.

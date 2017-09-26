@@ -109,13 +109,9 @@ void exahype::mappings::Prediction::endIteration(
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
                                         exahype::solvers::ADERDGSolver* solver,
-                                        exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
-                                        exahype::Vertex* const fineGridVertices,
-                                        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+                                        exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
-
-    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[pre]");
 
     solver->performPredictionAndVolumeIntegral(
         cellDescription,
@@ -123,10 +119,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
         _temporaryVariables._tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
         _temporaryVariables._tempUnknowns             [cellDescription.getSolverNumber()],
         _temporaryVariables._tempFluxUnknowns         [cellDescription.getSolverNumber()],
-        _temporaryVariables._tempStateSizedVectors    [cellDescription.getSolverNumber()],
         _temporaryVariables._tempPointForceSources    [cellDescription.getSolverNumber()]);
-
-    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[post]");
   }
 }
 
@@ -166,7 +159,7 @@ void exahype::mappings::Prediction::enterCell(
 
             if (solver->isComputing(_localState.getAlgorithmSection())) {
               solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
-              performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+              performPredictionAndVolumeIntegral(solver,cellDescription);
             }
           } break;
           case exahype::solvers::Solver::Type::LimitingADERDG: {
@@ -176,7 +169,7 @@ void exahype::mappings::Prediction::enterCell(
             if (solver->isComputing(_localState.getAlgorithmSection())) {
               solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
               if (cellDescription.getLimiterStatus()<solver->getSolver()->getMinimumLimiterStatusForTroubledCell()) {
-                performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+                performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription);
               }
             }
           } break;

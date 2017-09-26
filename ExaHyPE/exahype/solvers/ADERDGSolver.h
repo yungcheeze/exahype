@@ -1089,7 +1089,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       const double* const luh,
       const tarch::la::Vector<DIMENSIONS, 
       double>& cellSize, 
@@ -1509,20 +1508,6 @@ public:
       const int element) override;
 
   /**
-   * Runs the triad of updateSolution,performPredictionAndVolumeIntegral
-   * plus startNewTimeStep.
-   */
-  double fusedTimeStep(
-      CellDescription& cellDescription,
-      double** tempSpaceTimeUnknowns,
-      double** tempSpaceTimeFluxUnknowns,
-      double** tempUnknowns,
-      double*  tempFluxUnknowns,
-      double** tempStateSizedArrays,
-      double*  tempStateSizedVector,
-      double*  tempPointForceSources);
-
-  /**
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
    * computes the volume integral.
@@ -1541,7 +1526,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       double*  tempPointForceSources);
 
   void validateNoNansInADERDGSolver(
@@ -1565,8 +1549,7 @@ public:
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int solverElement,
-        double*   tempEigenvalues) override;
+        const int solverElement) override;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
@@ -1647,7 +1630,16 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
- /** \copydoc MyClass::myfunction()
+  double fusedTimeStep(
+      const int cellDescriptionsIndex,
+      const int element,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
+
+ /** \copydoc ADERDGSolver::updateSolution()
   *
   *  \see updateSolution(CellDescription,double**,double**)
   */

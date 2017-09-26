@@ -1262,6 +1262,34 @@ class exahype::solvers::Solver {
       const int element) = 0;
 
   /**
+   * Fuse algorithmic phases of the solvers.
+   *
+   * <h2>FiniteVolumesSolver</h2>
+   *
+   * This call degenerates to an updateSolution
+   * call for the FiniteVolumesSolver.
+   *
+   * <h2>ADERDGSolver</h2>
+   *
+   * Runs the triad of updateSolution,performPredictionAndVolumeIntegral
+   * plus startNewTimeStep.
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   *
+   * Either runs the ADERDGSolver triad or
+   * performs an FV update. Performs some additional
+   * tasks.
+   */
+  virtual double fusedTimeStep(
+      const int cellDescriptionsIndex,
+      const int element,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) = 0;
+
+  /**
    * Update the solution of a cell description.
    *
    * \note Make sure to reset neighbour merge

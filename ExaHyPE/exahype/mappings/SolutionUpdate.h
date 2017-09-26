@@ -96,6 +96,37 @@ private:
   void prepareLocalTimeStepVariables();
 
   /**
+   * Initialises temporary variables
+   * in case we use fused time stepping.
+   *
+   * \note We parallelise over the domain
+   * (mapping is copied for each thread) and
+   * over the solvers registered on a cell.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void initialiseTemporaryVariables();
+
+  /**
+   * Deletes temporary variables
+   * in case we use fused time stepping.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void deleteTemporaryVariables();
+
+  /**
+   * Only required if fused time stepping is switched on.
+   */
+  exahype::solvers::PredictionTemporaryVariables _temporaryVariables;
+
+  /**
    * Per solver a flag, indicating if has requested
    * a mesh update request or a limiter domain change.
    */
