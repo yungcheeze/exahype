@@ -49,21 +49,20 @@ exahype-project Euler
   end global-optimisation
  
   solver Limiting-ADER-DG EulerSolver
-    variables const          = rho:1,j:3,E:1
-    order const              = 3
-    maximum-mesh-size        = 0.038
-    maximum-mesh-depth       = 0
-    time-stepping            = global
-    type const = nonlinear
-	terms const = flux
-	optimisation const = generic
-    language const           = C
-    limiter-kernel const     = generic::godunov
-    limiter-language const   = C
-    dmp-observables          = 5
-    dmp-relaxation-parameter = 1e-4
-    dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 1
+    variables const            = rho:1,j:3,E:1
+    order const                = 3
+    maximum-mesh-size          = 0.038
+    time-stepping              = global
+    type const                 = nonlinear
+    terms const                = flux
+    optimisation const         = generic
+    language const             = C
+    limiter-type const         = musclhancock
+    limiter-optimisation const = generic
+    limiter-language const     = C
+    dmp-observables            = 5
+    dmp-relaxation-parameter   = 1e-4
+    dmp-difference-scaling     = 1e-3
     // reference either: sod,entropywave,explosion,rarefactionwave
     constants                = reference:entropywave    
   end solver
