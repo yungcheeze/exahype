@@ -39,10 +39,14 @@ class EulerADERDG::MyEulerSolver : public EulerADERDG::AbstractMyEulerSolver {
     void init(std::vector<std::string>& cmdlineargs);
     
     /**
-     * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+     * Adjust the conserved variables and parameters (Q) at a given time t at the (quadrature) point x.
      *
-     * \note Please overwrite function adjustSolution(...) if you want to
-     * adjust the solution degrees of freedom in a cellwise manner.
+     * We use this routine to impose the initial conditions, i.e. we overwrite
+     * the solution if t=0. In this case, we use the logos to overwrite the
+     * initial empty/garbage collection with data.
+     *
+     *
+     *
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    t         the start of the time interval.

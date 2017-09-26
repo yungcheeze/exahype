@@ -17,7 +17,7 @@ static const struct {
   unsigned int   height;
   unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
   unsigned char  pixel_data[1252 * 695 * 1 + 1];
-} Image = {
+} LogoExaHyPE = {
   1252, 695, 1,
   LINEA16
   LINEA16
