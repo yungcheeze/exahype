@@ -135,10 +135,11 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing 
 
 adapter: 
-  name: LocalRecomputation
+  name: LocalRecomputationAndTimeStepSizeComputation
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: LocalRecomputation
+  merge-with-user-defined-mapping: LocalRecomputation      // This advances in time for local recomp.
+  merge-with-user-defined-mapping: TimeStepSizeComputation // This recomputes the time step size for mesh ref and global recomp.
   merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused); post-processing done directly
   
 adapter:

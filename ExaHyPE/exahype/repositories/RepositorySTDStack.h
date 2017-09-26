@@ -22,7 +22,7 @@
  #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/Reinitialisation.h" 
- #include "exahype/adapters/LocalRecomputation.h" 
+ #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
@@ -61,7 +61,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndFusedTimeStep> _gridWithPlotAndFusedTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LocalRecomputation> _gridWithLocalRecomputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LocalRecomputationAndTimeStepSizeComputation> _gridWithLocalRecomputationAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalRollback> _gridWithGlobalRollback;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
@@ -79,7 +79,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndFusedTimeStepCPUTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
     tarch::timing::Measurement _measureReinitialisationCPUTime;
-    tarch::timing::Measurement _measureLocalRecomputationCPUTime;
+    tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureGlobalRollbackCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
@@ -94,7 +94,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndFusedTimeStepCalendarTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
     tarch::timing::Measurement _measureReinitialisationCalendarTime;
-    tarch::timing::Measurement _measureLocalRecomputationCalendarTime;
+    tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureGlobalRollbackCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
@@ -147,7 +147,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPlotAndFusedTimeStep();    
     virtual void switchToLimiterStatusSpreading();    
     virtual void switchToReinitialisation();    
-    virtual void switchToLocalRecomputation();    
+    virtual void switchToLocalRecomputationAndTimeStepSizeComputation();    
     virtual void switchToGlobalRollback();    
     virtual void switchToNeighbourDataMerging();    
     virtual void switchToSolutionUpdate();    
@@ -162,7 +162,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPlotAndFusedTimeStep() const;
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
     virtual bool isActiveAdapterReinitialisation() const;
-    virtual bool isActiveAdapterLocalRecomputation() const;
+    virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterGlobalRollback() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterSolutionUpdate() const;

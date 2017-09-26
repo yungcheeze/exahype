@@ -43,7 +43,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterPlotAndFusedTimeStep: return "UseAdapterPlotAndFusedTimeStep";
       case UseAdapterLimiterStatusSpreading: return "UseAdapterLimiterStatusSpreading";
       case UseAdapterReinitialisation: return "UseAdapterReinitialisation";
-      case UseAdapterLocalRecomputation: return "UseAdapterLocalRecomputation";
+      case UseAdapterLocalRecomputationAndTimeStepSizeComputation: return "UseAdapterLocalRecomputationAndTimeStepSizeComputation";
       case UseAdapterGlobalRollback: return "UseAdapterGlobalRollback";
       case UseAdapterNeighbourDataMerging: return "UseAdapterNeighbourDataMerging";
       case UseAdapterSolutionUpdate: return "UseAdapterSolutionUpdate";
@@ -57,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterGridErasing=5,UseAdapterFusedTimeStep=6,UseAdapterPlotAndFusedTimeStep=7,UseAdapterLimiterStatusSpreading=8,UseAdapterReinitialisation=9,UseAdapterLocalRecomputation=10,UseAdapterGlobalRollback=11,UseAdapterNeighbourDataMerging=12,UseAdapterSolutionUpdate=13,UseAdapterPrediction=14,UseAdapterPredictionAndPlot=15,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=16,UseAdapterFinaliseMeshRefinementAndReinitialisation=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterGridErasing=5,UseAdapterFusedTimeStep=6,UseAdapterPlotAndFusedTimeStep=7,UseAdapterLimiterStatusSpreading=8,UseAdapterReinitialisation=9,UseAdapterLocalRecomputationAndTimeStepSizeComputation=10,UseAdapterGlobalRollback=11,UseAdapterNeighbourDataMerging=12,UseAdapterSolutionUpdate=13,UseAdapterPrediction=14,UseAdapterPredictionAndPlot=15,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=16,UseAdapterFinaliseMeshRefinementAndReinitialisation=17,NumberOfAdapters=18)";
 }
 
 

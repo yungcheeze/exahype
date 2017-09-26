@@ -920,10 +920,11 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
       repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
     }
 
-    // TODO(Dominic): Think about something in order to not shift the time step size if global recomputation
+    // Do not advance the time stamp if global recomputation/mesh refinement
+    // Advance time stamp if local recomputation
     logInfo("updateMeshAndSubdomains(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
-    repository.switchToLocalRecomputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
+    repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
     repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
   } // LocalRecomputation is done here
 
