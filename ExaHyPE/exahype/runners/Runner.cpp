@@ -301,7 +301,7 @@ void exahype::runners::Runner::initDataCompression() {
   }
   else {
     if (!_parser.getFuseAlgorithmicSteps()) {
-      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping");
+      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping"); // TODO(Dominic): Still applicable?
       exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
     }
     else {
