@@ -229,18 +229,15 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 
       solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
 
-      if (
-          exahype::State::fuseADERDGPhases()
-          #ifdef Parallel
-          && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
-          #endif
-      ) {
-        weighMinNextPredictorTimeStepSize(solver);
-      }
-      solver->updateTimeStepSizes();
-
-      if (!exahype::State::fuseADERDGPhases()) {
-        reconstructStandardTimeSteppingData(solver); // TODO(Dominic): Check if still necessary
+      if (exahype::State::fuseADERDGPhases()) {
+        #ifdef Parallel
+        if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+          weighMinNextPredictorTimeStepSize(solver);
+        }
+        #endif
+        solver->updateTimeStepSizesFused();
+      } else {
+        solver->updateTimeStepSizes();
       }
 
       logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
@@ -289,11 +286,14 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         const int element = solver->tryGetElement(
             fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-        double admissibleTimeStepSize =
-            solver->updateTimeStepSizes(
-                fineGridCell.getCellDescriptionsIndex(),element);
-        if (!exahype::State::fuseADERDGPhases()) {
-          reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+        double admissibleTimeStepSize = std::numeric_limits<double>::max();
+
+        if (exahype::State::fuseADERDGPhases()) {
+          admissibleTimeStepSize = solver->updateTimeStepSizesFused(
+              fineGridCell.getCellDescriptionsIndex(),element);
+        } else {
+          admissibleTimeStepSize = solver->updateTimeStepSizes(
+              fineGridCell.getCellDescriptionsIndex(),element);
         }
 
         _minTimeStepSizes[solverNumber] = std::min(

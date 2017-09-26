@@ -280,6 +280,10 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
            ",nextLimiterDomainChange="<<static_cast<int>(_nextLimiterDomainChange));
 }
 
+void exahype::solvers::LimitingADERDGSolver::updateTimeStepSizesFused()  {
+  _solver->updateTimeStepSizesFused();
+}
+
 void exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes()  {
   _solver->updateTimeStepSizes();
 }
@@ -670,6 +674,37 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
   ensureLimiterPatchTimeStepDataIsConsistent(cellDescriptionsIndex,solverElement);
 
   return admissibleTimeStepSize;
+}
+
+
+void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingData(
+    const int cellDescriptionsIndex,
+    const int element) const {
+  _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
+
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+  if (limiterElement!=exahype::solvers::Solver::NotFound) {
+    LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+    limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+    limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
+  }
+}
+
+double exahype::solvers::LimitingADERDGSolver::updateTimeStepSizesFused(
+      const int cellDescriptionsIndex,
+      const int solverElement) {
+  SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
+  if (solverPatch.getType()==SolverPatch::Type::Cell) {
+    const double admissibleTimeStepSize =
+        _solver->updateTimeStepSizesFused(cellDescriptionsIndex,solverElement);
+
+    ensureLimiterPatchTimeStepDataIsConsistent(cellDescriptionsIndex,solverElement);
+
+    return admissibleTimeStepSize;
+  }
+
+  return std::numeric_limits<double>::max();
 }
 
 double exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes(

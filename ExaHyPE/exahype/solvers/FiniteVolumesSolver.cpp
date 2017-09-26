@@ -198,6 +198,10 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
+void exahype::solvers::FiniteVolumesSolver::updateTimeStepSizesFused() {
+  updateTimeStepSizes();
+}
+
 void exahype::solvers::FiniteVolumesSolver::updateTimeStepSizes() {
   switch (_timeStepping) {
     case TimeStepping::Global:
@@ -567,6 +571,12 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
   }
 
   return std::numeric_limits<double>::max();
+}
+
+double exahype::solvers::FiniteVolumesSolver::updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) {
+  updateTimeStepSizes(cellDescriptionsIndex,element);
 }
 
 double exahype::solvers::FiniteVolumesSolver::updateTimeStepSizes(

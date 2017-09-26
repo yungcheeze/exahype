@@ -990,8 +990,14 @@ class exahype::solvers::Solver {
   virtual void startNewTimeStep() = 0;
 
   /**
+   * Similar as Solver::updateTimeStepSizes but
+   * for the fused time stepping scheme.
+   */
+  virtual void updateTimeStepSizesFused() = 0;
+
+  /**
    * In contrast to startNewTimeStep(), this
-   * method does not shift the time stamps.
+   * method does not shift the time stamp.
    *
    * It simply updates the time step sizes
    *
@@ -1211,6 +1217,14 @@ class exahype::solvers::Solver {
    * \note Has no const modifier since kernels are not const functions yet.
    */
   virtual double startNewTimeStep(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
+   * Same as ::updateTimeStepSizes for the fused
+   * time stepping.
+   */
+  virtual double updateTimeStepSizesFused(
       const int cellDescriptionsIndex,
       const int element) = 0;
 

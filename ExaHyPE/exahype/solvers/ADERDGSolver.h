@@ -1265,6 +1265,15 @@ public:
    */
   void startNewTimeStep() override;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does advance the predictor time stamp in time.
+   */
+  void updateTimeStepSizesFused() override;
+
+  /**
+   * Does not advance the predictor time stamp in time.
+   */
   void updateTimeStepSizes() override;
 
   /**
@@ -1527,15 +1536,27 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) override final;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Advances the predictor time stamp in time.
+   */
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
+
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does not advance the predictor time stamp in time.
+   */
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int solverElement) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * If we use the original time stepping

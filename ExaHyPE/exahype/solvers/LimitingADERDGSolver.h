@@ -520,11 +520,13 @@ public:
    * We always override the limiter time step
    * data by the ADER-DG one before a solution update.
    */
-  void startNewTimeStep() override;
+  void startNewTimeStep() final override;
 
-  void updateTimeStepSizes() override;
+  void updateTimeStepSizesFused() final override;
 
-  void zeroTimeStepSizes() override;
+  void updateTimeStepSizes() final override;
+
+  void zeroTimeStepSizes() final override;
 
   /**
    * TODO(Dominic): Add docu.
@@ -793,30 +795,23 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) final override;
+
+  double updateTimeStepSizesFused(
+      const int cellDescriptionsIndex,
+      const int element) final override;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element) override;
+        const int element) final override;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const final override;
 
-  // TODO(Dominic): Move into cpp
   void reconstructStandardTimeSteppingData(
       const int cellDescriptionsIndex,
-      int element) const {
-    _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
-
-    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-    const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-    if (limiterElement!=exahype::solvers::Solver::NotFound) {
-      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-      limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
-    }
-  }
+      const int element) const;
 
  /**
    * Rollback to the previous time step, i.e,

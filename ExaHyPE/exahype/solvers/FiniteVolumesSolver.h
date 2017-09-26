@@ -476,7 +476,9 @@ public:
 
   void startNewTimeStep() override;
 
-  void updateTimeStepSizes() override;
+  void updateTimeStepSizesFused() override;
+
+  void updateTimeStepSizes()      override;
 
   void zeroTimeStepSizes() override;
 
@@ -589,15 +591,19 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element) override final;
+
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * Rolls the solver time step data back to the
