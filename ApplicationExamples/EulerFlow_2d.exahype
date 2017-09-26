@@ -59,16 +59,16 @@ exahype-project  Euler
   end global-optimisation
 
   solver ADER-DG MyEulerSolver
-    variables const   = rho:1,j:3,E:1
-    order const       = 8
+    variables const    = rho:1,j:3,E:1
+    order const        = 8
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size  = 0.05
     maximum-mesh-depth = 0
-    time-stepping     = global
-    type const = nonlinear
-	terms const = flux
+    time-stepping      = global
+    type const         = nonlinear, Legendre
+    terms const        = flux
 	optimisation const = generic
-    language const    = C
+    language const     = C
 
     //plot Peano::Legendre::cells::hdf5 ConservedQuantitiesWriter
     //plot Peano::Legendre::cells::ascii ConservedQuantitiesWriter
