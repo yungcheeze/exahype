@@ -132,9 +132,8 @@ bool EulerADERDG::MyEulerSolver_ADERDG::isPhysicallyAdmissible(
     const double t, const double dt) const {
   // This is an example for the compressible Euler equations.
   // Modify it according to your needs.
-  for (int i=0; i<5; i++) {
-    if (observablesMin[i] <= 0.0) return false;
-  }
+  if (observablesMin[0] <= 0.0) return false;
+  if (observablesMin[4] <= 0.0) return false;
 
   return true;
 }
