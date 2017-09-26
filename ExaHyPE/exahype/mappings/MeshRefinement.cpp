@@ -337,9 +337,7 @@ void exahype::mappings::MeshRefinement::enterCell(
 
           solver->setInitialConditions(
               fineGridCell.getCellDescriptionsIndex(),
-              element,
-              fineGridVertices,
-              fineGridVerticesEnumerator);
+              element);
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->

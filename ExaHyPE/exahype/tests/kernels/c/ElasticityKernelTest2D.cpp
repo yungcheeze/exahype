@@ -283,7 +283,6 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   // TODO(Dominic): Fix test
   kernels::aderdg::generic::c::riemannSolverLinear<true,ElasticityKernelTest>(*this,
       FL, FR, qL, qR,
-      tempFaceUnknowns,tempDataVectors,tempStateSizedSquareMatrices,
       dt, 1 /* normalNonZero */);
 
   kernels::idx2 idx_F(basisSize, nVar);
@@ -376,7 +375,6 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
       lQbnd, lFbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
-      tempStateSizedVector,
       luh, dx, dt, tempSpaceTimeUnknowns[1]);
 
   for (int i = 0; i < DIMENSIONS; i++) {

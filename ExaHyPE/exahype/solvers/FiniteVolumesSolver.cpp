@@ -643,6 +643,8 @@ double exahype::solvers::FiniteVolumesSolver::fusedTimeStep(
     double*  tempFluxUnknowns,
     double*  tempPointForceSources) {
   updateSolution(cellDescriptionsIndex,element);
+
+  return startNewTimeStep(cellDescriptionsIndex,element);
 }
 
 void exahype::solvers::FiniteVolumesSolver::updateSolution(

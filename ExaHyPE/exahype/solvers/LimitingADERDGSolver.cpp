@@ -674,12 +674,11 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
 
 double exahype::solvers::LimitingADERDGSolver::updateTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement,
-      double*   tempEigenvalues) {
+      const int solverElement) {
   SolverPatch& solverPatch = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
     const double admissibleTimeStepSize =
-        _solver->updateTimeStepSizes(cellDescriptionsIndex,solverElement,tempEigenvalues);
+        _solver->updateTimeStepSizes(cellDescriptionsIndex,solverElement);
 
     ensureLimiterPatchTimeStepDataIsConsistent(cellDescriptionsIndex,solverElement);
 
@@ -820,10 +819,10 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
       assertion(solverPatch.getLimiterStatus()>=0);
 
       if (solverPatch.getLimiterStatus()==0) {
-        _solver->surfaceIntegralAndUpdateSolution(solverPatch);
+        _solver->updateSolution(solverPatch);
       }
       else if (solverPatch.getLimiterStatus()<_solver->getMinimumLimiterStatusForActiveFVPatch()) {
-        _solver->surfaceIntegralAndUpdateSolution(solverPatch);
+        _solver->updateSolution(solverPatch);
 
         LimiterPatch& limiterPatch =
             getLimiterPatchForSolverPatch(cellDescriptionsIndex,solverPatch);
@@ -860,7 +859,7 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
       // 3. Only after the solution update, we are allowed to remove limiter patches.
       ensureNoUnrequiredLimiterPatchIsAllocatedOnComputeCell(cellDescriptionsIndex,element);
     } else {
-      _solver->surfaceIntegralAndUpdateSolution(solverPatch);
+      _solver->updateSolution(solverPatch);
     }
   }
 }
@@ -1417,7 +1416,6 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictorLocally(
           predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
           predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
           predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
-          predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
           predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
     }
   }

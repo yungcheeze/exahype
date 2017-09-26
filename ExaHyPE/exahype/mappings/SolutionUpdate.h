@@ -124,7 +124,7 @@ private:
   /**
    * Only required if fused time stepping is switched on.
    */
-  exahype::solvers::PredictionTemporaryVariables _temporaryVariables;
+  exahype::solvers::PredictionTemporaryVariables _predictionTemporaryVariables;
 
   /**
    * Per solver a flag, indicating if has requested

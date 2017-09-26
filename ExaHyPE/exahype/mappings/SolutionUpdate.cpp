@@ -13,15 +13,19 @@
  
 #include "exahype/mappings/SolutionUpdate.h"
 
+#include "tarch/multicore/Loop.h"
+
 #include "peano/utils/Globals.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
-#include "tarch/multicore/Loop.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/VertexOperations.h"
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
-#include "exahype/VertexOperations.h"
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "exahype/mappings/TimeStepSizeComputation.h"
 
 tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
     "exahype::mappings::SolutionUpdate");
@@ -156,7 +160,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     return;
   }
 
-  assertion(_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping,_localState.getAlgorithmSection());
+  assertion1(_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping,_localState.getAlgorithmSection());
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
@@ -168,20 +172,20 @@ void exahype::mappings::SolutionUpdate::enterCell(
         if (element!=exahype::solvers::Solver::NotFound) {
           double admissibleTimeStepSize = std::numeric_limits<double>::max();
           if (exahype::State::fuseADERDGPhases()) {
-            double admissibleTimeStepSize =
+            admissibleTimeStepSize =
                 solver->fusedTimeStep(
                     fineGridCell.getCellDescriptionsIndex(), element,
-                    _temporaryVariables._tempSpaceTimeUnknowns    [solverNumber],
-                    _temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber],
-                    _temporaryVariables._tempUnknowns             [solverNumber],
-                    _temporaryVariables._tempFluxUnknowns         [solverNumber],
-                    _temporaryVariables._tempPointForceSources    [solverNumber]);
+                    _predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverNumber],
+                    _predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber],
+                    _predictionTemporaryVariables._tempUnknowns             [solverNumber],
+                    _predictionTemporaryVariables._tempFluxUnknowns         [solverNumber],
+                    _predictionTemporaryVariables._tempPointForceSources    [solverNumber]);
           } else {
             solver->updateSolution(
                 fineGridCell.getCellDescriptionsIndex(),
                 element);
 
-            double admissibleTimeStepSize =
+            admissibleTimeStepSize =
                 solver->startNewTimeStep(
                     fineGridCell.getCellDescriptionsIndex(),element);
             if (!exahype::State::fuseADERDGPhases()) { // TODO(Dominic): Might be able to call computeTimeStepSizes directly?

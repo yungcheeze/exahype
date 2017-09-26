@@ -1839,7 +1839,7 @@ double exahype::solvers::ADERDGSolver::fusedTimeStep(
 
   // solver->synchroniseTimeStepping(cellDescription); // assumes this was done in neighbour merge
 
-  surfaceIntegralAndUpdateSolution(cellDescription);
+  updateSolution(cellDescription);
 
   performPredictionAndVolumeIntegral(
       cellDescription,
@@ -1857,7 +1857,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
     double*  tempPointForceSources) {
-  if (cellDescription.getType()==CellDescription::Type) {
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
     validateNoNansInADERDGSolver(cellDescription,"exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral [pre]");
 
     assertion1(cellDescription.getRefinementEvent()==CellDescription::None,cellDescription.toString());
@@ -2168,9 +2168,9 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
   }
 }
 
-void exahype::solvers::ADERDGSolver::surfaceIntegralAndUpdateSolution(CellDescription& cellDescription) {
-  assertion2(cellDescription.getType()!=CellDescription::Type::Cell ||
-      cellDescription.getNeighbourMergePerformed().all(),cellDescriptionsIndex,cellDescription.toString());
+void exahype::solvers::ADERDGSolver::updateSolution(CellDescription& cellDescription) {
+  assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
+      cellDescription.getNeighbourMergePerformed().all(),cellDescription.toString());
 
   if (cellDescription.getType()==CellDescription::Type::Cell &&
       cellDescription.getRefinementEvent()==CellDescription::None) {
@@ -2222,7 +2222,7 @@ void exahype::solvers::ADERDGSolver::surfaceIntegralAndUpdateSolution(CellDescri
         cellDescription.getCorrectorTimeStepSize());
 
     for (int i=0; i<getDataPerCell(); i++) {
-      assertion4(std::isfinite(newSolution[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);
+      assertion3(std::isfinite(newSolution[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==CellDescription::None);
@@ -2238,7 +2238,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const int element) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  surfaceIntegralAndUpdateSolution(cellDescription);
+  updateSolution(cellDescription);
 }
 
 void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(CellDescription& cellDescription) const {

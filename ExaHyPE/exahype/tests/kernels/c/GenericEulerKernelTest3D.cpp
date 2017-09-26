@@ -200,11 +200,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   logWarning("testVolumeIntegralNonlinear()",
       "Test is currently disabled since input data is not suitable.");
 
-  // output:
-  double lduh[320];  // intentionally left uninitialised
-
   // input:
-  const double dx[3] = {0.05, 0.05, 0.05};  // mesh spacing
   double lFhi[1280] = {0.0};  // nVar * nDOFx * nDOFy * nDOFz * (dim + 1)
   // lFhi = [ lFhi_x  | lFhi_y | lFhi_z | lShi], 320 entries each
   double *lFhi_x = lFhi;
@@ -378,7 +374,6 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
   kernels::aderdg::generic::c::riemannSolverLinear<false,GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
-      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
       dt,
       normalNonZero
   );
@@ -428,7 +423,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     FL[i] = static_cast<double>(i + 1);
     FR[i] = static_cast<double>(i - 1);
   }
-  double  *tempFaceUnknowns             = nullptr;
   double **tempStateSizedVectors        = new double*[6];
   tempStateSizedVectors[0]              = new double[6*nData];
   tempStateSizedVectors[1]              = tempStateSizedVectors[0]+nData;
@@ -462,7 +456,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
-      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
       dt,
       1  // normalNonZero
   );
@@ -554,8 +547,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   tempSpaceTimeFluxUnknowns[0] = new double[2*(3840+1280)];                // lFi+source; nVar * nDOFx * nDOFy * nDOFt * (dim+1)
   tempSpaceTimeFluxUnknowns[1] = tempSpaceTimeFluxUnknowns[0]+(3840+1280); // lQi; nVar * nDOFx * nDOFy * nDOFt * dim
 
-  double* tempStateSizedVector = nullptr;
-
   // Outputs:
   double *tempUnknowns     = new double[320];     // lQh; nVar * nDOFx * nDOFy * nDOFz
   double *tempFluxUnknowns = new double[960+320]; // lFh+source; nVar * nDOFx * nDOFy * nDOFz * (dm+1) *
@@ -569,7 +560,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
-      tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
        testSpaceTimePredictor::luh, // TODO(Dominic): Rename namespace to testSpaceTimePredictorLinear?
        dx, dt, tempSpaceTimeUnknowns[1]
@@ -681,7 +671,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns, tempFluxUnknowns,
-      tempStateSizedVector,
       luh,
       dx, timeStepSize
   );

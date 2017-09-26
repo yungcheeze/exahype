@@ -623,24 +623,6 @@ private:
    */
   void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
 
-  /**
-   * Computes the surface integral contributions to the
-   * cell update and then adds the update degrees
-   * on the solution degrees of freedom.
-   *
-   * <h2>Solution adjustments</h2>
-   * After the update, the solution is at time
-   * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
-   * The value cellDescription.getCorrectorTimeStepSize()
-   * handed to the solution adjustment function is the one
-   * used to update the solution.
-   *
-   * \todo We will not store the update field anymore
-   * but a previous solution. We will thus only perform
-   * a solution adjustment and adding of source term contributions here.
-   */
-  void surfaceIntegralAndUpdateSolution(CellDescription& cellDescription);
-
   class CompressionTask {
     private:
       ADERDGSolver&                             _solver;
@@ -1638,6 +1620,24 @@ public:
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
       double*  tempPointForceSources) final override;
+
+  /**
+   * Computes the surface integral contributions to the
+   * cell update and then adds the update degrees
+   * on the solution degrees of freedom.
+   *
+   * <h2>Solution adjustments</h2>
+   * After the update, the solution is at time
+   * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
+   * The value cellDescription.getCorrectorTimeStepSize()
+   * handed to the solution adjustment function is the one
+   * used to update the solution.
+   *
+   * \todo We will not store the update field anymore
+   * but a previous solution. We will thus only perform
+   * a solution adjustment and adding of source term contributions here.
+   */
+  void updateSolution(CellDescription& cellDescription);
 
  /** \copydoc ADERDGSolver::updateSolution()
   *
