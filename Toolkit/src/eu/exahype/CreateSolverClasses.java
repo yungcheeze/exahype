@@ -161,7 +161,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_projectName, _dimensions, _enableProfiler, _enableDeepProfiler, _microarchitecture);
-    FiniteVolumesKernel kernel = new FiniteVolumesKernel(node);
+    FiniteVolumesKernel kernel  = new FiniteVolumesKernel(node);
     eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
         solverName, kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), patchSize, hasConstants);
 

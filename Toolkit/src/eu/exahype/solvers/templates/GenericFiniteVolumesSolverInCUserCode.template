@@ -41,7 +41,9 @@ void {{project}}::{{solver}}::boundaryValues(
   // Number of variables    = {{numberOfVariables + numberOfParameters}} + #parameters
 
   // @todo Please implement/augment if required
-{{BoundaryValues}}
+  {%- for i in range_0_nVar %}
+  stateOutside[{{i}}] = stateInside[{{i}}];
+  {%- endfor %}
 }
 
 //***********************************************************
