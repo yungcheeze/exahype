@@ -19,10 +19,10 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  */
-exahype-project EulerFV
+exahype-project EulerADERDG
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./Demonstrators/EulerFV
+  output-directory const           = ./Demonstrators/EulerADERDG
 
   computational-domain
     dimension const         = 2
@@ -43,20 +43,26 @@ exahype-project EulerFV
   end distributed-memory
   */
   
-  solver ADER-DG MyEulerSolver
+  solver Limiting-ADER-DG MyEulerSolver
     variables const    = rho:1,j:3,E:1
-    patch-size const   = 10
-    maximum-mesh-size  = 2e-2    
+    order const        = 9
+    maximum-mesh-size  = 1e-1    
     time-stepping      = global
-    type const         = godunov
+    type const         = nonlinear, Legendre
     terms const        = flux
 	optimisation const = generic
-    language const    = C
+    language const             = C
+    limiter-type const         = musclhancock
+    limiter-optimisation const = generic
+    limiter-language const     = C
+    dmp-observables            = 5
+    dmp-relaxation-parameter   = 1e-4
+    dmp-difference-scaling     = 1e-3
     
     plot vtu::Cartesian::cells::ascii EulerWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.01
+      repeat          = 0.001
       output          = ./variables
     end plot
   end solver
