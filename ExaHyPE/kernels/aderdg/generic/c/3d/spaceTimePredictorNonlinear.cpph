@@ -666,7 +666,6 @@ void spaceTimePredictorNonlinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     double dt
@@ -715,87 +714,6 @@ void spaceTimePredictorNonlinear(
       &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
       lQhbnd, lFhbnd);
 #endif
-  
-  // TODO(Dominic): Keep a while for debugging
-//  double* lQhbnd2 = new double[2 * DIMENSIONS * basisSize2 *  (numberOfVariables+numberOfParameters)];
-//  double* lFhbnd2 = new double[2 * DIMENSIONS * basisSize2 *  numberOfVariables];
-  
-  // TODO(Dominic): Keep a while for debugging
-//  idx4 idx_lFhbnd(2*DIMENSIONS,basisSize,basisSize,numberOfVariables);
-//  
-//  std::cout << "lFhbnd2={" <<std::endl;
-//  for (int d=0; d<6; d++) {
-//    for (int v=0; v<1; v++) {
-//      for (int i=0; i<basisSize; i++) {
-//        for (int j=0; j<basisSize; j++) {
-//          std::cout << lFhbnd2[idx_lFhbnd(d,i,j,v)] << ",";
-//        }
-//        std::cout << std::endl;
-//      }
-//    }
-//    std::cout << "\\" << std::endl;
-//  }
-//  std::cout << "}" << std::endl;
-//  
-//  std::cout << "lFhbnd={" <<std::endl;
-//  for (int d=0; d<6; d++) {
-//    for (int v=0; v<1; v++) {
-//      for (int i=0; i<basisSize; i++) {
-//        for (int j=0; j<basisSize; j++) {
-//          std::cout << lFhbnd[idx_lFhbnd(d,i,j,v)] << ",";
-//        }
-//        std::cout << std::endl;
-//      }
-//    }
-//    std::cout << "\\" << std::endl;
-//  }
-//  std::cout << "}" << std::endl;
-  
-  //
-  
-//  std::cout << "lQhbnd2={" <<std::endl;
-//  for (int d=0; d<6; d++) {
-//    for (int v=0; v<1; v++) {
-//      for (int i=0; i<basisSize; i++) {
-//        for (int j=0; j<basisSize; j++) {
-//          std::cout << lQhbnd2[idx_lFhbnd(d,i,j,v)] << ",";
-//        }
-//        std::cout << std::endl;
-//      }
-//    }
-//    std::cout << "\\" << std::endl;
-//  }
-//  std::cout << "}" << std::endl;
-//  
-//  std::cout << "lQhbnd={" <<std::endl;
-//  for (int d=0; d<6; d++) {
-//    for (int v=0; v<1; v++) {
-//      for (int i=0; i<basisSize; i++) {
-//        for (int j=0; j<basisSize; j++) {
-//          std::cout << lQhbnd[idx_lFhbnd(d,i,j,v)] << ",";
-//        }
-//        std::cout << std::endl;
-//      }
-//    }
-//    std::cout << "\\" << std::endl;
-//  }
-//  std::cout << "}" << std::endl;
-  
-//  for (int i=0; i<2 * DIMENSIONS * basisSize2 *  numberOfVariables; i++) { 
-//    assertion3(tarch::la::equals(lFhbnd2[i],lFhbnd[i]),i,lFhbnd2[i],lFhbnd[i]);
-//  }
-//  
-//  for (int i=0; i<2 * DIMENSIONS * basisSize2 *  (numberOfVariables+numberOfParameters); i++) {
-//    assertion3(tarch::la::equals(lQhbnd2[i],lQhbnd[i]),i,lQhbnd2[i],lQhbnd[i]);
-//  }
-  
-  // 80,80, 80,80, 80,80
-  // numberOfVariables=5
-  // basisSize=4
-  // basisSize2=16
-  
-//  delete[] lQhbnd2;
-//  delete[] lFhbnd2;
 }
 
 }  // namespace c

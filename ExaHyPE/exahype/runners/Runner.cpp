@@ -697,23 +697,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
-    if (exahype::State::fuseADERDGPhases()) {
-      repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-      if (plot) {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-      } else {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-      }
-      repository.iterate();
+    repository.getState().switchToPredictionContext();
+    if (plot) {
+      repository.switchToPredictionAndPlot();
     } else {
-      repository.getState().switchToPredictionContext();
-      if (plot) {
-        repository.switchToPredictionAndPlot();
-      } else {
-        repository.switchToPrediction();
-      }
-      repository.iterate();
+      repository.switchToPrediction();
     }
+    repository.iterate();
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
     printTimeStepInfo(-1,repository);
@@ -939,7 +929,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     // TODO(Dominic): Think about something in order to not shift the time step size if global recomputation
     logInfo("updateMeshAndSubdomains(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
-    repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
+    repository.switchToLocalRecomputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
     repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
   } // LocalRecomputation is done here
 
@@ -951,8 +941,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
     logInfo("updateMeshAndSubdomains(...)","recompute predictor globally and reinitialise fused time stepping");
-    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+    repository.getState().switchToPredictionContext();
+    repository.switchToPrediction();
     repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
@@ -1094,10 +1084,10 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
   repository.getState().switchToADERDGTimeStepContext();
 
   if (numberOfStepsToRun==0) {
-    repository.switchToPlotAndADERDGTimeStep();
+    repository.switchToPlotAndFusedTimeStep();
     repository.iterate();
   } else {
-    repository.switchToADERDGTimeStep();
+    repository.switchToFusedTimeStep();
     repository.iterate(numberOfStepsToRun);
   }
 
@@ -1138,7 +1128,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   repository.iterate(); // todo uncomment
 
   repository.getState().switchToTimeStepSizeComputationContext();
-  repository.switchToSolutionUpdateAndTimeStepSizeComputation();  // Face to cell + Inside cell
+  repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {

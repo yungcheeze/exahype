@@ -30,17 +30,14 @@ namespace c {
 * (smax*Id).
 *
 * We need to consider material parameters
-* in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
+* in QL and QR.
 * We don't need to consider material parameters
-* in FL,FR,tempStateSizedSquareMatrices,
+* in FL,FR.
 */
 template <bool useNCP, typename SolverType>
 void riemannSolverNonlinear(SolverType& solver,
                           double* FL, double* FR, const double* const QL,
                           const double* const QR,
-                          double* tempFaceUnknownsArray,
-                          double** tempStateSizedVectors,
-                          double** tempStateSizedSquareMatrices,
                           const double dt,
                           const int direction) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;

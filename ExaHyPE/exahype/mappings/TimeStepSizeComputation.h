@@ -92,32 +92,25 @@ class exahype::mappings::TimeStepSizeComputation {
   std::vector<double> _maxCellSizes;
 
   /**
-   * Per Solver, a bunch of temporary variables necessary for
-   * performing a time step update in a cell.
-   */
-  exahype::solvers::TimeStepSizeComputationTemporaryVariables _temporaryVariables;
-
-  /**
    * Prepare a appropriately sized vector _minTimeStepSizes
    * with elements initiliased to MAX_DOUBLE.
    */
   void prepareLocalTimeStepVariables();
 
+ public:
   /**
    * Weights the min next predictor time step size
    * by the user's safety factor for the fused time stepping
    * algorithm.
    */
-  void weighMinNextPredictorTimeStepSize(
-      exahype::State& state,
-      exahype::solvers::Solver* solver) const;
+  static void weighMinNextPredictorTimeStepSize(exahype::solvers::Solver* solver);
 
   /**
    * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
    * with stable time step sizes if we detect a-posteriori that the CFL condition was
    * harmed by the estimated predictor time step size used in the last iteration.
    */
-  void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::State& state,exahype::solvers::Solver* solver) const;
+  static void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::solvers::Solver* solver);
 
   /**
    * If the original time stepping algorithm is used for the ADER-DG scheme,
@@ -125,16 +118,15 @@ class exahype::mappings::TimeStepSizeComputation {
    * predictor time step size.
    * We further need to
    */
-  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver) const;
+  static void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver);
 
 
   /**
    * Similar to ::overwriteCorrectorTimeStepDataWithPredictorValues(exahype::solvers::Solver*) but for
    * a cell description.
    */
-  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element) const;
+  static void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element);
 
- public:
   /**
    * Run through whole tree. Run concurrently on fine grid.
    */

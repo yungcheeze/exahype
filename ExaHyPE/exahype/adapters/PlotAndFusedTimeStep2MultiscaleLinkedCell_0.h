@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_ADERDGTimeStep2MultiscaleLinkedCell_0_H_
-#define EXAHYPE_ADAPTERS_ADERDGTimeStep2MultiscaleLinkedCell_0_H_
+#ifndef EXAHYPE_ADAPTERS_PlotAndFusedTimeStep2MultiscaleLinkedCell_0_H_
+#define EXAHYPE_ADAPTERS_PlotAndFusedTimeStep2MultiscaleLinkedCell_0_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class ADERDGTimeStep2MultiscaleLinkedCell_0;
+        class PlotAndFusedTimeStep2MultiscaleLinkedCell_0;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::ADERDGTimeStep2MultiscaleLinkedCell_0 {
+class exahype::adapters::PlotAndFusedTimeStep2MultiscaleLinkedCell_0 {
   public:
     peano::MappingSpecification   touchVertexLastTimeSpecification(int level) const;
     peano::MappingSpecification   touchVertexFirstTimeSpecification(int level) const;
@@ -42,16 +42,16 @@ class exahype::adapters::ADERDGTimeStep2MultiscaleLinkedCell_0 {
     peano::MappingSpecification   descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    ADERDGTimeStep2MultiscaleLinkedCell_0();
+    PlotAndFusedTimeStep2MultiscaleLinkedCell_0();
 
     #if defined(SharedMemoryParallelisation)
-    ADERDGTimeStep2MultiscaleLinkedCell_0(const ADERDGTimeStep2MultiscaleLinkedCell_0& masterThread);
+    PlotAndFusedTimeStep2MultiscaleLinkedCell_0(const PlotAndFusedTimeStep2MultiscaleLinkedCell_0& masterThread);
     #endif
 
-    virtual ~ADERDGTimeStep2MultiscaleLinkedCell_0();
+    virtual ~PlotAndFusedTimeStep2MultiscaleLinkedCell_0();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const ADERDGTimeStep2MultiscaleLinkedCell_0& workerThread);
+    void mergeWithWorkerThread(const PlotAndFusedTimeStep2MultiscaleLinkedCell_0& workerThread);
     #endif
 
     void createInnerVertex(

@@ -72,13 +72,59 @@ private:
    * where the algorithm section is set. The new
    * state is then broadcasted by Peano to all other ranks.)
    */
-   exahype::State _localState;
+  exahype::State _localState;
 
   /**
-   * A bunch of temporary variables for performing a solution
-   * update.
+   * A minimum time step size for each solver.
    */
-  exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
+  std::vector<double> _minTimeStepSizes;
+
+  /**
+   * A minimum cell size for each solver.
+   */
+  std::vector<double> _minCellSizes;
+
+  /**
+   * A maximum cell size for each solver.
+   */
+  std::vector<double> _maxCellSizes;
+
+  /**
+   * Prepare a appropriately sized vector _minTimeStepSizes
+   * with elements initiliased to MAX_DOUBLE.
+   */
+  void prepareLocalTimeStepVariables();
+
+  /**
+   * Initialises temporary variables
+   * in case we use fused time stepping.
+   *
+   * \note We parallelise over the domain
+   * (mapping is copied for each thread) and
+   * over the solvers registered on a cell.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void initialiseTemporaryVariables();
+
+  /**
+   * Deletes temporary variables
+   * in case we use fused time stepping.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void deleteTemporaryVariables();
+
+  /**
+   * Only required if fused time stepping is switched on.
+   */
+  exahype::solvers::PredictionTemporaryVariables _predictionTemporaryVariables;
 
   /**
    * Per solver a flag, indicating if has requested

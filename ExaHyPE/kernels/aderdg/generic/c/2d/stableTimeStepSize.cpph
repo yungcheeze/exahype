@@ -14,7 +14,6 @@ template <typename SolverType>
 double kernels::aderdg::generic::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* lambda,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -30,6 +29,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   
   idx3 idx_luh(basisSize, basisSize, numberOfData); // idx_luh(y,x,nVar)
   
+  double lambda[numberOfVariables] = {0.0};
   double dt = std::numeric_limits<double>::max();
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {

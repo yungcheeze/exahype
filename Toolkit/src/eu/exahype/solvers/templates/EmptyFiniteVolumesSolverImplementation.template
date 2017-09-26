@@ -7,12 +7,12 @@
   // @todo Please implement/augment if required
 }
 
-double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx) {
   // @todo Please implement/augment if required
   return std::numeric_limits<double>::max();
 }
 
-void {{Project}}::{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS, double>& dx,const double dt, double& maxAdmissibleDt) {
+void {{Project}}::{{Solver}}::solutionUpdate(double* luhNew,const double* luh,const tarch::la::Vector<DIMENSIONS, double>& dx,const double dt, double& maxAdmissibleDt) {
   // @todo Please implement/augment if required
   maxAdmissibleDt = std::numeric_limits<double>::max();
 }

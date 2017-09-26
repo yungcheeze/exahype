@@ -253,7 +253,6 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -349,7 +348,6 @@ public:
 
   virtual void solutionUpdate(
       double* luhNew,const double* luh,
-      double** tempStateSizedArrays,double** tempUnknowns,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double dt, double& maxAdmissibleDt) = 0;
 
@@ -478,7 +476,9 @@ public:
 
   void startNewTimeStep() override;
 
-  void updateTimeStepSizes() override;
+  void updateTimeStepSizesFused() override;
+
+  void updateTimeStepSizes()      override;
 
   void zeroTimeStepSizes() override;
 
@@ -591,17 +591,19 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override final;
+
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element,
-        double*   tempEigenvalues) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * Rolls the solver time step data back to the
@@ -615,17 +617,20 @@ public:
 
   void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) final override;
+
+  double fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) final override;
 
   /**
    * TODO(Dominic): Update docu.

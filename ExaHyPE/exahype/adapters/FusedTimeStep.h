@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_TimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_TimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_FusedTimeStep_H_
+#define EXAHYPE_ADAPTERS_FusedTimeStep_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/PreProcessing.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/adapters/FusedTimeStep2MultiscaleLinkedCell_0.h"
+ #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class TimeStepSizeComputation;
+        class FusedTimeStep;
       } 
 }
 
@@ -38,15 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::TimeStepSizeComputation {
+class exahype::adapters::FusedTimeStep {
   private:
-    typedef mappings::PreProcessing Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
-    typedef mappings::Sending Mapping2;
+    typedef adapters::FusedTimeStep2MultiscaleLinkedCell_0 Mapping0;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::SolutionUpdate Mapping2;
+    typedef mappings::Sending Mapping3;
 
-     Mapping0  _map2PreProcessing;
-     Mapping1  _map2TimeStepSizeComputation;
-     Mapping2  _map2Sending;
+     Mapping0  _map2FusedTimeStep2MultiscaleLinkedCell_0;
+     Mapping1  _map2Merging;
+     Mapping2  _map2SolutionUpdate;
+     Mapping3  _map2Sending;
 
 
   public:
@@ -58,16 +61,16 @@ class exahype::adapters::TimeStepSizeComputation {
     peano::MappingSpecification         descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    TimeStepSizeComputation();
+    FusedTimeStep();
 
     #if defined(SharedMemoryParallelisation)
-    TimeStepSizeComputation(const TimeStepSizeComputation& masterThread);
+    FusedTimeStep(const FusedTimeStep& masterThread);
     #endif
 
-    virtual ~TimeStepSizeComputation();
+    virtual ~FusedTimeStep();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const TimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const FusedTimeStep& workerThread);
     #endif
 
     void createInnerVertex(

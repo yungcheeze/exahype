@@ -34,7 +34,6 @@ template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
-    double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {  
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -44,16 +43,17 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   constexpr int patchBegin         = ghostLayerWidth;
   constexpr int patchEnd           = patchBegin+patchSize;
   constexpr double cflFactor       = SolverType::CFL;
+    
+  const double cellSize[2]           = {dx[0]/patchSize, dx[1]/patchSize};
+  const double invCellSizeTimesDt[2] = {dt/cellSize[0], dt/cellSize[1]};
   
-  idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
-  
-  const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
-
   double fL[numberOfVariables];
   double fR[numberOfVariables];
 
   double dt_max_allowed = std::numeric_limits<double>::max();
-
+  
+  idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
+  
   // x faces
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
@@ -70,8 +70,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * fL[l];
-        luh_new[idx(j, k+1, l)] += dt / cellSize[0] * fR[l];
+        luh_new[idx(j, k, l)]   -= invCellSizeTimesDt[0] * fL[l];
+        luh_new[idx(j, k+1, l)] += invCellSizeTimesDt[0] * fR[l];
       }
     }
   }
@@ -85,13 +85,12 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
           luh + idx(j, k, 0),
           luh + idx(j+1, k, 0),
           1);
-      //tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * fL[l];
-        luh_new[idx(j+1, k, l)] += dt / cellSize[1] * fR[l];
+        luh_new[idx(j, k, l)]   -= invCellSizeTimesDt[1] * fL[l];
+        luh_new[idx(j+1, k, l)] += invCellSizeTimesDt[1] * fR[l];
       }
     }
   }

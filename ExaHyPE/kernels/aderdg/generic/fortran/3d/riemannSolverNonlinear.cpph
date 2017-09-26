@@ -52,9 +52,6 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
-    double*  tempFaceUnknownsArray,
-    double** tempStateSizedVectors,
-    double** tempStateSizedSquareMatrices,
     const double dt,
     const int normalNonZero){
 

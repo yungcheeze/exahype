@@ -1012,11 +1012,8 @@ public:
    * @param[in]    direction  Index of the nonzero normal vector component,
    *               i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
-  virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR,
-                             double*   tempFaceUnknownsArray,
-                             double**  tempStateSizedVectors,
-                             double**  tempStateSizedSquareMatrices,
+  virtual void riemannSolver(double* FL, double* FR,
+                             const double* const QL,const double* const QR,
                              const double dt,
                              const int direction,
                              bool isBoundaryFace) = 0;
@@ -1074,7 +1071,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       const double* const luh,
       const tarch::la::Vector<DIMENSIONS, 
       double>& cellSize, 
@@ -1090,7 +1086,6 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -1270,6 +1265,15 @@ public:
    */
   void startNewTimeStep() override;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does advance the predictor time stamp in time.
+   */
+  void updateTimeStepSizesFused() override;
+
+  /**
+   * Does not advance the predictor time stamp in time.
+   */
   void updateTimeStepSizes() override;
 
   /**
@@ -1513,7 +1517,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       double*  tempPointForceSources);
 
   void validateNoNansInADERDGSolver(
@@ -1526,22 +1529,34 @@ public:
    * time stamps forward.
    */
   double computeTimeStepSize(
-      CellDescription& cellDescription,
-      double*   tempEigenvalues);
+      CellDescription& cellDescription);
+
+  double startNewTimeStep(
+      CellDescription& cellDescription);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override final;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Advances the predictor time stamp in time.
+   */
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
+
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does not advance the predictor time stamp in time.
+   */
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int solverElement,
-        double*   tempEigenvalues) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * If we use the original time stepping
@@ -1552,6 +1567,8 @@ public:
    * It ensures that the corrector time size
    * is set to the admissible time step size that
    * was computed using the latest corrector solution.
+   *
+   * TODO(Dominic): Get rid of this eventually
    */
   void reconstructStandardTimeSteppingData(
       const int cellDescriptionsIndex,
@@ -1616,9 +1633,16 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) override;
+
+  double fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   /**
    * Computes the surface integral contributions to the
@@ -1636,13 +1660,15 @@ public:
    * but a previous solution. We will thus only perform
    * a solution adjustment and adding of source term contributions here.
    */
+  void updateSolution(CellDescription& cellDescription);
+
+ /** \copydoc ADERDGSolver::updateSolution()
+  *
+  *  \see updateSolution(CellDescription,double**,double**)
+  */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * TODO(Dominic): Update docu.

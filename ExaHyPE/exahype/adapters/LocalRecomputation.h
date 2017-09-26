@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
-#define EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
+#ifndef EXAHYPE_ADAPTERS_LocalRecomputation_H_
+#define EXAHYPE_ADAPTERS_LocalRecomputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,17 +18,16 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/adapters/LocalRecomputation2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/PreProcessing.h"
- #include "exahype/mappings/Merging.h"
- #include "exahype/mappings/Prediction.h"
- #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
+ #include "exahype/mappings/LocalRecomputation.h"
  #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictionAndFusedTimeSteppingInitialisation;
+        class LocalRecomputation;
       } 
 }
 
@@ -40,19 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
+class exahype::adapters::LocalRecomputation {
   private:
-    typedef mappings::PreProcessing Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::Prediction Mapping2;
-    typedef mappings::FusedTimeSteppingInitialisation Mapping3;
-    typedef mappings::Sending Mapping4;
+    typedef adapters::LocalRecomputation2MultiscaleLinkedCell_0 Mapping0;
+    typedef mappings::PreProcessing Mapping1;
+    typedef mappings::LocalRecomputation Mapping2;
+    typedef mappings::Sending Mapping3;
 
-     Mapping0  _map2PreProcessing;
-     Mapping1  _map2Merging;
-     Mapping2  _map2Prediction;
-     Mapping3  _map2FusedTimeSteppingInitialisation;
-     Mapping4  _map2Sending;
+     Mapping0  _map2LocalRecomputation2MultiscaleLinkedCell_0;
+     Mapping1  _map2PreProcessing;
+     Mapping2  _map2LocalRecomputation;
+     Mapping3  _map2Sending;
 
 
   public:
@@ -64,16 +61,16 @@ class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
     peano::MappingSpecification         descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    PredictionAndFusedTimeSteppingInitialisation();
+    LocalRecomputation();
 
     #if defined(SharedMemoryParallelisation)
-    PredictionAndFusedTimeSteppingInitialisation(const PredictionAndFusedTimeSteppingInitialisation& masterThread);
+    LocalRecomputation(const LocalRecomputation& masterThread);
     #endif
 
-    virtual ~PredictionAndFusedTimeSteppingInitialisation();
+    virtual ~LocalRecomputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictionAndFusedTimeSteppingInitialisation& workerThread);
+    void mergeWithWorkerThread(const LocalRecomputation& workerThread);
     #endif
 
     void createInnerVertex(

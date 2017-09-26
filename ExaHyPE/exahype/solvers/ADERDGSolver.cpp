@@ -591,13 +591,37 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
+void exahype::solvers::ADERDGSolver::updateTimeStepSizesFused() {
+  switch (_timeStepping) {
+  case TimeStepping::Global:
+    _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
+    _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+
+    _minPredictorTimeStamp    =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+
+    _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+    break;
+  case TimeStepping::GlobalFixed:
+    _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
+    _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+
+    _minPredictorTimeStamp =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+    break;
+  }
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+}
+
 void exahype::solvers::ADERDGSolver::updateTimeStepSizes() {
   switch (_timeStepping) {
     case TimeStepping::Global:
       _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
 
-      _minPredictorTimeStamp    =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+      _minPredictorTimeStamp    =  _minCorrectorTimeStamp;
 
       _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
       break;
@@ -605,7 +629,7 @@ void exahype::solvers::ADERDGSolver::updateTimeStepSizes() {
       _minCorrectorTimeStepSize = _minNextPredictorTimeStepSize;
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
 
-      _minPredictorTimeStamp =  _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+      _minPredictorTimeStamp =  _minCorrectorTimeStamp;
       break;
   }
 
@@ -1826,157 +1850,184 @@ bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpd
   return false;
 }
 
+double exahype::solvers::ADERDGSolver::fusedTimeStep(
+    const int cellDescriptionsIndex,
+    const int element,
+    double** tempSpaceTimeUnknowns,
+    double** tempSpaceTimeFluxUnknowns,
+    double*  tempUnknowns,
+    double*  tempFluxUnknowns,
+    double*  tempPointForceSources
+) {
+  CellDescription& cellDescription =
+      getCellDescription(cellDescriptionsIndex,element);
+
+  // solver->synchroniseTimeStepping(cellDescription); // assumes this was done in neighbour merge
+
+  updateSolution(cellDescription);
+
+  performPredictionAndVolumeIntegral(
+      cellDescription,
+      tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
+      tempUnknowns,tempFluxUnknowns,
+      tempPointForceSources);
+
+  return startNewTimeStep(cellDescription);
+}
+
 void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     CellDescription& cellDescription,
     double** tempSpaceTimeUnknowns,
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector,
     double*  tempPointForceSources) {
-  assertion1(cellDescription.getRefinementEvent()==CellDescription::None,cellDescription.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()),cellDescription.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()),cellDescription.toString());
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    validateNoNansInADERDGSolver(cellDescription,"exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral [pre]");
 
-  assertion2(std::isfinite(cellDescription.getPredictorTimeStepSize()),
-             cellDescription.toString(),toString());
-  assertion3(cellDescription.getPredictorTimeStepSize()<
-             std::numeric_limits<double>::max(),
-             cellDescription.toString(),toString(),tarch::parallel::Node::getInstance().getRank());
-  assertion2(cellDescription.getPredictorTimeStepSize()>0,
-             cellDescription.toString(),toString());
+    assertion1(cellDescription.getRefinementEvent()==CellDescription::None,cellDescription.toString());
+    assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
+    assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
+    assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()),cellDescription.toString());
+    assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()),cellDescription.toString());
 
-  assertion2(std::isfinite(cellDescription.getPredictorTimeStamp()),
-             cellDescription.toString(),toString());
-  assertion2(cellDescription.getPredictorTimeStamp()<
-             std::numeric_limits<double>::max(),
-             cellDescription.toString(),toString());
-  assertion2(cellDescription.getPredictorTimeStamp()>=0,
-             cellDescription.toString(),toString());
+    assertion2(std::isfinite(cellDescription.getPredictorTimeStepSize()),
+        cellDescription.toString(),toString());
+    assertion3(cellDescription.getPredictorTimeStepSize()<
+        std::numeric_limits<double>::max(),
+        cellDescription.toString(),toString(),tarch::parallel::Node::getInstance().getRank());
+    assertion2(cellDescription.getPredictorTimeStepSize()>0,
+        cellDescription.toString(),toString());
 
-  assertionEquals1(0,tarch::la::max(cellDescription.getFacewiseLimiterStatus()),
-      cellDescription.toString());
+    assertion2(std::isfinite(cellDescription.getPredictorTimeStamp()),
+        cellDescription.toString(),toString());
+    assertion2(cellDescription.getPredictorTimeStamp()<
+        std::numeric_limits<double>::max(),
+        cellDescription.toString(),toString());
+    assertion2(cellDescription.getPredictorTimeStamp()>=0,
+        cellDescription.toString(),toString());
 
-  // persistent fields
-  // volume DoF (basisSize**(DIMENSIONS))
-  double* luh  = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  double* lduh = DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
-  // face DoF (basisSize**(DIMENSIONS-1))
-  double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
-  double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+    assertionEquals1(0,tarch::la::max(cellDescription.getFacewiseLimiterStatus()),
+        cellDescription.toString());
 
-  for (int i=0; i<getUnknownsPerCell(); i++) { // cellDescription.getCorrectorTimeStepSize==0.0 is an initial condition
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    // persistent fields
+    // volume DoF (basisSize**(DIMENSIONS))
+    double* luh  = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* lduh = DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
+    // face DoF (basisSize**(DIMENSIONS-1))
+    double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
+    double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+
+    for (int i=0; i<getUnknownsPerCell(); i++) { // cellDescription.getCorrectorTimeStepSize==0.0 is an initial condition
+      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
 
-  pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
-  // luh, t, dt, cell cell center, cell size, data allocation for forceVect
+    pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
+    // luh, t, dt, cell cell center, cell size, data allocation for forceVect
 
-//TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
+    //TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
 #ifdef OPT_KERNELS
-  double* dx = &cellDescription.getSize()[0];
+    double* dx = &cellDescription.getSize()[0];
 #if DIMENSIONS==2
-  double inverseDx[2];
+    double inverseDx[2];
 #else
-  double inverseDx[3];
-  inverseDx[2] = 1.0/dx[2];
+    double inverseDx[3];
+    inverseDx[2] = 1.0/dx[2];
 #endif
-  inverseDx[0] = 1.0/dx[0];
-  inverseDx[1] = 1.0/dx[1];
-  spaceTimePredictor(
-      lQhbnd,
-      lFhbnd,
-      tempSpaceTimeUnknowns,
-      tempSpaceTimeFluxUnknowns,
+    inverseDx[0] = 1.0/dx[0];
+    inverseDx[1] = 1.0/dx[1];
+    spaceTimePredictor(
+        lQhbnd,
+        lFhbnd,
+        tempSpaceTimeUnknowns,
+        tempSpaceTimeFluxUnknowns,
 #ifdef NO_TIME_AVERAGING
-      nullptr,
-      nullptr,
+        nullptr,
+        nullptr,
 #else
-      tempUnknowns,
-      tempFluxUnknowns,
+        tempUnknowns,
+        tempFluxUnknowns,
 #endif
-      tempStateSizedVector,
-      luh,
-      &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
-      cellDescription.getPredictorTimeStepSize(),
-      tempPointForceSources);
-      
-  // TODO(Future Opt.)
-  // Volume integral should be performed using the space time
-  // flux unknowns. Something equivalent can also be done for
-  // the extrpolated fluxes. Here, we can also perform the
-  // time averaging on the fly.
-  // Remove the tempFluxUnkowns and tempUnknowns.
-  volumeIntegral(
-      lduh,
-#ifdef NO_TIME_AVERAGING
-      tempSpaceTimeFluxUnknowns[0],
-#else
-      tempFluxUnknowns,
-#endif
-      &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
-#else 
-  spaceTimePredictor(
-      lQhbnd,
-      lFhbnd,
-      tempSpaceTimeUnknowns,
-      tempSpaceTimeFluxUnknowns,
-#ifdef NO_TIME_AVERAGING
-      nullptr,
-      nullptr,
-#else
-      tempUnknowns,
-      tempFluxUnknowns,
-#endif
-      tempStateSizedVector,
-      luh,
-      cellDescription.getSize(),
-      cellDescription.getPredictorTimeStepSize(),
-      tempPointForceSources);
+        luh,
+        &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
+        cellDescription.getPredictorTimeStepSize(),
+        tempPointForceSources);
 
-  // TODO(Future Opt.)
-  // Volume integral should be performed using the space time
-  // flux unknowns. Something equivalent can also be done for
-  // the extrpolated fluxes. Here, we can also perform the
-  // time averaging on the fly.
-  // Remove the tempFluxUnkowns and tempUnknowns.
-//  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
-  volumeIntegral(
-      lduh,
+    // TODO(Future Opt.)
+    // Volume integral should be performed using the space time
+    // flux unknowns. Something equivalent can also be done for
+    // the extrpolated fluxes. Here, we can also perform the
+    // time averaging on the fly.
+    // Remove the tempFluxUnkowns and tempUnknowns.
+    volumeIntegral(
+        lduh,
 #ifdef NO_TIME_AVERAGING
-      tempSpaceTimeFluxUnknowns[0],
+        tempSpaceTimeFluxUnknowns[0],
 #else
-      tempFluxUnknowns,
+        tempFluxUnknowns,
 #endif
-      cellDescription.getSize());
+        &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+#else
+    spaceTimePredictor(
+        lQhbnd,
+        lFhbnd,
+        tempSpaceTimeUnknowns,
+        tempSpaceTimeFluxUnknowns,
+#ifdef NO_TIME_AVERAGING
+        nullptr,
+        nullptr,
+#else
+        tempUnknowns,
+        tempFluxUnknowns,
+#endif
+        luh,
+        cellDescription.getSize(),
+        cellDescription.getPredictorTimeStepSize(),
+        tempPointForceSources);
+
+    // TODO(Future Opt.)
+    // Volume integral should be performed using the space time
+    // flux unknowns. Something equivalent can also be done for
+    // the extrpolated fluxes. Here, we can also perform the
+    // time averaging on the fly.
+    // Remove the tempFluxUnkowns and tempUnknowns.
+    //  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
+    volumeIntegral(
+        lduh,
+#ifdef NO_TIME_AVERAGING
+        tempSpaceTimeFluxUnknowns[0],
+#else
+        tempFluxUnknowns,
+#endif
+        cellDescription.getSize());
 #endif
 
-  for (int i=0; i<getTempSpaceTimeUnknownsSize(); i++) { // cellDescription.getCorrectorTimeStepSize==0.0 is an initial condition
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-  for (int i=0; i<getSpaceTimeFluxUnknownsPerCell(); i++) {
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    for (int i=0; i<getTempSpaceTimeUnknownsSize(); i++) { // cellDescription.getCorrectorTimeStepSize==0.0 is an initial condition
+      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    for (int i=0; i<getSpaceTimeFluxUnknownsPerCell(); i++) {
+      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  #if defined(Debug) || defined(Asserts)
-  if(usePaddedData_nVar()) {
-    //TODO JMG add assert ignoring padding
-  } else {
-//    for (int i=0; i<getDataPerCell(); i++) {
-//    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-//    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
-//      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-//    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+#if defined(Debug) || defined(Asserts)
+    if(usePaddedData_nVar()) {
+      //TODO JMG add assert ignoring padding
+    } else {
+      //    for (int i=0; i<getDataPerCell(); i++) {
+      //    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+      //    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+      //    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
+      //      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+      //    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    }
+#endif
+
+    validateNoNansInADERDGSolver(cellDescription,"exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral [post]");
   }
-  #endif
 }
 
-double exahype::solvers::ADERDGSolver::computeTimeStepSize(
-    CellDescription& cellDescription, double*   tempEigenvalues) {
+double exahype::solvers::ADERDGSolver::computeTimeStepSize(CellDescription& cellDescription) {
   if (cellDescription.getType()==CellDescription::Type::Cell) {
     assertion1(cellDescription.getRefinementEvent()==CellDescription::None,cellDescription.toString());
     const double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
@@ -1994,10 +2045,10 @@ double exahype::solvers::ADERDGSolver::computeTimeStepSize(
     inverseDx[0] = 1.0/dx[0];
     inverseDx[1] = 1.0/dx[1];
     double admissibleTimeStepSize =
-        stableTimeStepSize(luh,tempEigenvalues,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+        stableTimeStepSize(luh,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
 #else
     double admissibleTimeStepSize =
-        stableTimeStepSize(luh,tempEigenvalues,cellDescription.getSize());
+        stableTimeStepSize(luh,cellDescription.getSize());
 #endif
     assertion2(admissibleTimeStepSize>0,admissibleTimeStepSize,cellDescription.toString());
     assertion3(admissibleTimeStepSize<std::numeric_limits<double>::max(),std::numeric_limits<double>::max(),admissibleTimeStepSize,cellDescription.toString());
@@ -2009,16 +2060,11 @@ double exahype::solvers::ADERDGSolver::computeTimeStepSize(
   return std::numeric_limits<double>::max();
 }
 
-double exahype::solvers::ADERDGSolver::startNewTimeStep(
-    const int cellDescriptionsIndex,
-    const int element,
-    double*   tempEigenvalues) {
-  CellDescription& cellDescription =
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
+double exahype::solvers::ADERDGSolver::startNewTimeStep(CellDescription& cellDescription) {
   if (cellDescription.getType()==CellDescription::Type::Cell) {
     double admissibleTimeStepSize =
-        computeTimeStepSize(cellDescription,tempEigenvalues);
+        computeTimeStepSize(cellDescription);
 
     // Direct update of the cell description time steps
     // Note that these local quantities might
@@ -2042,18 +2088,38 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
   return std::numeric_limits<double>::max();
 }
 
-double exahype::solvers::ADERDGSolver::updateTimeStepSizes(
+double exahype::solvers::ADERDGSolver::startNewTimeStep(const int cellDescriptionsIndex,const int element) {
+  CellDescription& cellDescription =
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  return startNewTimeStep(cellDescription);
+}
+
+double exahype::solvers::ADERDGSolver::updateTimeStepSizesFused(
       const int cellDescriptionsIndex,
-      const int solverElement,
-      double*   tempEigenvalues) {
+      const int solverElement) {
   CellDescription& cellDescription = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
   if (cellDescription.getType()==CellDescription::Type::Cell) {
-    const double admissibleTimeStepSize =
-        computeTimeStepSize(cellDescription,tempEigenvalues);
+    const double admissibleTimeStepSize = computeTimeStepSize(cellDescription);
 
     cellDescription.setCorrectorTimeStepSize( admissibleTimeStepSize );
     cellDescription.setPredictorTimeStepSize( admissibleTimeStepSize );
     cellDescription.setPredictorTimeStamp   ( cellDescription.getCorrectorTimeStamp()+admissibleTimeStepSize );
+
+    return admissibleTimeStepSize;
+  }
+  return std::numeric_limits<double>::max();
+}
+
+double exahype::solvers::ADERDGSolver::updateTimeStepSizes(
+      const int cellDescriptionsIndex,
+      const int solverElement) {
+  CellDescription& cellDescription = ADERDGSolver::getCellDescription(cellDescriptionsIndex,solverElement);
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    const double admissibleTimeStepSize = computeTimeStepSize(cellDescription);
+
+    cellDescription.setCorrectorTimeStepSize( admissibleTimeStepSize );
+    cellDescription.setPredictorTimeStepSize( admissibleTimeStepSize );
+    cellDescription.setPredictorTimeStamp   ( cellDescription.getCorrectorTimeStamp() ); // Potentially not necessary
 
     return admissibleTimeStepSize;
   }
@@ -2120,9 +2186,7 @@ void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingDataAfterRol
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
     const int cellDescriptionsIndex,
-    const int element,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    const int element) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
 
@@ -2144,17 +2208,9 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
   }
 }
 
-void exahype::solvers::ADERDGSolver::updateSolution(
-    const int cellDescriptionsIndex,
-    const int element,
-    double** tempStateSizedArrays,
-    double** tempUnknowns,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  // reset helper variables
-  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  assertion2(cellDescription.getType()!=CellDescription::Type::Cell ||
-      cellDescription.getNeighbourMergePerformed().all(),cellDescriptionsIndex,cellDescription.toString());
+void exahype::solvers::ADERDGSolver::updateSolution(CellDescription& cellDescription) {
+  assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
+      cellDescription.getNeighbourMergePerformed().all(),cellDescription.toString());
 
   if (cellDescription.getType()==CellDescription::Type::Cell &&
       cellDescription.getRefinementEvent()==CellDescription::None) {
@@ -2177,20 +2233,20 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(lFhbnd[i]),cellDescription.toString(),"updateSolution",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
     //TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
-    #ifdef OPT_KERNELS
+#ifdef OPT_KERNELS
     double* dx = &cellDescription.getSize()[0];
-    #if DIMENSIONS==2
+#if DIMENSIONS==2
     double inverseDx[2];
-    #else
+#else
     double inverseDx[3];
     inverseDx[2] = 1.0/dx[2];
-    #endif
+#endif
     inverseDx[0] = 1.0/dx[0];
     inverseDx[1] = 1.0/dx[1];
     surfaceIntegral(lduh,lFhbnd,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
-    #else
+#else
     surfaceIntegral(lduh,lFhbnd,cellDescription.getSize());
-    #endif
+#endif
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution(...)",i);
@@ -2199,14 +2255,14 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
 
     adjustSolution(
-          newSolution,
-          cellDescription.getOffset()+0.5*cellDescription.getSize(),
-          cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
-          cellDescription.getCorrectorTimeStepSize());
+        newSolution,
+        cellDescription.getOffset()+0.5*cellDescription.getSize(),
+        cellDescription.getSize(),
+        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+        cellDescription.getCorrectorTimeStepSize());
 
     for (int i=0; i<getDataPerCell(); i++) {
-      assertion4(std::isfinite(newSolution[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);
+      assertion3(std::isfinite(newSolution[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==CellDescription::None);
@@ -2215,6 +2271,14 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   updateHelperStatus(cellDescription);
   // marking for augmentation
   updateAugmentationStatus(cellDescription);
+}
+
+void exahype::solvers::ADERDGSolver::updateSolution(
+    const int cellDescriptionsIndex,
+    const int element) {
+  // reset helper variables
+  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+  updateSolution(cellDescription);
 }
 
 void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(CellDescription& cellDescription) const {
@@ -2816,7 +2880,6 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
     riemannSolver(
         FL,FR,QL,QR,
-        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         std::min(pLeft.getCorrectorTimeStepSize(),pRight.getCorrectorTimeStepSize()),
         normalDirection, false);
 
@@ -2922,12 +2985,10 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   // @todo(Dominic): Add to docu why we need this. Left or right inpclut
   if (faceIndex % 2 == 0) {
     riemannSolver(FOut, FIn, QOut, QIn,
-        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection,true);
   } else {
     riemannSolver(FIn, FOut, QIn, QOut,
-        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection,true);
   }
@@ -3539,8 +3600,8 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
   const int normalDirection = (faceIndex - faceIndex%2)/2; // faceIndex=2*normalNonZero+f, f=0,1
   assertion2(normalDirection<DIMENSIONS,faceIndex,normalDirection);
-  riemannSolver(FL, FR, QL, QR,
-      tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
+  riemannSolver(
+      FL, FR, QL, QR,
       cellDescription.getCorrectorTimeStepSize(),
       normalDirection,false);
 

@@ -520,11 +520,13 @@ public:
    * We always override the limiter time step
    * data by the ADER-DG one before a solution update.
    */
-  void startNewTimeStep() override;
+  void startNewTimeStep() final override;
 
-  void updateTimeStepSizes() override;
+  void updateTimeStepSizesFused() final override;
 
-  void zeroTimeStepSizes() override;
+  void updateTimeStepSizes() final override;
+
+  void zeroTimeStepSizes() final override;
 
   /**
    * TODO(Dominic): Add docu.
@@ -793,32 +795,23 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) final override;
+
+  double updateTimeStepSizesFused(
+      const int cellDescriptionsIndex,
+      const int element) final override;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element,
-        double*   tempEigenvalues) override;
+        const int element) final override;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const final override;
 
-  // TODO(Dominic): Move into cpp
   void reconstructStandardTimeSteppingData(
       const int cellDescriptionsIndex,
-      int element) const {
-    _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
-
-    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-    const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-    if (limiterElement!=exahype::solvers::Solver::NotFound) {
-      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-      limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
-    }
-  }
+      const int element) const;
 
  /**
    * Rollback to the previous time step, i.e,
@@ -846,9 +839,17 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) final override;
+
+
+  double fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   /**
    * This method assumes the ADERDG solver's cell-local limiter status has
@@ -862,11 +863,7 @@ public:
    */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) final override;
 
   /**
    * Determine the new cell-local min max values.
@@ -1022,10 +1019,7 @@ public:
    */
   void recomputeSolutionLocally(
       const int cellDescriptionsIndex,
-      const int element,
-      exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+      const int element);
 
   /**
    * !!! Only for fused time stepping !!!
@@ -1052,9 +1046,7 @@ public:
   void recomputePredictorLocally(
       const int cellDescriptionsIndex,
         const int element,
-        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
-        exahype::Vertex* const fineGridVertices,
-        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables);
 
   void preProcess(
       const int cellDescriptionsIndex,

@@ -90,7 +90,6 @@ void spaceTimePredictorNonlinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double dt);
@@ -139,9 +138,6 @@ void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
-    double*  tempFaceUnknowns,
-    double** tempStateSizedVectors,
-    double** tempStateSizedSquareMatrices,
     const double dt,
     const int normalNonZero);
 
@@ -158,7 +154,6 @@ void boundaryConditions(
 
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver, const double* const luh,
-                          double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 /**
@@ -271,7 +266,6 @@ void spaceTimePredictorNonlinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double dt,
@@ -286,7 +280,6 @@ void spaceTimePredictorLinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double dt,
@@ -355,9 +348,6 @@ void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
-    double*  tempFaceUnknowns,
-    double** tempStateSizedVectors,
-    double** tempStateSizedSquareMatrices,
     const double dt,
     const int normalNonZero);
 
@@ -366,16 +356,12 @@ void riemannSolverLinear(
     SolverType& solver,
     double* FL, double* FR,
     const double* const QL, const double* const QR,
-    double*  tempFaceUnknowns,
-    double** tempStateSizedVectors,
-    double** tempStateSizedSquareMatrices,
     const double dt,
     const int normalNonZero);
 
 
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver, const double* const luh,
-                          double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 void faceUnknownsProlongation(
