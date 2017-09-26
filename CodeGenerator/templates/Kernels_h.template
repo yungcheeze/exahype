@@ -42,7 +42,7 @@ namespace {{namespaceName}} {
     const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
     double* restrict lQi, double* restrict rhs,
     double* restrict lFi,
-    double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+    double* restrict lSi, double* restrict gradQ
 {% if useDeepProfiler %}
     , exahype::profilers::Profiler* profiler
 {% endif %}

@@ -1924,7 +1924,6 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
         tempUnknowns,
         tempFluxUnknowns,
 #endif
-        tempStateSizedVector,
         luh,
         &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
         cellDescription.getPredictorTimeStepSize(),
@@ -2021,7 +2020,7 @@ double exahype::solvers::ADERDGSolver::computeTimeStepSize(CellDescription& cell
     inverseDx[0] = 1.0/dx[0];
     inverseDx[1] = 1.0/dx[1];
     double admissibleTimeStepSize =
-        stableTimeStepSize(luh,tempEigenvalues,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+        stableTimeStepSize(luh,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
 #else
     double admissibleTimeStepSize =
         stableTimeStepSize(luh,cellDescription.getSize());
