@@ -100,20 +100,6 @@ public:
   static void referenceSolution(const double* const x, const double t, double* Q);
 
   /**
-   * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-   * within the time interval [t,t+dt].
-   *
-   * \note Use this function and ::adjustSolution to set initial conditions.
-   *
-   * \param[in]    centre    The centre of the cell.
-   * \param[in]    dx        The extent of the cell.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \return true if the solution has to be adjusted.
-   */
-  AdjustSolutionValue useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-
-  /**
    * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
    *
    * \note Use this function and ::useAdjustSolution to set initial conditions.

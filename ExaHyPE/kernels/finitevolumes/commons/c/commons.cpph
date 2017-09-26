@@ -27,7 +27,6 @@ template <typename SolverType>
 double kernels::finitevolumes::commons::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* tempEigenvalues,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -411,7 +410,6 @@ template <typename SolverType>
 double kernels::finitevolumes::commons::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* tempEigenvalues,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -458,7 +456,6 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
       }
     }
   }
-
   return dt_max_stable;
 }
 
