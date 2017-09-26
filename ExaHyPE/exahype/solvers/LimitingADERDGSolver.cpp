@@ -1462,7 +1462,9 @@ void exahype::solvers::LimitingADERDGSolver::preProcess(
   _solver->preProcess(cellDescriptionsIndex,element);
 
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-  _limiter->preProcess(cellDescriptionsIndex,limiterElement);
+  if (limiterElement!=Solver::NotFound) {
+    _limiter->preProcess(cellDescriptionsIndex,limiterElement);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::postProcess(
@@ -1471,7 +1473,9 @@ void exahype::solvers::LimitingADERDGSolver::postProcess(
   _solver->postProcess(cellDescriptionsIndex,element);
 
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-  _limiter->postProcess(cellDescriptionsIndex,limiterElement);
+  if (limiterElement!=Solver::NotFound) {
+    _limiter->postProcess(cellDescriptionsIndex,limiterElement);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::prolongateDataAndPrepareDataRestriction(
