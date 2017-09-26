@@ -14,10 +14,9 @@
 #include "peano/stacks/VertexSTDStack.h"
 
  #include "exahype/adapters/MeshRefinement.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
  #include "exahype/adapters/GridErasing.h" 
- #include "exahype/adapters/ADERDGTimeStep.h" 
- #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
+ #include "exahype/adapters/FusedTimeStep.h" 
+ #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
@@ -27,7 +26,6 @@
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
- #include "exahype/adapters/PredictionAndPlot2d.h" 
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/MergeTimeStepData.h" 
  #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
@@ -36,8 +34,8 @@
 
 namespace peano {
   namespace grid {
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d>;
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::FusedTimeStep>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::FusedTimeStep>;
   }
 }
 

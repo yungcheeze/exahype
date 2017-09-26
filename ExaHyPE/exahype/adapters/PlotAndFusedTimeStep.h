@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_ADERDGTimeStep_H_
-#define EXAHYPE_ADAPTERS_ADERDGTimeStep_H_
+#ifndef EXAHYPE_ADAPTERS_PlotAndFusedTimeStep_H_
+#define EXAHYPE_ADAPTERS_PlotAndFusedTimeStep_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,8 +18,9 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/ADERDGTimeStep2MultiscaleLinkedCell_0.h"
+ #include "exahype/adapters/PlotAndFusedTimeStep2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Sending.h"
 
@@ -27,7 +28,7 @@
 
 namespace exahype {
       namespace adapters {
-        class ADERDGTimeStep;
+        class PlotAndFusedTimeStep;
       } 
 }
 
@@ -39,17 +40,19 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::ADERDGTimeStep {
+class exahype::adapters::PlotAndFusedTimeStep {
   private:
-    typedef adapters::ADERDGTimeStep2MultiscaleLinkedCell_0 Mapping0;
+    typedef adapters::PlotAndFusedTimeStep2MultiscaleLinkedCell_0 Mapping0;
     typedef mappings::Merging Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::Sending Mapping3;
+    typedef mappings::Plot Mapping2;
+    typedef mappings::SolutionUpdate Mapping3;
+    typedef mappings::Sending Mapping4;
 
-     Mapping0  _map2ADERDGTimeStep2MultiscaleLinkedCell_0;
+     Mapping0  _map2PlotAndFusedTimeStep2MultiscaleLinkedCell_0;
      Mapping1  _map2Merging;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2Sending;
+     Mapping2  _map2Plot;
+     Mapping3  _map2SolutionUpdate;
+     Mapping4  _map2Sending;
 
 
   public:
@@ -61,16 +64,16 @@ class exahype::adapters::ADERDGTimeStep {
     peano::MappingSpecification         descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    ADERDGTimeStep();
+    PlotAndFusedTimeStep();
 
     #if defined(SharedMemoryParallelisation)
-    ADERDGTimeStep(const ADERDGTimeStep& masterThread);
+    PlotAndFusedTimeStep(const PlotAndFusedTimeStep& masterThread);
     #endif
 
-    virtual ~ADERDGTimeStep();
+    virtual ~PlotAndFusedTimeStep();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const ADERDGTimeStep& workerThread);
+    void mergeWithWorkerThread(const PlotAndFusedTimeStep& workerThread);
     #endif
 
     void createInnerVertex(

@@ -17,10 +17,9 @@
 
 
  #include "exahype/adapters/MeshRefinement.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
  #include "exahype/adapters/GridErasing.h" 
- #include "exahype/adapters/ADERDGTimeStep.h" 
- #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
+ #include "exahype/adapters/FusedTimeStep.h" 
+ #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
@@ -30,7 +29,6 @@
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
- #include "exahype/adapters/PredictionAndPlot2d.h" 
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/MergeTimeStepData.h" 
  #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
@@ -61,10 +59,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinement> _gridWithMeshRefinement;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndADERDGTimeStep> _gridWithPlotAndADERDGTimeStep;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FusedTimeStep> _gridWithFusedTimeStep;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndFusedTimeStep> _gridWithPlotAndFusedTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LocalRecomputationAndTimeStepSizeComputation> _gridWithLocalRecomputationAndTimeStepSizeComputation;
@@ -74,7 +71,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot2d> _gridWithPredictionAndPlot2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation> _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MergeTimeStepData> _gridWithMergeTimeStepData;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MergeTimeStepDataDropFaceData> _gridWithMergeTimeStepDataDropFaceData;
@@ -84,10 +80,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
    exahype::records::RepositoryState               _repositoryState;
    
     tarch::timing::Measurement _measureMeshRefinementCPUTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
-    tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
-    tarch::timing::Measurement _measurePlotAndADERDGTimeStepCPUTime;
+    tarch::timing::Measurement _measureFusedTimeStepCPUTime;
+    tarch::timing::Measurement _measurePlotAndFusedTimeStepCPUTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
     tarch::timing::Measurement _measureReinitialisationCPUTime;
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCPUTime;
@@ -97,17 +92,15 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
-    tarch::timing::Measurement _measurePredictionAndPlot2dCPUTime;
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureMergeTimeStepDataCPUTime;
     tarch::timing::Measurement _measureMergeTimeStepDataDropFaceDataCPUTime;
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndReinitialisationCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
-    tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
-    tarch::timing::Measurement _measurePlotAndADERDGTimeStepCalendarTime;
+    tarch::timing::Measurement _measureFusedTimeStepCalendarTime;
+    tarch::timing::Measurement _measurePlotAndFusedTimeStepCalendarTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
     tarch::timing::Measurement _measureReinitialisationCalendarTime;
     tarch::timing::Measurement _measureLocalRecomputationAndTimeStepSizeComputationCalendarTime;
@@ -117,7 +110,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndPlot2dCalendarTime;
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureMergeTimeStepDataCalendarTime;
     tarch::timing::Measurement _measureMergeTimeStepDataDropFaceDataCalendarTime;
@@ -162,10 +154,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
     virtual void switchToMeshRefinement();    
-    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();    
     virtual void switchToGridErasing();    
-    virtual void switchToADERDGTimeStep();    
-    virtual void switchToPlotAndADERDGTimeStep();    
+    virtual void switchToFusedTimeStep();    
+    virtual void switchToPlotAndFusedTimeStep();    
     virtual void switchToLimiterStatusSpreading();    
     virtual void switchToReinitialisation();    
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation();    
@@ -175,17 +166,15 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToTimeStepSizeComputation();    
     virtual void switchToPrediction();    
     virtual void switchToPredictionAndPlot();    
-    virtual void switchToPredictionAndPlot2d();    
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation();    
     virtual void switchToMergeTimeStepData();    
     virtual void switchToMergeTimeStepDataDropFaceData();    
     virtual void switchToFinaliseMeshRefinementAndReinitialisation();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
-    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const;
     virtual bool isActiveAdapterGridErasing() const;
-    virtual bool isActiveAdapterADERDGTimeStep() const;
-    virtual bool isActiveAdapterPlotAndADERDGTimeStep() const;
+    virtual bool isActiveAdapterFusedTimeStep() const;
+    virtual bool isActiveAdapterPlotAndFusedTimeStep() const;
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
     virtual bool isActiveAdapterReinitialisation() const;
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const;
@@ -195,7 +184,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterPredictionAndPlot() const;
-    virtual bool isActiveAdapterPredictionAndPlot2d() const;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterMergeTimeStepData() const;
     virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const;

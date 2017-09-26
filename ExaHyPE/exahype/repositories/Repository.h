@@ -70,10 +70,9 @@ class exahype::repositories::Repository {
      * Switch to another event handle.
      */
     virtual void switchToMeshRefinement() = 0;    
-    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d() = 0;    
     virtual void switchToGridErasing() = 0;    
-    virtual void switchToADERDGTimeStep() = 0;    
-    virtual void switchToPlotAndADERDGTimeStep() = 0;    
+    virtual void switchToFusedTimeStep() = 0;    
+    virtual void switchToPlotAndFusedTimeStep() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
     virtual void switchToReinitialisation() = 0;    
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
@@ -83,17 +82,15 @@ class exahype::repositories::Repository {
     virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
-    virtual void switchToPredictionAndPlot2d() = 0;    
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
     virtual void switchToMergeTimeStepData() = 0;    
     virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
     virtual void switchToFinaliseMeshRefinementAndReinitialisation() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
-    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
-    virtual bool isActiveAdapterADERDGTimeStep() const = 0;
-    virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
+    virtual bool isActiveAdapterFusedTimeStep() const = 0;
+    virtual bool isActiveAdapterPlotAndFusedTimeStep() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
@@ -103,7 +100,6 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
-    virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterMergeTimeStepData() const = 0;
     virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;

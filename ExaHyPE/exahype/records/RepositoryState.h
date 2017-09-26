@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/09/2017 12:31
+ * @date   26/09/2017 13:07
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d = 5, UseAdapterGridErasing = 6, UseAdapterADERDGTimeStep = 7, UseAdapterPlotAndADERDGTimeStep = 8, UseAdapterLimiterStatusSpreading = 9, UseAdapterReinitialisation = 10, UseAdapterLocalRecomputationAndTimeStepSizeComputation = 11, UseAdapterGlobalRollback = 12, UseAdapterNeighbourDataMerging = 13, UseAdapterSolutionUpdateAndTimeStepSizeComputation = 14, UseAdapterTimeStepSizeComputation = 15, UseAdapterPrediction = 16, UseAdapterPredictionAndPlot = 17, UseAdapterPredictionAndPlot2d = 18, UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation = 19, UseAdapterMergeTimeStepData = 20, UseAdapterMergeTimeStepDataDropFaceData = 21, UseAdapterFinaliseMeshRefinementAndReinitialisation = 22, NumberOfAdapters = 23
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterGridErasing = 5, UseAdapterFusedTimeStep = 6, UseAdapterPlotAndFusedTimeStep = 7, UseAdapterLimiterStatusSpreading = 8, UseAdapterReinitialisation = 9, UseAdapterLocalRecomputationAndTimeStepSizeComputation = 10, UseAdapterGlobalRollback = 11, UseAdapterNeighbourDataMerging = 12, UseAdapterSolutionUpdateAndTimeStepSizeComputation = 13, UseAdapterTimeStepSizeComputation = 14, UseAdapterPrediction = 15, UseAdapterPredictionAndPlot = 16, UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation = 17, UseAdapterMergeTimeStepData = 18, UseAdapterMergeTimeStepDataDropFaceData = 19, UseAdapterFinaliseMeshRefinementAndReinitialisation = 20, NumberOfAdapters = 21
       };
       
       struct PersistentRecords {
@@ -289,7 +289,7 @@ class exahype::records::RepositoryState {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/09/2017 12:31
+ * @date   26/09/2017 13:07
  */
 class exahype::records::RepositoryStatePacked { 
    

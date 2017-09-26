@@ -1084,10 +1084,10 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
   repository.getState().switchToADERDGTimeStepContext();
 
   if (numberOfStepsToRun==0) {
-    repository.switchToPlotAndADERDGTimeStep();
+    repository.switchToPlotAndFusedTimeStep();
     repository.iterate();
   } else {
-    repository.switchToADERDGTimeStep();
+    repository.switchToFusedTimeStep();
     repository.iterate(numberOfStepsToRun);
   }
 
