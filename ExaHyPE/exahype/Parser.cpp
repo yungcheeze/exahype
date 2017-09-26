@@ -484,24 +484,27 @@ bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
 }
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
-  std::string token =
-      getTokenAfter("global-optimisation", "fuse-algorithmic-steps-factor");
+  if (hasOptimisationSegment()) {
+      std::string token =
+          getTokenAfter("global-optimisation", "fuse-algorithmic-steps-factor");
 
-  char* pEnd;
-  double result = std::strtod(token.c_str(), &pEnd);
-  logDebug("getFuseAlgorithmicStepsFactor()",
-           "found fuse-algorithmic-steps-factor " << token);
+      char* pEnd;
+      double result = std::strtod(token.c_str(), &pEnd);
+      logDebug("getFuseAlgorithmicStepsFactor()",
+               "found fuse-algorithmic-steps-factor " << token);
 
-  if (result < 0.0 || result > 1.0 || pEnd == token.c_str()) {
-    logError("getFuseAlgorithmicStepsFactor()",
-             "'fuse-algorithmic-steps-factor': Value must be greater than zero "
-             "and smaller than one: "
-                 << result);
-    result = 0.0;
-    _interpretationErrorOccured = true;
+      if (result < 0.0 || result > 1.0 || pEnd == token.c_str()) {
+        logError("getFuseAlgorithmicStepsFactor()",
+                 "'fuse-algorithmic-steps-factor': Value must be greater than zero "
+                 "and smaller than one: "
+                     << result);
+        result = 0.0;
+        _interpretationErrorOccured = true;
+      }
+
+      return result;
   }
-
-  return result;
+  else return false;
 }
 
 double exahype::Parser::getTimestepBatchFactor() const {
