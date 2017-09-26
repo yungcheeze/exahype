@@ -547,11 +547,9 @@ int exahype::solvers::LimitingADERDGSolver::computeMinimumLimiterStatusForRefine
     int level) const {
   const int levelDelta = getMaximumAdaptiveMeshLevel() - level;
 
-  if (levelDelta==1) {
-    return std::max(
-        _solver->getMinimumLimiterStatusForTroubledCell()-3, 1);
-  }
-  return _solver->getMinimumLimiterStatusForTroubledCell()-2;
+  assertion(levelDelta>=0);
+  const int status = _solver->getMinimumLimiterStatusForActiveFVPatch()-1 + (levelDelta-1);
+  return (_solver->getMinimumLimiterStatusForTroubledCell()-status>=2) ? status : 2;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusRefinementCriterion(

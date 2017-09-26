@@ -335,6 +335,15 @@ private:
    * If we have a FV layer of width 2, do some telescoping:
    * On the second finest level, refine if the limiter status is at least 2.
    * On coarser levels, refine if the limiter status is at least 3.
+   *
+   * On the finest level, the general rule is
+   *
+   * minStatusForRef = maximumLimiterStatus - helperLayers (+1)
+   *
+   * On coarser levels we have to ensure that
+   *
+   * maximumLimiterStatus - minStatusForRef >= 2
+   *
    */
   int computeMinimumLimiterStatusForRefinement(int level) const;
 
