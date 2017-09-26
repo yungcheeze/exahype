@@ -21,9 +21,6 @@ event-mapping:
   name: TimeStepSizeComputation
   
 event-mapping:
-  name: FusedTimeSteppingInitialisation  
-  
-event-mapping:
   name: SolutionUpdate
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
@@ -99,35 +96,6 @@ adapter:
 //   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
 //   merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
-// Fused time stepping initialisation  
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
-  merge-with-user-defined-mapping: Merging
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Sending  // Sending does send face data and reduces time step data; post-processing done directly
-
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisationAndPlot
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
-  merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data; post-processing done directly
-  
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisationAndPlot2d
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data; post-processing done directly
-
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
@@ -136,7 +104,7 @@ adapter:
 
 // Adapter for 1 phase time stepping
 adapter: 
-  name: ADERDGTimeStep
+  name: FusedTimeStep
   // needs corrector time step size
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTimel; pre-processing done directly
@@ -144,7 +112,7 @@ adapter:
   merge-with-user-defined-mapping: Sending
  
 adapter: 
-  name: PlotAndADERDGTimeStep
+  name: PlotAndFusedTimeStep
   // needs corrector time step size
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
@@ -213,15 +181,6 @@ adapter:
   merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: Sending // send only face data; post-processing done directly
-
-adapter:
-  name: PredictionAndPlot2d
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: Sending  // send only face data; post-processing done directly
   
 // Additional adapters for AMR
 adapter:

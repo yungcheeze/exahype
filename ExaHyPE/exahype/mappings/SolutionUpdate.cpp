@@ -130,6 +130,8 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
   exahype::solvers::initialiseSolverFlags(_solverFlags);
   exahype::solvers::prepareSolverFlags(_solverFlags);
 
+  prepareLocalTimeStepVariables();
+
   initialiseTemporaryVariables();
 }
 
@@ -243,6 +245,8 @@ void exahype::mappings::SolutionUpdate::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   _localState = solverState;
+
+  prepareLocalTimeStepVariables();
 
   initialiseTemporaryVariables();
 

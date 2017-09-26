@@ -14,8 +14,6 @@
 #include "peano/stacks/VertexSTDStack.h"
 
  #include "exahype/adapters/MeshRefinement.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 

@@ -128,6 +128,8 @@ exahype::mappings::LocalRecomputation::~LocalRecomputation() {
 exahype::mappings::LocalRecomputation::LocalRecomputation(
     const LocalRecomputation& masterThread)
 : _localState(masterThread._localState) {
+  prepareLocalTimeStepVariables();
+
   initialiseTemporaryVariables();
 }
 
@@ -142,6 +144,8 @@ void exahype::mappings::LocalRecomputation::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   _localState = solverState;
+
+  prepareLocalTimeStepVariables();
 
   initialiseTemporaryVariables();
 

@@ -697,23 +697,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
-    if (exahype::State::fuseADERDGPhases()) {
-      repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-      if (plot) {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-      } else {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-      }
-      repository.iterate();
+    repository.getState().switchToPredictionContext();
+    if (plot) {
+      repository.switchToPredictionAndPlot();
     } else {
-      repository.getState().switchToPredictionContext();
-      if (plot) {
-        repository.switchToPredictionAndPlot();
-      } else {
-        repository.switchToPrediction();
-      }
-      repository.iterate();
+      repository.switchToPrediction();
     }
+    repository.iterate();
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
     printTimeStepInfo(-1,repository);
@@ -951,8 +941,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
     logInfo("updateMeshAndSubdomains(...)","recompute predictor globally and reinitialise fused time stepping");
-    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+    repository.getState().switchToPredictionContext();
+    repository.switchToPrediction();
     repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {

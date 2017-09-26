@@ -17,8 +17,6 @@
 
 
  #include "exahype/adapters/MeshRefinement.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
- #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
@@ -63,8 +61,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinement> _gridWithMeshRefinement;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisation> _gridWithPredictionAndFusedTimeSteppingInitialisation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
@@ -88,8 +84,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
    exahype::records::RepositoryState               _repositoryState;
    
     tarch::timing::Measurement _measureMeshRefinementCPUTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCPUTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
@@ -110,8 +104,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndReinitialisationCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
@@ -170,8 +162,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
     virtual void switchToMeshRefinement();    
-    virtual void switchToPredictionAndFusedTimeSteppingInitialisation();    
-    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();    
     virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
@@ -192,8 +182,6 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToFinaliseMeshRefinementAndReinitialisation();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
-    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const;
-    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const;
     virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
