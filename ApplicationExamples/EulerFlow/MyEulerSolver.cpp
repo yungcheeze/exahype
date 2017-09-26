@@ -105,14 +105,7 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
 }
 
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
-
-
-void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
-                                                  const double w,const double t,const double dt, double* Q) {
+void Euler::MyEulerSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
