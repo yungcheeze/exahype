@@ -2,7 +2,7 @@
 
 #include "MyEulerSolver_ADERDG_Variables.h"
 
-#include "LogoExaHyPE.h"
+#include "LogoDurhamUniversity.h"
 
 
 tarch::logging::Log EulerADERDG::MyEulerSolver_ADERDG::_log( "EulerADERDG::MyEulerSolver_ADERDG" );
@@ -15,34 +15,34 @@ void EulerADERDG::MyEulerSolver_ADERDG::init(std::vector<std::string>& cmdlinear
 
 double EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x) {
   #if DIMENSIONS==2
-  tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
-  myX *= static_cast<double>(LogoExaHyPE.width);
-  tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
+  tarch::la::Vector<DIMENSIONS,double> myX( x[0]-0.146 , 1.0-x[1] - 0.12 ); // translate
+  myX *= static_cast<double>(LogoDurhamUniversity.width);
+  tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.4*myX(0), 1.4*myX(1) );  // scale
 
   double Energy = 0.1;
   if (
-    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoExaHyPE.width)
+    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
     &&
-    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
+    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoDurhamUniversity.height)
   ) {
-    Energy += 1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)];
+    Energy += 1.0-LogoDurhamUniversity.pixel_data[myIntX(1)*LogoDurhamUniversity.width+myIntX(0)];
   }
 
   return Energy;
   #else
   tarch::la::Vector<2,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
-  myX *= static_cast<double>(LogoExaHyPE.width);
+  myX *= static_cast<double>(LogoDurhamUniversity.width);
   tarch::la::Vector<2,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
 
   double Energy = 0.1;
   if (
-    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoExaHyPE.width)
+    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
     &&
-    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
+    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoDurhamUniversity.height)
     &&
     x[2]>0.3 && x[2]<0.7
   ) {
-    Energy += 1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)];
+    Energy += 1.0-LogoDurhamUniversity.pixel_data[myIntX(1)*LogoDurhamUniversity.width+myIntX(0)];
   }
 
   return Energy;
