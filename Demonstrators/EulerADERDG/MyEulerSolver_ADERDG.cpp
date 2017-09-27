@@ -14,7 +14,7 @@ void EulerADERDG::MyEulerSolver_ADERDG::init(std::vector<std::string>& cmdlinear
 
 
 double EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x) {
-
+  #if DIMENSIONS==2
   tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
   myX *= static_cast<double>(LogoExaHyPE.width);
   tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
@@ -29,6 +29,24 @@ double EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x
   }
 
   return Energy;
+  #else
+  tarch::la::Vector<2,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
+  myX *= static_cast<double>(LogoExaHyPE.width);
+  tarch::la::Vector<2,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
+
+  double Energy = 0.1;
+  if (
+    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoExaHyPE.width)
+    &&
+    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
+    &&
+    x[2]>0.3 && x[2]<0.7
+  ) {
+    Energy += 1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)];
+  }
+
+  return Energy;
+  #endif
 }
 
 

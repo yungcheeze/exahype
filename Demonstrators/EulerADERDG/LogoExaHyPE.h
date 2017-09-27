@@ -3,6 +3,7 @@
  * please see www.exahype.eu. The file has been greated through the GIMP
  * C-Source image dump.
  */
+#ifndef LINEA
 #define LINEA 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 #define LINEA2 LINEA LINEA
 #define LINEA4 LINEA2 LINEA2
@@ -10,7 +11,7 @@
 #define LINEA16 LINEA8 LINEA8
 
 #define LINEB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-
+#endif
 
 static const struct {
   unsigned int   width;

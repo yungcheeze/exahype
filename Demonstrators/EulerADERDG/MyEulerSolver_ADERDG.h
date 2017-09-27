@@ -110,12 +110,24 @@ class EulerADERDG::MyEulerSolver_ADERDG : public EulerADERDG::AbstractMyEulerSol
      */
     void flux(const double* const Q,double** F) final override;
 
+    /**
+     * Our setup starts from a homogeneous density and velocity distribution,
+     * but imposes some energy patterns a priori. This pattern has to be the
+     * same for the limiter and the ADER-DG solution. Therefore, I outsource
+     * it into this routine which also is accessed by the FV code.
+     */
     static double getInitialEnergy(const double* const x);
 
     void mapDiscreteMaximumPrincipleObservables(
         double* observables,const int numberOfObservables,
         const double* const Q) const override;
 
+    /**
+     * Our two admissibility entries are the Energy and the density. Those may
+     * never become zero or even smaller. So we check these two. The other
+     * variables are velocities, so we cannot really check whether they are
+     * inadmissible. Notably, they might become negative.
+     */
     bool isPhysicallyAdmissible(
         const double* const solution,
         const double* const observablesMin,const double* const observablesMax,

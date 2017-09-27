@@ -45,8 +45,9 @@ exahype-project EulerADERDG
   
   solver Limiting-ADER-DG MyEulerSolver
     variables const    = rho:1,j:3,E:1
-    order const        = 9
-    maximum-mesh-size  = 1e-1    
+    order const        = 5
+    maximum-mesh-size  = 5e-1    
+    maximum-mesh-depth = 2
     time-stepping      = global
     type const         = nonlinear, Legendre
     terms const        = flux
@@ -58,6 +59,8 @@ exahype-project EulerADERDG
     dmp-observables            = 5
     dmp-relaxation-parameter   = 1e-4
     dmp-difference-scaling     = 1e-3
+    steps-till-cured = 10
+    helper-layers    = 2
     
     plot vtu::Cartesian::cells::ascii EulerWriter
       variables const = 5
