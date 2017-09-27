@@ -477,14 +477,15 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
       ||
       fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested
   ) {
-    if (fineGridSolverPatch.getLimiterStatus()>=
-        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())
-        ||
-        fineGridSolverPatch.getPreviousLimiterStatus()>=
-        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel()) // TODO(Dominic): Add to docu: This is necessary for not erasing cells in global recomputation and it further adds some laziness in erasing.
-    ) {
-      fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
-    }
+    fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None); // TODO(Dominic): Reenable erasing again later on
+//    if (fineGridSolverPatch.getLimiterStatus()>=
+//        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())
+//        ||
+//        fineGridSolverPatch.getPreviousLimiterStatus()>=
+//        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel()) // TODO(Dominic): Add to docu: This is necessary for not erasing cells in global recomputation and it further adds some laziness in erasing.
+//    ) {
+//      fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
+//    }
   }
 }
 
