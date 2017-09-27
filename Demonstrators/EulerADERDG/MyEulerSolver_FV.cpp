@@ -43,10 +43,14 @@ void EulerADERDG::MyEulerSolver_FV::boundaryValues(
     const int d,
     const double* const stateInside,
     double* stateOutside) {
+/*
   ReadOnlyVariables varsInside(stateInside);
   Variables         varsOutside(stateOutside);
 
   varsOutside = varsInside;
+*/
+  std::copy_n(stateInside, NumberOfVariables, stateOutside);
+  stateOutside[1+d] =  -stateOutside[1+d];
 }
 
 //***********************************************************

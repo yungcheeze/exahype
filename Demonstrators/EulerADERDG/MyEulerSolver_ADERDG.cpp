@@ -63,11 +63,7 @@ void EulerADERDG::MyEulerSolver_ADERDG::adjustPointSolution(const double* const 
 void EulerADERDG::MyEulerSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
-
-    // Compute boundary state.
-//  DiffusingGauss(x, stateOut, t);
+/*
   stateOut[0] = stateIn[0];
   stateOut[1] = stateIn[1];
   stateOut[2] = stateIn[2];
@@ -82,6 +78,13 @@ void EulerADERDG::MyEulerSolver_ADERDG::boundaryValues(const double* const x,con
   // fi[normalNonZero] = reinterpret_cast<double[5]>(fluxOut);
   F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
   flux(stateOut, F);
+*/
+  std::copy_n(stateIn, NumberOfVariables, stateOut);
+  stateOut[1+normalNonZero] =  -stateOut[1+normalNonZero];
+  double _F[3][NumberOfVariables]={0.0};
+  double* F[3] = {_F[0], _F[1], _F[2]};
+  flux(stateOut,F);
+  std::copy_n(F[normalNonZero], NumberOfVariables, fluxOut);
 }
 
 exahype::solvers::Solver::RefinementControl EulerADERDG::MyEulerSolver_ADERDG::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
