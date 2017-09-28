@@ -21,7 +21,7 @@ void EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x, 
     myX *= static_cast<double>(LogoDurhamUniversity.width);
     tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.4*myX(0), 1.4*myX(1) );  // scale
 
-    double E = 0.1;
+    E = 0.1;
     if (
       myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
       &&
