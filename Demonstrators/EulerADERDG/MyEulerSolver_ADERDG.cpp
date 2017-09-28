@@ -3,6 +3,7 @@
 #include "MyEulerSolver_ADERDG_Variables.h"
 
 #include "LogoDurhamUniversity.h"
+#include "LogoExaHyPE.h"
 
 
 tarch::logging::Log EulerADERDG::MyEulerSolver_ADERDG::_log( "EulerADERDG::MyEulerSolver_ADERDG" );
@@ -13,51 +14,48 @@ void EulerADERDG::MyEulerSolver_ADERDG::init(std::vector<std::string>& cmdlinear
 }
 
 
-double EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x) {
-  #if DIMENSIONS==2
-  tarch::la::Vector<DIMENSIONS,double> myX( x[0]-0.146 , 1.0-x[1] - 0.12 ); // translate
-  myX *= static_cast<double>(LogoDurhamUniversity.width);
-  tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.4*myX(0), 1.4*myX(1) );  // scale
+void EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x, double& E, double t, double dt) {
+  const double blendIn = 0.4;
+  if (tarch::la::equals( t,0.0 )) {
+    tarch::la::Vector<DIMENSIONS,double> myX( x[0]-0.146 , 1.0-x[1] - 0.12 ); // translate
+    myX *= static_cast<double>(LogoDurhamUniversity.width);
+    tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.4*myX(0), 1.4*myX(1) );  // scale
 
-  double Energy = 0.1;
-  if (
-    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
-    &&
-    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoDurhamUniversity.height)
-  ) {
-    Energy += 1.0-LogoDurhamUniversity.pixel_data[myIntX(1)*LogoDurhamUniversity.width+myIntX(0)];
+    double E = 0.1;
+    if (
+      myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
+      &&
+      myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoDurhamUniversity.height)
+    ) {
+      E += 1.0-LogoDurhamUniversity.pixel_data[myIntX(1)*LogoDurhamUniversity.width+myIntX(0)];
+    }
   }
+  else if (t<blendIn and t+dt>blendIn) {
+    tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
+    myX *= static_cast<double>(LogoExaHyPE.width);
+    tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
 
-  return Energy;
-  #else
-  tarch::la::Vector<2,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
-  myX *= static_cast<double>(LogoDurhamUniversity.width);
-  tarch::la::Vector<2,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
-
-  double Energy = 0.1;
-  if (
-    myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoDurhamUniversity.width)
-    &&
-    myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoDurhamUniversity.height)
-    &&
-    x[2]>0.3 && x[2]<0.7
-  ) {
-    Energy += 1.0-LogoDurhamUniversity.pixel_data[myIntX(1)*LogoDurhamUniversity.width+myIntX(0)];
+    if (
+      myIntX(0) > 0 && myIntX(0) < static_cast<int>(LogoExaHyPE.width)
+      &&
+      myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
+    ) {
+      E+= 1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)];
+    }
   }
-
-  return Energy;
-  #endif
 }
 
 
 void EulerADERDG::MyEulerSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
+  Variables vars(Q);
   if ( tarch::la::equals( t,0.0 ) ) {
-    Variables vars(Q);
-
     vars.rho() = 1.0;
-    vars.E()   = getInitialEnergy(x);
+    vars.E()   = 0.0;
     vars.j(0,0,0);
   }
+  double energy = vars.E();
+  getInitialEnergy(x,energy,t,dt);
+  vars.E() = energy;
 }
 
 void EulerADERDG::MyEulerSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,

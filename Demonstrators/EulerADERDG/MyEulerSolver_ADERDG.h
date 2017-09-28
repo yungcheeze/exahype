@@ -116,7 +116,7 @@ class EulerADERDG::MyEulerSolver_ADERDG : public EulerADERDG::AbstractMyEulerSol
      * same for the limiter and the ADER-DG solution. Therefore, I outsource
      * it into this routine which also is accessed by the FV code.
      */
-    static double getInitialEnergy(const double* const x);
+    static void getInitialEnergy(const double* const x, double& E, double t, double dt);
 
     void mapDiscreteMaximumPrincipleObservables(
         double* observables,const int numberOfObservables,

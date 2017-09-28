@@ -28,7 +28,7 @@ exahype-project EulerADERDG
     dimension const         = 2
     width                   = 1.0, 1.0
     offset                  = 0.0, 0.0
-    end-time                = 0.1
+    end-time                = 1.0
   end computational-domain
  
   /*
