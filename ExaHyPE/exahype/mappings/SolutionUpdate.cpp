@@ -64,6 +64,16 @@ exahype::mappings::SolutionUpdate::communicationSpecification() const {
 }
 
 
+
+peano::MappingSpecification
+exahype::mappings::SolutionUpdate::enterCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+/**
+ * Nop.
+ */
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
@@ -78,15 +88,6 @@ exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification(int level) 
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-
-
-peano::MappingSpecification
-exahype::mappings::SolutionUpdate::enterCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
 
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::leaveCellSpecification(int level) const {
@@ -134,14 +135,22 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
 
   initialiseTemporaryVariables();
 }
-
+// Merge over threads
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
     const SolutionUpdate& workerThread) {
   for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    // solver flags
     _solverFlags._meshUpdateRequest[i]  |= workerThread._solverFlags._meshUpdateRequest[i];
     _solverFlags._limiterDomainChange[i] =
         std::max ( _solverFlags._limiterDomainChange[i],
             workerThread._solverFlags._limiterDomainChange[i] );
+    // time step size and cell sizes
+    _minTimeStepSizes[i] =
+        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
+    _minCellSizes[i] =
+        std::min(_minCellSizes[i], workerThread._minCellSizes[i]);
+    _maxCellSizes[i] =
+        std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
 }
 #endif
@@ -153,12 +162,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,fineGridVerticesEnumerator.toString(),coarseGridCell, fineGridPositionOfCell);
 
-  // TODO(Dominic): Add to docu.
-  if (!exahype::State::EnableNeighbourCommunication) {
+  if (!exahype::State::EnableNeighbourCommunication) {  // TODO(Dominic): Add to docu.
     return;
   }
 
@@ -304,13 +310,10 @@ void exahype::mappings::SolutionUpdate::endIteration(
       reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(solver);
     }
     solver->startNewTimeStep();
-
     if (!exahype::State::fuseADERDGPhases()) {
       exahype::mappings::TimeStepSizeComputation::
       reconstructStandardTimeSteppingData(solver);
     }
-
-    logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
   }
 
   deleteSolverFlags(_solverFlags);

@@ -45,7 +45,7 @@ peano::CommunicationSpecification
 exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true);
 }
 
@@ -211,11 +211,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
-      logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
-          ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
-      assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
-      assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
-
+      // cell sizes
       solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
       solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
       if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -227,8 +223,10 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
             exahype::records::State::toString(_localState.getAlgorithmSection()));
       }
 
+      // time
+      assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
+      assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
       solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
-
       if (exahype::State::fuseADERDGPhases()) {
         #ifdef Parallel
         if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -239,8 +237,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       } else {
         solver->updateTimeStepSizes();
       }
-
-      logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
   }
 

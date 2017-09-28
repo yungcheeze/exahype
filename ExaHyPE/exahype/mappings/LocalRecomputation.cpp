@@ -132,10 +132,17 @@ exahype::mappings::LocalRecomputation::LocalRecomputation(
 
   initialiseTemporaryVariables();
 }
-
+// Merge over threads
 void exahype::mappings::LocalRecomputation::mergeWithWorkerThread(
     const LocalRecomputation& workerThread) {
-  // do nothing
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    _minTimeStepSizes[solverNumber] =
+        std::min(_minTimeStepSizes[solverNumber], workerThread._minTimeStepSizes[solverNumber]);
+    _minCellSizes[solverNumber] =
+        std::min(_minCellSizes[solverNumber], workerThread._minCellSizes[solverNumber]);
+    _maxCellSizes[solverNumber] =
+        std::max(_maxCellSizes[solverNumber], workerThread._maxCellSizes[solverNumber]);
+  }
 }
 #endif
 
