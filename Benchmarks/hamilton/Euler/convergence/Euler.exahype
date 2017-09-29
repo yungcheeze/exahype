@@ -51,7 +51,8 @@ exahype-project Euler
   solver Limiting-ADER-DG EulerSolver
     variables const            = rho:1,j:3,E:1
     order const                = 3
-    maximum-mesh-size          = 0.03704
+    maximum-mesh-size          = 0.12
+    maximum-mesh-depth         = 2
     time-stepping              = global
     type const                 = nonlinear
     terms const                = flux
@@ -61,8 +62,10 @@ exahype-project Euler
     limiter-optimisation const = generic
     limiter-language const     = C
     dmp-observables            = 5
-    dmp-relaxation-parameter   = 1e-4
-    dmp-difference-scaling     = 1e-3
+    dmp-relaxation-parameter   = 1e-3
+    dmp-difference-scaling     = 1e-2
+    steps-till-cured           = 5
+    helper-layers              = 2
     // reference either: sod,entropywave,explosion,rarefactionwave
     constants                  = reference:explosion
 
@@ -74,11 +77,11 @@ exahype-project Euler
       output          = not-available
     end plot
   
-    plot vtu::Cartesian::vertices::ascii ErrorPlotter
+    plot vtk::Cartesian::vertices::limited::ascii ErrorPlotter
       // absErrorL1perCell[nvar],Q[nvar],QAnalytical[nvar]
       variables const = 15 
       time            = 0.0
-      repeat          = 1e-10
+      repeat          = 1e-2
       output          = ./errors
     end plot
   

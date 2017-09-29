@@ -10,7 +10,7 @@ void {{project}}::{{solver}}::init(std::vector<std::string>& cmdlineargs{% if ha
   // @todo Please implement/augment if required
 }
 
-void {{project}}::{{solver}}::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
+void {{project}}::{{solver}}::adjustSolution(const double* const x,const double t,const double dt, double* Q) {
   // Dimensions             = {{dimensions}}
   // Number of variables    = {{numberOfVariables + numberOfParameters}} + #parameters
   

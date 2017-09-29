@@ -306,7 +306,6 @@ void Euler::EulerSolver_FV::referenceSolution(const double* const x,double t, do
 
 void Euler::EulerSolver_FV::adjustSolution(
     const double* const x,
-    const double w,
     const double t,
     const double dt, double* Q) {
   if (tarch::la::equals(t,0.0)) {

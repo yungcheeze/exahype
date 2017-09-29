@@ -29,7 +29,6 @@ bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSION
 
 
 void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
-                                                  const double w,
                                                   const double t,
                                                   const double dt, double* Q) {
   Variables vars(Q);

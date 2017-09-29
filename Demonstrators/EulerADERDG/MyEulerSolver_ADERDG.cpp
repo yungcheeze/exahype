@@ -13,8 +13,7 @@ void EulerADERDG::MyEulerSolver_ADERDG::init(std::vector<std::string>& cmdlinear
   // @todo Please implement/augment if required
 }
 
-
-void EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x, double& E, double t, double dt) {
+void EulerADERDG::MyEulerSolver_ADERDG::getInitialProfile(const double* const x, double& E, double t, double dt) {
   const double blendIn = 0.4;
   if (tarch::la::equals( t,0.0 )) {
     tarch::la::Vector<DIMENSIONS,double> myX( x[0]-0.146 , 1.0-x[1] - 0.12 ); // translate
@@ -40,11 +39,10 @@ void EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x, 
       &&
       myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
     ) {
-      E+= (1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)]) * 4.0;
+      E+= (1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)]);
     }
   }
 }
-
 
 void EulerADERDG::MyEulerSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   Variables vars(Q);
@@ -54,8 +52,12 @@ void EulerADERDG::MyEulerSolver_ADERDG::adjustPointSolution(const double* const 
     vars.j(0,0,0);
   }
   double energy = vars.E();
-  getInitialEnergy(x,energy,t,dt);
+  getInitialProfile(x,energy,t,dt);
   vars.E() = energy;
+
+  double density = vars.rho();
+  getInitialProfile(x,density,t,dt);
+  vars.rho() = density;
 }
 
 void EulerADERDG::MyEulerSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,

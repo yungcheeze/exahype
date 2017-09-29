@@ -12,7 +12,7 @@ void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-void EulerFV::MyEulerSolver::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
+void EulerFV::MyEulerSolver::adjustSolution(const double* const x,const double t,const double dt, double* Q) {
   if ( tarch::la::equals( t,0.0 ) ) {
   Variables vars(Q);
   

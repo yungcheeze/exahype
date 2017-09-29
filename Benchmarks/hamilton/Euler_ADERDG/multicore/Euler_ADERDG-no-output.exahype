@@ -51,16 +51,16 @@ exahype-project Euler
   end global-optimisation
 
   solver ADER-DG EulerSolver_ADERDG
-    variables const   = rho:1,j:3,E:1
-    order const       = 3
+    variables const    = rho:1,j:3,E:1
+    order const        = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
-    time-stepping     = global
-    type const = nonlinear
-	terms const = flux
-	optimisation const = generic
-    language const    = C
+    maximum-mesh-size  = 0.05
+    time-stepping      = global
+    type const         = nonlinear
+    terms const        = flux
+    optimisation const = generic
+    language const     = C
     // reference either: sod,entropywave,explosion,rarefactionwave
-    constants         = reference:entropywave
+    constants          = reference:entropywave
   end solver
 end exahype-project

@@ -11,16 +11,21 @@ void EulerADERDG::MyEulerSolver_FV::init(std::vector<std::string>& cmdlineargs) 
   // @todo Please implement/augment if required
 }
 
-void EulerADERDG::MyEulerSolver_FV::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
+void EulerADERDG::MyEulerSolver_FV::adjustSolution(const double* const x,const double t,const double dt, double* Q) {
   Variables vars(Q);
+ 
   if ( tarch::la::equals( t,0.0 ) ) {
     vars.rho() = 1.0;
-    vars.E()   = 0.0;
+    vars.E()   = 1.0;
     vars.j(0,0,0);
   }
   double energy = vars.E();
-  MyEulerSolver_ADERDG::getInitialEnergy(x,energy,t,dt);
+  MyEulerSolver_ADERDG::getInitialProfile(x,energy,t,dt);
   vars.E() = energy;
+
+  double density = vars.rho();
+  MyEulerSolver_ADERDG::getInitialProfile(x,density,t,dt);
+  vars.rho() = density;
 }
 
 void EulerADERDG::MyEulerSolver_FV::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {

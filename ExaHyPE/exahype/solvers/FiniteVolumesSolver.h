@@ -376,13 +376,12 @@ public:
    * and pointwise adjustment @TODO.
    * 
    * \param[in]   x   The position (array with DIMENSIONS entries)
-   * \param[in]   w   (deprecated) the quadrature weight.
    * \param[in]   t   the start of the time interval
    * \param[in]   dt  the width of the time interval.
    * \param[inout] Q  the conserved variables and parameters as C array (already allocated).
    * 
    **/
-  virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
+  virtual void adjustSolution(const double* const x,const double t,const double dt, double* Q) = 0;
 
   /**
    * Returns the min time step size of the

@@ -50,7 +50,7 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
     /**
      * @see FiniteVolumesSolver
      */    
-    void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override; 
+    void adjustSolution(const double* const x,const double t,const double dt, double* Q) override;
     
     /**
      * Compute the flux tensor.
