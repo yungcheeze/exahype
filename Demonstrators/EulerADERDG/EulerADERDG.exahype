@@ -44,16 +44,16 @@ exahype-project EulerADERDG
   */
   
   solver Limiting-ADER-DG MyEulerSolver
-    variables const    = rho:1,j:3,E:1
-    order const        = 5
-    maximum-mesh-size  = 5e-1    
-    maximum-mesh-depth = 2
-    time-stepping      = global
-    type const         = nonlinear, Legendre
-    terms const        = flux
-	optimisation const = generic
+    variables const            = rho:1,j:3,E:1
+    order const                = 5
+    maximum-mesh-size          = 5e-1    
+    maximum-mesh-depth         = 2
+    time-stepping              = global
+    type const                 = nonlinear, Legendre
+    terms const                = flux
+    optimisation const         = generic
     language const             = C
-    limiter-type const         = musclhancock
+    limiter-type const         = godunov
     limiter-optimisation const = generic
     limiter-language const     = C
     dmp-observables            = 5
@@ -62,11 +62,19 @@ exahype-project EulerADERDG
     steps-till-cured = 10
     helper-layers    = 2
     
-    plot vtu::Cartesian::cells::ascii EulerWriter
+    plot vtk::Cartesian::vertices::limited::ascii EulerWriter
       variables const = 5
       time            = 0.0
       repeat          = 0.001
       output          = ./variables
     end plot
+    
+    plot vtk::Cartesian::subcells::limited::ascii EulerSubcellsWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.001
+      output          = ./variables-fv
+    end plot
+
   end solver
 end exahype-project
