@@ -40,7 +40,7 @@ void EulerADERDG::MyEulerSolver_ADERDG::getInitialEnergy(const double* const x, 
       &&
       myIntX(1) > 0 && myIntX(1) < static_cast<int>(LogoExaHyPE.height)
     ) {
-      E+= (1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)]) * 2.2;
+      E+= (1.0-LogoExaHyPE.pixel_data[myIntX(1)*LogoExaHyPE.width+myIntX(0)]) * 4.0;
     }
   }
 }
