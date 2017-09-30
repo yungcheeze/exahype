@@ -12,6 +12,6 @@ export GPROF=off
 
 # optimised kernels
 export USE_IPO=on
-export TBB_SHLIB="-L/opt/intel/compilers_and_libraries_2017.0.098/linux/tbb/lib/mic -ltbb"
+export TBB_SHLIB="-L/opt/intel/compilers_and_libraries_2017.0.098/linux/tbb/lib/intel64/gcc4.7 -ltbb"
 
 
