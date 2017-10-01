@@ -12,39 +12,38 @@ module swap PrgEnv-cray PrgEnv-intel
 
 cd $PBS_O_WORKDIR
 
-aprun -n 1 -cc depth ./my_application
-
 
 ## export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.7 -ltbb"
 
 nodes=1
 tasks=1
 tasksPerNode=1
-coresPerTask=$SLURM_ARRAY_TASK_ID
-let procsPerNode=tasksPerNode*coresPerTask
+for coresPerTask in 1 2 4 6 8 10 12 14 16 20 24 28 32 40 48 56 64 128 256
+do
+  let procsPerNode=tasksPerNode*coresPerTask
 
-compiler=Intel
-sharedMem=TBB
-if (( coresPerTask==1 )); then
-  sharedMem=None
-fi
+  compiler=Intel
+  sharedMem=TBB
+  if (( coresPerTask==1 )); then
+    sharedMem=None
+  fi
 
-prefix=Euler_ADERDG-no-output-regular-0-p3
-out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+  prefix=Euler_ADERDG-no-output-regular-0-p3
+  out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
-script=multicore/hamilton.slurm-script
-spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+  script=multicore/archer.pbs
+  spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
-# pipe some information into output files
-echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
-module list 2>$out
-echo "" >> $out
-cat $script >>$out
-echo "" >> $out
-cat $spec >> $out
-cat $out > ${out}.likwid
+  # pipe some information into output files
+  echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
+  module list 2>$out
+  echo "" >> $out
+  cat $script >>$out
+  echo "" >> $out
+  cat $spec >> $out
+  cat $out > ${out}.likwid
 
-# execute the job
-./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
-
+  # execute the job
+  aprun -n 1 -cc depth ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+done
 
