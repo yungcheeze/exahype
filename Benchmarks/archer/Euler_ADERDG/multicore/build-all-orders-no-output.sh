@@ -9,11 +9,9 @@ cp $spec ${spec}_tmp
 for m in 1 2
 do
   if (( m == 1 )); then
-    make clean
-    export SHAREDMEM=TBB
-  else
-    make clean
     export SHAREDMEM=None
+  else
+    export SHAREDMEM=TBB
   fi
 
   echo "SHAREDMEM=$SHAREDMEM"
@@ -25,7 +23,9 @@ do
     sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$p',' $spec
     cat $spec
     $directory/configure-no-output.sh
-    make -j24 && \
+    make clean
+    make -j16
+    make
     mv $exe $exe-p$p-$SHAREDMEM-$COMPILER
   done
 done
