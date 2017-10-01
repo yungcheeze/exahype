@@ -63,9 +63,7 @@ do
   cp $script $newScript
  
   sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
   sed -i 's,p3,p'$order',g' $newScript
-
   sed -i 's,script=multicore/archer.pbs,script='$newScript',g' $newScript 
   
   # Create spec files
