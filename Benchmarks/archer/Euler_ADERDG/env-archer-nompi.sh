@@ -2,7 +2,7 @@ module load java/jdk1.8.0_51
 
 module swap PrgEnv-cray PrgEnv-intel
 
-export EXAHYPE_CC=icpc
+export EXAHYPE_CC=$CC
 
 export MODE=Release
 export COMPILER=Intel
