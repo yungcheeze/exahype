@@ -23,10 +23,12 @@ exahype-project Euler
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./ApplicationExamples/Euler_FV_png
+  architecture const               = noarch
+  log-file  = we-dont-care.log
 
   computational-domain
-    dimension const         = 2
-    width                    = 1.0, 1.0
+    dimension const          = 2
+    width                    = 3, 3
     offset                   = 0.0, 0.0
     end-time                 = 1.00
   end computational-domain
@@ -40,15 +42,27 @@ exahype-project Euler
   solver Finite-Volumes MyEulerSolver
     variables const   = rho:1,j:3,E:1
     patch-size const  = 10
-    maximum-mesh-size = 5e-3
+    maximum-mesh-size = 1.0
     time-stepping     = global
     kernel const      = generic::godunov
     language const    = C
+    /* switch to musclhancock one day */
+    
     plot vtk::Cartesian::cells::ascii EulerWriter
       variables const = 5
       time            = 0.0
       repeat          = 0.0001
       output          = ./variables
+      select    = x:0.0,y:0.0
     end plot
+
+    plot user::defined PNGWriter
+      variables const = 3
+      time = 0.0
+      repeat = 0.0000000001
+      output = ./output/outpic
+      select    = x:0.0,y:0.0
+    end plot
+
   end solver
 end exahype-project

@@ -1,14 +1,14 @@
-/**
- * This file is part of the ExaHyPE project. For copyright and information
- * please see www.exahype.eu.
- */
 #include "MyEulerSolver.h"
 #include "MyEulerSolver_Variables.h"
+
 #include "picopng.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+
+
+tarch::logging::Log Euler::MyEulerSolver::_log( "Euler::MyEulerSolver" );
 
 picopng::Image Image;
 
@@ -23,15 +23,11 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 	}
 }
 
-bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
   return tarch::la::equals(t,0.0);
 }
 
-
-void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
-                                                  const double w,
-                                                  const double t,
-                                                  const double dt, double* Q) {
+void Euler::MyEulerSolver::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
   Variables vars(Q);
   
   tarch::la::Vector<DIMENSIONS,double> myX( x[0], 1.0-x[1] );
@@ -62,13 +58,12 @@ void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
   vars.j(0,0,0);
 }
 
-
 exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 
-void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int dIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
@@ -76,14 +71,13 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int normalNo
   const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  double u_n = Q[normalNonZeroIndex + 1] * irho;
+  double u_n = Q[dIndex + 1] * irho;
   double c  = std::sqrt(GAMMA * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
   eigs.j(u_n,u_n,u_n);
 }
-
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
@@ -104,33 +98,16 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
-}
-
 
 void Euler::MyEulerSolver::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,
-    const int normalNonZero,
+    const int d,
     const double* const stateInside,
     double* stateOutside) {
   ReadOnlyVariables varsInside(stateInside);
   Variables         varsOutside(stateOutside);
 
   varsOutside = varsInside;
-}
-
-void Euler::MyEulerSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
-	// this is never called
-}
-
-void Euler::MyEulerSolver::matrixb(const double* const Q,const int d,double* Bn) {
-	for(int i=0; i < NumberOfVariables*NumberOfVariables; i++) {
-		Bn[i] = 0.0;
-	}
 }
