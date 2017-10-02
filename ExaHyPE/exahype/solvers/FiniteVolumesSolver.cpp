@@ -2149,7 +2149,7 @@ void exahype::solvers::FiniteVolumesSolver::preProcess(
     cellDescription.getType()==CellDescription::Type::Cell
     #ifdef Parallel
     &&
-    !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
+    1 // !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here? // TODO FIX THIS LINE
     #endif
   ) {
     uncompress(cellDescription);
@@ -2165,7 +2165,7 @@ void exahype::solvers::FiniteVolumesSolver::postProcess(
       cellDescription.getType()==CellDescription::Type::Cell
       #ifdef Parallel
       &&
-      !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
+      1 // !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here? // TODO FIX THIS LINE
       #endif
       &&
       CompressionAccuracy>0.0
