@@ -24,7 +24,13 @@ tarch::logging::Log GRMHD::GRMHDSolver_ADERDG::_log("GRMHDSolver_ADERDG");
 typedef BoundaryConditions<GRMHD::GRMHDSolver_ADERDG> ADERDG_BC;
 ADERDG_BC* abc;
 
+// enable nan tracker
+#include <fenv.h>
+
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView constants) {
+  // NAN checker
+  feenableexcept(FE_INVALID | FE_OVERFLOW);  // Enable all floating point exceptions but FE_INEXACT
+	
   // Todo: Move this to specfile once we have working constants.
   std::string id_default = "Fortran";
   std::string bc_default = "left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact";
@@ -61,7 +67,7 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue  __attribute__((optimize("O0
 
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   id->Interpolate(x, t, Q);
-  //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q0=%f\n", x[0],x[1],x[2], t, Q[0]);
+  //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q2=%f\n", x[0],x[1],x[2], t, Q[2]);
   for(int i=0; i<NumberOfVariables; i++) {
 	if(!std::isfinite(Q[i])) {
 		printf("NAN in i=%d at t=%f, x=[%f,%f,%f], Q[%d]=%f\n", i, t, x[0],x[1],x[2], i, Q[i]);
@@ -91,11 +97,46 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
 	 // for debugging, to make sure BC are set correctly
 	double snan = std::numeric_limits<double>::signaling_NaN();
 	double weird_number = -1.234567;
-	std::memset(stateOut, snan, nVar * sizeof(double));
-	std::memset(fluxOut,  snan, nVar * sizeof(double));
+	std::memset(stateOut, weird_number, nVar * sizeof(double));
+	std::memset(fluxOut,  weird_number, nVar * sizeof(double));
 	
 	//abc->apply(ADERDG_BOUNDARY_CALL);
-	abc->exact(ADERDG_BOUNDARY_CALL);
+	//abc->exact(ADERDG_BOUNDARY_CALL);
+	
+	/////// EXACT
+	  // employ time-integrated exact BC for AlfenWave.
+  
+  double Qgp[nVar], Fs[nDim][nVar], *F[nDim];
+  for(int dd=0; dd<nDim; dd++) F[dd] = Fs[dd];
+  // zeroise stateOut, fluxOut
+  for(int m=0; m<nVar; m++) {
+    stateOut[m] = 0;
+    fluxOut[m] = 0;
+  }
+  for(int i=0; i < basisSize; i++)  { // i == time
+    const double weight = kernels::gaussLegendreWeights[order][i];
+    const double xi = kernels::gaussLegendreNodes[order][i];
+    double ti = t + xi * dt;
+
+    adjustPointSolution(x, weight/*not sure, not used anyway*/, ti, dt, Qgp);
+    flux(Qgp, F);
+    
+    for(int m=0; m < nVar; m++) {
+      stateOut[m] += weight * Qgp[m];
+      fluxOut[m] += weight * Fs[d][m];
+    }
+  }
+  ///// EXACT
+	
+	
+  for(int i=0; i<NumberOfVariables; i++) {
+	if(!std::isfinite(stateOut[i])) {
+		printf("BoundaryValues stateOut NAN in i=%d at t=%f, x=[%f,%f,%f], stateOut[%d]=%f\n", i, t, x[0],x[1],x[2], i, stateOut[i]);
+	}
+	if(!std::isfinite(fluxOut[i])) {
+		printf("BoundaryValues NAN in i=%d at t=%f, x=[%f,%f,%f], fluxOut[%d]=%f\n", i, t, x[0],x[1],x[2], i, fluxOut[i]);
+	}
+  }
 }
 
 
@@ -145,6 +186,16 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(
 
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
+  
+  for(int i=0; i<NumberOfVariables; i++) {
+	if(!std::isfinite(BgradQ[i])) {
+		printf("NCP NAN in BgradQ[%d]=>%f\n", i, BgradQ[i]);
+		for(int j=0; j<NumberOfVariables; j++) {
+			printf("Q[%d]=%f\n", j, Q[j]);
+			printf("BgradQ[%d]=%f\n", j, BgradQ[j]);
+		}
+	}
+  }
 }
 
 

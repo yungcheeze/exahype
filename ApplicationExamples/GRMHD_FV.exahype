@@ -30,14 +30,14 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 1.0, 1.0, 1.0
+    width                          = 15.0, 15.0, 15.0
     offset                         = 0.0, 0.0, 0.0
-    end-time                       = 2000.1
+    end-time                       = 0.0000001
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 2
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -61,7 +61,7 @@ exahype-project GRMHD
   solver Finite-Volumes GRMHDSolver_FV
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     patch-size const               = 8
-    maximum-mesh-size              = 0.33339
+    maximum-mesh-size              = 5.00009
     maximum-mesh-depth             = 0
     time-stepping                  = global
     kernel const                   = generic::musclhancock
