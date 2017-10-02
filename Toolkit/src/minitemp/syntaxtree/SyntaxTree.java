@@ -53,20 +53,29 @@ public abstract class SyntaxTree {
         currentNode.addNode(new VariableLeaf(t)); 
       } else if(t.type == Token.TEXT_TOKEN) {     //text is a Leaf
         currentNode.addNode(new TextLeaf(t));     
-      } else if (t.type == Token.IF_OPEN_TOKEN) { //if logic start a subtree
+      } else if(t.type == Token.IF_OPEN_TOKEN) { //if logic start a subtree
         SyntaxTree newNode = new IfNode(t, currentNode);
         currentNode.addNode(newNode);
         currentNode = newNode;
-      } else if (t.type == Token.IF_ELSE_TOKEN) { //else stay in the if subtree but notify the node
+      } else if(t.type == Token.IF_ELSE_TOKEN) { //else stay in the if subtree but notify the node
         if (currentNode instanceof IfNode) { // the current node has to be an IfNode
           IfNode p = (IfNode)(currentNode); 
           p.startElseBlock();
         } else {
           throw new IllegalArgumentException("Read an else block without being in an if block");
         }
-      } else if (t.type == Token.IF_CLOSE_TOKEN) { //endif, go back to the parent of the subtree
-        if(currentNode.parent == null) {
+      } else if(t.type == Token.IF_CLOSE_TOKEN) { //endif, go back to the parent of the subtree
+        if(!(currentNode instanceof IfNode)) {
           throw new IllegalArgumentException("Read an endif block without being in an if block");
+        }
+        currentNode = currentNode.parent;
+      } else if(t.type == Token.FOR_OPEN_TOKEN) {
+        SyntaxTree newNode = new ForNode(t, currentNode);
+        currentNode.addNode(newNode);
+        currentNode = newNode;
+      } else if(t.type == Token.FOR_CLOSE_TOKEN) {
+        if(!(currentNode instanceof ForNode)) {
+          throw new IllegalArgumentException("Read an endfor block without being in an for block");
         }
         currentNode = currentNode.parent;
       }

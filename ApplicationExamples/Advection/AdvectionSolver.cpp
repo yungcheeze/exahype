@@ -13,13 +13,10 @@ void Trivial::AdvectionSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Trivial::AdvectionSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
-}
-
-void Trivial::AdvectionSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  Q[0] = f(x, t);
+void Trivial::AdvectionSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
+  if (tarch::la::equals(t,0.0)) {
+    Q[0] = f(x, t);
+  }
 }
 
 void Trivial::AdvectionSolver::eigenvalues(const double* const Q,const int d,double* lambda) {

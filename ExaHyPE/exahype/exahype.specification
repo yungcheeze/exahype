@@ -21,9 +21,6 @@ event-mapping:
   name: TimeStepSizeComputation
   
 event-mapping:
-  name: FusedTimeSteppingInitialisation  
-  
-event-mapping:
   name: SolutionUpdate
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
@@ -99,38 +96,6 @@ adapter:
 //   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
 //   merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
-// Fused time stepping initialisation  
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
-  merge-with-user-defined-mapping: Merging
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Sending  // Sending does send face data and reduces time step data
-  merge-with-user-defined-mapping: PostProcessing
-
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisationAndPlot
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
-  merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data
-  merge-with-user-defined-mapping: PostProcessing
-  
-adapter:
-  name: PredictionAndFusedTimeSteppingInitialisationAndPlot2d
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data
-  merge-with-user-defined-mapping: PostProcessing 
-
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
@@ -139,28 +104,21 @@ adapter:
 
 // Adapter for 1 phase time stepping
 adapter: 
-  name: ADERDGTimeStep
+  name: FusedTimeStep
   // needs corrector time step size
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
-  merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTimel; pre-processing done directly
   merge-with-user-defined-mapping: SolutionUpdate
-  // needs predictor time step size
-  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: LoadBalancing
   merge-with-user-defined-mapping: Sending
  
 adapter: 
-  name: PlotAndADERDGTimeStep
+  name: PlotAndFusedTimeStep
   // needs corrector time step size
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: Plot
   // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: SolutionUpdate
-  // needs predictor time step size
-  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
-  merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
 
 // Additional adapters for limiter status spreading and recomputation
@@ -180,10 +138,9 @@ adapter:
   name: LocalRecomputationAndTimeStepSizeComputation
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: LocalRecomputation
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused)
-  merge-with-user-defined-mapping: PostProcessing
+  merge-with-user-defined-mapping: LocalRecomputation      // This advances in time for local recomp.
+  merge-with-user-defined-mapping: TimeStepSizeComputation // This recomputes the time step size for mesh ref and global recomp.
+  merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused); post-processing done directly
   
 adapter:
   name: GlobalRollback
@@ -199,27 +156,17 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing 
 
 adapter:
-  name: SolutionUpdateAndTimeStepSizeComputation
+  name: SolutionUpdate
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: SolutionUpdate
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing
-
-adapter:
-  name: TimeStepSizeComputation
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
+  merge-with-user-defined-mapping: Sending // send only time step data
 
 adapter:
   name: Prediction
   merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction     // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
+  merge-with-user-defined-mapping: Sending        // send only face data; post-processing done directly
 
 adapter:
   name: PredictionAndPlot
@@ -227,18 +174,7 @@ adapter:
   merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
-
-adapter:
-  name: PredictionAndPlot2d
-  merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: Plot
-  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: Sending    // Sending does send face data
-  merge-with-user-defined-mapping: PostProcessing
+  merge-with-user-defined-mapping: Sending // send only face data; post-processing done directly
   
 // Additional adapters for AMR
 adapter:
@@ -246,22 +182,7 @@ adapter:
   merge-with-user-defined-mapping: FinaliseMeshRefinement
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending      // Only send time step data
-  merge-with-user-defined-mapping: PostProcessing
-  
-// Additional adapters for AMR in 4 phase time stepping
-adapter:
-  name: MergeTimeStepData
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Merging 
-  merge-with-user-defined-mapping: PostProcessing
-  
-// Additional adapters for AMR in fused time stepping
-adapter:
-  name: MergeTimeStepDataDropFaceData
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Merging 
-  merge-with-user-defined-mapping: PostProcessing
+  merge-with-user-defined-mapping: Sending  // send only face data; post-processing done directly
   
 adapter:
   name: FinaliseMeshRefinementAndReinitialisation

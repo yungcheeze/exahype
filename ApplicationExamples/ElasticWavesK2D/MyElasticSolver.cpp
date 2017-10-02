@@ -248,13 +248,9 @@ void Elastic::MyElasticSolver::coefficientMatrix(const double* const Q,const int
 
 //TODO KD
 // tell the user what it is
-bool Elastic::MyElasticSolver::useAlgebraicSource() const {return true;}
 
-bool Elastic::MyElasticSolver::useNonConservativeProduct() const {return true;}
 
-bool Elastic::MyElasticSolver::useCoefficientMatrix() const {return true;}
 
-bool Elastic::MyElasticSolver::usePointSource() const { 
   return true;
 }
 

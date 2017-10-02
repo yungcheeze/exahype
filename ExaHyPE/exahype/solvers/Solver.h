@@ -96,6 +96,7 @@ namespace exahype {
   >     DataHeap;
   #endif
 
+  typedef peano::heap::PlainCharHeap CompressedDataHeap;
 
 #ifdef Parallel
   /**
@@ -387,7 +388,31 @@ class exahype::solvers::Solver {
    */
   static tarch::logging::Log _log;
 
+ protected:
+  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
+  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
  public:
+
+  /**
+   * TrackGridStatistics is a flag from Peano that I "misuse" here as these
+   * data also are grid statistics.
+   */
+  #ifdef TrackGridStatistics
+  static double PipedUncompressedBytes;
+  static double PipedCompressedBytes;
+  #endif
+
+
+  /**
+   * Set to 0 if no floating point compression is used. Is usually done in the
+   * runner once at startup and from hereon is a read-only variable. The
+   * subsequent field SpawnCompressionAsBackgroundThread has no semantics if
+   * the present value is set to 0.
+   */
+  static double CompressionAccuracy;
+
+  static bool SpawnCompressionAsBackgroundThread;
+
   /**
    * The type of a solver.
    */
@@ -414,6 +439,15 @@ class exahype::solvers::Solver {
    * returned by the user functions.
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
+
+  /**
+   *
+   */
+  typedef struct CellUpdateResult {
+    double _timeStepSize                     = std::numeric_limits<double>::max();
+    LimiterDomainChange _limiterDomainChange = LimiterDomainChange::Regular;
+    bool _refinementRequested                = false;
+  } CellUpdateResult;
 
   /**
    * This struct is used in the AMR context
@@ -965,8 +999,14 @@ class exahype::solvers::Solver {
   virtual void startNewTimeStep() = 0;
 
   /**
+   * Similar as Solver::updateTimeStepSizes but
+   * for the fused time stepping scheme.
+   */
+  virtual void updateTimeStepSizesFused() = 0;
+
+  /**
    * In contrast to startNewTimeStep(), this
-   * method does not shift the time stamps.
+   * method does not shift the time stamp.
    *
    * It simply updates the time step sizes
    *
@@ -1144,8 +1184,7 @@ class exahype::solvers::Solver {
    * time stepping and update the mesh
    * before continuing. Erasing is here not considered.
    *
-   * \return RefinementType::APrioriRefinement (or
-   * RefinementType::APosterrioriRefinement) if a mesh update is necessary.
+   * \return True if mesh refinement is requested.
    *
    * \note Has no const modifier since kernels are not const functions yet.
    */
@@ -1187,8 +1226,15 @@ class exahype::solvers::Solver {
    */
   virtual double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) = 0;
+      const int element) = 0;
+
+  /**
+   * Same as ::updateTimeStepSizes for the fused
+   * time stepping.
+   */
+  virtual double updateTimeStepSizesFused(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
 
   /**
    * Computes a new time step size and overwrites
@@ -1205,8 +1251,7 @@ class exahype::solvers::Solver {
    */
     virtual double updateTimeStepSizes(
           const int cellDescriptionsIndex,
-          const int element,
-          double*   tempEigenvalues) = 0;
+          const int element) = 0;
 
   /**
    * Zeroes all the time step sizes.
@@ -1236,9 +1281,35 @@ class exahype::solvers::Solver {
    */
   virtual void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
+   * Fuse algorithmic phases of the solvers.
+   *
+   * <h2>FiniteVolumesSolver</h2>
+   *
+   * This call degenerates to an updateSolution
+   * call for the FiniteVolumesSolver.
+   *
+   * <h2>ADERDGSolver</h2>
+   *
+   * Runs the triad of updateSolution,performPredictionAndVolumeIntegral
+   * plus startNewTimeStep.
+   *
+   * <h2>LimitingADERDGSolver</h2>
+   *
+   * Either runs the ADERDGSolver triad or
+   * performs an FV update. Performs some additional
+   * tasks.
+   */
+  virtual CellUpdateResult fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) = 0;
 
   /**
    * Update the solution of a cell description.
@@ -1250,11 +1321,7 @@ class exahype::solvers::Solver {
    */
   virtual void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+      const int element) = 0;
 
   /**
      * In this method, the solver can perform post-processing

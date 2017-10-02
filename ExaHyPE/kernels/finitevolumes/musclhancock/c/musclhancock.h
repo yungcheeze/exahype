@@ -38,7 +38,6 @@ namespace c {
   template <bool useSource, bool useNCP, bool useFlux, class SolverType>
   double solutionUpdate(
       SolverType& solver,double* luh_new, const double* luh,
-      double** tempStateSizedVectors,double** tempUnknowns,
       const tarch::la::Vector<DIMENSIONS, double>& dx,double dt);
 }  // namespace c
 }  // namespace musclhancock

@@ -27,7 +27,6 @@ template <typename SolverType>
 double kernels::finitevolumes::commons::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* tempEigenvalues,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -91,7 +90,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
       x[1] = center[1] + dx[1] * (qs - 0.5);
 
       // read initial condition
-      solver.adjustSolution(x, 0, t, dt, luh+idx(j,i,0));
+      solver.adjustSolution(x, t, dt, luh+idx(j,i,0));
     }
   }
 }
@@ -411,7 +410,6 @@ template <typename SolverType>
 double kernels::finitevolumes::commons::c::stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* tempEigenvalues,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -458,7 +456,6 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
       }
     }
   }
-
   return dt_max_stable;
 }
 
@@ -493,7 +490,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
         const double qi = (2.0*(i-patchBegin)+1.0)/(2.0*patchSize); //linspace;
         x[0] = center[0] + dx[0] * (qi - 0.5);
         // read initial condition
-        solver.adjustSolution(x, 0, t, dt, luh+idx(k,j,i,0));
+        solver.adjustSolution(x, t, dt, luh+idx(k,j,i,0));
       }
     }
   }

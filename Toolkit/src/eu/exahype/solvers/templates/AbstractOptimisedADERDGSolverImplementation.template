@@ -16,14 +16,7 @@
 #include <stdio.h>
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs 
-{%- if enableProfiler %}
-, std::unique_ptr<exahype::profilers::Profiler> profiler
-{%- endif %}
-{%- if hasConstants %}
-, exahype::Parser::ParserView constants
-{%- endif %}
-):
+{{project}}::{{solver}}::{{solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,int limiterHelperLayers,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs {%- if enableProfiler %}, std::unique_ptr<exahype::profilers::Profiler> profiler{% endif %}{% if hasConstants %}, exahype::Parser::ParserView constants{% endif %}):
   {{abstractSolver}}::{{abstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,limiterHelperLayers,timeStepping {%- if enableProfiler %}, std::move(profiler) {%- endif %}) {
   init(cmdlineargs {%- if hasConstants %}, constants{% endif %});
 }
@@ -43,7 +36,7 @@ void {{project}}::{{abstractSolver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
-void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
+void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx,const double dt, double* pointForceSources) {
 {%- if enableProfiler %}
   _profiler->start("spaceTimePredictor");
 {%- endif %}
@@ -58,10 +51,10 @@ void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
 
 {%- if noTimeAveraging %}
   //No Time Averaging scheme
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1] {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ
   {{optNamespace}}::extrapolatorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], lQhbnd, lFhbnd);
 {% else %}
-  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ, BGradQ
+  {{optNamespace}}::picardLoopNonlinear(*static_cast<{{solver}}*>(this), luh, dt, inverseDx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1] {%- if enableDeepProfiler %}, _profiler.get(){% endif %}); //lSi, gradQ
   {{optNamespace}}::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
   {{optNamespace}}::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
 {% endif %}
@@ -124,7 +117,7 @@ void {{project}}::{{abstractSolver}}::surfaceIntegral(double* lduh,const double*
 
 
 
-void {{project}}::{{abstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
+void {{project}}::{{abstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {%- if enableProfiler %}
@@ -150,7 +143,7 @@ void {{project}}::{{abstractSolver}}::boundaryConditions(double* fluxOut,double*
 
 
 
-double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+double {{project}}::{{abstractSolver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {%- if enableProfiler %}
   _profiler->start("stableTimeStepSize");
 {%- endif %}
@@ -167,19 +160,7 @@ void {{project}}::{{abstractSolver}}::adjustSolution(double *luh,const tarch::la
 {%- if enableProfiler %}
   _profiler->start("solutionAdjustment");
 {%- endif %}
-  switch (useAdjustSolution(center, dx, t, dt)) {
-    case AdjustSolutionValue::No:
-      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
-      break;
-    case AdjustSolutionValue::PointWisely:
-      {{optNamespace}}::adjustPointSolution(*static_cast<{{solver}}*>(this), luh, center, dx, t, dt );
-      break;
-    case AdjustSolutionValue::PatchWisely:
-      printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
-      exit(1);
-     //TODO JMG not implemented
-      break;
-  }
+  {{optNamespace}}::adjustPointSolution(*static_cast<{{solver}}*>(this), luh, center, dx, t, dt );
 {%- if enableProfiler %}
   _profiler->stop("solutionAdjustment");
 {%- endif %}
@@ -243,12 +224,17 @@ void {{project}}::{{abstractSolver}}::abortWithMsg(const char* const msg) {
 
 
 void {{project}}::{{abstractSolver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
-  //TODO JMG
+{%- if usePointSource %}
 {%- if enableProfiler %}
   _profiler->start("pointSource");
 {%- endif %}
+  //TODO JMG
+  //kernels::aderdg::generic::c::pointSource<{{solver}}>(*static_cast<{{solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
 {%- if enableProfiler %}
   _profiler->stop("pointSource");
+{%- endif %}
+{%- else %}
+  //Point sources aren't defined, this method should be empty
 {%- endif %}
 }
 
@@ -268,23 +254,5 @@ void {{project}}::{{abstractSolver}}::pointSource(const double* const x,const do
   abortWithMsg("If this operation is entered (pointSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
-void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{project}}::{{abstractSolver}}::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   abortWithMsg("If this operation is entered (adjustPointSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
-
-void {{project}}::{{abstractSolver}}::adjustPatchSolution(
-  const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-  const tarch::la::Vector<DIMENSIONS, double>& dx,
-  const double t,
-  const double dt,
-  double* luh) {
-  abortWithMsg("If this operation is entered (adjustPatchSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
-
-void {{project}}::{{abstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  abortWithMsg("If this operation is entered (fusedSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-}
-
-void {{project}}::{{abstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  // needed ?
-}

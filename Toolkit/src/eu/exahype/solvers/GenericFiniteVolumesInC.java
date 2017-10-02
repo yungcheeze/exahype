@@ -3,246 +3,98 @@ package eu.exahype.solvers;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+// template engine
+import minitemp.Context;
+import minitemp.TemplateEngine;
 
 import eu.exahype.io.IOUtils;
-import eu.exahype.io.SourceTemplate;
+import eu.exahype.kernel.FiniteVolumesKernel;
 
-class GenericFiniteVolumesInC implements Solver {
-  private String _type;
-  private String _projectName;
+
+public class GenericFiniteVolumesInC implements Solver {
+  
   private String _solverName;
-  private int _dimensions;
-  private int _numberOfVariables;
-  private int _numberOfParameters;
-  private int _patchSize;
-  private int _ghostLayerWidth;
-  private Set<String> _namingSchemeNames;
+  private Context context;
+  private TemplateEngine templateEngine;
 
-  private boolean _enableProfiler;
-  private boolean _hasConstants;
-
-  public GenericFiniteVolumesInC(String type, String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
-      int ghostLayerWidth, boolean enableProfiler, boolean hasConstants) {
-    _type               = type;
-    _projectName        = projectName;
+  public GenericFiniteVolumesInC(
+      String type, String projectName, String solverName, int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
+      int ghostLayerWidth, boolean enableProfiler, boolean hasConstants,
+      FiniteVolumesKernel kernel) {
+        
     _solverName         = solverName;
-    _dimensions         = dimensions;
-    _numberOfVariables  = numberOfVariables;
-    _numberOfParameters = numberOfParameters;
-    _namingSchemeNames  = namingSchemeNames;
-    _patchSize          = patchSize;
-    _ghostLayerWidth    = ghostLayerWidth;
-    _enableProfiler     = enableProfiler;
-    _hasConstants       = hasConstants;
+    
+    final boolean useFlux            = kernel.useFlux();
+    final boolean useSource          = kernel.useSource();
+    final boolean useNCP             = kernel.useNCP();
+    final boolean usePointSource     = kernel.usePointSource();
+    
+    templateEngine = new TemplateEngine();
+    context = new Context();
+
+    //String
+    context.put("finiteVolumesType" , type);
+    context.put("project"           , projectName);
+    context.put("solver"            , solverName);
+    context.put("abstractSolver"    , getAbstractSolverName());
+    
+    //int
+    context.put("dimensions"        , dimensions);
+    context.put("numberOfVariables" , numberOfVariables);
+    context.put("numberOfParameters", numberOfParameters);
+    context.put("patchSize"         , patchSize);
+    context.put("ghostLayerWidth"   , ghostLayerWidth);
+    
+    //boolean
+    context.put("enableProfiler"    , enableProfiler);
+    context.put("hasConstants"      , hasConstants);
+    context.put("useFlux"           , useFlux);
+    context.put("useSource"         , useSource);
+    context.put("useNCP"            , useNCP);
+    context.put("usePointSource"    , usePointSource);
+    
+    //Set<String>
+    context.put("namingSchemes"     , namingSchemeNames.stream().map(s -> s.substring(0, 1).toUpperCase()+s.substring(1)).collect(Collectors.toSet())); //capitalize
+    
+    //List<Integer> , range used by for loops
+    context.put("range_0_nDim"      , IntStream.range(0, dimensions)                          .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVar"      , IntStream.range(0, numberOfVariables)                   .boxed().collect(Collectors.toList()));
+    context.put("range_0_nVarParam" , IntStream.range(0, numberOfVariables+numberOfParameters).boxed().collect(Collectors.toList()));
   }
     
   @Override
   public String getSolverName() {
     return _solverName;
   }
+  
+  private String getAbstractSolverName() {
+    return "Abstract"+getSolverName();
+  }
 
-  public void writeHeader(java.io.BufferedWriter writer)
-      throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-        "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-    }
-
-
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    content.put("Dimensions",String.valueOf( _dimensions));
-    //content.put("Order", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
-
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-
-    writer.write(content.toString());
+  public void writeHeader(java.io.BufferedWriter writer) throws IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
+    writer.write(templateEngine.render(template, context));
   }
   
-  public void writeUserImplementation(java.io.BufferedWriter writer) throws java.io.IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-            "eu/exahype/solvers/templates/GenericFiniteVolumesSolverInCUserCode.template");
-    
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-    
-    content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content.put("Dimensions",String.valueOf(_dimensions));
-    
-    //    String SolverInitSignatureExtension = "";
-    String SolverInitSignatureExtension = "";
-    if (_hasConstants) {
-      SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
-    }
-    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
-    
-    // 
-    int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
-
-    String adjustSolution = "  // State variables:\n";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      adjustSolution += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) adjustSolution += "\n";
-    }
-    if (_numberOfParameters>0) {
-      adjustSolution += "  // Material parameters:\n";
-      for (int i = 0; i < _numberOfParameters; i++) {
-        adjustSolution += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
-        if (i<_numberOfParameters-1) adjustSolution += "\n";
-      }
-    }
-    String SolverInitCallExtension             = "";
-    if (_hasConstants) {
-       SolverInitCallExtension = ", constants";
-    }
-    content.put("SolverInitCallExtension",SolverInitCallExtension);
-
-    String eigenvalues = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 1.0;";
-      if (i<_numberOfVariables-1) eigenvalues += "\n";
-    }
-
-    String flux = "";
-    for (int d=0; d<_dimensions; ++d) {
-      for (int i = 0; i < _numberOfVariables; i++) {
-        flux += "  F["+d+"][" + String.format("%" + digits + "d", i) + "] = 0.0;";
-        if (i<_numberOfVariables-1) flux += "\n";
-      }
-      if (d<_dimensions-1) {
-        flux += "\n\n";    
-      }
-    }
-
-    String source = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      source += "  S[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) source += "\n";
-    }
-    
-    String boundaryValues = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      boundaryValues += "  stateOutside[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) boundaryValues += "\n";
-    }
-    
-    String ncp = "";
-    for (int i = 0; i < _numberOfVariables; i++) {
-      ncp += "  BgradQ[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) ncp += "\n";
-    }
-    
-    String matrixb = "";
-    for (int i = 0; i < _numberOfVariables*_numberOfVariables; i++) {
-      matrixb += "  Bn[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
-    }
-    
-    content.put("AdjustedSolutionValues",adjustSolution);
-    content.put("Eigenvalues",eigenvalues);
-    content.put("Flux",flux);
-    content.put("Source",source);
-    content.put("BoundaryValues",boundaryValues);
-    content.put("NonConservativeProduct",ncp);
-    content.put("MatrixB",matrixb);
-    
-    writer.write(content.toString());
+  public void writeUserImplementation(java.io.BufferedWriter writer) throws IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/GenericFiniteVolumesSolverInCUserCode.template");
+    writer.write(templateEngine.render(template, context));
   }
 
   @Override
-  public void writeAbstractHeader(BufferedWriter writer) throws IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-        "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverHeader.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String AbstractSolverConstructorArgumentExtension = "";
-    String AbstractSolverConstructorSignatureExtension = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants";
-    }
-
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
-    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
-    
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    content.put("Dimensions",String.valueOf( _dimensions));
-    content.put("PatchSize", String.valueOf(_patchSize));
-    content.put("GhostLayerWidth",String.valueOf(_ghostLayerWidth));
-    
-    String namingSchemes = "";
-    for (String name : _namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    content.put("NamingSchemes", namingSchemes);
-
-    writer.write(content.toString());
+  public void writeAbstractHeader(BufferedWriter writer) throws IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverHeader.template");
+    writer.write(templateEngine.render(template, context));
   }
   
   @Override
-  public void writeAbstractImplementation(BufferedWriter writer) throws IOException {
-    SourceTemplate content = SourceTemplate.fromRessourceContent(
-        "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverInCImplementation.template");
-
-    content.put("Project", _projectName);
-    content.put("Solver", _solverName);
-    
-    content.put("FiniteVolumesType", _type);
-    //
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String solverConstructorArgumentExtension  = "";
-    String AbstractSolverConstructorSignatureExtension = "";
-    String AbstractSolverConstructorArgumentExtension = "";
-    if (_enableProfiler) {
-      profilerInclude                      = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension          += ", std::move(profiler)";
-      AbstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-    }
-    content.put("ProfilerInclude",profilerInclude);
-    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
-    content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
-    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
-    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
-    //
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    
-    String SolverInitCallExtension = _hasConstants ? ",constants" : "";
-    content.put("SolverInitCallExtension", SolverInitCallExtension);
-
-
-    // TODO(Dominic): Add profilers
-    
-    writer.write(content.toString()); 
+  public void writeAbstractImplementation(BufferedWriter writer) throws IOException, IllegalArgumentException {
+    final String template = IOUtils.convertRessourceContentToString("eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverInCImplementation.template");
+    writer.write(templateEngine.render(template, context));
   }
 
   public void writeUserPDE(java.io.BufferedWriter writer)

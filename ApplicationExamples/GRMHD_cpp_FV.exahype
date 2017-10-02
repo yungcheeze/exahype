@@ -44,7 +44,7 @@ exahype-project GRMHD
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -52,7 +52,7 @@ exahype-project GRMHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver Finite-Volumes GRMHDSolver_FV
     /* NOTE: Since exahype currently does not compute the derivatives of

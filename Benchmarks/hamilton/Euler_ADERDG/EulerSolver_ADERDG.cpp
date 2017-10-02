@@ -322,12 +322,7 @@ void Euler::EulerSolver_ADERDG::referenceSolution(const double* const x,double t
   }
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::EulerSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
-
-void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,
-    const double w,const double t,const double dt, double* Q) {
+void Euler::EulerSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     referenceSolution(x,0.0,Q);
   }

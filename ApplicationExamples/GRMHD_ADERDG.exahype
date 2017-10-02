@@ -45,7 +45,7 @@ exahype-project GRMHD
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -53,7 +53,7 @@ exahype-project GRMHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = on
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG GRMHDSolver_ADERDG
     /* gamma is actually parts of a matrix... */
@@ -62,7 +62,9 @@ exahype-project GRMHD
     maximum-mesh-size              = 0.333333399911111119000333339
     maximum-mesh-depth             = 0
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux,ncp
+	optimisation const = generic
     language const                 = C
     constants                      = dummy:dummy
     /* not yet working: constants aka left:exact,right:exact,top:exact,bottom:exact,front:exact,back:exact */

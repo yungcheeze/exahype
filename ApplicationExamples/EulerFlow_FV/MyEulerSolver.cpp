@@ -19,7 +19,6 @@ bool Euler::MyEulerSolver::useAdjustSolution(
 }
 
 void Euler::MyEulerSolver::adjustSolution(const double* const x,
-                                               const double w,
                                                const double t,
                                                const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {

@@ -95,7 +95,7 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue DIM::DIMSolver_ADERDG::useAd
   return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 14 + #parameters
   
@@ -118,7 +118,9 @@ void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::adjustPointSolution
   Q[13] = 0.0;
 */
   // Fortran
-  initialdata_(x, &t, Q);
+  if (tarch::la::equals(t,0.0)) {
+    initialdata_(x, &t, Q);
+  }
 }
 
 void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {

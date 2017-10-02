@@ -22,19 +22,19 @@ exahype-project Euler
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
   output-directory const  = ./Benchmarks/hamilton/Euler_ADERDG
-  architecture const      = hsw
+  architecture const      = cpu
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 2
+    dimension const          = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.11
+    end-time                 = 0.4
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -45,8 +45,8 @@ exahype-project Euler
     timeout                  = 60
   end distributed-memory
 
-  optimisation
-    fuse-algorithmic-steps          = on
+  global-optimisation
+    fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
@@ -54,16 +54,18 @@ exahype-project Euler
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG EulerSolver_ADERDG
     variables const    = rho:1,j:3,E:1
-    order const        = 9
+    order const        = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size  = 0.12
-    maximum-mesh-depth = 2
+    maximum-mesh-depth = 0
     time-stepping      = global
-    kernel const       = optimised::fluxes::nonlinear
+    type const         = nonlinear
+    terms const        = flux
+    optimisation const = generic
     language const     = C
     constants          = reference:entropywave
 
@@ -78,7 +80,7 @@ exahype-project Euler
     plot vtu::Cartesian::vertices::ascii ErrorPlotter
       // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]
       variables const = 15 
-      time            = 0.0
+      time            = 10.0
       repeat          = 5e-2
       output          = ./errors
     end plot

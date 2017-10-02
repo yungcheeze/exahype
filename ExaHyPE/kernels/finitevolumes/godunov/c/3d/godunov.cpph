@@ -49,7 +49,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfVariables+numberOfParameters);
   
-  const double cellSize[3] = {dx[0]/patchSize, dx[1]/patchSize, dx[2]/patchSize};
+  const double cellSize[3]           = {dx[0]/patchSize, dx[1]/patchSize, dx[2]/patchSize};
+  const double invCellSizeTimesDt[3] = {dt/cellSize[0], dt/cellSize[1], dt/cellSize[2]};
   
   // Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
@@ -72,8 +73,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i,j, k, l)]   -= dt / cellSize[0] * fL[l];  
-      luh_new[idx(i,j, k+1, l)] += dt / cellSize[0] * fR[l];
+      luh_new[idx(i,j, k, l)]   -= invCellSizeTimesDt[0] * fL[l];  
+      luh_new[idx(i,j, k+1, l)] += invCellSizeTimesDt[0] * fR[l];
     }
   }
   }
@@ -93,8 +94,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i, j, k,l)]   -= dt / cellSize[1] * fL[l];  
-      luh_new[idx(i, j+1, k,l)] += dt / cellSize[1] * fR[l];
+      luh_new[idx(i, j, k,l)]   -= invCellSizeTimesDt[1] * fL[l];  
+      luh_new[idx(i, j+1, k,l)] += invCellSizeTimesDt[1] * fR[l];
     }
   }
   }
@@ -114,8 +115,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[2] / s_max_z);
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i, j,k,l)]   -= dt / cellSize[2] * fL[l];  
-      luh_new[idx(i+1, j,k,l)] += dt / cellSize[2] * fR[l];
+      luh_new[idx(i, j,k,l)]   -= invCellSizeTimesDt[2] * fL[l];  
+      luh_new[idx(i+1, j,k,l)] += invCellSizeTimesDt[2] * fR[l];
     }
   }
   }

@@ -337,9 +337,7 @@ void exahype::mappings::MeshRefinement::enterCell(
 
           solver->setInitialConditions(
               fineGridCell.getCellDescriptionsIndex(),
-              element,
-              fineGridVertices,
-              fineGridVerticesEnumerator);
+              element);
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
@@ -382,8 +380,6 @@ void exahype::mappings::MeshRefinement::leaveCell(
   logTraceInWith4Arguments("leaveCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  bool erasedCellDescriptionOfAllSolvers = true;
-
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
@@ -393,16 +389,15 @@ void exahype::mappings::MeshRefinement::leaveCell(
     // Multicoreising of this routine is thus postponed.
 
     if (solver->getMeshUpdateRequest()) {
-      erasedCellDescriptionOfAllSolvers &=
-          solver->updateStateInLeaveCell(
-              fineGridCell,
-              fineGridVertices,
-              fineGridVerticesEnumerator,
-              coarseGridCell,
-              coarseGridVertices,
-              coarseGridVerticesEnumerator,
-              fineGridPositionOfCell,
-              solverNumber);
+        solver->updateStateInLeaveCell(
+            fineGridCell,
+            fineGridVertices,
+            fineGridVerticesEnumerator,
+            coarseGridCell,
+            coarseGridVertices,
+            coarseGridVerticesEnumerator,
+            fineGridPositionOfCell,
+            solverNumber);
 
       bool isStable = solver->attainedStableState(
           fineGridCell,
@@ -417,21 +412,35 @@ void exahype::mappings::MeshRefinement::leaveCell(
   // We assume that the solvers have all removed
   // their data from the heap arrays associated with this
   // cell.
-  if (erasedCellDescriptionOfAllSolvers) {
+  if (fineGridCell.isInitialised() &&
+      fineGridCell.isEmpty()) {
     fineGridCell.shutdownMetaData();
-
-//    dfor2(v)
-//    if (coarseGridVertices[ coarseGridVerticesEnumerator(v) ].getRefinementControl()==
-//        exahype::Vertex::Records::RefinementControl::Refined
-//        &&
-//        !coarseGridVertices[ coarseGridVerticesEnumerator(v) ].isHangingNode()
-//          &&
-//          fineGridVertices[ coarseGridVerticesEnumerator(v) ].isInside()
-//    ) {
-//      coarseGridVertices[ coarseGridVerticesEnumerator(v) ].erase();
-//    }
-//    enddforx
   }
+
+  // TODO(Dominic): Veto erasing of coarse grid vertices
+//   if (fineGridCell.isInitialised()) {
+//      dfor2(v)
+//      if (
+//        !coarseGridVertices[ coarseGridVerticesEnumerator(v) ].isHangingNode()
+//      ) {
+//        coarseGridVertices[ coarseGridVerticesEnumerator(v) ].vetoErasing();
+//      }
+//      enddforx
+//  }
+
+  // TODO(Dominic): Erasse coarse grid vertices if not vetoed
+  //    dfor2(v)
+  //    if (
+  //        fineGridVertices[ fineGridVerticesEnumerator(v) ].canErase()
+  //        &&
+  //        fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+  //        exahype::Vertex::Records::RefinementControl::Refined
+  //        &&
+  //        !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
+  //    ) {
+  //      fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
+  //    }
+  //    enddforx
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
 }

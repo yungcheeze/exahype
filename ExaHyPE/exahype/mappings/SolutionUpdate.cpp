@@ -13,16 +13,47 @@
  
 #include "exahype/mappings/SolutionUpdate.h"
 
+#include "tarch/multicore/Loop.h"
+
 #include "peano/utils/Globals.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
-#include "tarch/multicore/Loop.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/VertexOperations.h"
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
-#include "exahype/VertexOperations.h"
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "exahype/mappings/TimeStepSizeComputation.h"
 
+tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
+    "exahype::mappings::SolutionUpdate");
+
+void exahype::mappings::SolutionUpdate::prepareLocalTimeStepVariables(){
+  const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  _minTimeStepSizes.resize(numberOfSolvers);
+  _minCellSizes.resize(numberOfSolvers);
+  _maxCellSizes.resize(numberOfSolvers);
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
+    _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
+    _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
+  }
+}
+
+void exahype::mappings::SolutionUpdate::initialiseTemporaryVariables() {
+  if (exahype::State::fuseADERDGPhases()) {
+    exahype::solvers::initialiseTemporaryVariables(_predictionTemporaryVariables);
+  }
+}
+
+void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
+  if (exahype::State::fuseADERDGPhases()) {
+    exahype::solvers::deleteTemporaryVariables(_predictionTemporaryVariables);
+  }
+}
 
 peano::CommunicationSpecification
 exahype::mappings::SolutionUpdate::communicationSpecification() const {
@@ -33,6 +64,16 @@ exahype::mappings::SolutionUpdate::communicationSpecification() const {
 }
 
 
+
+peano::MappingSpecification
+exahype::mappings::SolutionUpdate::enterCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+/**
+ * Nop.
+ */
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
@@ -47,15 +88,6 @@ exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification(int level) 
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-
-
-peano::MappingSpecification
-exahype::mappings::SolutionUpdate::enterCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
 
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::leaveCellSpecification(int level) const {
@@ -82,35 +114,43 @@ exahype::mappings::SolutionUpdate::descendSpecification(int level) const {
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
-tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
-    "exahype::mappings::SolutionUpdate");
-
 exahype::mappings::SolutionUpdate::SolutionUpdate() {
   // do nothing
 }
 
 exahype::mappings::SolutionUpdate::~SolutionUpdate() {
-  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
   exahype::solvers::deleteSolverFlags(_solverFlags);
+
+  deleteTemporaryVariables();
 }
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
   : _localState(masterThread._localState) {
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
-
   exahype::solvers::initialiseSolverFlags(_solverFlags);
   exahype::solvers::prepareSolverFlags(_solverFlags);
-}
 
+  prepareLocalTimeStepVariables();
+
+  initialiseTemporaryVariables();
+}
+// Merge over threads
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
     const SolutionUpdate& workerThread) {
   for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    // solver flags
     _solverFlags._meshUpdateRequest[i]  |= workerThread._solverFlags._meshUpdateRequest[i];
     _solverFlags._limiterDomainChange[i] =
         std::max ( _solverFlags._limiterDomainChange[i],
             workerThread._solverFlags._limiterDomainChange[i] );
+    // time step size and cell sizes
+    _minTimeStepSizes[i] =
+        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
+    _minCellSizes[i] =
+        std::min(_minCellSizes[i], workerThread._minCellSizes[i]);
+    _maxCellSizes[i] =
+        std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
 }
 #endif
@@ -122,68 +162,64 @@ void exahype::mappings::SolutionUpdate::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,fineGridVerticesEnumerator.toString(),coarseGridCell, fineGridPositionOfCell);
 
-  // TODO(Dominic): Add to docu.
-  if (!exahype::State::EnableNeighbourCommunication) {
+  if (!exahype::State::EnableNeighbourCommunication) {  // TODO(Dominic): Add to docu.
     return;
   }
+
+  assertion1(_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping,_localState.getAlgorithmSection());
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined17);
-    pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto* solver = exahype::solvers::RegisteredSolvers[i];
-      if (solver->isComputing(_localState.getAlgorithmSection())) {
-        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-        if (element!=exahype::solvers::Solver::NotFound) {
-          solver->updateSolution(
-              fineGridCell.getCellDescriptionsIndex(),
-              element,
-              _temporaryVariables._tempStateSizedVectors[i],
-              _temporaryVariables._tempUnknowns[i],
-              fineGridVertices,
-              fineGridVerticesEnumerator);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        exahype::solvers::Solver::CellUpdateResult result;
 
-          // The mapping might be also used in GlobalRecomputation branch
+        if (exahype::State::fuseADERDGPhases()) {
+          result =
+              solver->fusedTimeStep(
+                  fineGridCell.getCellDescriptionsIndex(), element,
+                  _predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverNumber],
+                  _predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber],
+                  _predictionTemporaryVariables._tempUnknowns             [solverNumber],
+                  _predictionTemporaryVariables._tempFluxUnknowns         [solverNumber],
+                  _predictionTemporaryVariables._tempPointForceSources    [solverNumber]);
+        } else {
+          solver->updateSolution(
+              fineGridCell.getCellDescriptionsIndex(), element);
+
+          result._timeStepSize =
+              solver->startNewTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
+          exahype::mappings::TimeStepSizeComputation::
+          reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
             auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-            switch (_localState.getAlgorithmSection()) {
-            case exahype::records::State::AlgorithmSection::TimeStepping: {
-              // !!! limiter status must be updated before refinement crit is evaluated
-              exahype::solvers::LimiterDomainChange limiterDomainChamge =
-                  limitingADERDGSolver->
-                  updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
-                      fineGridCell.getCellDescriptionsIndex(),element);
-              _solverFlags._meshUpdateRequest[i] |=
-                  limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
-                      fineGridCell.getCellDescriptionsIndex(),element);
-              _solverFlags._limiterDomainChange[i] =
-                  std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
-              assertion(_solverFlags._limiterDomainChange[i]
-                        !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
-                        _solverFlags._meshUpdateRequest[i]);
-            } break;
-            case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
-            case exahype::records::State::AlgorithmSection::MeshRefinement:
-            case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
-            case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
-            case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
-            case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend:
-            case exahype::records::State::AlgorithmSection::PredictionRerunAllSend: {
-              // do nothing
-            } break;
-            }
+            result._limiterDomainChange =  // !!! limiter status must be updated before refinement crit is evaluated
+                limitingADERDGSolver->
+                updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+            result._refinementRequested |=
+                limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
           } else {
-            if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
-              _solverFlags._meshUpdateRequest[i] |=
-                  solver->evaluateRefinementCriterionAfterSolutionUpdate(
-                      fineGridCell.getCellDescriptionsIndex(),element);
-            }
+            result._refinementRequested |=
+                solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
           }
         }
+
+        _solverFlags._meshUpdateRequest  [solverNumber] |= result._refinementRequested;
+        _solverFlags._limiterDomainChange[solverNumber]  = std::max( _solverFlags._limiterDomainChange[solverNumber], result._limiterDomainChange );
+        assertion(_solverFlags._limiterDomainChange[solverNumber]!=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+            _solverFlags._meshUpdateRequest[solverNumber]);
+        _minTimeStepSizes[solverNumber] = std::min( result._timeStepSize,                       _minTimeStepSizes[solverNumber]);
+        _minCellSizes    [solverNumber] = std::min( fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes    [solverNumber]);
+        _maxCellSizes    [solverNumber] = std::max( fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes    [solverNumber]);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -203,6 +239,10 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 
   _localState = solverState;
 
+  prepareLocalTimeStepVariables();
+
+  initialiseTemporaryVariables();
+
   if (_localState.getAlgorithmSection()==exahype::records::State::TimeStepping) {
     for (auto* solver : exahype::solvers::RegisteredSolvers) {
       solver->setNextMeshUpdateRequest();
@@ -214,8 +254,6 @@ void exahype::mappings::SolutionUpdate::beginIteration(
     }
   }
 
-  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
-
   exahype::solvers::initialiseSolverFlags(_solverFlags);
   exahype::solvers::prepareSolverFlags(_solverFlags);
 
@@ -223,28 +261,66 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 }
 
 void exahype::mappings::SolutionUpdate::endIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("endIteration(State)", solverState);
+    exahype::State& state) {
+  logTraceInWith1Argument("endIteration(State)", state);
+
+  assertionEquals(_localState.getAlgorithmSection(),exahype::records::State::AlgorithmSection::TimeStepping);
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    // mesh refinement events
+    solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
+    solver->updateNextAttainedStableState(!solver->getNextMeshUpdateRequest());
+    solver->setNextMeshUpdateRequest();
+    solver->setNextAttainedStableState();
 
-    if (solver->isComputing(_localState.getAlgorithmSection())) {
-      solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
-      solver->updateNextAttainedStableState(!solver->getNextMeshUpdateRequest());
-      logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
+    if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
+      limitingADERDGSolver->setNextLimiterDomainChange();
+      assertion(
+          limitingADERDGSolver->getLimiterDomainChange()
+          !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+          solver->getMeshUpdateRequest());
+    }
 
-      if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
-      }
+    // cell sizes
+    solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
+    solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+    if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+      assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
+          solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
+          exahype::records::State::toString(_localState.getAlgorithmSection()));
+      assertion4(solver->getNextMaxCellSize()>0,
+          solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],solver->toString(),
+          exahype::records::State::toString(_localState.getAlgorithmSection()));
+    }
+
+    // time
+    assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
+    assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+    solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+    if (
+        exahype::State::fuseADERDGPhases()
+        #ifdef Parallel
+        && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+        #endif
+    ) {
+      exahype::mappings::TimeStepSizeComputation::
+      reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(solver);
+    }
+    solver->startNewTimeStep();
+    if (!exahype::State::fuseADERDGPhases()) {
+      exahype::mappings::TimeStepSizeComputation::
+      reconstructStandardTimeSteppingData(solver);
     }
   }
 
-  deleteTemporaryVariables(_temporaryVariables);
   deleteSolverFlags(_solverFlags);
 
-  logTraceOutWith1Argument("endIteration(State)", solverState);
+  deleteTemporaryVariables();
+
+  logTraceOutWith1Argument("endIteration(State)", state);
 }
 
 

@@ -45,7 +45,9 @@ exahype-project  Euler
     order const             = 3
     maximum-mesh-size = 0.15
     time-stepping     = globalfixed
-    kernel const            = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const          = C
 
     plot vtk::Cartesian::vertices::ascii
@@ -62,7 +64,9 @@ exahype-project  Euler
     order const             = 3
     maximum-mesh-size = 0.15
     time-stepping     = globalfixed
-    kernel const            = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const          = C
 
     plot vtk::Cartesian::vertices::ascii

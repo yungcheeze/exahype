@@ -41,15 +41,8 @@ namespace exahype {
 /**
  * Describes one solver.
  */
-class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver, public exahype::solvers::UserADERDGSolverInterface {
+class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
 public:
-  /**
-   * Set to 0 if no floating point compression is used.
-   */
-  static double CompressionAccuracy;
-
-  static bool SpawnCompressionAsBackgroundThread;
-
   /**
    * The maximum helper status.
    * This value is assigned to cell descriptions
@@ -75,11 +68,6 @@ public:
    * the grid.
    */
   static int MinimumAugmentationStatusForAugmentation;
-
-  #ifdef Asserts
-  static double PipedUncompressedBytes;
-  static double PipedCompressedBytes;
-  #endif
 
   /**
    * Rank-local heap that stores ADERDGCellDescription instances.
@@ -169,9 +157,6 @@ private:
    * Minimum limiter status a troubled cell can have.
    */
   const int _minimumLimiterStatusForTroubledCell;
-
-  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
-  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const;
 
   /**
    * Different to compress(), this operation is called automatically by
@@ -580,18 +565,29 @@ private:
 
 #endif
   /**
+   * Determine average of each unknown
+   *
+   * We run over all sample points (or subcells in a Finite Volume context) and
+   * determine the averages of each dof of the PDE. We assume that the arrays
+   * first hold all the sample point values of the first PDE unknown. Therefore,
+   * our outer loop runs over the PDE unknown and the inner ones run over the
+   * sample points.
+   *
    * Run over the persistent fields of the ADER-DG cell and determine the
    * average per unknown.' The result is stored within
    *
+   * \note The fluctuations and update arrays do not store any material parameters.
    */
-  void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription) const;
+  void determineUnknownAverages(CellDescription& cellDescription) const;
 
   /**
    * Runs over all entries and adds sign times the average value. So if you
    * hand in a -1, you compute the hierarchical transform. If you hand in a +1,
    * you compute the inverse hierarchical transform.
+   *
+   * \note The fluctuations and update arrays do not store any material parameters.
    */
-  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign) const;
+  void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
 
   /**
    * This routine runs over the unknowns, asks the Heap's compression routines
@@ -601,7 +597,7 @@ private:
    * assertions, we leave it there and thus allow pullUnknownsFromByteStream()
    * to do quite some validation.
    */
-  void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) const;
+  void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
 
   /**
    *
@@ -935,6 +931,9 @@ public:
    * memory for the cell description.
    *
    * \note This operation is thread safe as we serialise it.
+   *
+   * \note Heap data creation assumes default policy
+   * DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired.
    */
   void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
 
@@ -1013,11 +1012,8 @@ public:
    * @param[in]    direction  Index of the nonzero normal vector component,
    *               i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
-  virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR,
-                             double*   tempFaceUnknownsArray,
-                             double**  tempStateSizedVectors,
-                             double**  tempStateSizedSquareMatrices,
+  virtual void riemannSolver(double* FL, double* FR,
+                             const double* const QL,const double* const QR,
                              const double dt,
                              const int direction,
                              bool isBoundaryFace) = 0;
@@ -1075,7 +1071,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       const double* const luh,
       const tarch::la::Vector<DIMENSIONS, 
       double>& cellSize, 
@@ -1091,7 +1086,6 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -1114,70 +1108,14 @@ public:
       const double dt) = 0;
 
   /**
-   * Adjust solution value specification.
-   */
-  enum class AdjustSolutionValue {
-    No,
-    PointWisely,
-    PatchWisely
-  };
-
-  /**
-   * This hook can be used to trigger solution adjustments within the
-   * region corresponding to \p cellCentre and \p dx
-   * and the time interval corresponding to t and dt.
-   *
-   * \param t  The new time stamp after the solution update.
-   * \param dt The time step size that was used to update the solution.
-   *           This time step size was computed based on the old solution.
-   *           If we impose initial conditions, i.e, t=0, this value
-   *           equals std::numeric_limits<double>::max().
-   *
-   * \note Use this function and ::adjustSolution to set initial conditions.
-   *
-   * \param[in]    centre    The centre of the cell.
-   * \param[in]    dx        The extent of the cell.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \return true if the solution has to be adjusted.
-   */
-  virtual AdjustSolutionValue useAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) const = 0;
-
-
-  /**
-   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
-   *
-   * \note Use this function and ::useAdjustSolution to set initial conditions.
-   *
-   * \param[in]    x         the physical coordinate on the face.
-   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
-   *                         as C array (already allocated).
-   */
-  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
-  virtual void adjustPatchSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt,
-      double* luh) = 0;
-
-  /**
-   * Sven:
-   * I really have the feeling this is a leftover which should not be there.
+   * PointSource kernel
    **/
   virtual void pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
     const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempPointForceSources);
+    double* tempPointForceSources) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -1327,6 +1265,15 @@ public:
    */
   void startNewTimeStep() override;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does advance the predictor time stamp in time.
+   */
+  void updateTimeStepSizesFused() override;
+
+  /**
+   * Does not advance the predictor time stamp in time.
+   */
   void updateTimeStepSizes() override;
 
   /**
@@ -1570,7 +1517,6 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector,
       double*  tempPointForceSources);
 
   void validateNoNansInADERDGSolver(
@@ -1583,22 +1529,34 @@ public:
    * time stamps forward.
    */
   double computeTimeStepSize(
-      CellDescription& cellDescription,
-      double*   tempEigenvalues);
+      CellDescription& cellDescription);
+
+  double startNewTimeStep(
+      CellDescription& cellDescription);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override final;
 
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Advances the predictor time stamp in time.
+   */
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
+
+  /** \copydoc Solver::updateTimeStepSizesFused
+   *
+   * Does not advance the predictor time stamp in time.
+   */
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int solverElement,
-        double*   tempEigenvalues) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * If we use the original time stepping
@@ -1609,6 +1567,8 @@ public:
    * It ensures that the corrector time size
    * is set to the admissible time step size that
    * was computed using the latest corrector solution.
+   *
+   * TODO(Dominic): Get rid of this eventually
    */
   void reconstructStandardTimeSteppingData(
       const int cellDescriptionsIndex,
@@ -1673,9 +1633,16 @@ public:
    */
   void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) override;
+
+  CellUpdateResult fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   /**
    * Computes the surface integral contributions to the
@@ -1693,13 +1660,15 @@ public:
    * but a previous solution. We will thus only perform
    * a solution adjustment and adding of source term contributions here.
    */
+  void updateSolution(CellDescription& cellDescription);
+
+ /** \copydoc ADERDGSolver::updateSolution()
+  *
+  *  \see updateSolution(CellDescription,double**,double**)
+  */
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) override;
 
   /**
    * TODO(Dominic): Update docu.
@@ -2247,7 +2216,9 @@ public:
    * which is fine.
    *
    * However, we have to take care about the interplay of compression and
-   * uncompression. The
+   * uncompression.
+   *
+   * The routine is triggered indirectly through postProcess()/preProcess().
    */
   void compress(exahype::records::ADERDGCellDescription& cellDescription);
 };

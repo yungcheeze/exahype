@@ -35,10 +35,10 @@ exahype-project  elasticwaves3d
     timeout                  = 120
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps        = on
     fuse-algorithmic-steps-factor = 0.99
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG MyElasticSolver
     variables const          = 9

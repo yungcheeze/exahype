@@ -16,13 +16,7 @@ void Linear::MyLinearSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue Linear::MyLinearSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  // @todo Please implement/augment if required
-  static tarch::logging::Log _log("MyLinearSolver::AdjustSolutionValue");
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
-}
-
-void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 3 + #parameters
   
@@ -30,21 +24,22 @@ void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const dou
   // State variables:
   static tarch::logging::Log _log("MyLinearSolver::adjustPointSolution");
 
-  Variables vars(Q);
+  if (tarch::la::equals(t,0.0)) {
+    Variables vars(Q);
 
-  vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
-  //  vars.p()=0;
-  
-  vars.v(0,0);
+    vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
+    //  vars.p()=0;
 
-  vars.jacobian()=0;
-  vars.metric_derivative(0,0,0,0);
-  vars.curve_grid(0,0);
-  
-  // for(int i=3 ; i < 10 ; i++){
-  //   Q[i]=0;
-  // }
+    vars.v(0,0);
 
+    vars.jacobian()=0;
+    vars.metric_derivative(0,0,0,0);
+    vars.curve_grid(0,0);
+
+    // for(int i=3 ; i < 10 ; i++){
+    //   Q[i]=0;
+    // }
+  }
 }
 
 void Linear::MyLinearSolver::eigenvalues(const double* const Q,const int d,double* lambda) {

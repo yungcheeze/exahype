@@ -28,7 +28,7 @@ exahype-project  SRHD
   end shared-memory
  
  
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps        = off
     fuse-algorithmic-steps-factor = 0.99
     timestep-batch-factor           = 0.0
@@ -36,7 +36,7 @@ exahype-project  SRHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread=off
-  end optimisation
+  end global-optimisation
 
   solver Finite-Volumes SRHDSolverFV
     variables const          = 5

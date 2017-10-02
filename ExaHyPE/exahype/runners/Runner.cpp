@@ -294,20 +294,14 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
 
 void exahype::runners::Runner::initDataCompression() {
-  exahype::solvers::ADERDGSolver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
+  exahype::solvers::Solver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
 
-  if (exahype::solvers::ADERDGSolver::CompressionAccuracy==0.0) {
+  if (exahype::solvers::Solver::CompressionAccuracy==0.0) {
     logInfo( "initDataCompression()", "switched off any data compression");
   }
   else {
-    if (!_parser.getFuseAlgorithmicSteps()) {
-      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping");
-      exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
-    }
-    else {
-      exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
-      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::ADERDGSolver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
-    }
+    exahype::solvers::Solver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+    logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::Solver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
   }
 }
 
@@ -569,93 +563,104 @@ void exahype::runners::Runner::initSolvers(
   }
 }
 
-bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
-  bool gridUpdate = false;
+void exahype::runners::Runner::plotMeshSetupInfo(
+    exahype::repositories::Repository& repository,
+    const int meshSetupIterations) const {
+  #if defined(TrackGridStatistics) && defined(Asserts)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #elif defined(Asserts)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #elif defined(TrackGridStatistics)
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #else
+  logInfo("createGrid()",
+      "grid setup iteration #" << meshSetupIterations <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #endif
 
-  int gridSetupIterations = 0;
+  #ifdef Asserts
+  logInfo("createGrid()",
+           "grid setup iteration #" << meshSetupIterations <<
+           ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
+                                            exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
+   );
+  #endif
+
+  #if !defined(Parallel)
+  logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  #else
+  if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
+    logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  }
+  #endif
+
+  #ifdef Asserts
+  if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
+    DataHeap::getInstance().plotStatistics();
+    peano::heap::PlainCharHeap::getInstance().plotStatistics();
+  }
+  #endif
+}
+
+bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
+  bool meshUpdate = false;
+
+  int meshSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  while ( repository.getState().continueToConstructGrid()
-          || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+  while (
+      repository.getState().continueToConstructGrid() ||
+      exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
   ) {
     repository.iterate();
-    gridSetupIterations++;
+    meshSetupIterations++;
 
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
 
-    #if defined(TrackGridStatistics) && defined(Asserts)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", max-level=" << repository.getState().getMaxLevel() <<
-        ", state=" << repository.getState().toString() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #elif defined(Asserts)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", state=" << repository.getState().toString() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #elif defined(TrackGridStatistics)
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", max-level=" << repository.getState().getMaxLevel() <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #else
-    logInfo("createGrid()",
-        "grid setup iteration #" << gridSetupIterations <<
-        ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-    #endif
+    plotMeshSetupInfo(repository,meshSetupIterations);
 
-    #ifdef Asserts
-    logInfo("createGrid()",
-             "grid setup iteration #" << gridSetupIterations <<
-             ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
-                                              exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
-     );
-    #endif
-
-    #if !defined(Parallel)
-    logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
-    #else
-    if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
-      logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
-    }
-    #endif
-
-    #ifdef Asserts
-    if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
-      DataHeap::getInstance().plotStatistics();
-      peano::heap::PlainCharHeap::getInstance().plotStatistics();
-    }
-    #endif
-
-    gridUpdate = true;
+    meshUpdate = true;
   }
 
-  // a few extra iterations for the limiter status spreading
+  // a few extra iterations for the cell status flag spreading
   logInfo("createGrid()", "more status spreading.");
   int extraIterations =
-      exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell();
+      std::max (
+          3, // two extra iteration to spread the helper and augmentation status, one to allocate memory
+          exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell());
   while (
       extraIterations > 0
       || repository.getState().continueToConstructGrid()
-      || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+      || exahype::solvers::Solver::oneSolverHasNotAttainedStableState() // Further mesh refinement is possible
   ) {
-    gridUpdate |=
+    meshUpdate |=
         repository.getState().continueToConstructGrid()
         || exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
 
     repository.iterate();
     extraIterations--;
-    gridSetupIterations++;
+    meshSetupIterations++;
 
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
+
+    plotMeshSetupInfo(repository,meshSetupIterations);
   }
 
-  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logInfo("createGrid(Repository)", "finished grid setup after " << meshSetupIterations << " iterations" );
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -670,7 +675,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
   #endif
 
-  return gridUpdate;
+  return meshUpdate;
 }
 
 
@@ -686,23 +691,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
-    if (exahype::State::fuseADERDGPhases()) {
-      repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-      if (plot) {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-      } else {
-        repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-      }
-      repository.iterate();
+    repository.getState().switchToPredictionContext();
+    if (plot) {
+      repository.switchToPredictionAndPlot();
     } else {
-      repository.getState().switchToPredictionContext();
-      if (plot) {
-        repository.switchToPredictionAndPlot();
-      } else {
-        repository.switchToPrediction();
-      }
-      repository.iterate();
+      repository.switchToPrediction();
     }
+    repository.iterate();
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
     printTimeStepInfo(-1,repository);
@@ -925,7 +920,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
       repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
     }
 
-    // TODO(Dominic): Think about something in order to not shift the time step size if global recomputation
+    // Do not advance the time stamp if global recomputation/mesh refinement
+    // Advance time stamp if local recomputation
     logInfo("updateMeshAndSubdomains(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
@@ -940,8 +936,8 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputationAllSend);
 
     logInfo("updateMeshAndSubdomains(...)","recompute predictor globally and reinitialise fused time stepping");
-    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+    repository.getState().switchToPredictionContext();
+    repository.switchToPrediction();
     repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
@@ -1013,7 +1009,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   // memory consumption on rank 0 would not make any sense
   logInfo("startNewTimeStep(...)",
       "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
-  #ifdef Asserts
+  #ifdef TrackGridStatistics
   if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
     DataHeap::getInstance().plotStatistics();
     peano::heap::PlainCharHeap::getInstance().plotStatistics();
@@ -1083,10 +1079,10 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
   repository.getState().switchToADERDGTimeStepContext();
 
   if (numberOfStepsToRun==0) {
-    repository.switchToPlotAndADERDGTimeStep();
+    repository.switchToPlotAndFusedTimeStep();
     repository.iterate();
   } else {
-    repository.switchToADERDGTimeStep();
+    repository.switchToFusedTimeStep();
     repository.iterate(numberOfStepsToRun);
   }
 
@@ -1127,7 +1123,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   repository.iterate(); // todo uncomment
 
   repository.getState().switchToTimeStepSizeComputationContext();
-  repository.switchToSolutionUpdateAndTimeStepSizeComputation();  // Face to cell + Inside cell
+  repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {

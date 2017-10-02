@@ -14,14 +14,14 @@ public class RootNode extends SyntaxTree {
   }
   
   @Override
-  public void addNode(SyntaxTree t) {
-    this.children.add(t);
+  public void addNode(SyntaxTree node) {
+    this.children.add(node);
   }
   
   /** Performs a DFS */
   @Override
-  public String render(Context c) throws IllegalArgumentException {
-    return renderChildren(c);
+  public String render(Context context) throws IllegalArgumentException {
+    return renderChildren(context);
   }
   
 }

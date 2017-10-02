@@ -39,7 +39,7 @@ exahype-project  SRMHD
     timeout                  = 120
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps        = off
     fuse-algorithmic-steps-factor = 0.99
     timestep-batch-factor           = 0.0
@@ -47,7 +47,7 @@ exahype-project  SRMHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 */  
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
@@ -55,7 +55,9 @@ exahype-project  SRMHD
     order const              = 3
     maximum-mesh-size  = 0.013
     time-stepping      = global
-    kernel const             = optimised::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = optimised
     /* we are using the new Fortran interface */
     language const           = C
 

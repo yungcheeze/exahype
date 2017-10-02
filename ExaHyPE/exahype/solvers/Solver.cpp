@@ -19,6 +19,9 @@
 
 #include "tarch/multicore/Lock.h"
 
+#include "peano/heap/CompressedFloatingPointNumbers.h"
+
+
 #include <algorithm>
 #include <mm_malloc.h> //g++
 #include <cstring> //memset
@@ -32,6 +35,30 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 #ifdef Parallel
 exahype::DataHeap::HeapEntries exahype::EmptyDataHeapMessage(0);
 #endif
+
+
+#ifdef TrackGridStatistics
+/**
+ * If you enable assertions, we have the option not to remove any entries from
+ * any heap but to continue to store all unknown on the standard heap when we
+ * compress. This allows us to validate that the data that is compressed in one
+ * iteration and uncompressed in the next one does not differ too significantly
+ * from the original data. There are however two drawbacks to this approach:
+ *
+ * - It is costly.
+ * - It changes the code semantics - we actually work with other and more heap
+ *   entries and thus cannot claim that a code with these assertions equals a
+ *   code without any assertions.
+ *
+ * I thus decided to trigger the comparison of compressed vs. uncompressed data
+ * through a special flag.
+ */
+//#define ValidateCompressedVsUncompressedData
+
+double exahype::solvers::Solver::PipedUncompressedBytes = 0;
+double exahype::solvers::Solver::PipedCompressedBytes = 0;
+#endif
+
 
 const int exahype::solvers::Solver::NotFound = -1;
 
@@ -74,6 +101,12 @@ exahype::solvers::LimiterDomainChange exahype::solvers::convertToLimiterDomainCh
   assertion((int) std::round(value)<=static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate));
   return static_cast<LimiterDomainChange>((int) std::round(value));
 }
+
+
+
+
+double exahype::solvers::Solver::CompressionAccuracy = 0.0;
+bool exahype::solvers::Solver::SpawnCompressionAsBackgroundThread = false;
 
 
 tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
@@ -147,6 +180,81 @@ std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::T
   }
   return "undefined";
 }
+
+
+void exahype::solvers::Solver::tearApart(
+    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
+  char exponent;
+  long int mantissa;
+  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
+
+  assertion( DataHeap::getInstance().isValidIndex(normalHeapIndex) );
+  assertion( CompressedDataHeap::getInstance().isValidIndex(compressedHeapIndex) );
+  assertion2( static_cast<int>(DataHeap::getInstance().getData(normalHeapIndex).size())==numberOfEntries, DataHeap::getInstance().getData(normalHeapIndex).size(), numberOfEntries );
+  assertion( CompressedDataHeap::getInstance().getData(compressedHeapIndex).empty() );
+
+  CompressedDataHeap::getInstance().getData( compressedHeapIndex ).resize(numberOfEntries * (bytesForMantissa+1));
+
+  int compressedDataHeapIndex = 0;
+  for (int i=0; i<numberOfEntries; i++) {
+    peano::heap::decompose(
+      DataHeap::getInstance().getData( normalHeapIndex )[i],
+      exponent, mantissa, bytesForMantissa
+    );
+    CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u = exponent;
+    compressedDataHeapIndex++;
+    for (int j=0; j<bytesForMantissa; j++) {
+      CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u = pMantissa[j];
+      compressedDataHeapIndex++;
+    }
+  }
+}
+
+
+void exahype::solvers::Solver::glueTogether(
+    int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa) const {
+  char exponent  = 0;
+  long int mantissa;
+  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
+
+  assertion( DataHeap::getInstance().isValidIndex(normalHeapIndex) );
+  assertion( CompressedDataHeap::getInstance().isValidIndex(compressedHeapIndex) );
+  assertion5(
+    static_cast<int>(CompressedDataHeap::getInstance().getData(compressedHeapIndex).size())==numberOfEntries * (bytesForMantissa+1),
+    CompressedDataHeap::getInstance().getData(compressedHeapIndex).size(), numberOfEntries * (bytesForMantissa+1),
+    numberOfEntries, compressedHeapIndex, bytesForMantissa
+  );
+
+  #ifdef ValidateCompressedVsUncompressedData
+  assertion( static_cast<int>(DataHeap::getInstance().getData(normalHeapIndex).size())==numberOfEntries );
+  #else
+  DataHeap::getInstance().getData(normalHeapIndex).resize(numberOfEntries);
+  #endif
+
+  int compressedDataHeapIndex = numberOfEntries * (bytesForMantissa+1)-1;
+  for (int i=numberOfEntries-1; i>=0; i--) {
+    mantissa = 0;
+    for (int j=bytesForMantissa-1; j>=0; j--) {
+      pMantissa[j] = CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u; // TODO(Dominic):This line fails
+      compressedDataHeapIndex--;
+    }
+    exponent = CompressedDataHeap::getInstance().getData( compressedHeapIndex )[compressedDataHeapIndex]._persistentRecords._u;
+    compressedDataHeapIndex--;
+    double reconstructedValue = peano::heap::compose(
+      exponent, mantissa, bytesForMantissa
+    );
+    #ifdef ValidateCompressedVsUncompressedData
+    assertion7(
+      tarch::la::equals( DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, CompressionAccuracy ),
+      DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, DataHeap::getInstance().getData(normalHeapIndex)[i] - reconstructedValue,
+      CompressionAccuracy, bytesForMantissa, numberOfEntries, normalHeapIndex
+    );
+    #else
+    DataHeap::getInstance().getData(normalHeapIndex)[i] = reconstructedValue;
+    #endif
+  }
+}
+
 
 int exahype::solvers::Solver::computeMeshLevel(double meshSize, double domainSize) {
   int    result      = 1;

@@ -47,7 +47,7 @@ exahype-project  Euler
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
@@ -56,17 +56,19 @@ exahype-project  Euler
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG MyEulerSolver
-    variables const   = rho:1,j:3,E:1
-    order const       = 8
+    variables const    = rho:1,j:3,E:1
+    order const        = 8
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size  = 0.05
     maximum-mesh-depth = 0
-    time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
-    language const    = C
+    time-stepping      = global
+    type const         = nonlinear, Legendre
+    terms const        = flux
+	optimisation const = generic
+    language const     = C
 
     //plot Peano::Legendre::cells::hdf5 ConservedQuantitiesWriter
     //plot Peano::Legendre::cells::ascii ConservedQuantitiesWriter

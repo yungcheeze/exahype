@@ -109,9 +109,7 @@ private:
 
   void performPredictionAndVolumeIntegral(
       exahype::solvers::ADERDGSolver* solver,
-      exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription);
 
 
   exahype::solvers::PredictionTemporaryVariables _temporaryVariables;

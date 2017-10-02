@@ -22,25 +22,28 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue Elastodynamics::MyElastodyna
   return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void Elastodynamics::MyElastodynamicsSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Elastodynamics::MyElastodynamicsSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 3
   // Number of variables    = 9 + #parameters
   
   // @todo Please implement/augment if required
   // State variables:
   static tarch::logging::Log _log("MyElastodynamicsSolver::adjustPointSolution");
-   Variables vars(Q);
-   
-   Q[0] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
-   Q[1] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
-   Q[2] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
-   
-   Q[3] = 0.0;
-   Q[4] = 0.0;
-   Q[5] = 0.0;
-   Q[6] = 0.0;
-   Q[7] = 0.0;
-   Q[8] = 0.0;
+
+  if (tarch::la::equals(t,0.0)) {
+    Variables vars(Q);
+
+    Q[0] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+    Q[1] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+    Q[2] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+
+    Q[3] = 0.0;
+    Q[4] = 0.0;
+    Q[5] = 0.0;
+    Q[6] = 0.0;
+    Q[7] = 0.0;
+    Q[8] = 0.0;
+  }
 }
 
 void Elastodynamics::MyElastodynamicsSolver::eigenvalues(const double* const Q,const int d,double* lambda) {

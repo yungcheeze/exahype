@@ -37,7 +37,6 @@ template <typename SolverType>
 double stableTimeStepSize(
     SolverType& solver,
     const double* const luh,
-    double* tempEigenvalues,
     const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 /**

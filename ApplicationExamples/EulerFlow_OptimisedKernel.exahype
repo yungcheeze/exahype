@@ -36,7 +36,9 @@ exahype-project  Euler
     order const             = 3
     maximum-mesh-size = 0.05
     time-stepping     = globalfixed
-    kernel const            = optimised::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = optimised
     language const          = C
 	
 

@@ -1,26 +1,19 @@
-/**
- * This file is part of the ExaHyPE project. For copyright and information
- * please see www.exahype.eu.
- */
 #include "MyEulerSolver.h"
+
 #include "MyEulerSolver_Variables.h"
+
 #include "Logo.h"
 
 
+tarch::logging::Log EulerFV::MyEulerSolver::_log( "EulerFV::MyEulerSolver" );
+
 
 void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+  // @todo Please implement/augment if required
 }
 
-
-bool EulerFV::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  return tarch::la::equals(t,0.0);
-}
-
-
-void EulerFV::MyEulerSolver::adjustSolution(const double* const x,
-                                                  const double w,
-                                                  const double t,
-                                                  const double dt, double* Q) {
+void EulerFV::MyEulerSolver::adjustSolution(const double* const x,const double t,const double dt, double* Q) {
+  if ( tarch::la::equals( t,0.0 ) ) {
   Variables vars(Q);
   
   tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
@@ -40,11 +33,7 @@ void EulerFV::MyEulerSolver::adjustSolution(const double* const x,
   vars.rho() = 1.0;
   vars.E()   = Energy;
   vars.j(0,0,0);
-}
-
-
-exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-  return exahype::solvers::Solver::RefinementControl::Keep;
+  }
 }
 
 

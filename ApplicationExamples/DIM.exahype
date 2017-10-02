@@ -44,7 +44,7 @@ exahype-project DIM
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
@@ -52,7 +52,7 @@ exahype-project DIM
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = on
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG DIMSolver
     /* gamma is actually parts of a matrix... */
@@ -60,7 +60,9 @@ exahype-project DIM
     order const                    = 3
     maximum-mesh-size              = 0.5
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = ncp
+	optimisation const = generic
     language const                 = C
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter

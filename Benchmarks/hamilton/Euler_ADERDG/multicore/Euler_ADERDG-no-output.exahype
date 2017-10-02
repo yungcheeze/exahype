@@ -39,7 +39,7 @@ exahype-project Euler
     properties-file          = sharedmemory.properties
   end shared-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
@@ -48,17 +48,19 @@ exahype-project Euler
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver ADER-DG EulerSolver_ADERDG
-    variables const   = rho:1,j:3,E:1
-    order const       = 3
+    variables const    = rho:1,j:3,E:1
+    order const        = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
-    time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
-    language const    = C
+    maximum-mesh-size  = 0.05
+    time-stepping      = global
+    type const         = nonlinear
+    terms const        = flux
+    optimisation const = generic
+    language const     = C
     // reference either: sod,entropywave,explosion,rarefactionwave
-    constants         = reference:entropywave
+    constants          = reference:entropywave
   end solver
 end exahype-project

@@ -91,8 +91,6 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
-    bool useAlgebraicSource()                 const override { return true; }
-    bool useNonConservativeProduct() const override { return true; }
     
     void algebraicSource(const double* const Q, double* S) override;
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;

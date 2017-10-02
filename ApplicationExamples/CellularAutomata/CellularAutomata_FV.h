@@ -91,8 +91,6 @@ class CA::CellularAutomata_FV : public CA::AbstractCellularAutomata_FV {
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
     
-    virtual bool useSource()                 const { return true; }
-    virtual bool useNonConservativeProduct() const { return true; }
 
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
     virtual void source(const double* const Q,double* S);

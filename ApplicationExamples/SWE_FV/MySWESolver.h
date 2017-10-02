@@ -41,13 +41,6 @@ class SWE::MySWESolver : public SWE::AbstractMySWESolver {
     bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
 
     /**
-     * We overwrite the default (false) here. See implementation file.
-     */
-    bool useNonConservativeProduct() const override;
-
-    virtual bool useSource()                 const {return false;}
-
-    /**
      * We overwrite the empty default here. See implementation file.
      */
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;

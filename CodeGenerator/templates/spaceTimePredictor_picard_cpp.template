@@ -32,7 +32,7 @@ void {{codeNamespace}}::picardLoopNonlinear(
         const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
         double* restrict lQi, double* restrict rhs,
         double* restrict lFi,
-        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used //TODO JMG BGradQ not used anymore
+        double* restrict lSi, double* restrict gradQ //source and ncp related term, nullptr if not used
 {% if useDeepProfiler %}
         , exahype::profilers::Profiler* profiler
 {% endif %}

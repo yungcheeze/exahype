@@ -157,18 +157,18 @@ void exahype::mappings::Sending::leaveCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
-      _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    auto grainSize = peano::datatraversal::autotuning::Oracle::
-        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined13);
-    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      if (solver->isSending(_localState.getAlgorithmSection())) {
-        const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-        if (fineGridElement!=exahype::solvers::Solver::NotFound) {
-          auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+  const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
+  auto grainSize = peano::datatraversal::autotuning::Oracle::
+      getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined13);
+  pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isSending(_localState.getAlgorithmSection())) {
+      const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (fineGridElement!=exahype::solvers::Solver::NotFound) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
+        if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
+            _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
           const int coarseGridElement =
               solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
           if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
@@ -192,13 +192,19 @@ void exahype::mappings::Sending::leaveCell(
                 subcellPosition.subcellIndex);
             lock.free();
           }
+        }
 
+        if ( // TODO(Dominic): Normally an assertion should be enough here
+            _localState.getSendMode()==exahype::records::State::SendFaceData ||
+            _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData ||
+            _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepData
+        ) {
           solver->postProcess(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
         }
       }
-    endpfor
-    grainSize.parallelSectionHasTerminated();
-  }
+    }
+  endpfor
+  grainSize.parallelSectionHasTerminated();
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
 }

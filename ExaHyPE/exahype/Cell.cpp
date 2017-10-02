@@ -288,6 +288,19 @@ void exahype::Cell::shutdownMetaData() {
   _cellData.setCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
+bool exahype::Cell::isEmpty() const {
+  if (_cellData.getCellDescriptionsIndex()!=multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+    assertion1( exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),
+            _cellData.getCellDescriptionsIndex());
+    assertion1( exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),
+        _cellData.getCellDescriptionsIndex());
+  }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+
+  return
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(_cellData.getCellDescriptionsIndex()).empty() &&
+      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(_cellData.getCellDescriptionsIndex()).empty();
+}
+
 bool exahype::Cell::isInitialised() const {
   if (_cellData.getCellDescriptionsIndex()!=multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     assertion1( exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),

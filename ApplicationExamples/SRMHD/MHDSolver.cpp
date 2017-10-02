@@ -39,15 +39,12 @@ void SRMHD::MHDSolver::eigenvalues(const double* const Q, const int normalNonZer
 }
 
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue SRMHD::MHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
-
-
-void SRMHD::MHDSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void SRMHD::MHDSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Fortran call:
   //printf("adjustedSolutionValues at t=%e\n", t);
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  if (tarch::la::equals(t,0.0)) {
+    adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  }
 }
 
 void SRMHD::MHDSolver::algebraicSource(const double* const Q, double* S) {
@@ -130,6 +127,4 @@ void SRMHD::MHDSolver::coefficientMatrix(const double* const Q, const int normal
 */
 
 
-bool SRMHD::MHDSolver::useAlgebraicSource() const {return true;}
 
-bool SRMHD::MHDSolver::useNonConservativeProduct() const {return true;}

@@ -3,6 +3,7 @@ package minitemp;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.Collection;
 
 /**
  * Context class
@@ -53,11 +54,15 @@ public class Context {
     }
   }
   
-  /** Get a String from the context, null => "" */
-  public String evaluateString(String expression) throws IllegalArgumentException { 
+  private void checkCorruption() throws IllegalArgumentException {
     if(corrupted) {
       throw new IllegalArgumentException("Cannot evaluate corrupted context");
     }
+  }
+  
+  /** Get a String from the context, null => "" */
+  public String evaluateString(String expression) throws IllegalArgumentException { 
+    checkCorruption();
     try {
       Object valueRaw = engine.eval(expression);
       if(valueRaw == null) {
@@ -79,9 +84,7 @@ public class Context {
   
   /** Get a boolean from the context */
   public boolean evaluateBoolean(String expression) throws IllegalArgumentException { 
-    if(corrupted) {
-      throw new IllegalArgumentException("Cannot evaluate corrupted context");
-    }
+    checkCorruption();
     try {
       Object valueRaw = engine.eval(expression);
       if(valueRaw instanceof Boolean) {
@@ -91,4 +94,26 @@ public class Context {
     throw new IllegalArgumentException("Cannot evaluate token's expression as boolean: "+expression);
   }
   
+  
+  public Collection<Object> getCollection(String key) throws IllegalArgumentException {
+    checkCorruption();
+    try {
+      Object valueRaw = engine.get(key);
+      if(valueRaw instanceof Collection) {
+        return (Collection<Object>)valueRaw;
+      }
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Cannot find a value to the key "+key);
+    }
+    throw new IllegalArgumentException("The key "+key+" doesn't match to a collection");
+  }
+  
+  public Object getValueOrNull(String key) {
+    checkCorruption();
+    try {
+      return engine.get(key);
+    } catch (IllegalArgumentException e) {
+      return null; //key don't exist
+    }
+  }
 }

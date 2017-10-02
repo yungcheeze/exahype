@@ -44,7 +44,7 @@ exahype-project MHD
     timeout                  = 60
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
@@ -53,14 +53,16 @@ exahype-project MHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
   solver Limiting-ADER-DG MHDSolver
     variables const                = rho:1,vel:3,E:1,B:3,constrDaming:1
     order const                    = 3
     maximum-mesh-size              = 0.9
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const                 = C
 
     limiter-kernel const           = generic::godunov 

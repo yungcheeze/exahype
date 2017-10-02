@@ -85,14 +85,7 @@ void MHD::MHDSolver_ADERDG::eigenvalues(const double* const Q, const int normalN
   pdeeigenvalues_(lambda, Q, nv);
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue MHD::MHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &centre, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) const {
-  if (t < 1e-10) {
-    return AdjustSolutionValue::PointWisely;
-  }
-  return AdjustSolutionValue::No;
-}
-
-void MHD::MHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void MHD::MHDSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     idfunc(x, Q);
   }
@@ -138,7 +131,5 @@ bool MHD::MHDSolver_ADERDG::isPhysicallyAdmissible(
   return true;
 }
 
-bool MHD::MHDSolver_ADERDG::useAlgebraicSource() const {return true;}
-bool MHD::MHDSolver_ADERDG::useConservativeFlux() const {return true;}
 
 

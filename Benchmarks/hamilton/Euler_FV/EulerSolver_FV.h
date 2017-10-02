@@ -93,13 +93,6 @@ public:
   void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
 
   /**
-   * @see FiniteVolumesSolver
-   */
-  bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-  virtual bool useNonConservativeProduct() const {return false;}
-  virtual bool useSource()                 const {return false;}
-
-  /**
    * Calls ::sodShockTube if constant 'reference' is set to 'sod'.
    * calls ::entropyWave if constant 'reference is set to 'entropywave'.
    * ErrorWriter, ErrorPlotter write errors of numerical solution for both choices.
@@ -114,7 +107,7 @@ public:
   /**
    * @see FiniteVolumesSolver
    */
-  void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override;
+  void adjustSolution(const double* const x,const double t,const double dt, double* Q) override;
 
   /**
    * Compute the flux tensor.
@@ -151,10 +144,6 @@ public:
    *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
    */
   void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
-
-  /** Has currently no effect for the Finite Volumes Solver. */
-  exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-
 };
 
 

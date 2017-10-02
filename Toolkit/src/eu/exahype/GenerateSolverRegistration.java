@@ -3,6 +3,8 @@ package eu.exahype;
 import java.util.LinkedList;
 
 import eu.exahype.analysis.DepthFirstAdapter;
+import eu.exahype.kernel.ADERDGKernel;
+import eu.exahype.kernel.FiniteVolumesKernel;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProfiling;
@@ -32,8 +34,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   private String _inputFileName;
   private String _projectName;
   
-  private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
-
   private boolean _inALimitingADERDGSolver;
 
   public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker, String inputFileName) {
@@ -73,13 +73,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   public void inAProject(AProject node) {
     _projectName = node.getName().getText();
     LinkedList<PSolver> solvers = node.getSolver();
-    for(PSolver psolver : solvers) {
-      if(psolver instanceof AAderdgSolver) {
-        AAderdgSolver asolver = (AAderdgSolver) psolver;
-        _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().equals("C") 
-                                  && (asolver.getKernel().getText().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
-      }
-    }
 
     try {
       java.io.File logFile = new java.io.File(
@@ -114,15 +107,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n");
       _writer.write("#include \"buildinfo.h\"\n\n");
-      if(_useOptimisedKernels) {
-        for(String subPath : CodeGeneratorHelper.getInstance().getIncludePaths()) {
-          _writer.write("#include \""+subPath+"/GaussLegendreQuadrature.h\"\n");
-          _writer.write("#include \""+subPath+"/DGMatrices.h\"\n");
-        }       
-        writeVersionString("useOptimisedKernels", "YES");
-      } else {
-        writeVersionString("useOptimisedKernels", "no");
-      }
+      for(String subPath : CodeGeneratorHelper.getInstance().getIncludePaths()) {
+        _writer.write("#include \""+subPath+"/GaussLegendreQuadrature.h\"\n");
+        _writer.write("#include \""+subPath+"/DGMatrices.h\"\n");
+      }       
 
       _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {\n");
       if (node.getSolver().size() == 0) {
@@ -200,7 +188,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants()); // != null);
       writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
-      writeVersionString("Kernel["+_kernelNumber+"].kernel", node.getKernel().getText());
+      writeVersionString("Kernel["+_kernelNumber+"].kernel", ADERDGKernel.noExceptionContructor(node).toString());
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
     } catch (Exception exc) {
@@ -247,7 +235,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants());
       writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
-      writeVersionString("Kernel["+_kernelNumber+"].kernel", node.getKernel().getText());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelADERDG", FiniteVolumesKernel.noExceptionContructor(node).toString());
       writeVersionString("Kernel["+_kernelNumber+"].patchSize", patchSize);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
@@ -287,7 +275,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionCode  ("Kernel["+_kernelNumber+"].abstract[ADERDG]", _projectName+"::Abstract"+solverNameADERDG+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
       writeVersionString("Kernel["+_kernelNumber+"].variables", node.getVariables());
-      writeVersionString("Kernel["+_kernelNumber+"].kernelLimiter", node.getKernelLimiter().getText());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelADERDG", ADERDGKernel.noExceptionContructor(node).toString());
+      writeVersionString("Kernel["+_kernelNumber+"].kernelLimiter", FiniteVolumesKernel.noExceptionContructor(node).toString());
       
       // ADER-DG
       _methodBodyWriter.write("  {\n");
@@ -392,11 +381,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::initLimiterProjectionMatrices(orders);\n"+
           "  kernels::initDGMatrices(orders);\n" +
           "  kernels::initBasisFunctions(orders);\n");
-      if(_useOptimisedKernels) {
-        for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
-          _methodBodyWriter.write("  "+namespace+"::initGaussLegendreNodesAndWeights(orders);\n");
-          _methodBodyWriter.write("  "+namespace+"::initDGMatrices();\n");
-        }
+      for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
+        _methodBodyWriter.write("  "+namespace+"::initGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  "+namespace+"::initDGMatrices();\n");
       }
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
       _methodBodyWriter.write("\n");
@@ -412,11 +399,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::freeLimiterProjectionMatrices(orders);\n"+
           "  kernels::freeDGMatrices(orders);\n"+
           "  kernels::freeBasisFunctions(orders);\n");
-      if(_useOptimisedKernels) {
-        for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
-          _methodBodyWriter.write("  "+namespace+"::freeGaussLegendreNodesAndWeights(orders);\n");
-          _methodBodyWriter.write("  "+namespace+"::freeDGMatrices();\n");
-        }
+      for(String namespace : CodeGeneratorHelper.getInstance().getNamespaces()) {
+        _methodBodyWriter.write("  "+namespace+"::freeGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  "+namespace+"::freeDGMatrices();\n");
       }    
       _methodBodyWriter.write(
           "\n"+

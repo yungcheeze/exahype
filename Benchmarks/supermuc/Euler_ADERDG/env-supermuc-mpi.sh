@@ -1,4 +1,4 @@
-module load java
+module load java/1.8
 
 export EXAHYPE_CC="mpicc"
 export COMPILER_CFLAGS="-DnoParallelExchangePackedRecordsAtBoundary -DnoParallelExchangePackedRecordsBetweenMasterAndWorker -DnoParallelExchangePackedRecordsInHeaps -DnoParallelExchangePackedRecordsThroughoutJoinsAndForks"

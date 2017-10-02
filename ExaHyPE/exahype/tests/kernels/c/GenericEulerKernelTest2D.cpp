@@ -50,7 +50,7 @@ void GenericEulerKernelTest::flux(const double *Q, double **F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::fusedSource(const double* const Q, const double* const gradQ, double *S) {
+void GenericEulerKernelTest::algebraicSource(const double* const Q, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -395,7 +395,6 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         FL, FR,
         QL,
         QR,
-         tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
         dt,
         normalNonZero);
 
@@ -464,7 +463,6 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         FL, FR,
         QL,
         QR,
-         tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
         dt,
         normalNonZero
     );
@@ -527,7 +525,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
       }
     }
 
-    double  *tempFaceUnknownsArray        = nullptr;
     double **tempStateSizedVectors        = new double*[6];
     tempStateSizedVectors[0]              = new double[6*nData];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+nData;
@@ -545,7 +542,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
         0    // normalNonZero
         );
@@ -589,7 +585,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     std::memcpy(FR, ::exahype::tests::testdata::generic_euler::
                         testRiemannSolverNonlinear::FR_1_in,
                 20 * sizeof(double));
-    double  *tempFaceUnknownsArray        = nullptr;
     double **tempStateSizedVectors        = new double*[6];
     tempStateSizedVectors[0]              = new double[6*nData];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+nData;
@@ -603,7 +598,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
         0     // normalNonZero
         );
@@ -656,7 +650,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     std::memcpy(FR, ::exahype::tests::testdata::generic_euler::
                         testRiemannSolverNonlinear::FR_2_in,
                 20 * sizeof(double));
-    double  *tempFaceUnknownsArray        = nullptr;
     double **tempStateSizedVectors        = new double*[6];
     tempStateSizedVectors[0]              = new double[6*nData];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+nData;
@@ -670,7 +663,6 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
         1    // normalNonZero
         );
@@ -758,17 +750,17 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   logInfo( "testVolumeIntegralNonlinear()", "Test volume integral nonlinear, ORDER=2, DIM=2" );
 
-  constexpr int nVar       = NumberOfVariables;
-  constexpr int basisSize  = (Order+1);
+//  constexpr int nVar       = NumberOfVariables;
+//  constexpr int basisSize  = (Order+1);
 
   {  // first test
 
     // output:
-    double lduh[80];
+//    double lduh[80];
 
     // input:
-    double dx[2] = {3.70370370370370349811e-02,
-                    3.70370370370370349811e-02};  // mesh spacing
+//    double dx[2] = {3.70370370370370349811e-02,
+//                    3.70370370370370349811e-02};  // mesh spacing
     // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
     logWarning( "testVolumeIntegralNonlinear()", "Test is currently disabled since input data is not suitable." );
@@ -790,7 +782,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   {  // second test, analogous to 3d seed
 
     // input:
-    double dx[2] = {0.05, 0.05};     // mesh spacing
+//    double dx[2] = {0.05, 0.05};     // mesh spacing
     double lFhi[240] = {0.0};  // nVar * (dim+1) * nDOFx * nDOFy
     // lFhi = [ lFhi_x | lFhi_y | lShi]
     double *lFhi_x = lFhi + 0;
@@ -806,7 +798,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     std::fill_n(lShi, 80, 0.0);
 
     // output:
-    double lduh[80];  // intentionally left uninitialised
+//    double lduh[80];  // intentionally left uninitialised
 
 //    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, true, nVar, basisSize>(lduh, lFhi, dx[0]);
 //
@@ -839,8 +831,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   tempSpaceTimeFluxUnknowns[0] = new double[2*(640+320)];                // lFi; nDim * nVar * nDOFx * nDOFy * nDOFt
   tempSpaceTimeFluxUnknowns[1] = tempSpaceTimeFluxUnknowns[0] + 640+320; // gradQ; nDim * nVar * nDOFx * nDOFy * nDOFt
 
-  double* tempStateSizedVector = nullptr;
-
   // Outputs:
   double *tempUnknowns     = new double[80];     // lQhi; nVar * nDOFx * nDOFz
   double *tempFluxUnknowns = new double[160+80]; // lFh,nVar * nDOFx * nDOFy * (dim+1)
@@ -854,7 +844,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
-      tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorLinear::luh,
       dx, dt, tempSpaceTimeUnknowns[1]);
@@ -957,7 +946,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
-      tempStateSizedVector,
       luh,
       dx, dt);
   _setNcpAndMatrixBToZero = false;

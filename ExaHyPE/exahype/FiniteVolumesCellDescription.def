@@ -48,18 +48,41 @@ class exahype::records::FiniteVolumesCellDescription {
    * description.
    */
   parallelise persistent int solution;
+  parallelise persistent int solutionAverages;
+  parallelise persistent int solutionCompressed;
   
   /**
    *  Index referring to the old solution DoF associated with this cell
    *  description.
    */
   parallelise persistent int previousSolution;
+  parallelise persistent int previousSolutionAverages;
+  parallelise persistent int previousSolutionCompressed;
   
   /**
    * Index pointing to the solution DoF extrapolated to the bounding faces of
    * the cell.
    */
   parallelise persistent int extrapolatedSolution;
+  parallelise persistent int extrapolatedSolutionAverages;
+  parallelise persistent int extrapolatedSolutionCompressed;
+
+  enum CompressionState {
+    Uncompressed,
+    CurrentlyProcessed,
+    Compressed
+  };
+  parallelise persistent packed CompressionState compressionState;
+
+  /**
+   * We use a 7 to indicate that compression does not pay off at all. Please
+   * note that the encoding follows peano::heap::findMostAgressiveCompression()
+   * which returns not the bytes actually used but the bytes spent on the 
+   * mantissa. Less than two byes is not supported by ExaHyPE actually.
+   */
+  parallelise persistent packed int bytesPerDoFInPreviousSolution      from 1 to 7;
+  parallelise persistent packed int bytesPerDoFInSolution              from 1 to 7;
+  parallelise persistent packed int bytesPerDoFInExtrapolatedSolution  from 1 to 7;
   
   /**
    * Space-tree level of the cell this FiniteVolumesCellDescription is associated

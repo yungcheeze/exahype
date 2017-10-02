@@ -52,37 +52,17 @@ public:
   virtual int constexpr_getNumberOfParameters() const = 0;
   virtual double constexpr_getCFLNumber()       const = 0;
   ///@}
+  
+  /**
+     * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
+     *
+     * \param[in] Q  the conserved variables associated with a quadrature node
+     *               as C array (already allocated).
+     * \param[in] d  the column of the flux vector (d=0,1,...,DIMENSIONS).
+     * \param[inout] lambda the eigenvalues as C array (already allocated).
+     */
+  virtual void eigenvalues(const double* const Q,const int d,double* lambda) = 0;
 
- /**
-  * @defgroup Guards
-  */
-  ///@{
-
-  /**
-   * Guard to enable conservative fluxes in the User PDE,
-   * ie terms $\nabla F(Q)$.
-   **/
-  virtual bool useConservativeFlux()       const = 0;
-  
-  /**
-   * Guard to enable non conservative contributions in the User PDE,
-   * ie. terms $B(Q) \nabla Q$.
-   **/
-  virtual bool useNonConservativeProduct() const = 0;
-  
-  /**
-   * Guard to enable algebaric source terms in the User PDE,
-   * ie. terms $S(Q)$ typically written on the right hand side of the
-   * equation.
-   **/
-  virtual bool useAlgebraicSource()                 const = 0;
-  
-  /**
-   * Guard to enable dirac point source terms in the User PDE.
-   **/
-  virtual bool usePointSource()            const = 0;
-  ///@}
-  
  /**
   * @defgroup User PDE
   */
@@ -110,17 +90,6 @@ public:
    * \param[inout] S the source point as C array (already allocated).
    */
   virtual void algebraicSource(const double* const Q,double* S) = 0;
-
-  /**
-   * Compute the fused Source.
-   * 
-   * The fused source is the sum $S(Q) - B(Q)\nabla Q$ stemming
-   * from the algebraicSource and the nonConservativeProduct functions.
-   * 
-   * In most ExaHyPE kernels, this function is the only one called and
-   * there is an adapter calling the old functions if neccessary.
-   **/
-  virtual void fusedSource(const double* const Q, const double* const gradQ, double* S) = 0;
   
   /**
    * Compute the nonconservative term $B(Q) \nabla Q$.
@@ -147,23 +116,6 @@ public:
   virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
   
   /**
-   * Compute the nonconservative matrix B(Q).
-   * 
-   * The function shall compute <i>almost</i> the same as nonConservativeProduct.
-   * Indeed, we have it as some Riemann solvers can do a quicker computation with
-   * the full matrix. If you don't provide it, the toolkit will typically generate
-   * glue code which allows computing the coefficientMatrix directly from the
-   * nonConservativeProduct function.
-   * 
-   * \param[in]   Q the vector of unknowns at the given position
-   * \param[in]   d the normal index (nonzero), indicating the spatial direction
-   * \param[inout]  The Matrix nVar*nVar, already allocated and flattened.
-   *
-   **/
-  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
-  
-
-  /**
    * Compute the conserved flux.
    * 
    * \param[in]  Q the conserved variabels (and parameters) associated with a
@@ -173,7 +125,6 @@ public:
    *               In any case, the storage has already been allocated.
    **/
   virtual void flux(const double* const Q,double** F) = 0;
-  
   ///@}
 };
  // UserSolverInterface
@@ -183,6 +134,41 @@ public:
   virtual ~UserADERDGSolverInterface() {};
 
   virtual int constexpr_getOrder()  const  = 0;
+
+  /**
+   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+   *
+   * \note Use this function and ::useAdjustSolution to set initial conditions.
+   *
+   * \param[in]    x         the physical coordinate on the face.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+   *                         as C array (already allocated).
+   */
+  virtual void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) = 0;
+  ///@}
+
+  /**
+     * Impose boundary conditions at a point on a boundary face
+     * within the time interval [t,t+dt].
+     *
+     * \param[in]    x         the physical coordinate on the face.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \param[in]    faceIndex indexing of the face (0 -- {x[0]=xmin}, 1 -- {x[1]=xmax}, 2 -- {x[1]=ymin}, 3 -- {x[2]=ymax}, and so on,
+     *                         where xmin,xmax,ymin,ymax are the bounds of the cell containing point x.
+     * \param[in]    d         the coordinate direction the face normal is pointing to.
+     * \param[in]    QIn       the conserved variables at point x from inside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[in]    FIn       the normal fluxes at point x from inside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[inout] QOut      the conserved variables at point x from outside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[inout] FOut      the normal fluxes at point x from outside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     */
+  virtual void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) = 0;
 };
 
 class exahype::solvers::UserFiniteVolumesSolverInterface : public exahype::solvers::UserSolverInterface {
@@ -191,6 +177,29 @@ public:
 
   virtual int constexpr_getPatchSize()  const  = 0;
   virtual int constexpr_getGhostLayerWidth() const  = 0;
+
+
+
+  /**
+     * Impose boundary conditions at a point on a boundary face
+     * within the time interval [t,t+dt].
+     *
+     * \param[in]    x         the physical coordinate on the face.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \param[in]    faceIndex indexing of the face (0 -- {x[0]=xmin}, 1 -- {x[1]=xmax}, 2 -- {x[1]=ymin}, 3 -- {x[2]=ymax}, and so on,
+     *                         where xmin,xmax,ymin,ymax are the bounds of the cell containing point x.
+     * \param[in]    d         the coordinate direction the face normal is pointing to.
+     * \param[in]    QIn       the conserved variables at point x from inside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[in]    FIn       the normal fluxes at point x from inside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[inout] QOut      the conserved variables at point x from outside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[inout] FOut      the normal fluxes at point x from outside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     */
+  virtual void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut) = 0;
 };
 
 #endif /* _EXAHYPE_SOLVERS_BASISSOLVER_H */

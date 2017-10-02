@@ -4,8 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 public class UserDefinedFiniteVolumesinFortran implements Solver {
-  public static final String Identifier = UserDefinedFiniteVolumesinC.Identifier;
-
   private String _projectName;
   private String _solverName;
   private int _numberOfVariables;

@@ -1,0 +1,69 @@
+#!/bin/bash
+#PBS -N example
+#PBS -l select=1:aoe=quad_100
+#PBS -l walltime=0:30:00
+#PBS -A k01-$USER
+
+##
+## quad_100 means 100 percent of the stuff are used as cache
+## 
+
+module swap PrgEnv-cray PrgEnv-intel
+
+cd $PBS_O_WORKDIR
+
+aprun -n 1 -cc depth ./my_application
+
+
+## export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.7 -ltbb"
+
+nodes=1
+tasks=1
+tasksPerNode=1
+coresPerTask=$SLURM_ARRAY_TASK_ID
+let procsPerNode=tasksPerNode*coresPerTask
+
+compiler=Intel
+sharedMem=TBB
+if (( coresPerTask==1 )); then
+  sharedMem=None
+fi
+
+prefix=Euler_ADERDG-no-output-regular-0-p3
+out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
+
+script=multicore/hamilton.slurm-script
+spec=multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+
+# pipe some information into output files
+echo "Timestamp (YYYY/MM/dd:hh:mm:ss): `date +%Y/%m/%d:%H:%M:%S`" >$out
+module list 2>$out
+echo "" >> $out
+cat $script >>$out
+echo "" >> $out
+cat $spec >> $out
+cat $out > ${out}.likwid
+
+# execute the job
+./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+
+if (( coresPerTask==1 )); then
+  likwid-perfctr -f -C 0 -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L3CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g L3       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0 -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  # not available on ham7: likwid-perfctr -C 0 -g L1CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+else
+  let maxCore=coresPerTask-1
+
+  likwid-perfctr -f -C 0-$maxCore -g MEM      ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g FLOPS_DP ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g L2CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g L3CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g L3       ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  likwid-perfctr -f -C 0-$maxCore -g BRANCH   ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> ${out}.likwid
+  # not available on ham7: likwid-perfctr -C 0-$maxCore -g L1CACHE  ./ExaHyPE-Euler-p3-$sharedMem-$compiler $spec >> $out
+fi
+

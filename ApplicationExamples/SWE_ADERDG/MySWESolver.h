@@ -49,7 +49,7 @@ class SWE::MySWESolver: public SWE::AbstractMySWESolver {
     /**
      * @see useAdjustSolution and superclass.
      */
-    void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
+    void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) override;
     
     /**
      * Compute the flux tensor.
@@ -107,7 +107,6 @@ class SWE::MySWESolver: public SWE::AbstractMySWESolver {
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
-    bool useNonConservativeProduct() const override;
 
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
 

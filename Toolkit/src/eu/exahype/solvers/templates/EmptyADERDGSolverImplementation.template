@@ -61,7 +61,7 @@ void {{Project}}::{{Solver}}::boundaryConditions(double* fluxOut,double* stateOu
 
 
 
-double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx) {
   // @todo Please implement/augment if required
   return std::numeric_limits<double>::max();
 }

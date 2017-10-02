@@ -37,18 +37,7 @@ void kernels::aderdg::generic::fortran::solutionAdjustment(
         x[1] = center[1] + dx[1] * (qj - 0.5);
         x[2] = center[2] + dx[2] * (qi - 0.5);
 
-        const double weight =  
-            kernels::gaussLegendreWeights[basisSize - 1][i] *
-            kernels::gaussLegendreWeights[basisSize - 1][j] *
-            kernels::gaussLegendreWeights[basisSize - 1][k];
-
-        // !!
-        // TODO(Dominic): For refactoring purposes. Remove old indexing method.
-        const int nodeIndex     = i + basisSize * j + basisSize * basisSize * k;
-        const int dofStartIndex = nodeIndex * numberOfVariables;
-        assertion(dofStartIndex==idx_luh(k,j,i,0)); 
-        // !
-        solver.adjustPointSolution(x, weight, t, dt, &luh[idx_luh(i,j,k,0)]);
+        solver.adjustPointSolution(x, t, dt, &luh[idx_luh(i,j,k,0)]);
       }
     }
   }

@@ -15,37 +15,39 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue ElasticWave::MyElasticWaveSo
   return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void ElasticWave::MyElasticWaveSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void ElasticWave::MyElasticWaveSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 3
   // Number of variables    = 12 (#unknowns + #parameters)
   
   // @todo Please implement/augment if required
   // State variables:
-  Variables vars(Q);
-  vars.v(0,0,0);
-  vars.s(0,0,0,0,0,0);
+  if (tarch::la::equals(t,0.0)) {
+    Variables vars(Q);
+    vars.v(0,0,0);
+    vars.s(0,0,0,0,0,0);
 
-  vars.rho() = 2.6;     // gm/cm^3
-  vars.cs() = 2.0;      // km/s
-  vars.cp() = 4.0;      // km/s
-  
-  if (x[0] > 1.0) {
-  vars.rho() = 2.7;     // gm/cm^3
-  vars.cs() = 3.464;    // km/s
-  vars.cp() = 6.0;      // km/s
+    vars.rho() = 2.6;     // gm/cm^3
+    vars.cs() = 2.0;      // km/s
+    vars.cp() = 4.0;      // km/s
+
+    if (x[0] > 1.0) {
+      vars.rho() = 2.7;     // gm/cm^3
+      vars.cs() = 3.464;    // km/s
+      vars.cp() = 6.0;      // km/s
+    }
+    // Q[ 0] = 0.0;
+    // Q[ 1] = 0.0;
+    // Q[ 2] = 0.0;
+    // Q[ 3] = 0.0;
+    // Q[ 4] = 0.0;
+    // Q[ 5] = 0.0;
+    // Q[ 6] = 0.0;
+    // Q[ 7] = 0.0;
+    // Q[ 8] = 0.0;  // Material parameters:
+    // Q[ 9] = 0.0;
+    // Q[10] = 0.0;
+    // Q[11] = 0.0;
   }
-  // Q[ 0] = 0.0;
-  // Q[ 1] = 0.0;
-  // Q[ 2] = 0.0;
-  // Q[ 3] = 0.0;
-  // Q[ 4] = 0.0;
-  // Q[ 5] = 0.0;
-  // Q[ 6] = 0.0;
-  // Q[ 7] = 0.0;
-  // Q[ 8] = 0.0;  // Material parameters:
-  // Q[ 9] = 0.0;
-  // Q[10] = 0.0;
-  // Q[11] = 0.0;
 }
 
 void ElasticWave::MyElasticWaveSolver::eigenvalues(const double* const Q,const int d,double* lambda) {

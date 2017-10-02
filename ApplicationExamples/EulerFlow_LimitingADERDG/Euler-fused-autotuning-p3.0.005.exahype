@@ -39,7 +39,7 @@ exahype-project  Euler
     properties-file          = sharedmemory-p3-fused.autotuning.properties
   end shared-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
@@ -48,7 +48,7 @@ exahype-project  Euler
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
-  end optimisation
+  end global-optimisation
 
 
   solver Limiting-ADER-DG LimitingADERDG
@@ -57,7 +57,9 @@ exahype-project  Euler
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.005
     time-stepping     = global
-    kernel const      = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     language const    = C
     limiter-kernel const    = generic::godunov
     limiter-language const  = C

@@ -57,21 +57,18 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahy
   }
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue  __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
- // disable this in 2D:
- // bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   bool insideExcisionBall = false;
   bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
-  return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
-}
 
-void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  id->Interpolate(x, t, Q);
-  //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q2=%f\n", x[0],x[1],x[2], t, Q[2]);
-  for(int i=0; i<NumberOfVariables; i++) {
-	if(!std::isfinite(Q[i])) {
-		printf("NAN in i=%d at t=%f, x=[%f,%f,%f], Q[%d]=%f\n", i, t, x[0],x[1],x[2], i, Q[i]);
-	}
+  if (hastoadjust) {
+    id->Interpolate(x, t, Q);
+    //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q0=%f\n", x[0],x[1],x[2], t, Q[0]);
+    for(int i=0; i<NumberOfVariables; i++) {
+      if(!std::isfinite(Q[i])) {
+        printf("NAN in i=%d at t=%f, x=[%f,%f,%f], Q[%d]=%f\n", i, t, x[0],x[1],x[2], i, Q[i]);
+      }
+    }
   }
 }
 

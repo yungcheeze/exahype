@@ -36,7 +36,7 @@ class FiniteVolumesSolver;
 /**
  * Abstract base class for one-step Finite Volumes solvers.
  */
-class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver, public exahype::solvers::UserFiniteVolumesSolverInterface {
+class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
 public:
   typedef exahype::DataHeap DataHeap;
 
@@ -138,9 +138,43 @@ private:
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
 
+  void compress(CellDescription& cellDescription);
+  /**
+   * \copydoc ADERDGSolver::computeHierarchicalTransform()
+   *
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
+   */
+  void computeHierarchicalTransform(CellDescription& cellDescription, double sign) const;
+  /**
+   * We assume a ordering of degrees of freedom according to (3D):
+   *
+   * Solution,previousSolution: [subcell[ijk],variable[l]]
+   * extrapolatedSolution:      [face,subcell[ij],variable[l]]
+   */
+  void determineUnknownAverages(CellDescription& cellDescription) const;
+  void pullUnknownsFromByteStream(CellDescription& cellDescription) const;
+  void putUnknownsIntoByteStream(CellDescription& cellDescription) const;
+  void uncompress(CellDescription& cellDescription) const;
+
+  class CompressionTask {
+    private:
+      FiniteVolumesSolver&                             _solver;
+      exahype::records::FiniteVolumesCellDescription&  _cellDescription;
+    public:
+      CompressionTask(
+        FiniteVolumesSolver&                             _solver,
+        exahype::records::FiniteVolumesCellDescription&  _cellDescription
+      );
+
+      void operator()();
+  };
+
 public:
   /**
-    * Returns the ADERDGCellDescription.
+    * Returns the Finite Volumes description.
     */
    static Heap::HeapEntries& getCellDescriptions(
        const int cellDescriptionsIndex) {
@@ -219,7 +253,6 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -315,7 +348,6 @@ public:
 
   virtual void solutionUpdate(
       double* luhNew,const double* luh,
-      double** tempStateSizedArrays,double** tempUnknowns,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double dt, double& maxAdmissibleDt) = 0;
 
@@ -337,25 +369,6 @@ public:
       const double t,
       const double dt) = 0;
 
-
-  /**
-   * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-   * within the time interval [t,t+dt].
-   *
-   * \note Use this function and ::adjustSolution to set initial conditions.
-   *
-   * \param[in]    center    The center of the cell.
-   * \param[in]    dx        The extent of the cell.
-   * \param[in]    t         the start of the time interval.
-   * \param[in]    dt        the width of the time interval.
-   * \return true if the solution has to be adjusted.
-   */
-  virtual bool useAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) const = 0;
-
   /**
    * Pointwise solution adjustment.
    * 
@@ -363,31 +376,12 @@ public:
    * and pointwise adjustment @TODO.
    * 
    * \param[in]   x   The position (array with DIMENSIONS entries)
-   * \param[in]   w   (deprecated) the quadrature weight.
    * \param[in]   t   the start of the time interval
    * \param[in]   dt  the width of the time interval.
    * \param[inout] Q  the conserved variables and parameters as C array (already allocated).
    * 
    **/
-  virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
-
-  
-  /**
-   * @defgroup AMR Solver routines for adaptive mesh refinement
-   */
-  ///@{
-  /**
-   * The refinement criterion that must be defined by the user.
-   *
-   */
-  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in
-  // the invoking code, i.e., level-> level-1
-  // since this is was the user expects.
-  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-      const double time,
-      const int level) = 0;
+  virtual void adjustSolution(const double* const x,const double t,const double dt, double* Q) = 0;
 
   /**
    * Returns the min time step size of the
@@ -402,6 +396,7 @@ public:
   /**
    * The number of unknowns per patch.
    * This number does not include ghost layer values.
+   * It does take into account the unknowns and the material parameters.
    */
   int getDataPerPatch() const;
 
@@ -480,7 +475,9 @@ public:
 
   void startNewTimeStep() override;
 
-  void updateTimeStepSizes() override;
+  void updateTimeStepSizesFused() override;
+
+  void updateTimeStepSizes()      override;
 
   void zeroTimeStepSizes() override;
 
@@ -529,6 +526,9 @@ public:
    * Checks if all the necessary memory is allocated for the cell description.
    * If this is not the case, it allocates the necessary
    * memory for the cell description.
+   *
+   * \note Heap data creation assumes default policy
+   * DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired.
    */
   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
 
@@ -590,17 +590,19 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element,
-      double*   tempEigenvalues) override;
+      const int element) override final;
+
+  double updateTimeStepSizesFused(
+          const int cellDescriptionsIndex,
+          const int element) override final;
 
   double updateTimeStepSizes(
         const int cellDescriptionsIndex,
-        const int element,
-        double*   tempEigenvalues) override;
+        const int element) override final;
 
   void zeroTimeStepSizes(
       const int cellDescriptionsIndex,
-      const int solverElement) const override;
+      const int solverElement) const override final;
 
   /**
    * Rolls the solver time step data back to the
@@ -614,17 +616,20 @@ public:
 
   void setInitialConditions(
       const int cellDescriptionsIndex,
+      const int element) final override;
+
+  CellUpdateResult fusedTimeStep(
+      const int cellDescriptionsIndex,
       const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      double*  tempPointForceSources) final override;
 
   void updateSolution(
       const int cellDescriptionsIndex,
-      const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+      const int element) final override;
 
   /**
    * TODO(Dominic): Update docu.

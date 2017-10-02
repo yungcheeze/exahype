@@ -40,14 +40,14 @@ exahype-project  MHDSolver
     timeout                  = 120
   end distributed-memory
 
-  optimisation
+  global-optimisation
     fuse-algorithmic-steps        = on
     fuse-algorithmic-steps-factor = 0.99
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
-  end optimisation
+  end global-optimisation
   
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
@@ -56,7 +56,9 @@ exahype-project  MHDSolver
     /* 27 grid points: 0.2327 -- @TODO not yet covered */
     maximum-mesh-size  = 0.24
     time-stepping      = global
-    kernel const             = generic::fluxes::nonlinear
+    type const = nonlinear
+	terms const = flux
+	optimisation const = generic
     /* we are using the new Fortran interface */
     language const           = C
     /* choose your iniitial data here. Caveats on whitespace */

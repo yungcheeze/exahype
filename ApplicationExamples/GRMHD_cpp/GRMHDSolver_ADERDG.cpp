@@ -29,11 +29,6 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) { //
 	
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-	// @todo Please implement/augment if required
-	return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
-}
-
 void zeroHelpers(double* Q) {
 	// debugging variables
 	GRMHD::AbstractGRMHDSolver_ADERDG::Variables var(Q);
@@ -55,25 +50,31 @@ void zero2Din3D(double* Q) {
 	Q[pos.pos+2] = 0;
 }
 
-void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-	// Number of variables    = 23 + #parameters
-	NVARS(i) Q[i] = NAN; // to find problems
-	
-	// currently, the C++ AlfenWave spills out primitive data
-	/*
-	double V[nVar];
-	AlfenWave id(x,t,V);
-	GRMHD::Prim2Cons(Q, V).copyFullStateVector();
-	*/
-	AlfenWaveCons(x,t,Q);
-	
-	// also store the positions for debugging
-	GRMHD::AbstractGRMHDSolver_ADERDG::Variables var(Q);
-	DFOR(i) var.pos(i) = x[i];
-	var.check() = magicCheck;
-	zero2Din3D(Q);
-	
-	NVARS(i) { if(!std::isfinite(Q[i])) { printf("Qid[%d] = %e\n", i, Q[i]); std::abort(); } }
+void GRMHD::GRMHDSolver_ADERDG::initialData(const double* const x,const double t,const double dt,double* Q) {
+  // Number of variables    = 23 + #parameters
+  NVARS(i) Q[i] = NAN; // to find problems
+
+  // currently, the C++ AlfenWave spills out primitive data
+  /*
+    double V[nVar];
+    AlfenWave id(x,t,V);
+    GRMHD::Prim2Cons(Q, V).copyFullStateVector();
+   */
+  AlfenWaveCons(x,t,Q);
+
+  // also store the positions for debugging
+  GRMHD::AbstractGRMHDSolver_ADERDG::Variables var(Q);
+  DFOR(i) var.pos(i) = x[i];
+  var.check() = magicCheck;
+  zero2Din3D(Q);
+
+  NVARS(i) { if(!std::isfinite(Q[i])) { printf("Qid[%d] = %e\n", i, Q[i]); std::abort(); } }
+}
+
+void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
+  if (tarch::la::equals(t,0.0)) {
+    initialData(x,t,dt,Q);
+  }
 }
 
 void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -113,7 +114,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
 		const double xi = kernels::gaussLegendreNodes[order][i];
 		double ti = t + xi * dt;
 
-		adjustPointSolution(x, weight/*not sure, not used anyway*/, ti, dt, Qgp);
+		initialData(x, ti, dt, Qgp);
 		flux(Qgp, F);
 
 		for(int m=0; m < nVar; m++) {

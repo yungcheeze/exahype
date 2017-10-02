@@ -15,17 +15,19 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue ElasticWave::MyElasticWaveSo
   return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void ElasticWave::MyElasticWaveSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void ElasticWave::MyElasticWaveSolver::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 + #parameters
   
   // @todo Please implement/augment if required
   // State variables:
-  Q[0] = 0.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  Q[4] = 0.0;
+  if (tarch::la::equals(t,0.0)) {
+    Q[0] = 0.0;
+    Q[1] = 0.0;
+    Q[2] = 0.0;
+    Q[3] = 0.0;
+    Q[4] = 0.0;
+  }
 }
 
 void ElasticWave::MyElasticWaveSolver::eigenvalues(const double* const Q,const int d,double* lambda) {
