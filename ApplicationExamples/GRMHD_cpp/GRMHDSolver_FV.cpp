@@ -17,14 +17,11 @@ tarch::logging::Log GRMHD::GRMHDSolver_FV::_log( "GRMHD::GRMHDSolver_FV" );
 void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants) {
 }
 
-bool GRMHD::GRMHDSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  return tarch::la::equals(t,0.0);
-}
-
 constexpr double magicCheck = 123456789;
 
-void GRMHD::GRMHDSolver_FV::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
+void GRMHD::GRMHDSolver_FV::adjustSolution(const double* const x,const double t,const double dt, double* Q) {
 	// Set the 9 SRMHD variables (D,S_j,tau,B^j) and the 10 [11] ADM material parameters (N^i,g_ij,[detg])
+	if(!tarch::la::equals(t,0.0)) return;
 	
 	// currently, the C++ AlfenWave spills out primitive data
 	double V[nVar];
@@ -39,10 +36,6 @@ void GRMHD::GRMHDSolver_FV::adjustSolution(const double* const x,const double w,
 	// NVARS(m) printf("Qid[%d]=%e\n", m, Q[m]);
 	// std::cout << "GRMHDSolver_FV::adjustSolution(" << var.pos() << ")\n";
 
-}
-
-exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-	return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 
@@ -89,9 +82,24 @@ void GRMHD::GRMHDSolver_FV::boundaryValues(
     double* stateOut) {
 	// SET BV for all 9 variables + 11 parameters.
 	// EXACT FV AlfenWave BC
-	adjustSolution(x, 0/*not sure, not used anyway*/, t, dt, stateOut);
+	adjustSolution(x, t, dt, stateOut);
 }
 
+void GRMHD::GRMHDSolver_FV::algebraicSource(const double* const Q,double* S_) {
+	PDE::Source S(S_);
+	PDE(Q).algebraicSource(S);
+	S.zero_adm();
+}
+
+void GRMHD::GRMHDSolver_FV::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+	PDE::NCP ncp(BgradQ);
+	const Gradients g(gradQ);
+	PDE(Q).nonConservativeProduct(g, ncp);
+	ncp.zero_adm();
+}
+
+// Formerly optimized fusedSource
+/*
 void GRMHD::GRMHDSolver_FV::fusedSource(const double* const Q, const double* const gradQ, double* S_) {
 	
 	// ExaHyPE workaround:
@@ -130,11 +138,4 @@ void GRMHD::GRMHDSolver_FV::fusedSource(const double* const Q, const double* con
 	pde.RightHandSide(gradQ, S);
 	S.zero_adm();
 }
-
-void GRMHD::GRMHDSolver_FV::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-	PDE::NCP ncp(BgradQ);
-	const Gradients g(gradQ);
-	PDE(Q).nonConservativeProduct(g, ncp);
-	ncp.zero_adm();
-}
-
+*/

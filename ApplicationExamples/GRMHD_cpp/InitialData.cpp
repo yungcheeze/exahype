@@ -38,14 +38,12 @@ AlfenWave::AlfenWave(const double* const x, const double t, double* Q) : VacuumI
 	double vax = sqrt(va2);
 
 	// c2p-invariant: Magnetic field
+	DFOR(i) Bmag.up(i) = eta * B0 * sin(2*pi*( x[0] - vax*(t-time_offset)));
 	Bmag.up(0) = B0;
-	Bmag.up(1) = eta * B0 * cos(2*pi*( x[0] - vax*(t-time_offset)));
-	Bmag.up(2) = eta * B0 * sin(2*pi*( x[0] - vax*(t-time_offset)));
 
 	// primitive variables
+	DFOR(i) vel.up(i) = - vax * Bmag.up(i) / B0;
 	vel.up(0) = 0.0;
-	vel.up(1) = - vax * Bmag.up(1) / B0;
-	vel.up(2) = - vax * Bmag.up(2) / B0;
 	
 	//if(DIMENSIONS == 2) { Bmag.up(2) = vel.up(2) = 0; }
 
