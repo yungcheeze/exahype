@@ -17,6 +17,7 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
+  
   for p in 9 7 5 3
   do 
     rm *.o
