@@ -1472,9 +1472,7 @@ class exahype::solvers::Solver {
         const int                                 element2,
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
         const tarch::la::Vector<DIMENSIONS, int>& pos2,
-        double**                                  tempFaceUnknowns,
-        double**                                  tempStateSizedVectors,
-        double**                                  tempStateSizedSquareMatrices) = 0;
+        double**                                  tempFaceUnknowns) = 0;
 
   /**
    * Take the cell descriptions \p element
@@ -1504,9 +1502,7 @@ class exahype::solvers::Solver {
         const int                                 element,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-        double**                                  tempFaceUnknowns,
-        double**                                  tempStateSizedVectors,
-        double**                                  tempStateSizedSquareMatrices) = 0;
+        double**                                  tempFaceUnknowns) = 0;
 
   #ifdef Parallel
   /**
@@ -1611,8 +1607,6 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       double**                                     tempFaceUnknowns,
-      double**                                     tempStateSizedVectors,
-      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
 

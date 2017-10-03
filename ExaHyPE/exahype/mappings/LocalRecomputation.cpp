@@ -343,9 +343,7 @@ void exahype::mappings::LocalRecomputation::createHangingVertex(
                       solverPatch1.getLimiterStatus(), // !!! We assume here that we have already unified the merged limiter status values.
                       pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
                       true,
-                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber]);
 
               #ifdef Debug
               _boundaryFaceMerges++;
@@ -361,9 +359,7 @@ void exahype::mappings::LocalRecomputation::createHangingVertex(
                       solverPatch2.getLimiterStatus(), // !!! We assume here that we have already unified the merged limiter status values
                       pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
                       true,
-                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber]);
               #ifdef Debug
               _boundaryFaceMerges++;
               #endif
@@ -408,9 +404,7 @@ void exahype::mappings::LocalRecomputation::touchVertexFirstTime(
                   cellDescriptionsIndex2,element2,
                   pos1,pos2,
                   true, /* isRecomputation */
-                  _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-                  _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-                  _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                  _mergingTemporaryVariables._tempFaceUnknowns[solverNumber]);
             }
           }
 
@@ -451,9 +445,7 @@ void exahype::mappings::LocalRecomputation::touchVertexFirstTime(
                       solverPatch1.getLimiterStatus(), // !!! We assume here that we have already unified the merged limiter status values.
                       pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
                       true,
-                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber]);
 
               #ifdef Debug
               _boundaryFaceMerges++;
@@ -469,9 +461,7 @@ void exahype::mappings::LocalRecomputation::touchVertexFirstTime(
                       solverPatch2.getLimiterStatus(), // !!! We assume here that we have already unified the merged limiter status values
                       pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
                       true,
-                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-                      _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                      _mergingTemporaryVariables._tempFaceUnknowns[solverNumber]);
               #ifdef Debug
               _boundaryFaceMerges++;
               #endif
@@ -608,8 +598,6 @@ void exahype::mappings::LocalRecomputation::mergeNeighourData(
             destCellDescriptionIndex,element,src,dest,
             true, /* isRecomputation */
             _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
-            _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
-            _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber],
             x,level);
       } else {
 

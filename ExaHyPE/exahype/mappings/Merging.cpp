@@ -180,9 +180,7 @@ void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
       if (element2>=0 && element1>=0) {
         solver->mergeNeighbours(
             cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-            _temporaryVariables._tempFaceUnknowns[solverNumber],
-            _temporaryVariables._tempStateSizedVectors[solverNumber],
-            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+            _temporaryVariables._tempFaceUnknowns[solverNumber]);
 
         if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
           solver->mergeNeighboursMetadata(
@@ -220,18 +218,14 @@ void exahype::mappings::Merging::mergeWithBoundaryData(
 
       if (element1 >= 0) {
         solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber]);
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
       }
       if (element2 >= 0){
         solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber]);
 
         #ifdef Debug
         _boundaryFaceMerges++;
@@ -451,8 +445,6 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
             metadataPortion,
             destCellDescriptionIndex,element,src,dest,
             _temporaryVariables._tempFaceUnknowns[solverNumber],
-            _temporaryVariables._tempStateSizedVectors[solverNumber],
-            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
             x,level);
 
         if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {

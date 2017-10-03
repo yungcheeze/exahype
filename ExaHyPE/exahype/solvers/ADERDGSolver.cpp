@@ -2778,9 +2778,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
-    double**                                  tempFaceUnknowns,
-    double**                                  tempStateSizedVectors,
-    double**                                  tempStateSizedSquareMatrices) {
+    double**                                  tempFaceUnknowns) {
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
   const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
   const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
@@ -2812,7 +2810,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   solveRiemannProblemAtInterface(
       cellDescriptionLeft,cellDescriptionRight,indexOfRightFaceOfLeftCell,indexOfLeftFaceOfRightCell,
-      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      tempFaceUnknowns);
 }
 
 
@@ -2822,9 +2820,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     CellDescription& pRight,
     const int faceIndexLeft,
     const int faceIndexRight,
-    double**  tempFaceUnknowns,
-    double**  tempStateSizedVectors,
-    double**  tempStateSizedSquareMatrices) {
+    double**  tempFaceUnknowns) {
   if (pLeft.getType()==CellDescription::Type::Cell ||
       pRight.getType()==CellDescription::Type::Cell) {
     assertion1(DataHeap::getInstance().isValidIndex(pLeft.getExtrapolatedPredictor()),pLeft.toString());
@@ -2903,9 +2899,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     const int                                 element,
     const tarch::la::Vector<DIMENSIONS, int>& posCell,
     const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-    double**                                  tempFaceUnknowns,
-    double**                                  tempStateSizedVectors,
-    double**                                  tempStateSizedSquareMatrices) {
+    double**                                  tempFaceUnknowns) {
   if (tarch::la::countEqualEntries(posCell,posBoundary)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
@@ -2921,16 +2915,14 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
 
     applyBoundaryConditions(
         cellDescription,2*direction+orientation,
-        tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+        tempFaceUnknowns);
   }
 }
 
 void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     CellDescription& p,
     const int faceIndex,
-    double**  tempFaceUnknowns,
-    double**  tempStateSizedVectors,
-    double**  tempStateSizedSquareMatrices) {
+    double**  tempFaceUnknowns) {
   assertion1(p.getType()==CellDescription::Type::Cell,p.toString());
   assertion1(p.getRefinementEvent()==CellDescription::None,p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
@@ -2960,7 +2952,7 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   // Synchronise time stepping.
   synchroniseTimeStepping(p);
 
-  double* QOut = tempFaceUnknowns[1];
+  double* QOut  = tempFaceUnknowns[1];
   double* FOut  = tempFaceUnknowns[2];
 
   // TODO(Dominic): Hand in space-time volume data. Time integrate it afterwards
@@ -3485,8 +3477,6 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&    src,
     const tarch::la::Vector<DIMENSIONS, int>&    dest,
     double**                                     tempFaceUnknowns,
-    double**                                     tempStateSizedVectors,
-    double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
@@ -3541,9 +3531,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         faceIndex,
         receivedlQhbndIndex,
         receivedlFhbndIndex,
-        tempFaceUnknowns,
-        tempStateSizedVectors,
-        tempStateSizedSquareMatrices);
+        tempFaceUnknowns);
 
     DataHeap::getInstance().deleteData(receivedlQhbndIndex,true);
     DataHeap::getInstance().deleteData(receivedlFhbndIndex,true);
@@ -3557,9 +3545,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     const int faceIndex,
     const int indexOfQValues,
     const int indexOfFValues,
-    double**  tempFaceUnknowns,
-    double**  tempStateSizedVectors,
-    double**  tempStateSizedSquareMatrices) {
+    double**  tempFaceUnknowns) {
   assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
   assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 

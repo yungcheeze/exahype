@@ -473,9 +473,7 @@ private:
       CellDescription& pRight,
       const int faceIndexLeft,
       const int faceIndexRight,
-      double**  tempFaceUnknowns,
-      double**  tempStateSizedVectors,
-      double**  tempStateSizedSquareMatrices);
+      double**  tempFaceUnknowns);
 
   /**
    * Apply the boundary conditions at the face with index \p faceIndex.
@@ -501,9 +499,7 @@ private:
   void applyBoundaryConditions(
       CellDescription& p,
       const int faceIndex,
-      double**  tempFaceUnknowns,
-      double**  tempStateSizedVectors,
-      double**  tempStateSizedSquareMatrices);
+      double**  tempFaceUnknowns);
 
 #ifdef Parallel
   /**
@@ -548,9 +544,7 @@ private:
       const int faceIndex,
       const int indexOfQValues,
       const int indexOfFValues,
-      double**  tempFaceUnknowns,
-      double**  tempStateSizedVectors,
-      double**  tempStateSizedSquareMatrices);
+      double**  tempFaceUnknowns);
 
   /**
    * Sets heap indices of all ADER-DG cell descriptions that were
@@ -1778,18 +1772,14 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) override;
+      double**                                  tempFaceUnknowns) override;
 
   void mergeWithBoundaryData(
       const int                                 cellDescriptionsIndex,
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) override;
+      double**                                  tempFaceUnknowns) override;
 #ifdef Parallel
   /**
    * Sends all the cell descriptions at address \p
@@ -1972,8 +1962,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       double**                                     tempFaceUnknowns,
-      double**                                     tempStateSizedVectors,
-      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 

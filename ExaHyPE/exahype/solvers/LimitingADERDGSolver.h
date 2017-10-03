@@ -1100,9 +1100,7 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) override;
+      double**                                  tempFaceUnknowns) override;
 
   /**
    * Merge solver boundary data (and other values) of two adjacent
@@ -1153,9 +1151,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
       const bool                                isRecomputation,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) const;
+      double**                                  tempFaceUnknowns) const;
 
   /**
    * Merges the min max of two neighbours sharing a face.
@@ -1180,9 +1176,7 @@ public:
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) override;
+      double**                                  tempFaceUnknowns) override;
 
   /**
    * Merge solver boundary data (and other values) of a
@@ -1221,9 +1215,7 @@ public:
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
         const bool                                isRecomputation,
-        double**                                  tempFaceUnknowns,
-        double**                                  tempStateSizedVectors,
-        double**                                  tempStateSizedSquareMatrices);
+        double**                                  tempFaceUnknowns);
 
 #ifdef Parallel
   ///////////////////////////////////
@@ -1297,8 +1289,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       double**                                     tempFaceUnknowns,
-      double**                                     tempStateSizedVectors,
-      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
@@ -1329,8 +1319,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const bool                                   isRecomputation,
       double**                                     tempFaceUnknowns,
-      double**                                     tempStateSizedVectors,
-      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) const;
 
