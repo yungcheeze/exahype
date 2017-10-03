@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -N ExaHyPE_Euler_ADER_DG
+#PBS -N ExaHyPE_p3
 #PBS -l select=1:aoe=quad_100
-#PBS -l walltime=0:30:00
+#PBS -l walltime=04:00:00
 #PBS -A k01-$USER
 
 ##
@@ -12,17 +12,13 @@ module swap PrgEnv-cray PrgEnv-intel
 
 cd $PBS_O_WORKDIR
 
-#cd ExaHyPE-Engine/Benchmarks/archer/Euler_ADERDG
-## export TBB_SHLIB="-L/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.7 -ltbb"
-
 ls 
 pwd
 
 nodes=1
 tasks=1
 tasksPerNode=1
-#for coresPerTask in 1 2 4 6 8 10 12 14 16 20 24 28 32 40 48 56 64 128 256
-for coresPerTask in 1
+for coresPerTask in 1 2 4 6 8 10 12 14 16 20 24 28 32 40 48 56 64 128 256
 do
   let procsPerNode=tasksPerNode*coresPerTask
 
@@ -33,7 +29,6 @@ do
   fi
 
   prefix=Euler_ADERDG-no-output-regular-0-p3
-  #out=multicore/results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
   out=results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out
 
 
@@ -53,6 +48,6 @@ do
   echo "Pass in file '$PBS_O_WORKDIR/$spec'"
 
   # execute the job
-  aprun -n 1 -cc depth ./ExaHyPE-Euler-p3-$sharedMem-$compiler $PBS_O_WORKDIR/$spec >> $out
+  aprun -n 1 -d $coresPerTask -cc depth ./ExaHyPE-Euler-p3-$sharedMem-$compiler $PBS_O_WORKDIR/$spec >> $out
 done
 
