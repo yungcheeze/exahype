@@ -21,12 +21,13 @@
 #include "peano/utils/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/VertexOperations.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "exahype/mappings/TimeStepSizeComputation.h"
-
-#include "exahype/VertexOperations.h"
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 tarch::logging::Log exahype::mappings::LocalRecomputation::_log(
     "exahype::mappings::LocalRecomputation");
@@ -301,6 +302,16 @@ void exahype::mappings::LocalRecomputation::createHangingVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // prolong adjacency indices
+  const int level = coarseGridVerticesEnumerator.getLevel()+1;
+  exahype::VertexOperations::writeCellDescriptionsIndex(
+      fineGridVertex,
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
+          fineGridX,level,
+          fineGridPositionOfVertex,
+          exahype::VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
+  );
+
   dfor2(pos1)
     dfor2(pos2)
       if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {

@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/Reinitialisation2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Reinitialisation.h"
  #include "exahype/mappings/PostProcessing.h"
@@ -41,15 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::Reinitialisation {
   private:
-    typedef adapters::Reinitialisation2MultiscaleLinkedCell_0 Mapping0;
-    typedef mappings::PreProcessing Mapping1;
-    typedef mappings::Reinitialisation Mapping2;
-    typedef mappings::PostProcessing Mapping3;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::Reinitialisation Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2Reinitialisation2MultiscaleLinkedCell_0;
-     Mapping1  _map2PreProcessing;
-     Mapping2  _map2Reinitialisation;
-     Mapping3  _map2PostProcessing;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2Reinitialisation;
+     Mapping2  _map2PostProcessing;
 
 
   public:
