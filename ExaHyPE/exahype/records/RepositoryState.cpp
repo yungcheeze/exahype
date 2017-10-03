@@ -38,26 +38,25 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case Terminate: return "Terminate";
       case RunOnAllNodes: return "RunOnAllNodes";
       case UseAdapterMeshRefinement: return "UseAdapterMeshRefinement";
+      case UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation: return "UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation";
+      case UseAdapterFinaliseMeshRefinementAndReinitialisation: return "UseAdapterFinaliseMeshRefinementAndReinitialisation";
       case UseAdapterGridErasing: return "UseAdapterGridErasing";
       case UseAdapterFusedTimeStep: return "UseAdapterFusedTimeStep";
       case UseAdapterPlotAndFusedTimeStep: return "UseAdapterPlotAndFusedTimeStep";
       case UseAdapterLimiterStatusSpreading: return "UseAdapterLimiterStatusSpreading";
-      case UseAdapterReinitialisation: return "UseAdapterReinitialisation";
       case UseAdapterLocalRecomputationAndTimeStepSizeComputation: return "UseAdapterLocalRecomputationAndTimeStepSizeComputation";
       case UseAdapterGlobalRollback: return "UseAdapterGlobalRollback";
       case UseAdapterNeighbourDataMerging: return "UseAdapterNeighbourDataMerging";
       case UseAdapterSolutionUpdate: return "UseAdapterSolutionUpdate";
       case UseAdapterPrediction: return "UseAdapterPrediction";
       case UseAdapterPredictionAndPlot: return "UseAdapterPredictionAndPlot";
-      case UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation: return "UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation";
-      case UseAdapterFinaliseMeshRefinementAndReinitialisation: return "UseAdapterFinaliseMeshRefinementAndReinitialisation";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
    return "undefined";
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterGridErasing=5,UseAdapterFusedTimeStep=6,UseAdapterPlotAndFusedTimeStep=7,UseAdapterLimiterStatusSpreading=8,UseAdapterReinitialisation=9,UseAdapterLocalRecomputationAndTimeStepSizeComputation=10,UseAdapterGlobalRollback=11,UseAdapterNeighbourDataMerging=12,UseAdapterSolutionUpdate=13,UseAdapterPrediction=14,UseAdapterPredictionAndPlot=15,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=16,UseAdapterFinaliseMeshRefinementAndReinitialisation=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=5,UseAdapterFinaliseMeshRefinementAndReinitialisation=6,UseAdapterGridErasing=7,UseAdapterFusedTimeStep=8,UseAdapterPlotAndFusedTimeStep=9,UseAdapterLimiterStatusSpreading=10,UseAdapterLocalRecomputationAndTimeStepSizeComputation=11,UseAdapterGlobalRollback=12,UseAdapterNeighbourDataMerging=13,UseAdapterSolutionUpdate=14,UseAdapterPrediction=15,UseAdapterPredictionAndPlot=16,NumberOfAdapters=17)";
 }
 
 

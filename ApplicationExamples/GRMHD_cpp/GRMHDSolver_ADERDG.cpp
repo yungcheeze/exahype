@@ -50,7 +50,7 @@ void zero2Din3D(double* Q) {
 	Q[pos.pos+2] = 0;
 }
 
-void GRMHD::GRMHDSolver_ADERDG::initialData(const double* const x,const double t,const double dt,double* Q) {
+void /*GRMHD::GRMHDSolver_ADERDG:: */ initialData(const double* const x,const double t,const double dt,double* Q) {
   // Number of variables    = 23 + #parameters
   NVARS(i) Q[i] = NAN; // to find problems
 
@@ -130,24 +130,29 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+void GRMHD::GRMHDSolver_ADERDG::algebraicSource(const double* const Q,double* S_) {
+	PDE::Source S(S_);
+	PDE(Q).algebraicSource(S);
+	S.zero_adm();
+	zeroHelpers(S_);
+	zero2Din3D(S_);
+}
 
+void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+	PDE::NCP ncp(BgradQ);
+	const Gradients g(gradQ);
+	PDE(Q).nonConservativeProduct(g, ncp);
+	ncp.zero_adm();
+	zeroHelpers(BgradQ);
+	zero2Din3D(BgradQ);
+}
+
+// The optimized fusedSource
+/*
 void GRMHD::GRMHDSolver_ADERDG::fusedSource(const double* const Q, const double* const gradQ, double* S_) {
-	/*
-	// ExaHyPE workaround:
-	// if the input are zeros everywhere, complain
-	if(isUnphysical(Q)) {
-		//printf("WRONG FusedSource input, all zero!\n");
-		//NVARS(m) printf("Q[%d]=%e\n", m, Q[m]);
-		//std::abort();
-		// Set everything to NAN
-		NVARS(m) S_[m] = NAN;
-		return;
-	}
-	*/
 	PDE::Source S(S_);
 	PDE pde(Q);
 	GRMHD::AbstractGRMHDSolver_ADERDG::ReadOnlyVariables var(Q);
-/*
 	constexpr double eps = 1e-8;
 	// ExaHyPE workaround:
 	// if the input has zeros at weird places, don't do anything
@@ -165,19 +170,9 @@ void GRMHD::GRMHDSolver_ADERDG::fusedSource(const double* const Q, const double*
 		
 		//std::cout << "Good FusedSource, x= " << var.pos() <<  std::endl;
 	}
-*/
 	pde.RightHandSide(gradQ, S);
 	S.zero_adm();
 	zeroHelpers(S_);
 	zero2Din3D(S_);
 }
-
-
-void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-	PDE::NCP ncp(BgradQ);
-	const Gradients g(gradQ);
-	PDE(Q).nonConservativeProduct(g, ncp);
-	ncp.zero_adm();
-	zeroHelpers(BgradQ);
-	zero2Din3D(BgradQ);
-}
+*/

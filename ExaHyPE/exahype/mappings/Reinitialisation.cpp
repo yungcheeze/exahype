@@ -41,7 +41,9 @@ exahype::mappings::Reinitialisation::enterCellSpecification(int level) const {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
-// Everything below is nop.
+/*
+ * Everything specification below is Nop.
+ */
 peano::MappingSpecification
 exahype::mappings::Reinitialisation::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(

@@ -2147,10 +2147,6 @@ void exahype::solvers::FiniteVolumesSolver::preProcess(
 
   if (
     cellDescription.getType()==CellDescription::Type::Cell
-    #ifdef Parallel
-    &&
-    !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
-    #endif
   ) {
     uncompress(cellDescription);
   }
@@ -2163,10 +2159,6 @@ void exahype::solvers::FiniteVolumesSolver::postProcess(
 
   if (
       cellDescription.getType()==CellDescription::Type::Cell
-      #ifdef Parallel
-      &&
-      !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here?
-      #endif
       &&
       CompressionAccuracy>0.0
       &&

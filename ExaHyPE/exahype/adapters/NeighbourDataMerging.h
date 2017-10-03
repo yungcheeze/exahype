@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/NeighbourDataMerging2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/PostProcessing.h"
 
@@ -40,13 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::NeighbourDataMerging {
   private:
-    typedef adapters::NeighbourDataMerging2MultiscaleLinkedCell_0 Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::PostProcessing Mapping2;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::PostProcessing Mapping1;
 
-     Mapping0  _map2NeighbourDataMerging2MultiscaleLinkedCell_0;
-     Mapping1  _map2Merging;
-     Mapping2  _map2PostProcessing;
+     Mapping0  _map2Merging;
+     Mapping1  _map2PostProcessing;
 
 
   public:

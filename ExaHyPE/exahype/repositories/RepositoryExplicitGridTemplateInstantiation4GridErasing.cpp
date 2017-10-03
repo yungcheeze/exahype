@@ -14,19 +14,18 @@
 #include "peano/stacks/VertexSTDStack.h"
 
  #include "exahype/adapters/MeshRefinement.h" 
+ #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/FusedTimeStep.h" 
  #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
- #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
- #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h" 
 
 
 namespace peano {

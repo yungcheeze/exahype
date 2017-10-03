@@ -8,13 +8,10 @@
 // ========================
 //   www.exahype.eu
 // ========================
-#include "exahype/Parser.h"
-
-
 #include <ostream>
 
 #include "AbstractGRMHDSolver_FV.h"
-
+#include "exahype/Parser.h"
 
 /**
  * We use Peano's logging
@@ -45,21 +42,7 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
     /**
      * @see FiniteVolumesSolver
      */    
-    bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-    
-    /**
-     * @see FiniteVolumesSolver
-     */    
-    void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override; 
-    
-    /**
-     * Compute the flux tensor.
-     *
-     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-     *                 as C array (already allocated).
-     * \param[inout] F the fluxes at that point as C array (already allocated).
-     */
-    void flux(const double* const Q,double** F);
+    void adjustSolution(const double* const x,const double t,const double dt, double* Q) override; 
     
     /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
@@ -69,7 +52,7 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
      * \param[in] d  the column of the flux vector (d=0,1,...,DIMENSIONS).
      * \param[inout] lambda the eigenvalues as C array (already allocated).
      */
-    void eigenvalues(const double* const Q,const int d,double* lambda);
+    void eigenvalues(const double* const Q,const int d,double* lambda) override;
         
     /**
      * Impose boundary conditions at a point on a boundary face
@@ -86,20 +69,21 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
      * \param[inout] QOut      the conserved variables at point x from outside of the domain
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
-    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
-    
-    /** Has currently no effect for the Finite Volumes Solver. */
-    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-    
-    
+    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut) override;
 
-    void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
-
-    // we use the fusedSource in this C++ formulation. Can easily switch over to algebraicSource/coefficientMatrix also.
-    //void algebraicSource(const double* const Q, double* S) override;
-
-    // the NCP is needed for the Riemann Solver...
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+
+    void algebraicSource(const double* const Q,double* S) override;
+    
+    /**
+     * Compute the flux tensor.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] F the fluxes at that point as C array (already allocated).
+     */
+    void flux(const double* const Q,double** F) override;
+    
 };
 
 

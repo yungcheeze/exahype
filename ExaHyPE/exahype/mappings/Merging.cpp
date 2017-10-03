@@ -17,9 +17,11 @@
 #include "peano/utils/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/LimitingADERDGSolver.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "peano/utils/UserInterface.h"
+#include "exahype/VertexOperations.h"
+
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
 exahype::mappings::Merging::communicationSpecification() const {
@@ -255,6 +257,16 @@ void exahype::mappings::Merging::createHangingVertex(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+    // prolong adjacency indices
+    const int level = coarseGridVerticesEnumerator.getLevel()+1;
+    exahype::VertexOperations::writeCellDescriptionsIndex(
+        fineGridVertex,
+        multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
+            fineGridX,level,
+            fineGridPositionOfVertex,
+            exahype::VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
+    );
+
     dfor2(pos1)
       dfor2(pos2)
         if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
