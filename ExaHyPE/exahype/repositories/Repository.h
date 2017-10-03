@@ -76,7 +76,6 @@ class exahype::repositories::Repository {
     virtual void switchToFusedTimeStep() = 0;    
     virtual void switchToPlotAndFusedTimeStep() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
-    virtual void switchToReinitialisation() = 0;    
     virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToGlobalRollback() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
@@ -91,7 +90,6 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterFusedTimeStep() const = 0;
     virtual bool isActiveAdapterPlotAndFusedTimeStep() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
-    virtual bool isActiveAdapterReinitialisation() const = 0;
     virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGlobalRollback() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;

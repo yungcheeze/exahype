@@ -20,7 +20,6 @@
  #include "exahype/adapters/FusedTimeStep.h" 
  #include "exahype/adapters/PlotAndFusedTimeStep.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
- #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GlobalRollback.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 

@@ -139,12 +139,6 @@ adapter:
   name: LimiterStatusSpreading
   merge-with-user-defined-mapping: LimiterStatusSpreading
 
-adapter:  
-  name: Reinitialisation
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Reinitialisation
-  merge-with-user-defined-mapping: PostProcessing 
-
 adapter: 
   name: LocalRecomputationAndTimeStepSizeComputation
   merge-with-user-defined-mapping: PreProcessing
