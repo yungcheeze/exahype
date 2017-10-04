@@ -1176,8 +1176,8 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&    src,
     const tarch::la::Vector<DIMENSIONS, int>&    dest,
     double**                                     tempFaceUnknowns,
-    double**                                     tempStateSizedVectors,
-    double**                                     tempStateSizedSquareMatrices,
+    //double**                                     tempStateSizedVectors,
+    //double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
