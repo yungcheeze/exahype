@@ -58,6 +58,9 @@ void {{codeNamespace}}::picardLoopNonlinear(
 
   // 0. Allocate local variable
   double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT))); //for the gemms with alpha*Kxi or alpha*iK1
+{% if useNCP %}
+  double ncp[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+{% endif %}
   double new_lQi_slice[{{nDof*nVarPad}}] __attribute__((aligned(ALIGNMENT))); //for step 4 (computing new lQi value)
   const double dtBydx = inverseDx[0] * dt; //Assume dx[0] == dx[1] == dx[2]
   int ijk_; //helper counter
@@ -288,22 +291,36 @@ void {{codeNamespace}}::picardLoopNonlinear(
         const double updateSize = weights1[i] * weights3[jkl] * dt;
         const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
         const int it = i+{{nDof}}*jkl;
-
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor");
+        profiler->start("spaceTimePredictor_PDEfusedSource");
+{% endif %}           
+        // Old code (for reference): solver.{{solverName}}::fusedSource(&lQi[{{nVarPad}}*it], &gradQNoPad[0], &lSi[shift]);
+{% if useSource %}
+#ifdef USE_IPO
+        #pragma forceinline recursive
+#endif
+        solver.{{solverName}}::algebraicSource(&lQi[{{nVarPad}}*it], &lSi[shift]);
+{% else %}
+        std::memset(&lSi[shift], 0, {{nVarPad}} * sizeof(double));
+{% endif %}
+{% if useNCP %}
         double gradQNoPad[{{nVar*nDim}}]; //remove padding to use the same user function as generic kernel
         std::copy(&gradQ[{{nVarPad*nDim}}*it]              , &gradQ[{{nVarPad*nDim}}*it+{{0*nVarPad+nVar}}], &gradQNoPad[{{0*nVar}}]); //x
         std::copy(&gradQ[{{nVarPad*nDim}}*it+{{1*nVarPad}}], &gradQ[{{nVarPad*nDim}}*it+{{1*nVarPad+nVar}}], &gradQNoPad[{{1*nVar}}]); //y
 {% if nDim==3 %}
         std::copy(&gradQ[{{nVarPad*nDim}}*it+{{2*nVarPad}}], &gradQ[{{nVarPad*nDim}}*it+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
 {% endif %}
-
-{% if useDeepProfiler %}
-        profiler->stop("spaceTimePredictor");
-        profiler->start("spaceTimePredictor_PDEfusedSource");
-{% endif %}
+        std::memset(&ncp[0], 0, {{nVarPad}} * sizeof(double));
 #ifdef USE_IPO
         #pragma forceinline recursive
-#endif   
-        solver.{{solverName}}::fusedSource(&lQi[{{nVarPad}}*it], &gradQNoPad[0], &lSi[shift]);
+#endif
+        solver.{{solverName}}::nonConservativeProduct(&lQi[{{nVarPad}}*it], &gradQNoPad[0], ncp);
+        #pragma simd
+        for(int n = 0; n<{{nVarPad}}; n++) {
+          lSi[n+shift] -= ncp[n];
+        }
+{% endif %}
 {% if useDeepProfiler %}
         profiler->stop("spaceTimePredictor_PDEfusedSource");
         profiler->start("spaceTimePredictor");
