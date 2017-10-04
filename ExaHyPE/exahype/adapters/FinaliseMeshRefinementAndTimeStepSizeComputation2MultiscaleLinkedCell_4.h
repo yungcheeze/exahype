@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_LimiterStatusSpreading2MultiscaleLinkedCell_0_H_
-#define EXAHYPE_ADAPTERS_LimiterStatusSpreading2MultiscaleLinkedCell_0_H_
+#ifndef EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4_H_
+#define EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class LimiterStatusSpreading2MultiscaleLinkedCell_0;
+        class FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::LimiterStatusSpreading2MultiscaleLinkedCell_0 {
+class exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4 {
   public:
     peano::MappingSpecification   touchVertexLastTimeSpecification(int level) const;
     peano::MappingSpecification   touchVertexFirstTimeSpecification(int level) const;
@@ -42,16 +42,16 @@ class exahype::adapters::LimiterStatusSpreading2MultiscaleLinkedCell_0 {
     peano::MappingSpecification   descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    LimiterStatusSpreading2MultiscaleLinkedCell_0();
+    FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4();
 
     #if defined(SharedMemoryParallelisation)
-    LimiterStatusSpreading2MultiscaleLinkedCell_0(const LimiterStatusSpreading2MultiscaleLinkedCell_0& masterThread);
+    FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4(const FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4& masterThread);
     #endif
 
-    virtual ~LimiterStatusSpreading2MultiscaleLinkedCell_0();
+    virtual ~FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const LimiterStatusSpreading2MultiscaleLinkedCell_0& workerThread);
+    void mergeWithWorkerThread(const FinaliseMeshRefinementAndTimeStepSizeComputation2MultiscaleLinkedCell_4& workerThread);
     #endif
 
     void createInnerVertex(

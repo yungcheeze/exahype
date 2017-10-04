@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/LocalRecomputationAndTimeStepSizeComputation2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/LocalRecomputation.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
@@ -42,17 +41,15 @@ namespace exahype {
  */
 class exahype::adapters::LocalRecomputationAndTimeStepSizeComputation {
   private:
-    typedef adapters::LocalRecomputationAndTimeStepSizeComputation2MultiscaleLinkedCell_0 Mapping0;
-    typedef mappings::PreProcessing Mapping1;
-    typedef mappings::LocalRecomputation Mapping2;
-    typedef mappings::TimeStepSizeComputation Mapping3;
-    typedef mappings::Sending Mapping4;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::LocalRecomputation Mapping1;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Sending Mapping3;
 
-     Mapping0  _map2LocalRecomputationAndTimeStepSizeComputation2MultiscaleLinkedCell_0;
-     Mapping1  _map2PreProcessing;
-     Mapping2  _map2LocalRecomputation;
-     Mapping3  _map2TimeStepSizeComputation;
-     Mapping4  _map2Sending;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2LocalRecomputation;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Sending;
 
 
   public:

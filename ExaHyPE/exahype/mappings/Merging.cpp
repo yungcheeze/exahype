@@ -17,9 +17,11 @@
 #include "peano/utils/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/LimitingADERDGSolver.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "peano/utils/UserInterface.h"
+#include "exahype/VertexOperations.h"
+
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
 exahype::mappings::Merging::communicationSpecification() const {
@@ -178,9 +180,7 @@ void exahype::mappings::Merging::mergeNeighboursDataAndMetadata(
       if (element2>=0 && element1>=0) {
         solver->mergeNeighbours(
             cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-            _temporaryVariables._tempFaceUnknowns[solverNumber],
-            _temporaryVariables._tempStateSizedVectors[solverNumber],
-            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+            _temporaryVariables._tempFaceUnknowns[solverNumber]);
 
         if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
           solver->mergeNeighboursMetadata(
@@ -218,18 +218,14 @@ void exahype::mappings::Merging::mergeWithBoundaryData(
 
       if (element1 >= 0) {
         solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber]);
         #ifdef Debug
         _boundaryFaceMerges++;
         #endif
       }
       if (element2 >= 0){
         solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-                                      _temporaryVariables._tempFaceUnknowns[solverNumber],
-                                      _temporaryVariables._tempStateSizedVectors[solverNumber],
-                                      _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
+                                      _temporaryVariables._tempFaceUnknowns[solverNumber]);
 
         #ifdef Debug
         _boundaryFaceMerges++;
@@ -255,6 +251,16 @@ void exahype::mappings::Merging::createHangingVertex(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+    // prolong adjacency indices
+    const int level = coarseGridVerticesEnumerator.getLevel()+1;
+    exahype::VertexOperations::writeCellDescriptionsIndex(
+        fineGridVertex,
+        multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
+            fineGridX,level,
+            fineGridPositionOfVertex,
+            exahype::VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
+    );
+
     dfor2(pos1)
       dfor2(pos2)
         if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
@@ -439,8 +445,6 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
             metadataPortion,
             destCellDescriptionIndex,element,src,dest,
             _temporaryVariables._tempFaceUnknowns[solverNumber],
-            _temporaryVariables._tempStateSizedVectors[solverNumber],
-            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
             x,level);
 
         if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {

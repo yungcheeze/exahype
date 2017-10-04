@@ -771,9 +771,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
-    double**                                  tempFaceUnknowns,
-    double**                                  tempStateSizedVectors,
-    double**                                  tempStateSizedSquareMatrices) {
+    double**                                  tempFaceUnknowns) {
   CellDescription& cellDescription1 = getCellDescription(cellDescriptionsIndex1,element1);
   CellDescription& cellDescription2 = getCellDescription(cellDescriptionsIndex2,element2);
 
@@ -810,9 +808,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     const int                                 element,
     const tarch::la::Vector<DIMENSIONS, int>& posCell,
     const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-    double**                                  tempFaceUnknowns,
-    double**                                  tempStateSizedVectors,
-    double**                                  tempStateSizedSquareMatrices) {
+    double**                                  tempFaceUnknowns) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
@@ -2147,10 +2143,6 @@ void exahype::solvers::FiniteVolumesSolver::preProcess(
 
   if (
     cellDescription.getType()==CellDescription::Type::Cell
-    #ifdef Parallel
-    &&
-    1 // !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here? // TODO FIX THIS LINE
-    #endif
   ) {
     uncompress(cellDescription);
   }
@@ -2163,10 +2155,6 @@ void exahype::solvers::FiniteVolumesSolver::postProcess(
 
   if (
       cellDescription.getType()==CellDescription::Type::Cell
-      #ifdef Parallel
-      &&
-      1 // !cellDescription.getAdjacentToRemoteRank() // TODO(Dominic): What is going on here? // TODO FIX THIS LINE
-      #endif
       &&
       CompressionAccuracy>0.0
       &&

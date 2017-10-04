@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/LimiterStatusSpreading2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/LimiterStatusSpreading.h"
 
 
@@ -39,11 +38,9 @@ namespace exahype {
  */
 class exahype::adapters::LimiterStatusSpreading {
   private:
-    typedef adapters::LimiterStatusSpreading2MultiscaleLinkedCell_0 Mapping0;
-    typedef mappings::LimiterStatusSpreading Mapping1;
+    typedef mappings::LimiterStatusSpreading Mapping0;
 
-     Mapping0  _map2LimiterStatusSpreading2MultiscaleLinkedCell_0;
-     Mapping1  _map2LimiterStatusSpreading;
+     Mapping0  _map2LimiterStatusSpreading;
 
 
   public:

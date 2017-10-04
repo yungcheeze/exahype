@@ -66,7 +66,6 @@ event-mapping:
   
 event-mapping:
   name: FinaliseMeshRefinement  
-// 
 
 event-mapping:
   name: AugmentedAMRTreePlot2d
@@ -96,6 +95,22 @@ adapter:
 //   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
 //   merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
+adapter:
+  name: FinaliseMeshRefinementAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: FinaliseMeshRefinement
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending  // send only face data; post-processing done directly
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+  
+adapter:
+  name: FinaliseMeshRefinementAndReinitialisation
+  merge-with-user-defined-mapping: FinaliseMeshRefinement
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Reinitialisation
+  merge-with-user-defined-mapping: PostProcessing
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
@@ -106,7 +121,6 @@ adapter:
 adapter: 
   name: FusedTimeStep
   // needs corrector time step size
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTimel; pre-processing done directly
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Sending
@@ -114,7 +128,6 @@ adapter:
 adapter: 
   name: PlotAndFusedTimeStep
   // needs corrector time step size
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: Plot
   // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
@@ -124,19 +137,10 @@ adapter:
 // Additional adapters for limiter status spreading and recomputation
 adapter:
   name: LimiterStatusSpreading
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: LimiterStatusSpreading
-
-adapter:  
-  name: Reinitialisation
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Reinitialisation
-  merge-with-user-defined-mapping: PostProcessing 
 
 adapter: 
   name: LocalRecomputationAndTimeStepSizeComputation
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: LocalRecomputation      // This advances in time for local recomp.
   merge-with-user-defined-mapping: TimeStepSizeComputation // This recomputes the time step size for mesh ref and global recomp.
@@ -151,7 +155,6 @@ adapter:
 // Additional adapters for 4 phase time stepping
 adapter: 
   name: NeighbourDataMerging
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // must come before merging
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: PostProcessing 
 
@@ -173,22 +176,5 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction
-  merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: Sending // send only face data; post-processing done directly
-  
-// Additional adapters for AMR
-adapter:
-  name: FinaliseMeshRefinementAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: FinaliseMeshRefinement
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending  // send only face data; post-processing done directly
-  
-adapter:
-  name: FinaliseMeshRefinementAndReinitialisation
-  merge-with-user-defined-mapping: FinaliseMeshRefinement
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Reinitialisation
-  merge-with-user-defined-mapping: PostProcessing
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
-  
+  merge-with-user-defined-mapping: Plot           // send only face data; post-processing done directly
+  merge-with-user-defined-mapping: Sending

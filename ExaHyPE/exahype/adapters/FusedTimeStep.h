@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/FusedTimeStep2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Sending.h"
@@ -41,15 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::FusedTimeStep {
   private:
-    typedef adapters::FusedTimeStep2MultiscaleLinkedCell_0 Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::Sending Mapping3;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::Sending Mapping2;
 
-     Mapping0  _map2FusedTimeStep2MultiscaleLinkedCell_0;
-     Mapping1  _map2Merging;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2Sending;
+     Mapping0  _map2Merging;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2Sending;
 
 
   public:
