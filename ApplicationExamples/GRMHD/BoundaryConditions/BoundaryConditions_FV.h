@@ -211,9 +211,8 @@ public:
 	/// Exact BC
 	void exact(BOUNDARY_SIGNATURE) {
 		// FV: No time integration
-		double snan = std::numeric_limits<double>::signaling_NaN();
 		// Signature mismatch: This is different in FV
-		solver->adjustSolution(x, snan/* not sure, just filling*/, t, dt, stateOut);
+		solver->adjustSolution(x, t, dt, stateOut);
 	}
 };
 

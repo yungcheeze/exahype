@@ -21,7 +21,7 @@
 
 void GRMHD::FluxBase::prepare() {
 	// Sij is the 3-Energy-Momentum tensor: We only need S^i_j in the flux.
-	SYMFOR(i,j) Sij.ul(i,j) = Si.up(i)*vel.lo(j) + ptot*delta(i,j) - Bmag.up(i)*Bmag.lo(j)/WW - BmagVel * vel.up(i) * Bmag.lo(j);
+	SYMFOR(i,j) Sij.ul(i,j) = Si.up(i)*vel.lo(j) + ptot*delta(i,j) - Bmag.up(i)*Bmag.lo(j)/WW - BmagVel* vel.up(i) * Bmag.lo(j);
 	
 	// Zeta is the transport velocity (curly V in BHAC paper)
 	DFOR(k) zeta.up(k) = alpha*vel.up(k) - beta.up(k);
@@ -73,7 +73,7 @@ GRMHD::PDE& GRMHD::PDE::nonConservativeProduct(const Gradients& grad, Source& nc
 	
 	// tau
 	CONTRACT(k) ncp.tau = Si.up(k) * grad.lo(k).alpha;
-	// further BHAC terms for tau:
+	// tau: Cowling approximation instead of extrinsic curvature
 	CONTRACT2(i,j) ncp.tau -= Sij.ul(j,i) * grad.lo(j).beta.up(i);
 	CONTRACT3(i,k,j) ncp.tau -= 0.5 * Sij.up(i,k)*beta.up(j) * grad.lo(j).gam.lo(i,k);
 	
@@ -95,7 +95,7 @@ GRMHD::PDE& GRMHD::PDE::nonConservativeProduct(const Gradients& grad, Source& nc
 	ncp.phi = 0; // remember the algebraic source: alpha * damping_term_kappa * phi
 	CONTRACT(k) ncp.phi -= Bmag.up(k) * grad.lo(k).alpha;
 	CONTRACT(k) ncp.phi += phi * grad.lo(k).beta.up(k);
-	CONTRACT3(k,l,m) ncp.phi -= alpha/2 * gam.up(l,m) * beta.up(k) * grad.lo(k).gam.lo(l,m);
+	CONTRACT3(k,l,m) ncp.phi += alpha/2 * gam.up(l,m) * beta.up(k) * grad.lo(k).gam.lo(l,m);
 	
 	return *this; // chainable
 }
@@ -106,8 +106,7 @@ void GRMHD::PDE::algebraicSource(Source& source) {
 }
 
 void GRMHD::PDE::addAlgebraicSource(Source &source) {
-	// assumes the source to be zero or so.
-	source.phi += alpha * damping_term_kappa * phi; // algebraic source
+	source.phi -= alpha * damping_term_kappa * phi; // algebraic source
 	// CONTRACT2(l,m) Source.tau += lapse * Sij.up(l,m) * Kextr.lo(l,m);
 }
 

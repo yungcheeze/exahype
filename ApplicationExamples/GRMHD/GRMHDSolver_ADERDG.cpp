@@ -27,7 +27,7 @@ ADERDG_BC* abc;
 // enable nan tracker
 #include <fenv.h>
 
-void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView constants) {
+void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahype::Parser::ParserView& constants) {
   // NAN checker
   feenableexcept(FE_INVALID | FE_OVERFLOW);  // Enable all floating point exceptions but FE_INEXACT
 	
@@ -83,10 +83,12 @@ void GRMHD::GRMHDSolver_ADERDG::flux(const double* const Q,double** F) {
   pdeflux_(F[0], F[1], (DIMENSIONS==3)?F[2]:nullptr, Q);
 }
 
-
+// Source is zero
+/*
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::algebraicSource(const double* const Q,double* S) {
   pdesource_(S, Q);
 }
+*/
 
 
 void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
@@ -115,7 +117,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
     const double xi = kernels::gaussLegendreNodes[order][i];
     double ti = t + xi * dt;
 
-    adjustPointSolution(x, weight/*not sure, not used anyway*/, ti, dt, Qgp);
+    adjustPointSolution(x, ti, dt, Qgp);
     flux(Qgp, F);
     
     for(int m=0; m < nVar; m++) {
@@ -143,6 +145,7 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
 }
 
 // only evaluated in Limiting context
+/*
 void GRMHD::GRMHDSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
     double* observables,const int numberOfObservables,
     const double* const Q) const {
@@ -151,8 +154,8 @@ void GRMHD::GRMHDSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
   observables[0] = Q[0]; // rho
   observables[1] = Q[4]; // dens
 }
-
-
+*/
+/*
 bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(
   const double* const solution,
   const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
@@ -170,16 +173,15 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(
   if (observablesMin[1] < 0.0) return false;
 
   // what about this kind of check?
-  /*
-
-  for (int i=0; i<nVar; ++i) {
-    if (!std::isfinite(QMin[i])) return false;
-    if (!std::isfinite(QMax[i])) return false;
-  }
   
-  */
+  //for (int i=0; i<nVar; ++i) {
+//    if (!std::isfinite(QMin[i])) return false;
+  //  if (!std::isfinite(QMax[i])) return false;
+  //}
+  
   return true;
 }
+*/
 
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
@@ -195,7 +197,7 @@ void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::nonConservativeP
   }
 }
 
-
+/*
 void GRMHD::GRMHDSolver_ADERDG::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // new scheme has no coefficient matrix
   static tarch::logging::Log _log("GRMHDSolver");
@@ -206,3 +208,4 @@ void GRMHD::GRMHDSolver_ADERDG::coefficientMatrix(const double* const Q,const in
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);
 }
+*/

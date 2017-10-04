@@ -12,6 +12,8 @@
 
 // For the actual Fortran interface, look at the end of this file.
 
+namespace C2PinC {
+
 // This is the helper function for RTSAFE_C2P_RMHD1, we never expect it to be
 // called from Fortran so we stick to an ordinary C signature.
 void FUNC_C2P_RMHD1(const double x,double* f,double* df,const double gam,const double d,const double e,const double s2,const double b2, const double sb2,double* w_out) {
@@ -180,8 +182,13 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
   return RTSAFE_C2P_RMHD1_result;
 }
 
+} // ns C2PinC
+
 
 typedef const double* const in;
+
+// Use this to switch between Fortran and C++ version.
+#if 0
 
 extern "C" {
 // Dropin replacement for
@@ -189,8 +196,9 @@ extern "C" {
 // Thanks to the conversion between double* <-> double, we don't have to change aynthing in Fortran
 // when calling this function
 double rtsafe_c2p_rmhd1_(in X1,in X2,in XACC,in gam,in d,in e,in s2,in b2,in sb2,double* w,bool* failed) {
-	return RTSAFE_C2P_RMHD1(*X1, *X2, *XACC, *gam, *d, *e, *s2, *b2, *sb2, w, failed);
+	return C2PinC::RTSAFE_C2P_RMHD1(*X1, *X2, *XACC, *gam, *d, *e, *s2, *b2, *sb2, w, failed);
 }
 
-
 } /* Extern C */
+
+#endif

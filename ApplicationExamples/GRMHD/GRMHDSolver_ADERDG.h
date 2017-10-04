@@ -19,14 +19,11 @@
 #include "tarch/logging/Log.h"
 
 
-
-
-
 namespace GRMHD{
   class GRMHDSolver_ADERDG;
 }
 
-class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
+class GRMHD::GRMHDSolver_ADERDG : public GRMHD::AbstractGRMHDSolver_ADERDG {
   private:
     /**
      * Log device
@@ -40,31 +37,21 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      *
      * \param[in] cmdlineargs the command line arguments.
      */
-    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
-    
-   
+    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
     
     /**
      * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
      *
+     * \note Please overwrite function adjustSolution(...) if you want to
+     * adjust the solution degrees of freedom in a cellwise manner.
      *
      * \param[in]    x         the physical coordinate on the face.
-     * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
      * \param[in]    t         the start of the time interval.
      * \param[in]    dt        the width of the time interval.
      * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
      *                         as C array (already allocated).
      */
     void adjustPointSolution(const double* const x,const double t,const double dt,double* Q) override;
-    
-    /**
-     * Compute the flux tensor.
-     *
-     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-     *                 as C array (already allocated).
-     * \param[inout] F the fluxes at that point as C array (already allocated).
-     */
-    void flux(const double* const Q,double** F) override;
     
     /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
@@ -74,7 +61,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \param[in] d  the column of the flux vector (d=0,1,...,DIMENSIONS).
      * \param[inout] lambda the eigenvalues as C array (already allocated).
      */
-    void eigenvalues(const double* const Q,const int d,double* lambda) /* override */;
+    void eigenvalues(const double* const Q,const int d,double* lambda) override;
     
     /**
      * Impose boundary conditions at a point on a boundary face
@@ -95,7 +82,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \param[inout] FOut      the normal fluxes at point x from outside of the domain
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
-    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) /* override */;
+    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) override;
     
     /**
      * Evaluate the refinement criterion within a cell.
@@ -112,32 +99,43 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \return One of exahype::solvers::Solver::RefinementControl::{Erase,Keep,Refine}.
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-
     
+    //PDE
 
-    void mapDiscreteMaximumPrincipleObservables(
-        double* observables,const int numberOfObservables,
-        const double* const Q) const override;
+    /**
+     * Compute the flux tensor.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] F the fluxes at that point as C array (already allocated).
+     */
+    void flux(const double* const Q,double** F) final override;
 
-    bool isPhysicallyAdmissible(
-      const double* const solution,
-      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
-      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
-      const double t, const double dt) const override;
-    
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
-    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
-    
-    void algebraicSource(const double* const Q,double* S) override;
 
-    /*
-    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S) {
-	    // TEST to ensure the fusedSource kernel helper also works well.
-	    nonConservativeProduct(Q,gradQ,S);
-	    // flip sign
-	    for(int k=0; k<NumberOfVariables; k++)  S[k] = -S[k];
-    }
-    */
+    /**
+     * Compute the nonconservative term $B(Q) \nabla Q$.
+     * 
+     * This function shall return a vector BgradQ which holds the result
+     * of the full term. To do so, it gets the vector Q and the matrix
+     * gradQ which holds the derivative of Q in each spatial direction.
+     * Currently, the gradQ is a continous storage and users can use the
+     * kernels::idx2 class in order to compute the positions inside gradQ.
+     *
+     * @TODO: Check if the following is still right:
+     * 
+     * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
+     * use the ADER-DG kernels for nonlinear PDEs. If you use
+     * the kernels for linear PDEs, it is a tensor with dimensions
+     * Dim x NumberOfVariables.
+     * 
+     * \param[in]   Q   the vector of unknowns at the given position
+     * \param[in]   gradQ   the gradients of the vector of unknowns,
+     *                  stored in a linearized array.
+     * \param[inout]  The vector BgradQ (extends nVar), already allocated. 
+     *
+     **/
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) final override;
+
 };
 
 #endif // __GRMHDSolver_ADERDG_CLASS_HEADER__

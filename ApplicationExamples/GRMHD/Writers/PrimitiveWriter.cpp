@@ -43,6 +43,9 @@ void GRMHD::PrimitiveWriter::mapQuantities(
 ) {
     int err;
     pdecons2prim_(outputQuantities, Q, &err);
+    if(err != 0) {
+	    printf("Cons2Prim Failure in PrimitiveWriter!!!");
+    }
 }
 
 

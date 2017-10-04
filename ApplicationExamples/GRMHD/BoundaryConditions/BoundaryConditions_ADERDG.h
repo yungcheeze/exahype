@@ -256,7 +256,7 @@ public:
 			const double xi = kernels::gaussLegendreNodes[order][i];
 			double ti = t + xi * dt;
 
-			solver->adjustPointSolution(x, weight/* not sure, just filling*/, ti, dt, Qgp);
+			solver->adjustPointSolution(x, ti, dt, Qgp);
 			//id->Interpolate(x, ti, Qgp);
 			solver->flux(Qgp, F);
 			

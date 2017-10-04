@@ -81,6 +81,7 @@ namespace tensish {
 		template<int N> struct stored {
 			int debug_size = N;
 			double data[N];
+			stored() { if(debug_tensish) std::fill_n(data,N,NAN); }
 			double& operator()(int j) { tensish_bound(j<N); return data[j]; }
 			const double& operator()(int j) const { tensish_bound(j<N);  return data[j]; }
 			double operator=(double val) { std::fill_n(data,N,val); return val; }
@@ -170,6 +171,7 @@ namespace tensish {
 		/// Stores a linearized NxN matrix and allows 2D index access
 		template<int N> struct stored {
 			double data[size(N)];
+			stored() { if(debug_tensish) std::fill_n(data,size(N),NAN); }
 			double& operator()(int i, int j) { tensish_bound(i<N && j<N); return data[index(i,j)]; }
 			const double& operator()(int i, int j) const { tensish_bound(i<N && j<N); return data[index(i,j)];}
 			double operator=(double val) { std::fill_n(data,size(N),val); return val; }

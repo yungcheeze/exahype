@@ -77,6 +77,7 @@ RECURSIVE SUBROUTINE PDEPrim2Cons(Q,V)
   gamma1 = gamma/(gamma-1.0)
   w      = rho + gamma1*p
   ww     = w*lf**2
+  
   !
   Q(1)    = rho*lf
   Q(2:4)  = ww*vf_cov(1:3) + b2_cov*vf_cov(1:3) - vb_cov*BV(1:3)
@@ -191,6 +192,9 @@ RECURSIVE SUBROUTINE PDECons2Prim(V,Q,iErr)
   x2   = 1.0-eps ! 
   w=0
   v2   = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,d,e,s2,b2,sb2,w,FAILED)
+  
+  !PRINT *, "FC2P: v2=",v2,"w=",w
+  
   !
   IF (FAILED) THEN
      iErr = -1
