@@ -345,7 +345,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 
 int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers(
     tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
-  double hMax        = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  double hMax        = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
@@ -377,7 +377,7 @@ int exahype::runners::Runner::getFinestGridLevelOfAllSolvers(
 double
 exahype::runners::Runner::determineCoarsestMeshSize(
     const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize) const {
-  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
   const double maxBoundingBoxExtent = tarch::la::max(boundingBoxSize);
 
   const int coarsestMeshLevel =
@@ -421,7 +421,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   #ifdef Parallel
   if (exahype::State::VirtuallyExpandBoundingBox) {
     const double coarsestUserMeshSpacing =
-        exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+        exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
     const double maxDomainExtent = tarch::la::max(_domainSize);
 
     double boundingBoxScaling         = 0;
@@ -444,7 +444,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   }
   #endif
 
-  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
   const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
   tarch::la::Vector<DIMENSIONS,double> scaledDomainSize =
       determineScaledDomainSize(_domainSize,coarsestMeshSize);

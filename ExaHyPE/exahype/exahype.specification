@@ -31,6 +31,9 @@ event-mapping:
  
 event-mapping:
   name: Merging
+  
+event-mapping:
+  name: BroadcastAndMergeTimeStepData
 
 event-mapping:
   name: Sending
@@ -73,7 +76,7 @@ event-mapping:
 adapter:
   name: MeshRefinement
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: BroadcastAndMergeTimeStepData
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-user-defined-mapping: PostProcessing
@@ -82,7 +85,7 @@ adapter:
 //adapter:
 //  name: MeshRefinementAndPlotGrid
 //  merge-with-user-defined-mapping: PreProcessing
-//  merge-with-user-defined-mapping: Merging                 // Merge Time Step data
+//  merge-with-user-defined-mapping: BroadcastAndMergeTimeStepData
 //  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
 //  merge-with-predefined-mapping:   VTKGridVisualiser(grid)
 //  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
@@ -121,7 +124,7 @@ adapter:
 adapter: 
   name: FusedTimeStep
   // needs corrector time step size
-  merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTimel; pre-processing done directly
+  merge-with-user-defined-mapping: Merging  // Merging must start new time step in ; pre-processing done directly
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Sending
  
@@ -167,14 +170,14 @@ adapter:
 adapter:
   name: Prediction
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
+  merge-with-user-defined-mapping: BroadcastAndMergeTimeStepData 
   merge-with-user-defined-mapping: Prediction     // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Sending        // send only face data; post-processing done directly
 
 adapter:
   name: PredictionAndPlot
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
+  merge-with-user-defined-mapping: BroadcastAndMergeTimeStepData
   merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Plot           // send only face data; post-processing done directly
   merge-with-user-defined-mapping: Sending

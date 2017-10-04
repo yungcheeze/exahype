@@ -544,8 +544,14 @@ class exahype::solvers::Solver {
 
   static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
 
-  static double getCoarsestMeshSizeOfAllSolvers();
+  static double getCoarsestMaximumMeshSizeOfAllSolvers();
   static double getFinestMaximumMeshSizeOfAllSolvers();
+
+  /**
+   * Returns the coarsest level which holds patches of
+   * a solver.
+   */
+  static int getCoarsestMeshLevelOfAllSolvers();
 
   /**
    * Run over all solvers and identify the maximum depth of adaptive
@@ -784,7 +790,7 @@ class exahype::solvers::Solver {
    * The coarsest level of the adaptive mesh that is
    * occupied by this solver.
    */
-  double getCoarsestMeshLevel() const;
+  int getCoarsestMeshLevel() const;
 
   /**
    * The maximum depth the adaptive mesh is allowed to
@@ -793,13 +799,13 @@ class exahype::solvers::Solver {
    * the finest mesh level the solver might occupy during the
    * simulation.
    */
-  double getMaximumAdaptiveMeshDepth() const;
+  int getMaximumAdaptiveMeshDepth() const;
 
   /**
    * The finest level of the adaptive mesh that might be
    * occupied by this solver.
    */
-  double getMaximumAdaptiveMeshLevel() const;
+  int getMaximumAdaptiveMeshLevel() const;
 
   virtual void updateNextMinCellSize(double minCellSize);
 
