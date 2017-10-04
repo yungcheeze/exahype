@@ -1,3 +1,15 @@
+
+// Independently:
+/*
+#if defined(Dim2)
+#define DIMENSIONS 2
+#elif defined(Dim3)
+#define DIMENSIONS 3
+#else
+#error You must define Dim2 or Dim3
+#endif
+*/
+
 #include <stdio.h>
 #include "PDE/PDE.h"
 #include "InitialData.h"
@@ -99,6 +111,8 @@ void interp_deriv(const double* const xc, const double t, double **gradQ) {
 
 extern "C" {
 void cmain_() {
+	
+	printf("Inditest, compiled for DIMENSIONS=%d\n", DIMENSIONS);
 	
 	// try NaN catcher
 	feenableexcept(FE_INVALID | FE_OVERFLOW);  // Enable all floating point exceptions but FE_INEXACT

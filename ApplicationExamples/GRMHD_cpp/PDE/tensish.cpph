@@ -44,6 +44,10 @@
  * The number of dimensions is only needed for the DFOR macro.
  */
 
+#ifndef DIMENSIONS
+#error The Tensish library needs the DIMENSIONS preprocessor variable defined to a numeric value
+#endif
+
 #define DFOR(i) for(int i=0; i<DIMENSIONS; i++)
 
 // We use "CONTRACT" as a synonym to indicate that contractions are happening.
@@ -302,7 +306,7 @@ namespace tensish {
 
 			// quick fix, should use templates and static_assert(N >= 0 && N <= 10, "N out of bounds!");
 			// instead.
-			#if DIMENIONS == 3 
+			#if DIMENSIONS == 3 
 			up(0,0) = (-lo(1,2)*lo(1,2) + lo(1,1)*lo(2,2) )/det;
 			up(0,1) = ( lo(0,2)*lo(1,2) - lo(0,1)*lo(2,2) )/det;
 			up(1,1) = (-lo(0,2)*lo(0,2) + lo(0,0)*lo(2,2) )/det;
@@ -314,7 +318,9 @@ namespace tensish {
 			up(0,1) = -lo(1,0)/det;
 			up(1,1) =  lo(0,0)/det;
 			#else
-			static_assert(N == 3 || N == 2, "Only 2D and 3D implemented so far");
+			std::abort();
+			//#error Only 2D and 3D are implemented so far. Check the value of DIMENSIONS
+			static_assert(DIMENSIONS == 3 || DIMENSIONS == 2, "Only 2D and 3D implemented so far");
 			#endif
 
 			//vc = sqrt(fabs(d));
