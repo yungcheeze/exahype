@@ -57,19 +57,22 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs,exahy
   }
 }
 
-void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
-  bool insideExcisionBall = false;
-  bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
-
-  if (hastoadjust) {
+void __attribute__((optimize("O0"))) initialData(const double* const x,const double t,const double dt,double* Q) {
     id->Interpolate(x, t, Q);
     //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q0=%f\n", x[0],x[1],x[2], t, Q[0]);
-    for(int i=0; i<NumberOfVariables; i++) {
+    for(int i=0; i<nVar; i++) {
       if(!std::isfinite(Q[i])) {
         printf("NAN in i=%d at t=%f, x=[%f,%f,%f], Q[%d]=%f\n", i, t, x[0],x[1],x[2], i, Q[i]);
       }
     }
-  }
+}
+
+
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double t,const double dt,double* Q) {
+  bool insideExcisionBall = false;
+  bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
+
+  if (hastoadjust) initialData(x,t,dt,Q);
 }
 
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -117,7 +120,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
     const double xi = kernels::gaussLegendreNodes[order][i];
     double ti = t + xi * dt;
 
-    adjustPointSolution(x, ti, dt, Qgp);
+    initialData(x, ti, dt, Qgp);
     flux(Qgp, F);
     
     for(int m=0; m < nVar; m++) {

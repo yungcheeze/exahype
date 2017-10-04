@@ -133,7 +133,7 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
 #ifdef USE_FORTRAN_HELPER_FUNCS
   func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
 #else
-  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF,gam,d,e,s2,b2,sb2,w);
+  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
 #endif
   //double F_test;
   //FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
@@ -188,7 +188,7 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
 typedef const double* const in;
 
 // Use this to switch between Fortran and C++ version.
-#if 0
+#if 1
 
 extern "C" {
 // Dropin replacement for
