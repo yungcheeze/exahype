@@ -13,7 +13,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   private boolean _requiresFortran;
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
-  private boolean _opt_noTimeAveraging = false; 
 
   private String _likwidInc;
   private String _likwidLib;
@@ -188,12 +187,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
      _useOptimisedKernels = _useOptimisedKernels 
                           || (language.equals("C") 
                               && (kernel.usesOptimisedKernels()));
-    // @todo JM: Please add as soon as we have optimised FV solvers.
-  
-    if (_useOptimisedKernels)  {  
-      _opt_noTimeAveraging = kernel.noTimeAveraging();
-    }
-    
   }
   
   @Override
@@ -248,9 +241,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
       if (_ipcmLib != null) {
         _writer.write("PROJECT_LFLAGS+= -L" + _ipcmLib + " -lintelpcm\n");
-      }
-      if (_opt_noTimeAveraging) {
-         _writer.write("PROJECT_CFLAGS+= -DNO_TIME_AVERAGING\n");
       }
       _writer.write("\n\n");
       _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
