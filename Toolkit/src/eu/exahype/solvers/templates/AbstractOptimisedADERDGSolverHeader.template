@@ -143,6 +143,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver, pu
     int getTempSpaceTimeFluxUnknownsSize() const {return {{optNamespace}}::getTempSpaceTimeFluxUnknownsSize();}
     int getTempUnknownsSize()              const {return {{optNamespace}}::getTempUnknownsSize();             }
     int getTempFluxUnknownsSize()          const {return {{optNamespace}}::getTempFluxUnknownsSize();         }
+    int getTempPointForceSourcesSize()     const {return {{optNamespace}}::getTempPointForceSourcesSize();    }
     int getBndFaceSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }
     int getBndTotalSize()                  const {return {{optNamespace}}::getBndTotalSize();                 }
     int getBndFluxSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }

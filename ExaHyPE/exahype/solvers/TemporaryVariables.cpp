@@ -109,7 +109,7 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
       //
       temporaryVariables._tempFluxUnknowns[solverNumber]      = allocateArray(aderdgSolver->getTempFluxUnknownsSize(), align);
       //
-      temporaryVariables._tempPointForceSources    [solverNumber] = allocateArray(aderdgSolver->getTempSpaceTimeUnknownsSize(), align);
+      temporaryVariables._tempPointForceSources    [solverNumber] = allocateArray(aderdgSolver->getTempPointForceSourcesSize(), align);
     } else {
       temporaryVariables._tempSpaceTimeUnknowns    [solverNumber] = nullptr;
       temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;

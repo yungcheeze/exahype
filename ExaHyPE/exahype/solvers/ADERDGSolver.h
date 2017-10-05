@@ -941,6 +941,7 @@ public:
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getTempUnknownsSize()              const {return getDataPerCell();} // TODO function should be renamed
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
+  virtual int getTempPointForceSourcesSize()     const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getBndFaceSize()                   const {return getDataPerFace();} // TODO function should be renamed
   virtual int getBndTotalSize()                  const {return getDataPerCellBoundary();} // TODO function should be renamed
   virtual int getBndFluxSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed

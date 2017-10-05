@@ -111,6 +111,7 @@ config = {
            "useNCP"                : l_commandLineArguments.useNCP,
            "useSource"             : l_commandLineArguments.useSource,
            "useSourceOrNCP"        : (l_commandLineArguments.useSource or l_commandLineArguments.useNCP),
+           "usePointSource"        : False, #TODO JMG add option
            "noTimeAveraging"       : l_commandLineArguments.noTimeAveraging,
            "codeNamespace"         : l_commandLineArguments.namespace,
            "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,l_commandLineArguments.pathToApplication,l_commandLineArguments.pathToOptKernel),
