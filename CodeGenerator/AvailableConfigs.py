@@ -45,16 +45,7 @@ prefetchStrategies = [
                         "AL2jpst_BL2viaC"    # combines AL2jpst and BL2viaC
                      ]
 
-precisions =  [
-                "DP",
-                "SP"
-              ]
-
 numerics   =  [
                 "linear",
                 "nonlinear"
               ]
-
-supportedPDEs =  [
-                    "Euler"                 # compressible Euler equations
-                 ]

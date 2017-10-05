@@ -90,11 +90,6 @@ l_parser.add_argument("--useSource",
 l_parser.add_argument("--noTimeAveraging",
                       action="store_true",
                       help="disable time averaging in the spacetimepredictor (less memory usage, more computation)")
-# l_parser.add_argument("--precision",
-                      # type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
-                      # default="DP",
-                      # help="SP or DP")
-
 
 l_commandLineArguments = l_parser.parse_args()
 
@@ -116,7 +111,6 @@ config = {
            "codeNamespace"         : l_commandLineArguments.namespace,
            "pathToOutputDirectory" : os.path.join(os.path.dirname(__file__),pathFromHereToExaHyPERoot,l_commandLineArguments.pathToApplication,l_commandLineArguments.pathToOptKernel),
            "architecture"          : l_commandLineArguments.architecture,
-           "precision"             : "DP", #l_commandLineArguments.precision,
            "pathToLibxsmmGemmGenerator"  : os.path.join(os.path.dirname(__file__),pathToLibxsmmGemmGenerator),
            "useLibxsmm"            : True
           }
