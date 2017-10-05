@@ -82,7 +82,7 @@ namespace c {
 /**
  * @param SolverType Has to be of type ADERDG Solver.
  */
-template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, bool noTimeAveraging, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
