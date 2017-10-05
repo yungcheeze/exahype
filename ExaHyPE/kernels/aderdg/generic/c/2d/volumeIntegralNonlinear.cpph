@@ -28,12 +28,13 @@ namespace c {
 
 #if DIMENSIONS == 2
 
-#ifdef NO_TIME_AVERAGING 
 /*
- * This ones takes the space-time volume flux instead of the ime-averaged flux
+ * Depending on the template parameter noTimeAveraging, either 
+ *    lFhi is nullptr and lFi is used,
+ *    lFhi is defined and used
  */
-template <bool useSourceOrNCP, bool useFlux, const int numberOfVariables, int basisSize>
-void volumeIntegralNonlinear(double* lduh, const double* const lFi,
+template <bool useSourceOrNCP, bool useFlux, bool noTimeAveraging, const int numberOfVariables, int basisSize>
+void volumeIntegralNonlinear(double* lduh, const double* const lFi, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize  * basisSize;
@@ -43,146 +44,135 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi,
   
   // Initialize the update DOF
   std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
+  
+  if(noTimeAveraging) {
 
-  if (useFlux) {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
-    idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
+    if (useFlux) {
+      idx3 idx(basisSize, basisSize, numberOfVariables);
+      idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
+      
+      for (int i = 0; i < basisSize; i++) { // loop over time unknowns
+        // x-direction
+        for (int j = 0; j < basisSize; j++) {
+          const double weight =
+              kernels::gaussLegendreWeights[order][i] *
+              kernels::gaussLegendreWeights[order][j];
+          const double updateSize = weight * invDx[0];
+
+          // Matrix product: (l, m) * (m, k) = (l, k)
+          for (int k = 0; k < basisSize; k++) {
+            for (int l = 0; l < numberOfVariables; l++) {
+              for (int m = 0; m < basisSize; m++) {
+                lduh[idx(j, k, l)] += 
+                    kernels::Kxi[order][k][m] *
+                    lFi[idx_lFi(i, j, m, 0, l)] * updateSize;
+              }
+            }
+          }
+        }
+
+        // y-direction
+        for (int k = 0; k < basisSize; k++) {
+          const double weight =
+              kernels::gaussLegendreWeights[order][i] *
+              kernels::gaussLegendreWeights[order][k];
+          const double updateSize = weight * invDx[1];
+
+          // Matrix product: (l, m) * (m, k) = (l, k)
+          for (int j = 0; j < basisSize; j++) {
+            for (int l = 0; l < numberOfVariables; l++) {
+              for (int m = 0; m < basisSize; m++) {
+                lduh[idx(j, k, l)] += 
+                    kernels::Kxi[order][j][m] * 
+                    lFi[idx_lFi(i, m, k, 1, l)] * updateSize;
+              }
+            }
+          }
+        }
+      }
+    } // useFlux
     
-    for (int i = 0; i < basisSize; i++) { // loop over time unknowns
+    // source
+    if (useSourceOrNCP) {
+      idx3 idx(basisSize, basisSize, numberOfVariables);
+      idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
+      
+      for (int i = 0; i < basisSize; i++) { // loop over time unknowns
+        for (int j = 0; j < basisSize; j++) {
+          for (int k = 0; k < basisSize; k++) {
+            const double weight =
+                kernels::gaussLegendreWeights[order][i] *
+                kernels::gaussLegendreWeights[order][j] *
+                kernels::gaussLegendreWeights[order][k];
+
+            for (int l = 0; l < numberOfVariables; l++) {
+              lduh[idx(j, k, l)] += weight * lFi[idx_lFi(i, j, k, 2, l)];
+            }
+          }
+        }
+      }
+    } // useSource
+  
+  } else { //noTimeAveraging
+  
+    idx3 idx(basisSize, basisSize, numberOfVariables);
+
+    if (useFlux) {
       // x-direction
+      const int x_offset = 0 * basisSize2 * numberOfVariables;
       for (int j = 0; j < basisSize; j++) {
-        const double weight =
-            kernels::gaussLegendreWeights[order][i] *
-            kernels::gaussLegendreWeights[order][j];
+        const double weight = kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight * invDx[0];
 
+        // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
-              lduh[idx(j, k, l)] += 
-                  kernels::Kxi[order][k][m] *
-                  lFi[idx_lFi(i, j, m, 0, l)] * updateSize;
+              lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
+                  lFhi[x_offset + idx(j, m, l)] * updateSize;
             }
           }
         }
       }
 
       // y-direction
-      for (int k = 0; k < basisSize; k++) {
-        const double weight =
-            kernels::gaussLegendreWeights[order][i] *
-            kernels::gaussLegendreWeights[order][k];
+      const int y_offset = 1 * basisSize2 * numberOfVariables;
+      for (int j = 0; j < basisSize; j++) {
+        const double weight = kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight * invDx[1];
 
+        // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
-        for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
-              lduh[idx(j, k, l)] += 
-                  kernels::Kxi[order][j][m] * 
-                  lFi[idx_lFi(i, m, k, 1, l)] * updateSize;
+              lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
+                  lFhi[y_offset + idx(j, m, l)] * updateSize;
             }
           }
         }
       }
     }
-  } // useFlux
-  
-  // source
-  if (useSourceOrNCP) {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
-    idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS+1,numberOfVariables); // (t,y,x,flux/source,var)
-    
-    for (int i = 0; i < basisSize; i++) { // loop over time unknowns
+
+    // source
+    if(useSourceOrNCP) {
+      idx3 idx(basisSize, basisSize, numberOfVariables);
+      const int s_offset = 2 * basisSize2 * numberOfVariables;
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          const double weight =
-              kernels::gaussLegendreWeights[order][i] *
-              kernels::gaussLegendreWeights[order][j] *
-              kernels::gaussLegendreWeights[order][k];
+          const double weight = kernels::gaussLegendreWeights[order][j] *
+                                kernels::gaussLegendreWeights[order][k];
 
+          // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
           for (int l = 0; l < numberOfVariables; l++) {
-            lduh[idx(j, k, l)] += weight * lFi[idx_lFi(i, j, k, 2, l)];
-          }
-        }
-      }
-    }
-  } // useSource
-}
-
-#else
-
-template <bool useSourceOrNCP, bool useFlux, const int numberOfVariables, int basisSize>
-void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
-                             const tarch::la::Vector<DIMENSIONS, double>& dx) {
-  constexpr int order      = basisSize - 1;
-  constexpr int basisSize2 = basisSize * basisSize;
-
-  const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
-  
-  // Initialize the update DOF
-  std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
-
-  idx3 idx(basisSize, basisSize, numberOfVariables);
-
-  if (useFlux) {
-    // x-direction
-    const int x_offset = 0 * basisSize2 * numberOfVariables;
-    for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight * invDx[0];
-
-      // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
-      // Matrix product: (l, m) * (m, k) = (l, k)
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          for (int m = 0; m < basisSize; m++) {
-            lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
-                lFhi[x_offset + idx(j, m, l)] * updateSize;
-          }
-        }
-      }
-    }
-
-    // y-direction
-    const int y_offset = 1 * basisSize2 * numberOfVariables;
-    for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight * invDx[1];
-
-      // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
-      // Matrix product: (l, m) * (m, k) = (l, k)
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          for (int m = 0; m < basisSize; m++) {
-            lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
-                lFhi[y_offset + idx(j, m, l)] * updateSize;
+            lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
           }
         }
       }
     }
   }
-
-  // source
-  if(useSourceOrNCP) {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
-    const int s_offset = 2 * basisSize2 * numberOfVariables;
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        const double weight = kernels::gaussLegendreWeights[order][j] *
-                              kernels::gaussLegendreWeights[order][k];
-
-        // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
-        for (int l = 0; l < numberOfVariables; l++) {
-          lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
-        }
-      }
-    }
-  }
 }
-
-#endif // NO_TIME_AVERAGING
 
 #endif  // DIMENSIONS == 2
 

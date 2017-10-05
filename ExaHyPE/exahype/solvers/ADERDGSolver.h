@@ -975,7 +975,8 @@ public:
    * @param[dt]    dt        Time step size.
    */
   virtual void volumeIntegral(
-      double* lduh, const double* const lFhi,
+      double* lduh, 
+      const double* const lFi, const double* const lFhi, //take both lFi and lFhi, depending on the time averaging setting lFi may be unused or lFhi may be nullptr
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**

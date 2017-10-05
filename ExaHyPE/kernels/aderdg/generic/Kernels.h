@@ -101,8 +101,8 @@ template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSiz
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
-template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
-void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
+template <bool useSourceOrNCP, bool useFlux, bool noTimeAveraging, int numberOfVariables, int basisSize>
+void volumeIntegralNonlinear(double* lduh, const double* const lFi, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 // todo 10/02/16: Dominic

@@ -1945,64 +1945,35 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
         lFhbnd,
         tempSpaceTimeUnknowns,
         tempSpaceTimeFluxUnknowns,
-#ifdef NO_TIME_AVERAGING
-        nullptr,
-        nullptr,
-#else
         tempUnknowns,
         tempFluxUnknowns,
-#endif
         luh,
         &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
         cellDescription.getPredictorTimeStepSize(),
         tempPointForceSources);
-
-    // TODO(Future Opt.)
-    // Volume integral should be performed using the space time
-    // flux unknowns. Something equivalent can also be done for
-    // the extrpolated fluxes. Here, we can also perform the
-    // time averaging on the fly.
-    // Remove the tempFluxUnkowns and tempUnknowns.
+    
     volumeIntegral(
         lduh,
-#ifdef NO_TIME_AVERAGING
         tempSpaceTimeFluxUnknowns[0],
-#else
         tempFluxUnknowns,
-#endif
         &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
-#else
+#else //OPT_KERNELS not defined
     spaceTimePredictor(
         lQhbnd,
         lFhbnd,
         tempSpaceTimeUnknowns,
         tempSpaceTimeFluxUnknowns,
-#ifdef NO_TIME_AVERAGING
-        nullptr,
-        nullptr,
-#else
         tempUnknowns,
         tempFluxUnknowns,
-#endif
         luh,
         cellDescription.getSize(),
         cellDescription.getPredictorTimeStepSize(),
         tempPointForceSources);
-
-    // TODO(Future Opt.)
-    // Volume integral should be performed using the space time
-    // flux unknowns. Something equivalent can also be done for
-    // the extrpolated fluxes. Here, we can also perform the
-    // time averaging on the fly.
-    // Remove the tempFluxUnkowns and tempUnknowns.
-    //  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
+    
     volumeIntegral(
         lduh,
-#ifdef NO_TIME_AVERAGING
         tempSpaceTimeFluxUnknowns[0],
-#else
         tempFluxUnknowns,
-#endif
         cellDescription.getSize());
 #endif
 
