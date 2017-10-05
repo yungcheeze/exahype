@@ -19,6 +19,10 @@ namespace exahype {
     class PredictionTemporaryVariables;
     class MergingTemporaryVariables;
 
+    //helper function to allocate and deallocate memory
+    double* allocateArray(int size, bool align);
+    void freeArray(double*& array, bool align);
+    
     /**
      * Initialises temporary variables
      * used for the Prediction and SolutionRecomputation
