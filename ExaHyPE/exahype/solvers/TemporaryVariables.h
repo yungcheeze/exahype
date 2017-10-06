@@ -14,14 +14,16 @@
 #ifndef _EXAHYPE_SOLVERS_TEMPORARY_VARIABLES_H_
 #define _EXAHYPE_SOLVERS_TEMPORARY_VARIABLES_H_
 
+#include <vector>
+
 namespace exahype {
   namespace solvers {
     class PredictionTemporaryVariables;
     class MergingTemporaryVariables;
 
     //helper function to allocate and deallocate memory
-    double* allocateArray(int size, bool align);
-    void freeArray(double*& array, bool align);
+    double* allocateArray( std::vector<int>& heapIndices, const int& size );
+    void freeArrays( std::vector<int>& heapIndices );
     
     /**
      * Initialises temporary variables
@@ -79,6 +81,9 @@ private:
   PredictionTemporaryVariables( const PredictionTemporaryVariables& ) {};
 public:
   PredictionTemporaryVariables();
+
+  std::vector<int> _dataHeapIndices;
+
   /**
    * Per solver, temporary variables for storing degrees of freedom of space-time predictor
    * sized variables.
@@ -116,6 +121,8 @@ private:
   MergingTemporaryVariables( const MergingTemporaryVariables& ) {};
 public:
   MergingTemporaryVariables();
+
+  std::vector<int> _dataHeapIndices;
 
   /**
    * Temporary variable per solver for storing

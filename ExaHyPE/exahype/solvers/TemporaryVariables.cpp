@@ -24,52 +24,72 @@
 
 exahype::solvers::PredictionTemporaryVariables::PredictionTemporaryVariables() {}
 
-double* exahype::solvers::allocateArray(int size, bool align) {
+double* exahype::solvers::allocateArray( std::vector<int>& heapIndices, const int& size ) {
   //don't need to allocate anything
   if(size < 1) {
     return nullptr;
   }
-  double* array;
-  #ifdef ALIGNMENT
-  if(align) {
-    array = ((double *) _mm_malloc(sizeof(double)*size, ALIGNMENT));
-  } else {  
-    array = new double[size]();
-  }
-  #else
-    array = new double[size]();
-  #endif
+
+  // TODO(Dominic): old code; keep for reference.
+//  #ifdef ALIGNMENT
+//  if(align) {
+//    array = ((double *) _mm_malloc(sizeof(double)*size, ALIGNMENT));
+//  } else {
+//    array = new double[size]();
+//  }
+//  #else
+//    array = new double[size]();
+//  #endif
+
+  const int heapIndex = exahype::DataHeap::getInstance().createData(
+      size,size,
+      exahype::DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired);
+
+  double* array = exahype::DataHeap::getInstance().getData(heapIndex).data();
   std::memset(array, 0, sizeof(double)*size);
-  
+
+  heapIndices.push_back(heapIndex);
   return array;
 }
 
-void exahype::solvers::freeArray(double*& array, bool align) {
-  //don't need to delete
-  if(array == nullptr) {
-     return;
+void exahype::solvers::freeArrays( std::vector<int>& heapIndices ) {
+// TODO(Dominic): Old code; keep for reference
+//  //don't need to delete
+//  if(array == nullptr) {
+//     return;
+//  }
+//
+//  #ifdef ALIGNMENT
+//  if(align) {
+//  _mm_free(array);
+//  } else {
+//    delete[] array;
+//  }
+//  #else
+//  delete[] array;
+//  #endif
+//  array = nullptr;
+
+  for (int i : heapIndices) {
+    exahype::DataHeap::getInstance().deleteData(i,true/*recycle*/);
   }
 
-  #ifdef ALIGNMENT
-  if(align) {
-  _mm_free(array);
-  } else {
-    delete[] array;
-  }
-  #else
-  delete[] array;
-  #endif
-  array = nullptr;
+  heapIndices.clear();
 }
 
 void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::PredictionTemporaryVariables& temporaryVariables) {
+  assertion(temporaryVariables._dataHeapIndices.size()==0);
   assertion(temporaryVariables._tempSpaceTimeUnknowns    ==nullptr);
   assertion(temporaryVariables._tempSpaceTimeFluxUnknowns==nullptr);
   assertion(temporaryVariables._tempUnknowns             ==nullptr);
   assertion(temporaryVariables._tempFluxUnknowns         ==nullptr);
   assertion(temporaryVariables._tempPointForceSources    ==nullptr);
 
-  int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
+  const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+
+  temporaryVariables._dataHeapIndices.clear();
+  temporaryVariables._dataHeapIndices.reserve(numberOfSolvers*7); // count the arrays
+
   temporaryVariables._tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, rhs
   temporaryVariables._tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers]; // == lFi, gradQ
   temporaryVariables._tempUnknowns              = new double* [numberOfSolvers]; // == lQhi
@@ -78,8 +98,9 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
 
   exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
-  int solverNumber=0;
-  for (auto solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     switch( solver->getType() ) {
     case exahype::solvers::Solver::Type::ADERDG:
       aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
@@ -93,23 +114,26 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
     }
 
     if (aderdgSolver!=nullptr) {
-      const bool align = aderdgSolver->alignTempArray();
-      
       temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[2];
       for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
-        temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] = allocateArray(aderdgSolver->getTempSpaceTimeUnknownsSize(), align);
+        temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] = allocateArray( temporaryVariables._dataHeapIndices,
+                                                                                    aderdgSolver->getTempSpaceTimeUnknownsSize() );
       }
       //
       temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
       for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
-        temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i] = allocateArray(aderdgSolver->getTempSpaceTimeFluxUnknownsSize(), align);
+        temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i] = allocateArray( temporaryVariables._dataHeapIndices,
+                                                                                        aderdgSolver->getTempSpaceTimeFluxUnknownsSize() );
       }
       //
-      temporaryVariables._tempUnknowns    [solverNumber]      = allocateArray(aderdgSolver->getTempUnknownsSize(), align);
+      temporaryVariables._tempUnknowns[solverNumber] = allocateArray( temporaryVariables._dataHeapIndices,
+                                                                      aderdgSolver->getTempUnknownsSize() );
       //
-      temporaryVariables._tempFluxUnknowns[solverNumber]      = allocateArray(aderdgSolver->getTempFluxUnknownsSize(), align);
+      temporaryVariables._tempFluxUnknowns[solverNumber] = allocateArray( temporaryVariables._dataHeapIndices,
+                                                                          aderdgSolver->getTempFluxUnknownsSize() );
       //
-      temporaryVariables._tempPointForceSources    [solverNumber] = allocateArray(aderdgSolver->getTempPointForceSourcesSize(), align);
+      temporaryVariables._tempPointForceSources[solverNumber] = allocateArray( temporaryVariables._dataHeapIndices,
+                                                                               aderdgSolver->getTempPointForceSourcesSize() );
     } else {
       temporaryVariables._tempSpaceTimeUnknowns    [solverNumber] = nullptr;
       temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
@@ -117,22 +141,24 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
       temporaryVariables._tempFluxUnknowns         [solverNumber] = nullptr;
       temporaryVariables._tempPointForceSources    [solverNumber] = nullptr;
     }
-
-    ++solverNumber;
   }
 }
 
 void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemporaryVariables& temporaryVariables) {
-  if (temporaryVariables._tempSpaceTimeUnknowns!=nullptr) {
+  if (!temporaryVariables._dataHeapIndices.empty()) {
+    assertion(temporaryVariables._tempSpaceTimeUnknowns!=nullptr)
     assertion(temporaryVariables._tempSpaceTimeFluxUnknowns!=nullptr);
-    //assertion(temporaryVariables._tempUnknowns             !=nullptr);
-    //assertion(temporaryVariables._tempFluxUnknowns         !=nullptr);
     assertion(temporaryVariables._tempPointForceSources    !=nullptr);
 
-    int solverNumber=0;
     exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
+    // release memory
+    freeArrays(temporaryVariables._dataHeapIndices);
+
+    // set the pointers to null
+    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
       switch( solver->getType() ) {
       case exahype::solvers::Solver::Type::ADERDG:
         aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
@@ -146,28 +172,25 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
       }
 
       if (aderdgSolver!=nullptr) {
-          const bool align = aderdgSolver->alignTempArray();
           //
           for (int i=0; i<2; ++i) {
-            freeArray(temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i], align);
+            temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] = nullptr;
           }
           delete[] temporaryVariables._tempSpaceTimeUnknowns[solverNumber];
           temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = nullptr;
           //
           for (int i=0; i<2; ++i) {
-            freeArray(temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i], align);
+            temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i] = nullptr;
           }
           delete[] temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber];
           temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
           //
-          freeArray(temporaryVariables._tempUnknowns[solverNumber], align);
+          temporaryVariables._tempUnknowns[solverNumber] = nullptr;
           //
-          freeArray(temporaryVariables._tempFluxUnknowns[solverNumber], align);
+          temporaryVariables._tempFluxUnknowns[solverNumber] = nullptr;
           //
-          freeArray(temporaryVariables._tempPointForceSources[solverNumber], align);
+          temporaryVariables._tempPointForceSources[solverNumber] = nullptr;
       }
-
-      ++solverNumber;
     }
 
     delete[] temporaryVariables._tempSpaceTimeUnknowns;
@@ -183,26 +206,28 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
   }
 }
 
-exahype::solvers::MergingTemporaryVariables::MergingTemporaryVariables() {}
+exahype::solvers::MergingTemporaryVariables::MergingTemporaryVariables() {
+}
 
 void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTemporaryVariables& temporaryVariables) {
+  temporaryVariables._dataHeapIndices.reserve(exahype::solvers::RegisteredSolvers.size()*3);
+
   assertion(temporaryVariables._tempFaceUnknowns            ==nullptr);
 
-  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  temporaryVariables._tempFaceUnknowns             = new double**[numberOfSolvers];
+  const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  temporaryVariables._tempFaceUnknowns = new double**[numberOfSolvers];
 
-  int solverNumber=0;
-  for (auto solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     int numberOfFaceUnknowns = 0;
     int lengthOfFaceUnknowns = 0;
-    bool alignTempArray      = false;
 
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
             static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getDataPerFace() + eventual padding
-        alignTempArray = static_cast<exahype::solvers::ADERDGSolver*>(solver)->alignTempArray();
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme.
@@ -210,7 +235,6 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTem
         lengthOfFaceUnknowns       = std::max(
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getBndFaceSize(), // == getDataPerFace() + eventual padding
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getDataPerPatchFace() );
-        alignTempArray = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->alignTempArray();
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
@@ -223,38 +247,30 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTem
     if (numberOfFaceUnknowns>0) {
       temporaryVariables._tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
       for (int i=0; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-        #ifdef ALIGNMENT
-        if (alignTempArray) {
-          temporaryVariables._tempFaceUnknowns[solverNumber][i] =
-              (double*) _mm_malloc( sizeof(double)*lengthOfFaceUnknowns, ALIGNMENT );
-        } else {
-          temporaryVariables._tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns](); //initialized to 0 to ensure padding is initialized if existing
-        }
-        #else
-        temporaryVariables._tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns](); //initialized to 0 to ensure padding is initialized if existing
-        #endif
+        temporaryVariables._tempFaceUnknowns[solverNumber][i] = allocateArray( temporaryVariables._dataHeapIndices, lengthOfFaceUnknowns );
       }
     }
-
-    ++solverNumber;
   }
 }
 
 void exahype::solvers::deleteTemporaryVariables(exahype::solvers::MergingTemporaryVariables& temporaryVariables) {
-  if (temporaryVariables._tempFaceUnknowns!=nullptr) {
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      int numberOfFaceUnknowns = 0;
-      bool alignTempArray      = false;
+  if (!temporaryVariables._dataHeapIndices.empty()) {
+    assertion(temporaryVariables._tempFaceUnknowns!=nullptr);
 
+    // release memory
+    freeArrays(temporaryVariables._dataHeapIndices);
+
+    // set the pointers to null
+    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      int numberOfFaceUnknowns = 0;
       switch (solver->getType()) {
         case exahype::solvers::Solver::Type::ADERDG:
           numberOfFaceUnknowns = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
-          alignTempArray       = static_cast<exahype::solvers::ADERDGSolver*>(solver)->alignTempArray();
           break;
         case exahype::solvers::Solver::Type::LimitingADERDG:
           numberOfFaceUnknowns = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
-          alignTempArray       = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->alignTempArray();
           break;
         case exahype::solvers::Solver::Type::FiniteVolumes:
           numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
@@ -263,24 +279,14 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::MergingTempora
 
       if (numberOfFaceUnknowns>0) {
         for (int i=0; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-          #ifdef ALIGNMENT
-          if (alignTempArray) {
-            _mm_free( temporaryVariables._tempFaceUnknowns[solverNumber][i] );
-          } else {
-            delete[] temporaryVariables._tempFaceUnknowns[solverNumber][i];
-          }
-          #else
-          delete[] temporaryVariables._tempFaceUnknowns[solverNumber][i];
-          #endif
+          temporaryVariables._tempFaceUnknowns[solverNumber][i] = nullptr;
         }
         delete[] temporaryVariables._tempFaceUnknowns[solverNumber];
         temporaryVariables._tempFaceUnknowns[solverNumber] = nullptr;
       }
-
-      ++solverNumber;
     }
 
     delete[] temporaryVariables._tempFaceUnknowns;
-    temporaryVariables._tempFaceUnknowns             = nullptr;
+    temporaryVariables._tempFaceUnknowns = nullptr;
   }
 }
