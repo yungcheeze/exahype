@@ -24,7 +24,7 @@
 
 exahype::solvers::PredictionTemporaryVariables::PredictionTemporaryVariables() {}
 
-double* exahype::solvers::allocateArray( std::vector<int>& heapIndices, const int& size ) {
+double* exahype::solvers::allocateArray( std::vector<int>& heapIndices, const int size ) {
   //don't need to allocate anything
   if(size < 1) {
     return nullptr;
@@ -41,9 +41,10 @@ double* exahype::solvers::allocateArray( std::vector<int>& heapIndices, const in
 //    array = new double[size]();
 //  #endif
 
-  const int heapIndex = exahype::DataHeap::getInstance().createData(
-      size,size,
+  tarch::multicore::Lock lock(exahype::HeapSemaphore);
+  const int heapIndex = exahype::DataHeap::getInstance().createData(size,size,
       exahype::DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired);
+  lock.free();
 
   double* array = exahype::DataHeap::getInstance().getData(heapIndex).data();
   std::memset(array, 0, sizeof(double)*size);
@@ -71,7 +72,10 @@ void exahype::solvers::freeArrays( std::vector<int>& heapIndices ) {
 //  array = nullptr;
 
   for (int i : heapIndices) {
+    assertion(exahype::DataHeap::getInstance().isValidIndex(i));
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     exahype::DataHeap::getInstance().deleteData(i,true/*recycle*/);
+    lock.free();
   }
 
   heapIndices.clear();
@@ -86,8 +90,6 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
   assertion(temporaryVariables._tempPointForceSources    ==nullptr);
 
   const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-
-  temporaryVariables._dataHeapIndices.clear();
   temporaryVariables._dataHeapIndices.reserve(numberOfSolvers*7); // count the arrays
 
   temporaryVariables._tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, rhs
@@ -153,7 +155,7 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
     exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
     // release memory
-    freeArrays(temporaryVariables._dataHeapIndices);
+    freeArrays( temporaryVariables._dataHeapIndices );
 
     // set the pointers to null
     for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
@@ -210,11 +212,12 @@ exahype::solvers::MergingTemporaryVariables::MergingTemporaryVariables() {
 }
 
 void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTemporaryVariables& temporaryVariables) {
-  temporaryVariables._dataHeapIndices.reserve(exahype::solvers::RegisteredSolvers.size()*3);
-
-  assertion(temporaryVariables._tempFaceUnknowns            ==nullptr);
+  assertion(temporaryVariables._dataHeapIndices.size()==0);
+  assertion(temporaryVariables._tempFaceUnknowns==nullptr);
 
   const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  temporaryVariables._dataHeapIndices.reserve(numberOfSolvers*3);
+
   temporaryVariables._tempFaceUnknowns = new double**[numberOfSolvers];
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {

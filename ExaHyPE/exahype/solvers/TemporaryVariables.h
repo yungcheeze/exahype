@@ -22,7 +22,7 @@ namespace exahype {
     class MergingTemporaryVariables;
 
     //helper function to allocate and deallocate memory
-    double* allocateArray( std::vector<int>& heapIndices, const int& size );
+    double* allocateArray( std::vector<int>& heapIndices, const int size );
     void freeArrays( std::vector<int>& heapIndices );
     
     /**

@@ -98,6 +98,11 @@ namespace exahype {
 
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 
+  /**
+   * @see waitUntilAllBackgroundTasksHaveTerminated()
+   */
+  extern tarch::multicore::BooleanSemaphore HeapSemaphore;
+
 #ifdef Parallel
   /**
    * An empty DataHeap message.
@@ -598,11 +603,6 @@ class exahype::solvers::Solver {
    * @see waitUntilAllBackgroundTasksHaveTerminated()
    */
   static int                                _NumberOfTriggeredTasks;
-
-  /**
-   * @see waitUntilAllBackgroundTasksHaveTerminated()
-   */
-  static tarch::multicore::BooleanSemaphore _heapSemaphore;
 
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
