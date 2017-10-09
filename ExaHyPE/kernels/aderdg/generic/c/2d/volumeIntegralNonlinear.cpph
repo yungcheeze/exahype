@@ -38,7 +38,6 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFi, const double
                              const tarch::la::Vector<DIMENSIONS, double>& dx) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize  * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
 
   const double invDx[2] = { 1.0/dx[0], 1.0/dx[1] };
   
