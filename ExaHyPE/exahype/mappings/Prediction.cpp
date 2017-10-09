@@ -38,11 +38,11 @@ exahype::mappings::Prediction::communicationSpecification() const {
 
 peano::MappingSpecification
 exahype::mappings::Prediction::enterCellSpecification(int level) const {
-  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
-    return peano::MappingSpecification(
-        peano::MappingSpecification::Nop,
-        peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-  }
+//  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
+//    return peano::MappingSpecification(
+//        peano::MappingSpecification::Nop,
+//        peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+//  }
 
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,

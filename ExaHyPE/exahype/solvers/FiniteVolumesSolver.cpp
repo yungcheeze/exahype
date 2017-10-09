@@ -790,7 +790,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
       true
     );
 
-
     double* solution1 = DataHeap::getInstance().getData(cellDescription1.getSolution()).data();
     double* solution2 = DataHeap::getInstance().getData(cellDescription2.getSolution()).data();
 
@@ -820,14 +819,11 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     double* luhbndIn  = tempFaceUnknowns[0];
     double* luhbndOut = tempFaceUnknowns[1];
 
-    assertion1(getDataPerPatchFace() <= &luhbndOut[0] - &luhbndIn[0], &luhbndOut[0]-&luhbndIn[0]);
-
     assertion2(tarch::la::countEqualEntries(posCell,posBoundary)==DIMENSIONS-1,posCell.toString(),posBoundary.toString());
 
-    const int normalNonZero = tarch::la::equalsReturnIndex(posCell, posBoundary);
-    assertion(normalNonZero >= 0 && normalNonZero < DIMENSIONS);
-    const int faceIndex = 2 * normalNonZero +
-        (posCell(normalNonZero) < posBoundary(normalNonZero) ? 1 : 0);
+    const int direction   = tarch::la::equalsReturnIndex(posCell, posBoundary);
+    const int orientation = (1 + posBoundary(direction) - posCell(direction))/2;
+    const int faceIndex   = 2*direction+orientation;
 
     boundaryLayerExtraction(luhbndIn,luh,posBoundary-posCell);
 
@@ -838,7 +834,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
         cellDescription.getTimeStamp(),
         cellDescription.getTimeStepSize(),
         faceIndex,
-        normalNonZero);
+        direction);
 
     ghostLayerFillingAtBoundary(luh,luhbndOut,posBoundary-posCell);
   }
