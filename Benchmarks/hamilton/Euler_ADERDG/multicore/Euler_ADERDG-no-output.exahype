@@ -23,7 +23,7 @@ exahype-project Euler
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
   output-directory const  = ./Benchmarks/hamilton/Euler_ADERDG
-  architecture const      = cpu
+  architecture const      = noarch
   log-file                = mylogfile.log
 
   computational-domain
@@ -58,7 +58,7 @@ exahype-project Euler
     time-stepping      = globalfixed
     type const         = nonlinear
     terms const        = flux
-    optimisation const = optimised
+    optimisation const = generic
     language const     = C
     // reference either: sod,entropywave,explosion,rarefactionwave
     constants          = reference:entropywave

@@ -62,8 +62,8 @@ exahype-project GRMHD
     maximum-mesh-depth             = 0
     time-stepping                  = global
     type const = nonlinear
-	terms const = flux,ncp
-	optimisation const = generic
+    terms const = flux,ncp
+    optimisation const = generic
     language const                 = C
 
     constants  = foo:bar
