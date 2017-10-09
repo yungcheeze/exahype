@@ -33,12 +33,11 @@ exahype::mappings::Merging::communicationSpecification() const {
 
 peano::MappingSpecification
 exahype::mappings::Merging::touchVertexFirstTimeSpecification(int level) const {
-  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
-    return peano::MappingSpecification(
-        peano::MappingSpecification::Nop,
-        peano::MappingSpecification::AvoidFineGridRaces,true);
-  }
-
+//  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
+//    return peano::MappingSpecification(
+//        peano::MappingSpecification::Nop,
+//        peano::MappingSpecification::AvoidFineGridRaces,true);
+//  }
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
@@ -47,11 +46,11 @@ exahype::mappings::Merging::touchVertexFirstTimeSpecification(int level) const {
 // Specifications below are all nop.
 peano::MappingSpecification
 exahype::mappings::Merging::enterCellSpecification(int level) const {
-  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
-    return peano::MappingSpecification(
-        peano::MappingSpecification::Nop,
-        peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-  }
+//  if (level < exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers()) {
+//    return peano::MappingSpecification(
+//        peano::MappingSpecification::Nop,
+//        peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+//  }
 
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
@@ -248,45 +247,6 @@ void exahype::mappings::Merging::mergeWithBoundaryData(
   grainSize.parallelSectionHasTerminated();
 }
 
-void exahype::mappings::Merging::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("createHangingVertex(...)", fineGridVertex,
-                           fineGridX, fineGridH,
-                           coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-
-  if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-    // prolong adjacency indices
-    const int level = coarseGridVerticesEnumerator.getLevel()+1;
-    exahype::VertexOperations::writeCellDescriptionsIndex(
-        fineGridVertex,
-        multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
-            fineGridX,level,
-            fineGridPositionOfVertex,
-            exahype::VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
-    );
-
-    dfor2(pos1)
-      dfor2(pos2)
-        if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos1Scalar,pos2,pos2Scalar)) {
-          mergeWithBoundaryData(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
-
-          fineGridVertex.setMergePerformed(pos1,pos2,true);
-        }
-      enddforx
-    enddforx
-  }
-
-  logTraceOutWith1Argument("createHangingVertex(...)", fineGridVertex);
-}
-
 void exahype::mappings::Merging::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -304,7 +264,6 @@ void exahype::mappings::Merging::touchVertexFirstTime(
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     dfor2(pos1)
       dfor2(pos2)
-        // TODO(Dominic): There are some redundant parts in these checks
         if (fineGridVertex.hasToMergeNeighbours(pos1,pos1Scalar,pos2,pos2Scalar)) { // Assumes that we have to valid indices
           mergeNeighboursDataAndMetadata(fineGridVertex,pos1,pos1Scalar,pos2,pos2Scalar);
 
@@ -783,6 +742,17 @@ void exahype::mappings::Merging::mergeWithWorkerThread(
   // do nothing
 }
 #endif
+
+void exahype::mappings::Merging::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
 
 void exahype::mappings::Merging::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,

@@ -18,6 +18,8 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "peano/grid/aspects/VertexStateAnalysis.h"
+
 #include "tarch/la/VectorScalarOperations.h"
 
 #include "tarch/multicore/Lock.h"
@@ -441,6 +443,26 @@ void exahype::mappings::MeshRefinement::leaveCell(
   //      fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
   //    }
   //    enddforx
+  if (
+      fineGridCell.isRefined()
+      &&
+      peano::grid::aspects::VertexStateAnalysis::doesOneVertexCarryRefinementFlag(
+          fineGridVertices, fineGridVerticesEnumerator, Vertex::Records::Unrefined
+      )
+  ) {
+    bool isOneVertexABoundaryVertex = false;
+    dfor2(k)
+      isOneVertexABoundaryVertex |= fineGridVertices[ fineGridVerticesEnumerator(k) ].isBoundary();
+    enddforx
+    if (isOneVertexABoundaryVertex) {
+      dfor2(k)
+      if (fineGridVertices[ fineGridVerticesEnumerator(k) ].getRefinementControl()
+          ==Vertex::Records::Unrefined) {
+        fineGridVertices[ fineGridVerticesEnumerator(k) ].refine();
+      }
+      enddforx
+    }
+  }
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
 }
