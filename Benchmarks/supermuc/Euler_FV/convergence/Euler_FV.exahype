@@ -42,12 +42,15 @@ exahype-project Euler
   end global-optimisation
  
   solver Finite-Volumes EulerSolver_FV
-    variables const   = rho:1,j:3,E:1
-    patch-size const  = 7
-    maximum-mesh-size = 0.12
-    time-stepping     = global
-    kernel const      = generic::musclhancock
-    language const    = C
+    variables const    = rho:1,j:3,E:1
+    patch-size const   = 7
+    maximum-mesh-size  = 0.038
+    time-stepping      = global
+    type const         = godunov
+    terms const        = flux
+    optimisation const = generic
+    language const     = C
+    // reference either: sod,entropywave,explosion,rarefactionwave
     constants         = reference:entropywave
     
     plot user::defined ErrorWriter
