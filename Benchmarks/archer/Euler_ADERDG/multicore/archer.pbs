@@ -24,9 +24,9 @@ do
 
   compiler=Intel
   sharedMem=TBB
-  if (( coresPerTask==1 )); then
-    sharedMem=None
-  fi
+  #if (( coresPerTask==1 )); then
+  #  sharedMem=None
+  #fi
 
   prefix=Euler_ADERDG-no-output-regular-0-p3
   out=results/$prefix-$sharedMem-$compiler-n$nodes-t$tasksPerNode-c$coresPerTask.out

@@ -941,6 +941,7 @@ public:
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getTempUnknownsSize()              const {return getDataPerCell();} // TODO function should be renamed
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
+  virtual int getTempPointForceSourcesSize()     const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getBndFaceSize()                   const {return getDataPerFace();} // TODO function should be renamed
   virtual int getBndTotalSize()                  const {return getDataPerCellBoundary();} // TODO function should be renamed
   virtual int getBndFluxSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
@@ -975,7 +976,8 @@ public:
    * @param[dt]    dt        Time step size.
    */
   virtual void volumeIntegral(
-      double* lduh, const double* const lFhi,
+      double* lduh, 
+      const double* const lFi, const double* const lFhi, //take both lFi and lFhi, depending on the time averaging setting lFi may be unused or lFhi may be nullptr
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**

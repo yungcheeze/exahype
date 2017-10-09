@@ -78,7 +78,7 @@ void {{project}}::{{abstractSolver}}::solutionUpdate(double* luh,const double* c
 
 
 
-void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
+void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFi,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& inverseDx) {
 {%- if enableProfiler %}
   _profiler->start("volumeIntegral");
 {%- endif %}
@@ -92,9 +92,10 @@ void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* 
 {% endif %}
 
 {%- if noTimeAveraging %}
-  //No Time Averaging scheme
-  {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lSi_offset], inverseDx ); //lFhi is actually lFi
+  //No Time Averaging scheme, lFhi == nullptr
+  {{optNamespace}}::volumeIntegral( lduh, lFi, &lFi[lSi_offset], inverseDx );
 {% else %}
+  //Time averaging scheme, lFi not required
   {{optNamespace}}::volumeIntegral( lduh, lFhi, &lFhi[lShi_offset], inverseDx );
 {% endif %}
 

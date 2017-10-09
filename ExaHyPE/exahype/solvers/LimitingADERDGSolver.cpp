@@ -1169,7 +1169,7 @@ void exahype::solvers::LimitingADERDGSolver::deallocateLimiterPatch(
   limiterPatch.setType(LimiterPatch::Type::Erased);
   _limiter->ensureNoUnnecessaryMemoryIsAllocated(limiterPatch);
 
-  tarch::multicore::Lock lock(_heapSemaphore);
+  tarch::multicore::Lock lock(exahype::HeapSemaphore);
   LimiterHeap::getInstance().getData(cellDescriptionsIndex).erase(
       LimiterHeap::getInstance().getData(cellDescriptionsIndex).begin()+limiterElement);
   lock.free();
@@ -1223,7 +1223,7 @@ int exahype::solvers::LimitingADERDGSolver::allocateLimiterPatch(
   #endif
   assertion(previouslimiterElement==exahype::solvers::Solver::NotFound);
 
-  tarch::multicore::Lock lock(_heapSemaphore);
+  tarch::multicore::Lock lock(exahype::HeapSemaphore);
   exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
       cellDescriptionsIndex,
       solverPatch.getSolverNumber(),

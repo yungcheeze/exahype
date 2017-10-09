@@ -335,7 +335,7 @@ bool exahype::Vertex::hasToCommunicate(
   if (isBoundary()) {
     return false;
   }
-  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers())) {
     return  false;
   }
 

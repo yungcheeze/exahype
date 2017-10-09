@@ -124,7 +124,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver, pu
     void pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; 
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
-    void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
+    void volumeIntegral(double* lduh,const double* const lFi,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,const double dt,const int normalNonZeroIndex, bool isBoundaryFace) override;
     void boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
@@ -143,6 +143,7 @@ class {{project}}::{{abstractSolver}}: public exahype::solvers::ADERDGSolver, pu
     int getTempSpaceTimeFluxUnknownsSize() const {return {{optNamespace}}::getTempSpaceTimeFluxUnknownsSize();}
     int getTempUnknownsSize()              const {return {{optNamespace}}::getTempUnknownsSize();             }
     int getTempFluxUnknownsSize()          const {return {{optNamespace}}::getTempFluxUnknownsSize();         }
+    int getTempPointForceSourcesSize()     const {return {{optNamespace}}::getTempPointForceSourcesSize();    }
     int getBndFaceSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }
     int getBndTotalSize()                  const {return {{optNamespace}}::getBndTotalSize();                 }
     int getBndFluxSize()                   const {return {{optNamespace}}::getBndFaceSize();                  }

@@ -345,7 +345,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 
 int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers(
     tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
-  double hMax        = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  double hMax        = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
@@ -377,7 +377,7 @@ int exahype::runners::Runner::getFinestGridLevelOfAllSolvers(
 double
 exahype::runners::Runner::determineCoarsestMeshSize(
     const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize) const {
-  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
   const double maxBoundingBoxExtent = tarch::la::max(boundingBoxSize);
 
   const int coarsestMeshLevel =
@@ -421,7 +421,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   #ifdef Parallel
   if (exahype::State::VirtuallyExpandBoundingBox) {
     const double coarsestUserMeshSpacing =
-        exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+        exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
     const double maxDomainExtent = tarch::la::max(_domainSize);
 
     double boundingBoxScaling         = 0;
@@ -444,7 +444,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   }
   #endif
 
-  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers();
   const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
   tarch::la::Vector<DIMENSIONS,double> scaledDomainSize =
       determineScaledDomainSize(_domainSize,coarsestMeshSize);
@@ -499,7 +499,6 @@ void exahype::runners::Runner::initHeaps() {
 void exahype::runners::Runner::initHPCEnvironment() {
   peano::performanceanalysis::Analysis::getInstance().enable(false);
 }
-
 
 int exahype::runners::Runner::run() {
   int result = 0;
@@ -872,7 +871,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
   if (fusedTimeStepping) {
     repository.getState().switchToNeighbourDataDroppingContext();
     repository.switchToNeighbourDataMerging();
-    repository.iterate();
+    repository.iterate(1,false);
   }
 
   // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
@@ -881,14 +880,14 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     logInfo("updateMeshAndSubdomains(...)","pre-spreading of limiter status");
     repository.switchToLimiterStatusSpreading();
     repository.iterate(
-        exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell());
+        exahype::solvers::LimitingADERDGSolver::getMaxMinimumHelperStatusForTroubledCell(),false);
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::Solver::oneSolverRequestedMeshUpdate());
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
     logInfo("updateMeshAndSubdomains(...)","global recomputation requested by at least one solver");
     repository.switchToGlobalRollback();
-    repository.iterate();
+    repository.iterate(1,false);
   }
 
   // 2. Perform a grid update for those solvers that requested refinement
@@ -925,7 +924,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     logInfo("updateMeshAndSubdomains(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation(); // do not roll forward here if global recomp.; we want to stay at the old time step
-    repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
+    repository.iterate(1,false); // local recomputation: has now recomputed predictor in interface cells
   } // LocalRecomputation is done here
 
   assertion(!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation() ||
@@ -938,7 +937,7 @@ void exahype::runners::Runner::updateMeshAndSubdomains(
     logInfo("updateMeshAndSubdomains(...)","recompute predictor globally and reinitialise fused time stepping");
     repository.getState().switchToPredictionContext();
     repository.switchToPrediction();
-    repository.iterate(); // At this stage all solvers that required a mesh update, have
+    repository.iterate(1,false); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
       logInfo("updateMeshAndSubdomains(...)","redo time step since mesh was not prepared");
@@ -1080,10 +1079,10 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
 
   if (numberOfStepsToRun==0) {
     repository.switchToPlotAndFusedTimeStep();
-    repository.iterate();
+    repository.iterate(1,false);
   } else {
     repository.switchToFusedTimeStep();
-    repository.iterate(numberOfStepsToRun);
+    repository.iterate(numberOfStepsToRun,false);
   }
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
@@ -1107,7 +1106,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.getState().setAlgorithmSection(exahype::records::State::PredictionRerunAllSend);
     repository.getState().switchToPredictionRerunContext();
     repository.switchToPrediction();
-    repository.iterate();
+    repository.iterate(1,false);
   }
 
   updateStatistics();
@@ -1120,11 +1119,11 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
-  repository.iterate(); // todo uncomment
+  repository.iterate(1,false); // todo uncomment
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
-  repository.iterate();
+  repository.iterate(1,false);
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
     logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","local recomputation requested by at least one solver");
@@ -1156,7 +1155,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   } else {
     repository.switchToPrediction();   // Cell onto faces
   }
-  repository.iterate();
+  repository.iterate(1,false);
 
   updateStatistics();
 }

@@ -36,6 +36,7 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 exahype::DataHeap::HeapEntries exahype::EmptyDataHeapMessage(0);
 #endif
 
+tarch::multicore::BooleanSemaphore exahype::HeapSemaphore;
 
 #ifdef TrackGridStatistics
 /**
@@ -108,15 +109,13 @@ exahype::solvers::LimiterDomainChange exahype::solvers::convertToLimiterDomainCh
 double exahype::solvers::Solver::CompressionAccuracy = 0.0;
 bool exahype::solvers::Solver::SpawnCompressionAsBackgroundThread = false;
 
-
-tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
 int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
 
 void exahype::solvers::Solver::waitUntilAllBackgroundTasksHaveTerminated() {
   bool finishedWait = false;
 
   while (!finishedWait) {
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     finishedWait = _NumberOfTriggeredTasks == 0;
     lock.free();
 
@@ -291,15 +290,15 @@ double exahype::solvers::Solver::getMaximumMeshSize() const {
   return _maximumMeshSize;
 }
 
-double exahype::solvers::Solver::getCoarsestMeshLevel() const {
+int exahype::solvers::Solver::getCoarsestMeshLevel() const {
   return _coarsestMeshLevel;
 }
 
-double exahype::solvers::Solver::getMaximumAdaptiveMeshDepth() const {
+int exahype::solvers::Solver::getMaximumAdaptiveMeshDepth() const {
   return _maximumAdaptiveMeshDepth;
 }
 
-double exahype::solvers::Solver::getMaximumAdaptiveMeshLevel() const {
+int exahype::solvers::Solver::getMaximumAdaptiveMeshLevel() const {
   return _coarsestMeshLevel+_maximumAdaptiveMeshDepth;
 }
 
@@ -419,23 +418,31 @@ bool exahype::solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::
   return result;
 }
 
-// TODO(Dominic): This does exactly the opposite
-double exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers() {
+double exahype::solvers::Solver::getCoarsestMaximumMeshSizeOfAllSolvers() {
   double result = std::numeric_limits<double>::max();
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    result = std::min( result, p->_maximumMeshSize );
+    result = std::min( result, p->getMaximumMeshSize() );
   }
 
   return result;
 }
 
-// TODO(Dominic): This does exactly the opposite
 double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
   double result = -std::numeric_limits<double>::max(); // "-", min
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    result = std::max( result, p->_maximumMeshSize );
+    result = std::max( result, p->getMaximumMeshSize() );
+  }
+
+  return result;
+}
+
+int exahype::solvers::Solver::getCoarsestMeshLevelOfAllSolvers() {
+  int result = std::numeric_limits<int>::max();
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    result = std::min( result, p->getCoarsestMeshLevel() );
   }
 
   return result;

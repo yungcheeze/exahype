@@ -165,6 +165,9 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
 
 void exahype::mappings::FinaliseMeshRefinement::endIteration(
     exahype::State& solverState) {
+  if (exahype::mappings::MeshRefinement::IsInitialMeshRefinement) {
+    peano::performanceanalysis::Analysis::getInstance().enable(true);
+  }
   exahype::mappings::MeshRefinement::IsInitialMeshRefinement = false;
 }
 

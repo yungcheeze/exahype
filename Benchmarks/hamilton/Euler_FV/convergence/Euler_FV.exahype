@@ -43,15 +43,15 @@ exahype-project Euler
  
   solver Finite-Volumes EulerSolver_FV
     variables const    = rho:1,j:3,E:1
-    parameters const   = 5
     patch-size const   = 7
-    maximum-mesh-size  = 0.12
+    maximum-mesh-size  = 0.038
     time-stepping      = global
-    type const         = musclhancock
+    type const         = godunov
     terms const        = flux
     optimisation const = generic
     language const     = C
-    constants          = reference:entropywave
+    // reference either: sod,entropywave,explosion,rarefactionwave
+    constants         = reference:entropywave
     
     plot user::defined ErrorWriter
       variables const = 5

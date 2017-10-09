@@ -1,6 +1,6 @@
 echo "Configure project for multicore scaling test (output)."
 mkdir multicore/results
-rm -r *.o cfiles.mk ffiles.mk kernels
+rm -rf *.o cfiles.mk ffiles.mk kernels cipofiles.mk
 ./projectpaths.cfg
 ( cd ../../../ && java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Benchmarks/hamilton/GRMHD_ADERDG/multicore/GRMHD_ADERDG-output.exahype )
 

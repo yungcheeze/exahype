@@ -82,7 +82,7 @@ namespace c {
 /**
  * @param SolverType Has to be of type ADERDG Solver.
  */
-template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, bool noTimeAveraging, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -101,8 +101,8 @@ template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSiz
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
-template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
-void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
+template <bool useSourceOrNCP, bool useFlux, bool noTimeAveraging, int numberOfVariables, int basisSize>
+void volumeIntegralNonlinear(double* lduh, const double* const lFi, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 // todo 10/02/16: Dominic

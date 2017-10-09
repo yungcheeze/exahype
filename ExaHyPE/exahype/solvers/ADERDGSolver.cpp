@@ -202,7 +202,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(CellDe
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
 
     if (cellDescription.getUpdate()>=0) {
       DataHeap::getInstance().deleteData(cellDescription.getUpdate());
@@ -257,7 +257,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(CellDe
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
     waitUntilAllBackgroundTasksHaveTerminated();
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
 
     if (cellDescription.getExtrapolatedPredictor()>=0) {
       DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
@@ -308,7 +308,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
   ) {
     waitUntilAllBackgroundTasksHaveTerminated();
 
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
     // Allocate volume DoF for limiter
     const int dataPerNode     = getNumberOfVariables()+getNumberOfParameters();
@@ -367,7 +367,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(CellDescri
 
     waitUntilAllBackgroundTasksHaveTerminated();
 
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     // Allocate face DoF
     const int dataPerBnd = getBndTotalSize();
     const int dofPerBnd  = getBndFluxTotalSize();
@@ -1945,64 +1945,35 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
         lFhbnd,
         tempSpaceTimeUnknowns,
         tempSpaceTimeFluxUnknowns,
-#ifdef NO_TIME_AVERAGING
-        nullptr,
-        nullptr,
-#else
         tempUnknowns,
         tempFluxUnknowns,
-#endif
         luh,
         &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
         cellDescription.getPredictorTimeStepSize(),
         tempPointForceSources);
-
-    // TODO(Future Opt.)
-    // Volume integral should be performed using the space time
-    // flux unknowns. Something equivalent can also be done for
-    // the extrpolated fluxes. Here, we can also perform the
-    // time averaging on the fly.
-    // Remove the tempFluxUnkowns and tempUnknowns.
+    
     volumeIntegral(
         lduh,
-#ifdef NO_TIME_AVERAGING
         tempSpaceTimeFluxUnknowns[0],
-#else
         tempFluxUnknowns,
-#endif
         &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
-#else
+#else //OPT_KERNELS not defined
     spaceTimePredictor(
         lQhbnd,
         lFhbnd,
         tempSpaceTimeUnknowns,
         tempSpaceTimeFluxUnknowns,
-#ifdef NO_TIME_AVERAGING
-        nullptr,
-        nullptr,
-#else
         tempUnknowns,
         tempFluxUnknowns,
-#endif
         luh,
         cellDescription.getSize(),
         cellDescription.getPredictorTimeStepSize(),
         tempPointForceSources);
-
-    // TODO(Future Opt.)
-    // Volume integral should be performed using the space time
-    // flux unknowns. Something equivalent can also be done for
-    // the extrpolated fluxes. Here, we can also perform the
-    // time averaging on the fly.
-    // Remove the tempFluxUnkowns and tempUnknowns.
-    //  std::fill_n(lduh, _dofPerCell, 0.0); // TODO(Dominic): remove
+    
     volumeIntegral(
         lduh,
-#ifdef NO_TIME_AVERAGING
         tempSpaceTimeFluxUnknowns[0],
-#else
         tempFluxUnknowns,
-#endif
         cellDescription.getSize());
 #endif
 
@@ -3049,7 +3020,7 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   waitUntilAllBackgroundTasksHaveTerminated();
-  tarch::multicore::Lock lock(_heapSemaphore);
+  tarch::multicore::Lock lock(exahype::HeapSemaphore);
 
   const int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -3492,7 +3463,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourMetadata[exahype::NeighbourCommunicationMetadataCellType].getU());
   if(neighbourType==CellDescription::Type::Cell || cellDescription.getType()==CellDescription::Type::Cell){
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     assertion2(holdsFaceData(cellDescription),cellDescription.toString(),tarch::parallel::Node::getInstance().getRank());
 
     const int dataPerFace = getBndFaceSize();
@@ -4210,7 +4181,7 @@ void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
   _solver.computeHierarchicalTransform(_cellDescription,-1.0);
   _solver.putUnknownsIntoByteStream(_cellDescription);
 
-  tarch::multicore::Lock lock(_heapSemaphore);
+  tarch::multicore::Lock lock(exahype::HeapSemaphore);
   _cellDescription.setCompressionState(CellDescription::Compressed);
   _NumberOfTriggeredTasks--;
   assertion( _NumberOfTriggeredTasks>=0 );
@@ -4223,7 +4194,7 @@ void exahype::solvers::ADERDGSolver::compress(CellDescription& cellDescription) 
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(CellDescription::CurrentlyProcessed);
 
-      tarch::multicore::Lock lock(_heapSemaphore);
+      tarch::multicore::Lock lock(exahype::HeapSemaphore);
       _NumberOfTriggeredTasks++;
       lock.free();
 
@@ -4246,7 +4217,7 @@ void exahype::solvers::ADERDGSolver::uncompress(CellDescription& cellDescription
   bool uncompress   = false;
 
   while (!madeDecision) {
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     madeDecision = cellDescription.getCompressionState() != CellDescription::CurrentlyProcessed;
     uncompress   = cellDescription.getCompressionState() == CellDescription::Compressed;
     if (uncompress) {
@@ -4272,7 +4243,7 @@ void exahype::solvers::ADERDGSolver::uncompress(CellDescription& cellDescription
     pullUnknownsFromByteStream(cellDescription);
     computeHierarchicalTransform(cellDescription,1.0);
 
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     cellDescription.setCompressionState(CellDescription::Uncompressed);
   }
 }
@@ -4458,7 +4429,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInPreviousSolution(compressionOfPreviousSolution);
       if (compressionOfPreviousSolution<7) {
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0) );
         assertion( cellDescription.getPreviousSolutionCompressed()>=0 );
         lock.free();
@@ -4481,7 +4452,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
       }
       else {
         #if defined(TrackGridStatistics)
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
         #endif
@@ -4490,7 +4461,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0));
         assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
         lock.free();
@@ -4514,7 +4485,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
       }
       else {
         #if defined(TrackGridStatistics)
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getSolution() ).size() * 8.0;
         #endif
@@ -4523,7 +4494,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
       if (compressionOfUpdate<7) {
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData(0,0) );
         assertion( cellDescription.getUpdateCompressed()>=0 );
         lock.free();
@@ -4546,7 +4517,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
       }
       else {
         #if defined(TrackGridStatistics)
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getUpdate() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getUpdate() ).size() * 8.0;
         #endif
@@ -4555,7 +4526,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
       if (compressionOfExtrapolatedPredictor<7) {
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         cellDescription.setExtrapolatedPredictorCompressed( CompressedDataHeap::getInstance().createData(0,0) );
         assertion( cellDescription.getExtrapolatedPredictorCompressed()>=0 );
         lock.free();
@@ -4578,7 +4549,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
       }
       else {
         #if defined(TrackGridStatistics)
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).size() * 8.0;
         #endif
@@ -4587,7 +4558,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
     [&]() -> void {
       cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
       if (compressionOfFluctuation<7) {
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData(0,0) );
         assertion( cellDescription.getFluctuationCompressed()>=0 );
         lock.free();
@@ -4610,7 +4581,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(
       }
       else {
         #if defined(TrackGridStatistics)
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getFluctuation() ).size() * 8.0;
         PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getFluctuation() ).size() * 8.0;
         #endif
@@ -4631,7 +4602,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
   const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
 
   {
-    tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(exahype::HeapSemaphore);
     cellDescription.setPreviousSolution( DataHeap::getInstance().createData( dataPointsPerCell, dataPointsPerCell ) );
     cellDescription.setSolution( DataHeap::getInstance().createData(         dataPointsPerCell, dataPointsPerCell ) );
     cellDescription.setUpdate( DataHeap::getInstance().createData(           unknownsPerCell,   unknownsPerCell ) );
@@ -4707,7 +4678,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolutionCompressed() ));
         const int numberOfEntries = getDataPerCell();
         glueTogether(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), cellDescription.getBytesPerDoFInPreviousSolution());
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         CompressedDataHeap::getInstance().deleteData( cellDescription.getPreviousSolutionCompressed(), true );
         cellDescription.setPreviousSolutionCompressed( -1 );
       }
@@ -4718,7 +4689,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
         const int numberOfEntries = getDataPerCell();
         glueTogether(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), cellDescription.getBytesPerDoFInSolution());
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         CompressedDataHeap::getInstance().deleteData( cellDescription.getSolutionCompressed(), true );
         cellDescription.setSolutionCompressed( -1 );
       }
@@ -4729,7 +4700,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
         const int numberOfEntries = getUnknownsPerCell();
         glueTogether(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), cellDescription.getBytesPerDoFInUpdate());
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         CompressedDataHeap::getInstance().deleteData( cellDescription.getUpdateCompressed(), true );
         cellDescription.setUpdateCompressed( -1 );
       }
@@ -4740,7 +4711,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
         const int numberOfEntries = getDataPerCellBoundary();
         glueTogether(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), cellDescription.getBytesPerDoFInExtrapolatedPredictor());
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         CompressedDataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictorCompressed(), true );
         cellDescription.setExtrapolatedPredictorCompressed( -1 );
       }
@@ -4751,7 +4722,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
         const int numberOfEntries = getUnknownsPerCellBoundary();
         glueTogether(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), cellDescription.getBytesPerDoFInFluctuation());
-        tarch::multicore::Lock lock(_heapSemaphore);
+        tarch::multicore::Lock lock(exahype::HeapSemaphore);
         CompressedDataHeap::getInstance().deleteData( cellDescription.getFluctuationCompressed(), true );
         cellDescription.setFluctuationCompressed( -1 );
       }

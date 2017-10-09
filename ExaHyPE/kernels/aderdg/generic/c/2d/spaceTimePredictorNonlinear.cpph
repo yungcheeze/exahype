@@ -518,7 +518,7 @@ void aderTimeAveragingExtrapolatorNonlinear(
 }  // namespace
 
 
-template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, bool noTimeAveraging, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -546,29 +546,29 @@ void spaceTimePredictorNonlinear(
         solver, luh, dt, dx,
         lQi, rhs, lFi, gradQ);
   
-#ifdef NO_TIME_AVERAGING
-  aderTimeAveragingExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
-      lQi,
-      lFi,
-      lQhbnd, lFhbnd);
-#else
-  constexpr int basisSize2         = basisSize * basisSize;
-  
-  double* lQhi    = tempUnknowns;
-  double* lFhi    = tempFluxUnknowns;
+  if(noTimeAveraging) {
+    aderTimeAveragingExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
+        lQi,
+        lFi,
+        lQhbnd, lFhbnd);
+  } else {
+    constexpr int basisSize2         = basisSize * basisSize;
+    
+    double* lQhi    = tempUnknowns;
+    double* lFhi    = tempFluxUnknowns;
 
-  aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(
-      lQi, lFi, lQhi,
-      &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
-      &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
-      &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
-  );
-  aderExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
-      lQhi,
-      &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
-      &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
-      lQhbnd, lFhbnd);
-#endif
+    aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(
+        lQi, lFi, lQhi,
+        &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
+        &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+        &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
+    );
+    aderExtrapolatorNonlinear<numberOfVariables,numberOfParameters, basisSize>(
+        lQhi,
+        &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
+        &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+        lQhbnd, lFhbnd);
+  }
 }
 
 }  // namespace c

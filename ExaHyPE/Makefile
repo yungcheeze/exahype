@@ -12,8 +12,8 @@
 #--------------------------------------------------------------------------------------------------
 # ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-plattfrom
 # COMPILER            Intel             GNU, Manual               Used compiler (and linker)
-# MODE                Release           Debug, PeanoProfile       Verbosity and Debug level
-#                                       Profile, Asserts          
+# MODE                Release           Debug,                    Verbosity and Debug level
+#                                       Asserts,Profile          
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
@@ -82,28 +82,22 @@ ifeq ($(call tolower,$(MODE)),release)
 	#COMPILER_CFLAGS +=
 	#COMPILER_LFLAGS +=
 
-else ifeq ($(call tolower,$(MODE)),peanoprofile)
-	# Settings for the Release mode
-	# ----------------------------------------------
-	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
-	#COMPILER_LFLAGS +=
-
 else ifeq ($(call tolower,$(MODE)),debug)
 	# Settings for the Debug mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
+	#COMPILER_LFLAGS +=
+	
+else ifeq ($(call tolower,$(MODE)),asserts)
+	# Settings for the Asserts mode
+	# --------------------------------------------
+	COMPILER_CFLAGS += -DAsserts -DTrackGridStatistics
 	#COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
 	# Settings for the Profile mode
 	# --------------------------------------------
 	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics
-	#COMPILER_LFLAGS +=
-
-else ifeq ($(call tolower,$(MODE)),asserts)
-	# Settings for the Asserts mode
-	# --------------------------------------------
-	COMPILER_CFLAGS += -DAsserts -DTrackGridStatistics
 	#COMPILER_LFLAGS +=
 
 else

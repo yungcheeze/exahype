@@ -29,12 +29,12 @@ exahype-project Euler
     dimension const          = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 0.01
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 4
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -46,7 +46,7 @@ exahype-project Euler
   end distributed-memory
 
   global-optimisation
-    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
@@ -60,7 +60,7 @@ exahype-project Euler
     variables const    = rho:1,j:3,E:1
     order const        = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size  = 0.12
+    maximum-mesh-size  = 0.04
     maximum-mesh-depth = 0
     time-stepping      = global
     type const         = nonlinear
@@ -75,7 +75,6 @@ exahype-project Euler
       repeat          = 1e-10
       output          = not-available
     end plot
- 
      
     plot vtu::Cartesian::vertices::ascii ErrorPlotter
       // abserrorl1percell[nvar],q[nvar],qanalytical[nvar]

@@ -1,4 +1,4 @@
 echo "Configure project for single-node scaling test (output)."
 mkdir single-node/results
-rm -r *.o cfiles.mk ffiles.mk kernels
+rm -rf *.o cfiles.mk ffiles.mk kernels cipofiles.mk
 ( cd ../../../ && java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Benchmarks/supermuc/Euler/single-node/Euler-output.exahype )

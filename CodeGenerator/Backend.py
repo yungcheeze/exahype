@@ -45,18 +45,12 @@ import ConverterGenerator
 import GemmsCPPGenerator
 
 g_config                 = {}
-g_simdWidth              =  {'SP':  {'noarch' : 1,
-                                     'wsm'    : 4,
-                                     'snb'    : 8,
-                                     'hsw'    : 8,
-                                     'knc'    : 16,
-                                     'knl'    : 16 },
-                             'DP': { 'noarch' : 1,
-                                     'wsm'    : 2,
-                                     'snb'    : 4,
-                                     'hsw'    : 4,
-                                     'knc'    : 8,
-                                     'knl'    : 8 }
+g_simdWidth              = {  'noarch' : 1,
+                              'wsm'    : 2,
+                              'snb'    : 4,
+                              'hsw'    : 4,
+                              'knc'    : 8,
+                              'knl'    : 8 
                             }
 
 def setConfig(i_config):
@@ -64,13 +58,13 @@ def setConfig(i_config):
     g_config = i_config
 
 def getSizeWithPadding(i_sizeWithoutPadding: int) -> int:
-    l_simdSize        = g_simdWidth[g_config['precision']][g_config['architecture']]
+    l_simdSize        = g_simdWidth[g_config['architecture']]
     l_sizeWithPadding = l_simdSize * int((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
     return l_sizeWithPadding
 
 
 def getPadWidth(i_sizeWithoutPadding: int) -> int:
-    l_simdSize        = g_simdWidth[g_config['precision']][g_config['architecture']]
+    l_simdSize        = g_simdWidth[g_config['architecture']]
     l_sizeWithPadding = l_simdSize * int((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
     l_padWidth        = l_sizeWithPadding - i_sizeWithoutPadding
     return l_padWidth
@@ -98,7 +92,6 @@ def generateContext(i_config):
     context['nDof3D'] = 1 if context['nDim'] == 2 else context['nDof']
     context['isLinear'] = context['numerics'] == "linear"
     context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
-    #context['FloatingPointFormat'] = 'float' if 'g_config['precision']' == 'SP' else 'double'
     context['codeNamespaceList'] = context['codeNamespace'].split('::')
     context['guardNamespace'] = '_'.join(context['codeNamespaceList']).upper()
     return context
@@ -160,5 +153,5 @@ def generateAssemblerCode(i_outputFileName,
                                  ' ' + str(l_matmul.alignment_C) + \
                                  ' ' + g_config['architecture'] + \
                                  ' ' + l_matmul.prefetchStrategy+ \
-                                 ' ' + g_config['precision'] 
+                                 ' ' + 'DP' #always use double precision, 'SP' for single
         executeLibxsmmGenerator(l_commandLineArguments)

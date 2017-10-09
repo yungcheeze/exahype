@@ -51,10 +51,9 @@ void {{project}}::{{abstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
   kernels::aderdg::generic::fortran::spaceTimePredictor{{linearOrNonlinear}}<{{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, pointForceSources);
 {%- else %}
 {%- if  isLinear %}
-if(usePointSource())
   kernels::aderdg::generic::c::spaceTimePredictorLinear<{{usePointSource}}, {{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, pointForceSources);
 {%- else %}
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{useSource}}, {{useFlux}}, {{useNCP}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt);
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{useSource}}, {{useFlux}}, {{useNCP}}, {{noTimeAveraging}}, {{solver}}>(*static_cast<{{solver}}*>(this), lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt);
 {%- endif %}
 {%- endif %}
 {%- if enableProfiler %}
@@ -76,14 +75,18 @@ void {{project}}::{{abstractSolver}}::solutionUpdate(double* luh,const double* c
 
 
 
-void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+void {{project}}::{{abstractSolver}}::volumeIntegral(double* lduh,const double* const lFi,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {%- if enableProfiler %}
   _profiler->start("volumeIntegral");
 {%- endif %}
 {%- if isFortran %}
   kernels::aderdg::generic::fortran::volumeIntegral{{linearOrNonlinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 {%- else %}
-  kernels::aderdg::generic::c::volumeIntegral{{linearOrNonlinear}}<{{useSource}}, {{useFlux}}, NumberOfVariables, Order+1>(lduh,lFhi,dx);
+  {%- if isLinear %}
+  kernels::aderdg::generic::c::volumeIntegralLinear<{{useSource}}, {{useFlux}}, NumberOfVariables, Order+1>(lduh,lFhi,dx);
+  {%- else %}
+  kernels::aderdg::generic::c::volumeIntegralNonlinear<{{useSource}}, {{useFlux}}, {{noTimeAveraging}}, NumberOfVariables, Order+1>(lduh,lFi,lFhi,dx);
+  {%- endif %}
 {%- endif %}
 {%- if enableProfiler %}
   _profiler->stop("volumeIntegral");
