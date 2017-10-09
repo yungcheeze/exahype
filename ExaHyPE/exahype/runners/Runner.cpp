@@ -1117,9 +1117,10 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
+
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
-  repository.iterate(1,false); // todo uncomment
+  repository.iterate(1,false);
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell

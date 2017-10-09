@@ -188,7 +188,6 @@ void exahype::mappings::Prediction::enterCell(
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
-  // TODO(Dominic): Add getters
 
 
 //
