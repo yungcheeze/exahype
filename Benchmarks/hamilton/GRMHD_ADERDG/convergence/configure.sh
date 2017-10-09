@@ -1,6 +1,6 @@
 echo "Configure project for convergence test."
 mkdir convergence/results
-rm -r *.o cfiles.mk ffiles.mk kernels
+rm -rf *.o cfiles.mk ffiles.mk kernels cipofiles.mk
 ./projectpaths.cfg
 ( cd ../../../ && java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Benchmarks/hamilton/GRMHD_ADERDG/convergence/GRMHD_ADERDG.exahype )
 
