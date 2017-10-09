@@ -7,13 +7,13 @@ set -e
 TEST="TEST_NEW_PDE_AUTONOMOUSLY"
 
 # instead of softlinks
-FOR="../GRMHD/" # fortran includes
-Fortran="../GRMHD/Fortran"
-FortranInitialData="../GRMHD/InitialData"
+FOR="../../GRMHD/" # fortran includes
+Fortran="../../GRMHD/Fortran"
+FortranInitialData="../../GRMHD/InitialData"
 
-verbose g++ -c -g3 --std=c++11 -DDim3 -D$TEST -I$FOR -Wall -I../../Peano/ \
-	indi-test.cc InitialData.cpp \
-	PDE/Cons2Prim.cpp PDE/Prim2Cons.cpp PDE/PDE.cpp 
+verbose g++ -c -g3 --std=c++11 -DDim3 -D$TEST -I$FOR -Wall -I../ -I../../Peano/ \
+	indi-test.cc ../InitialData.cpp \
+	../PDE/Cons2Prim.cpp ../PDE/Prim2Cons.cpp ../PDE/PDE.cpp 
 	
 verbose g++ -g3 -oinditest.out \
 	$FortranInitialData/InitialDataFort.o \

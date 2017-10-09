@@ -327,6 +327,18 @@ endif
 LL=$(CC)
 
 
+#
+# Remove link to Fortran library if no Fortran file is linked
+# -----------------------------------------------------------
+# This is a "trick" to be able to compile ExaHyPE without any Fortran compiler at all:
+# Set the LINK_FORTRAN to an empty string. It contained some library before.
+#
+ifeq ($(call tolower,$(FOUND_ANY_FORTRAN)),no)
+	LINK_FORTRAN =
+endif
+
+
+
 COBJECTS=$(CSOURCES:.cpp=.o)
 CIPOOBJECTS=$(CIPOSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
@@ -421,9 +433,13 @@ endif
 
 ffiles.mk:
 	touch ffiles.mk
+#	First, write down a flag whether Fortran files have been found.
+#	If no Fortran files are in the project, we don't include the fortran library in the linking in the end.
+#	This works with inverted logic: "find -exec false" will return true if nothing is found.
+	if find -L $(PROJECT_PATH) -name '*.f90' -exec false {} \+; then echo 'FOUND_ANY_FORTRAN=No' > ffiles.mk; else echo 'FOUND_ANY_FORTRAN=Yes' > ffiles.mk; fi
 #	ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
 #	To resolve the dependency problem  (compile fortran modules first), we detect them heuristically.
-	echo -n FMODULESOURCES= > ffiles.mk
+	echo -n FMODULESOURCES= >> ffiles.mk
 	find -L $(PROJECT_PATH) -name '*.f90' -exec grep -il module {} \+ | tr '\n'  ' ' >> ffiles.mk
 	echo >> ffiles.mk
 	echo -n FSOURCES= >> ffiles.mk
@@ -471,6 +487,8 @@ header:
 	@echo "COMPILER_LFLAGS        = $(COMPILER_LFLAGS)"
 	@echo "FCOMPILER_CFLAGS       = $(FCOMPILER_CFLAGS)"
 	@echo "FCOMPILER_LFLAGS       = $(FCOMPILER_LFLAGS)"
+	@echo "LINK_FORTRAN           = $(LINK_FORTRAN)"
+	@echo "FOUND_ANY_FORTRAN      = $(FOUND_ANY_FORTRAN)"
 	@echo "--------------------------------------------------------------------------------"
 	@echo "PROJECT_CFLAGS         = $(PROJECT_CFLAGS)"
 	@echo "PROJECT_LFLAGS         = $(PROJECT_LFLAGS)"
