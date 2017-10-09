@@ -147,8 +147,8 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
 }
 
 void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemporaryVariables& temporaryVariables) {
-  if (!temporaryVariables._dataHeapIndices.empty()) {
-    assertion(temporaryVariables._tempSpaceTimeUnknowns!=nullptr)
+  if (temporaryVariables._tempSpaceTimeUnknowns!=nullptr) {
+    // assertion(!temporaryVariables._dataHeapIndices.empty()); This does not hold if all solvers are FV
     assertion(temporaryVariables._tempSpaceTimeFluxUnknowns!=nullptr);
     assertion(temporaryVariables._tempPointForceSources    !=nullptr);
 
@@ -257,7 +257,8 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::MergingTem
 }
 
 void exahype::solvers::deleteTemporaryVariables(exahype::solvers::MergingTemporaryVariables& temporaryVariables) {
-  if (!temporaryVariables._dataHeapIndices.empty()) {
+  if (temporaryVariables._tempFaceUnknowns!=nullptr) {
+    assertion(!temporaryVariables._dataHeapIndices.empty());
     assertion(temporaryVariables._tempFaceUnknowns!=nullptr);
 
     // release memory
