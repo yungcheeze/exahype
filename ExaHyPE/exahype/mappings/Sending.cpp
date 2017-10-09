@@ -50,6 +50,20 @@ exahype::mappings::Sending::communicationSpecification() const {
       true);
 }
 
+peano::MappingSpecification
+exahype::mappings::Sending::enterCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
+peano::MappingSpecification
+exahype::mappings::Sending::leaveCellSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
 /**
  * Nop.
  */
@@ -63,18 +77,6 @@ peano::MappingSpecification exahype::mappings::Sending::
     touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-peano::MappingSpecification
-exahype::mappings::Sending::enterCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-peano::MappingSpecification
-exahype::mappings::Sending::leaveCellSpecification(int level) const {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification

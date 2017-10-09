@@ -138,26 +138,20 @@ void sendEmptySolverDataToNeighbour(
   peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
+   * Run through whole tree. Run concurrently on fine grid.
+   */
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+
+  /**
    * Nop.
    */
   peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
-  peano::MappingSpecification leaveCellSpecification(int level) const;
   peano::MappingSpecification ascendSpecification(int level) const;
   peano::MappingSpecification descendSpecification(int level) const;
 
   /**
-   * The global time step computation does synchronise the individual cells
-   * with the solver instances from the master. The actual
-   * synchronisation/consistency routines
-   * for the solvers are done in NewTimeStep and
-   * the SpaceTimePredictor.
-   *
-   * The fundamental job of the global time step mapping is to report back to
-   * the master what time step is permitted. As all those operations are
-   * actually done in enterCell---also the veto of a global time step is done
-   * in the Riemann solver, i.e. before enterCell---we can send back data as
-   * soon as the traversal operation leaves the local subtree.
+   * TODO(Dominic): Update docu.
    */
   peano::CommunicationSpecification communicationSpecification() const;
 
