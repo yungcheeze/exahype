@@ -30,47 +30,20 @@ double* exahype::solvers::allocateArray( std::vector<int>& heapIndices, const in
     return nullptr;
   }
 
-  // TODO(Dominic): old code; keep for reference.
-//  #ifdef ALIGNMENT
-//  if(align) {
-//    array = ((double *) _mm_malloc(sizeof(double)*size, ALIGNMENT));
-//  } else {
-//    array = new double[size]();
-//  }
-//  #else
-//    array = new double[size]();
-//  #endif
-
   tarch::multicore::Lock lock(exahype::HeapSemaphore);
   const int heapIndex = exahype::DataHeap::getInstance().createData(size,size,
       exahype::DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired);
   lock.free();
 
-  double* array = exahype::DataHeap::getInstance().getData(heapIndex).data();
-  std::memset(array, 0, sizeof(double)*size);
+  auto& vector = exahype::DataHeap::getInstance().getData(heapIndex);
+  assertionEquals(vector.size(),size);
+  std::fill(vector.begin(),vector.end(),0.0);
 
   heapIndices.push_back(heapIndex);
-  return array;
+  return vector.data();
 }
 
 void exahype::solvers::freeArrays( std::vector<int>& heapIndices ) {
-// TODO(Dominic): Old code; keep for reference
-//  //don't need to delete
-//  if(array == nullptr) {
-//     return;
-//  }
-//
-//  #ifdef ALIGNMENT
-//  if(align) {
-//  _mm_free(array);
-//  } else {
-//    delete[] array;
-//  }
-//  #else
-//  delete[] array;
-//  #endif
-//  array = nullptr;
-
   for (int i : heapIndices) {
     assertion(exahype::DataHeap::getInstance().isValidIndex(i));
     tarch::multicore::Lock lock(exahype::HeapSemaphore);
