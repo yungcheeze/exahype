@@ -54,7 +54,7 @@ do
     prefix+="-nonfused"
   fi
   prefix+="-$mesh"
-
+  
   for nodes in 1
   do
     for tasksPerNode in 1 2 4 6 8 12 24 # ham7
@@ -63,7 +63,7 @@ do
       let tasks=$nodes*$tasksPerNode
       let coresPerTask=24/$tasksPerNode # ham7
       #let coresPerTask=16/$tasksPerNode # ham6
-
+     
       # Create script
       script=single-node/hamilton.slurm-script
       newScript=single-node/hamilton-$prefix-p$order-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem.slurm-script
@@ -75,25 +75,27 @@ do
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
       sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
       sed -i 's,p3,p'$order',g' $newScript
-
+      
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
-
+      
       sed -i 's,script=hamilton.slurm-script,script='$newScript',g' $newScript 
-
+      
       # Create spec file
       spec=single-node/Euler-$io.exahype
       filename=single-node/$prefix-p$order-t$tasksPerNode-c$coresPerTask
       newSpec=$filename'.exahype'
       cp $spec $newSpec
-
+      
       sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
       sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:'$tasksPerNode',g' $newSpec 
       sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
-     
+      
+      sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(off|on),fuse-algorithmic-steps\1=\2'$fuseAlgorithmicSteps',' $newSpec
+      
       sed -i -r 's,skip-reduction-in-batched-time-steps(\s*)=(\s*)(\w+),skip-reduction-in-batched-time-steps\1=\2'$skipReductionInBatchedTimeSteps',g' $newSpec
       sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',g' $newSpec
-     
+      
       sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',g' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
     done

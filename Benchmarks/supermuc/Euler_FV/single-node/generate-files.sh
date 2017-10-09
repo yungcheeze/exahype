@@ -65,11 +65,11 @@ do
      
       sed -i -r 's,ntasks-per-node(\s*)=(\s*)(([0-9]|\.)*),ntasks-per-node\1=\2'$tasksPerNode',' $newScript
       sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
-    
+      
       sed -i 's,'$project'-no-output-regular-0,'$prefix',g' $newScript
-
+      
       sed -i 's,p3,p'$patchSize',g' $newScript
-
+      
       sed -i 's,nodes=1,nodes='$nodes',' $newScript
       sed -i 's,tasksPerNode=1,tasksPerNode='$tasksPerNode',' $newScript
       sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',' $newScript
@@ -81,14 +81,16 @@ do
       filename=single-node/$prefix-p$patchSize-t$tasksPerNode-c$coresPerTask
       newSpec=$filename'.exahype'
       cp $spec $newSpec
-
+      
       sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
       sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:'$tasksPerNode',g' $newSpec 
       sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
-     
+      
+      sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(off|on),fuse-algorithmic-steps\1=\2'$fuseAlgorithmicSteps',' $newSpec
+      
       sed -i -r 's,skip-reduction-in-batched-time-steps(\s*)=(\s*)(\w+),skip-reduction-in-batched-time-steps\1=\2'$skipReductionInBatchedTimeSteps',g' $newSpec
       sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',g' $newSpec
-     
+      
       sed -i -r 's,patch-size(\s+)const(\s+)=(\s+)([0-9]+),patch-size\1const\2=\3'$patchSize',' $newSpec
       sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
     done
