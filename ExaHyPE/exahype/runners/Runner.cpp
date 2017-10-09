@@ -500,7 +500,6 @@ void exahype::runners::Runner::initHPCEnvironment() {
   peano::performanceanalysis::Analysis::getInstance().enable(false);
 }
 
-
 int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {

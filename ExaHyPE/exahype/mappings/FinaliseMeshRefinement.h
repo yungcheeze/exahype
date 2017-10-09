@@ -73,6 +73,11 @@ class exahype::mappings::FinaliseMeshRefinement {
   /**
    * Sets the MeshRefinement::IsInitialMeshRefinement status to false.
    * MeshRefinement::IsInitialMeshRefinement is set in Runner::run.
+   *
+   * Further turns on the performance analysis after the initial
+   * mesh refinement is over.
+   *
+   * Performance analysis is turned off initially in exahype::runners::Runner::initHPCEnvironment().
    */
   void endIteration(exahype::State& solverState);
 

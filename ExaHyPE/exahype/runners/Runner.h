@@ -151,11 +151,19 @@ class exahype::runners::Runner {
   void initDataCompression();
 
   /**
-   * Initialise all the stuff required for measurments, e.g.
+   * Initialise all the stuff required for measurements, e.g.
    *
-   * - Switch off Peano's performance analysis. Otherwise you'll get tons of
-   *   data for the grid construction through codes typically are interested in
-   *   performance data only.
+   * - Switch off Peano's performance analysis for all ranks.
+   *   Otherwise you'll get tons of data for the grid construction.
+   *   Codes typically are only interested in time stepping performance data.
+   *
+   *   Peano's performance analysis is activated again after the mesh refinement
+   *   in exahype::mappings::FinaliseMeshRefinement::endIteration(State).
+   *
+   *   The performance analysis is stopped in the Runner and not in the first
+   *   mesh refinement iteration's beginIteration(...) since otherwise a
+   *   beginIteration measurement has been started already when the
+   *   mesh refinement's beginIteration(...) method is called.
    */
   void initHPCEnvironment();
 
