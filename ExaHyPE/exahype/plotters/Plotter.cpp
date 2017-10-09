@@ -29,6 +29,10 @@
 #include "exahype/plotters/VTK/LimitingADERDGSubcells2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "exahype/plotters/FiniteVolumes2PeanoPatchFileFormat.h"
+
+
+
 /* BEGIN Case intensitive string comparison: http://stackoverflow.com/a/23944175 */
 bool icompare_pred(unsigned char a, unsigned char b) {
 	return std::tolower(a) == std::tolower(b);
@@ -305,9 +309,18 @@ exahype::plotters::Plotter::Plotter(
       }
       if (equalsIgnoreCase(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new FiniteVolume2CarpetHDF5(
-	    postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
-                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth()
-	);
+	              postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (equalsIgnoreCase(_identifier, FiniteVolumes2PeanoPatchFileFormatAscii::getIdentifier())) {
+        _device = new FiniteVolumes2PeanoPatchFileFormatAscii(
+                postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (equalsIgnoreCase(_identifier, FiniteVolumes2PeanoPatchFileFormatHDF5::getIdentifier())) {
+        _device = new FiniteVolumes2PeanoPatchFileFormatHDF5(
+                postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:

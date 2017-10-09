@@ -180,7 +180,7 @@ void exahype::plotters::FiniteVolumes2VTK::init(
   slicer = Slicer::bestFromSelectionQuery(select);
 
   if(slicer) {
-	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
+  	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
   }
 }
 
