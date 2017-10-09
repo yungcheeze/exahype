@@ -36,7 +36,6 @@ template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
-    double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -124,7 +123,8 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
 
   // 5. Add the source terms 
   if (useSource) {
-    double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+    double  source[numberOfVariables] = {0.0};
+    
     for (int i = patchBegin; i < patchEnd; i++) {
     for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
