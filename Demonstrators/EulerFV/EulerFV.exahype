@@ -32,13 +32,11 @@ exahype-project EulerFV
     end-time                = 0.1
   end computational-domain
  
-  /*
   shared-memory
     identifier = dummy
     cores = 4
     properties-file = sharedmemory.properties
   end shared-memory
-  */
 
   /*
    ===========================================
