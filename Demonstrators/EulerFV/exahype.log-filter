@@ -12,5 +12,7 @@ info   tarch           -1  black
 info   peano           -1  black
 info   exahype         -1  black
 
-info   peano::heap::ThreadSafeHeap  -1  white
+info  peano::heap::ThreadSafeHeap                      -1  white  
+info  exahype::runners::Runner::startNewTimeStep(...)  -1  white  
+
 # debug  peano::heap::ThreadSafeHeap  -1  white
